@@ -6,7 +6,7 @@ import (
 )
 
 type bod struct {
-	Name string `json:"name"`
+	Name string `json:"name" validate:"required"`
 }
 
 func (b *bod) Normalize() error {

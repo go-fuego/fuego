@@ -2,6 +2,7 @@ package op
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -37,12 +38,19 @@ func HttpHandler[ReturnType any, Body any](controller any) http.HandlerFunc {
 		ans, err := f(ctx)
 
 		if err != nil {
-			slog.Info("Error in controller", "err", err)
+			slog.Error("Error in controller", "err", err.Error())
 			errResponse := ErrorResponse{
 				Error: err.Error(),
 			}
+
+			status := http.StatusInternalServerError
+			var errorStatus ErrorWithStatus
+			if errors.As(err, &errorStatus) {
+				status = errorStatus.Status()
+			}
+
 			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(status)
 			json.NewEncoder(w).Encode(errResponse)
 			return
 		}

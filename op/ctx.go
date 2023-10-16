@@ -82,22 +82,20 @@ func (c *Ctx[B]) Body() (B, error) {
 	slog.Info("Decoded body", "body", *c.body)
 
 	// Validation
-	// err = validation.Validate(rs.Validate, t)
-	// if err != nil {
-	// 	errWrapped := fmt.Errorf("cannot validate request body: %w", err)
-	// 	common.SendError(w, exceptions.BadRequest{Err: err, Message: err.Error()})
-	// 	return t, errWrapped
-	// }
+	err = validate(*c.body)
+	if err != nil {
+		return *c.body, fmt.Errorf("cannot validate request body: %w", err)
+	}
 
 	// Normalize input if possible.
 	if normalizableBody, ok := any(c.body).(Normalizable); ok {
 		err := normalizableBody.Normalize()
 		if err != nil {
-			return *c.body, fmt.Errorf("error normalizing request body: %w", err)
+			return *c.body, fmt.Errorf("cannot normalize request body: %w", err)
 		}
 		c.body, ok = any(normalizableBody).(*B)
 		if !ok {
-			return *c.body, fmt.Errorf("error retyping request body: %w",
+			return *c.body, fmt.Errorf("cannot retype request body: %w",
 				fmt.Errorf("normalized body is not of type %T but should be", *new(B)))
 		}
 
