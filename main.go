@@ -26,12 +26,19 @@ func controller(c op.Ctx[any]) (ans, error) {
 
 func controllerPost(c op.Ctx[bod]) (ans, error) {
 	slog.Info("controller")
-	return ans{Ans: "Wooow " + c.Body().Name}, nil
+
+	me, err := c.Body()
+	if err != nil {
+		return ans{}, err
+	}
+
+	return ans{Ans: "Wooow " + me.Name}, nil
 }
 
 func controller2(c op.Ctx[bod]) (string, error) {
+	me := c.MustBody()
 
-	return "Hello " + c.Body().Name, nil
+	return "Hello " + me.Name, nil
 }
 
 func main() {
