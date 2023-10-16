@@ -43,10 +43,12 @@ func controller2(c op.Ctx[bod]) (string, error) {
 
 func main() {
 
+	op.Options()
+
 	op.Get("/hello", controller)
 	// op.Post("/hello", controllerPost)
 
-	op.Post("/hello2", controller2)
+	op.Post("/hello2", controllerPost)
 
 	op.Run(":8080")
 }

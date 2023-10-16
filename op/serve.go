@@ -8,10 +8,14 @@ import (
 )
 
 func Run(port string) {
-	http.ListenAndServe(port, nil)
+	http.ListenAndServe(config.Addr, defaultMux)
 }
 
 type Controller[ReturnType any, Body any] func(c Ctx[Body]) (ReturnType, error)
+
+type ErrorResponse struct {
+	Error string `json:"error"` // human readable error message
+}
 
 func HttpHandler[ReturnType any, Body any](controller any) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +37,13 @@ func HttpHandler[ReturnType any, Body any](controller any) http.HandlerFunc {
 		ans, err := f(ctx)
 
 		if err != nil {
+			slog.Info("Error in controller", "err", err)
+			errResponse := ErrorResponse{
+				Error: err.Error(),
+			}
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(errResponse)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -42,6 +52,5 @@ func HttpHandler[ReturnType any, Body any](controller any) http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-
 	}
 }
