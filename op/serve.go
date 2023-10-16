@@ -7,8 +7,8 @@ import (
 	"net/http"
 )
 
-func Run(port string) {
-	http.ListenAndServe(config.Addr, defaultMux)
+func (s *Server) Run() {
+	http.ListenAndServe(s.Config.Addr, s.mux)
 }
 
 type Controller[ReturnType any, Body any] func(c Ctx[Body]) (ReturnType, error)

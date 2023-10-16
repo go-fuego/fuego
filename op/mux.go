@@ -6,35 +6,24 @@ import (
 	"net/http"
 )
 
-func NewMux[ResponseBody any, RequestBody any]() *Mux[ResponseBody, RequestBody] {
-	mux := http.NewServeMux()
-	return &Mux[ResponseBody, RequestBody]{
-		mux: mux,
-	}
+type Route[ResponseBody any, RequestBody any] struct {
+	ReturnType ResponseBody
+	BodyType   ResponseBody
+	ErrorType  error
 }
 
-var defaultMux = http.NewServeMux()
-
-type Mux[ResponseBody any, RequestBody any] struct {
-	mux *http.ServeMux
+func Get[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
+	return Register[T](s, http.MethodGet, path, controller)
 }
 
-func (m Mux[T, B]) Get(path string, controller func(Ctx[B]) (T, error)) RteCtx[T] {
-	return Register[T](http.MethodGet, path, controller)
-}
-
-func Get[T any, B any](path string, controller func(Ctx[B]) (T, error)) RteCtx[T] {
-	return Register[T](http.MethodGet, path, controller)
-}
-
-func Post[T any, B any](path string, controller func(Ctx[B]) (T, error)) RteCtx[T] {
-	return Register[T](http.MethodPost, path, controller)
+func Post[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
+	return Register[T](s, http.MethodPost, path, controller)
 }
 
 // Registers route into the default mux.
-func Register[T any, B any](method string, path string, controller func(Ctx[B]) (T, error)) RteCtx[T] {
-	defaultMux.HandleFunc(path, httpHandler[T, B](controller))
+func Register[T any, B any](s *Server, method string, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
+	s.mux.HandleFunc(path, httpHandler[T, B](controller))
 	slog.Info(fmt.Sprintf("Registering %s %s", method, path))
 
-	return RteCtx[T]{}
+	return Route[T, B]{}
 }

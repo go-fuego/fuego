@@ -16,6 +16,8 @@ const (
 type Ctx[BodyType any] struct {
 	body    *BodyType
 	request *http.Request
+
+	config Config
 }
 
 // PathParams returns the path parameters of the request.
@@ -72,7 +74,7 @@ func (c *Ctx[B]) Body() (B, error) {
 
 	// Deserialize the request body.
 	dec := json.NewDecoder(c.request.Body)
-	if config.DisallowUnknownFields {
+	if c.config.DisallowUnknownFields {
 		dec.DisallowUnknownFields()
 	}
 	err := dec.Decode(&c.body)
@@ -103,10 +105,4 @@ func (c *Ctx[B]) Body() (B, error) {
 	}
 
 	return *c.body, nil
-}
-
-type RteCtx[T any] struct {
-	ReturnType T
-	BodyType   any
-	ErrorType  error
 }

@@ -48,12 +48,13 @@ func controller2(c op.Ctx[bod]) (string, error) {
 
 func main() {
 
-	op.Options(op.WithDisallowUnknownFields(false))
+	s := op.NewServer(
+		op.WithPort(":8080"),
+		op.WithDisallowUnknownFields(false),
+	)
 
-	op.Get("/hello", controller)
-	// op.Post("/hello", controllerPost)
+	op.Get(s, "/hello", controller)
+	op.Post(s, "/hello2", controller2)
 
-	op.Post("/hello2", controllerPost)
-
-	op.Run(":8080")
+	s.Run()
 }

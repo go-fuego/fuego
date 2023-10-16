@@ -1,21 +1,32 @@
 package op
 
+import "net/http"
+
+type Server struct {
+	mux    *http.ServeMux
+	Config Config
+}
+
 type Config struct {
 	Addr                  string
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
 }
 
-// Config variable used in all project.
-var config = Config{
-	Addr:                  ":8080",
-	DisallowUnknownFields: true,
-}
-
 // Options sets the options for the server.
-func Options(options ...func(*Config)) {
-	for _, option := range options {
-		option(&config)
+func NewServer(options ...func(*Config)) *Server {
+	s := &Server{
+		mux: http.NewServeMux(),
+		Config: Config{
+			Addr:                  ":8080",
+			DisallowUnknownFields: true,
+		},
 	}
+
+	for _, option := range options {
+		option(&s.Config)
+	}
+
+	return s
 }
 
 func WithDisallowUnknownFields(b bool) func(*Config) {
