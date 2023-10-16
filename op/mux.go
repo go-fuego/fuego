@@ -33,7 +33,7 @@ func Post[T any, B any](path string, controller func(Ctx[B]) (T, error)) RteCtx[
 
 // Registers route into the default mux.
 func Register[T any, B any](method string, path string, controller func(Ctx[B]) (T, error)) RteCtx[T] {
-	defaultMux.HandleFunc(path, HttpHandler[T, B](controller))
+	defaultMux.HandleFunc(path, httpHandler[T, B](controller))
 	slog.Info(fmt.Sprintf("Registering %s %s", method, path))
 
 	return RteCtx[T]{}

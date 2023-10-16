@@ -3,7 +3,6 @@ package op
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 )
@@ -18,24 +17,15 @@ type ErrorResponse struct {
 	Error string `json:"error"` // human readable error message
 }
 
-func HttpHandler[ReturnType any, Body any](controller any) http.HandlerFunc {
+// httpHandler converts a controller into a http.HandlerFunc.
+func httpHandler[ReturnType any, Body any](controller func(c Ctx[Body]) (ReturnType, error)) http.HandlerFunc {
+
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		f, ok := controller.(func(c Ctx[Body]) (ReturnType, error))
-		if !ok {
-			var c Controller[ReturnType, Body]
-			slog.Info("Controller types not ok",
-				"type", fmt.Sprintf("%T", controller),
-				"should be", fmt.Sprintf("%T", c))
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
 		ctx := Ctx[Body]{
 			request: r,
 		}
 
-		ans, err := f(ctx)
+		ans, err := controller(ctx)
 
 		if err != nil {
 			slog.Error("Error in controller", "err", err.Error())
