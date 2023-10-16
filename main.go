@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"log/slog"
+	"net/http"
 	"op/op"
 )
 
@@ -46,14 +48,28 @@ func controller2(c op.Ctx[bod]) (string, error) {
 	return "Hello " + me.Name, nil
 }
 
+func stdController(w http.ResponseWriter, r *http.Request) {
+	slog.Info("controller")
+
+	message := "Hello World."
+	limit, ok := r.URL.Query()["limit"]
+	if ok {
+		message += " The limit is:" + limit[0]
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(ans{Ans: message})
+}
+
 func main() {
 
 	s := op.NewServer(
-		op.WithPort(":8080"),
+		op.WithPort(":8070"),
 		op.WithDisallowUnknownFields(false),
 	)
 
 	op.Get(s, "/hello", controller)
+	op.Post(s, "/hello", controller)
 	op.Post(s, "/hello2", controller2)
 
 	s.Run()
