@@ -2,6 +2,7 @@ package op
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"log/slog"
@@ -11,7 +12,7 @@ const (
 	maxBodySize = 1048576
 )
 
-// Context for the request. BodyType is the type of the request body.
+// Context for the request. BodyType is the type of the request body. Please do not use a pointer type as parameter.
 type Ctx[BodyType any] struct {
 	body    *BodyType
 	request *http.Request
@@ -51,25 +52,57 @@ func (c *Ctx[B]) MustBody() B {
 	return b
 }
 
-// Body returns the body of the request. It caches the result, so it can be called multiple times.
+// Normalizable is an interface for entities that can be normalized.
+// Useful for example for trimming strings, add custom fields, etc.
+// Can also raise an error if the entity is not valid.
+type Normalizable interface {
+	Normalize() error // Normalizes the entity.
+}
+
+// Body returns the body of the request.
+// If (*B) implements [Normalizable], it will be normalized.
+// It caches the result, so it can be called multiple times.
 func (c *Ctx[B]) Body() (B, error) {
 	if c.body != nil {
 		return *c.body, nil
 	}
 
+	// Limit the size of the request body.
 	c.request.Body = http.MaxBytesReader(nil, c.request.Body, maxBodySize)
 
+	// Deserialize the request body.
 	dec := json.NewDecoder(c.request.Body)
 	if config.DisallowUnknownFields {
 		dec.DisallowUnknownFields()
 	}
-
 	err := dec.Decode(&c.body)
 	if err != nil {
-		slog.Info("Error decoding body", "err", err)
-		return *c.body, err
+		return *c.body, fmt.Errorf("cannot decode request body: %w", err)
 	}
 	slog.Info("Decoded body", "body", *c.body)
+
+	// Validation
+	// err = validation.Validate(rs.Validate, t)
+	// if err != nil {
+	// 	errWrapped := fmt.Errorf("cannot validate request body: %w", err)
+	// 	common.SendError(w, exceptions.BadRequest{Err: err, Message: err.Error()})
+	// 	return t, errWrapped
+	// }
+
+	// Normalize input if possible.
+	if normalizableBody, ok := any(c.body).(Normalizable); ok {
+		err := normalizableBody.Normalize()
+		if err != nil {
+			return *c.body, fmt.Errorf("error normalizing request body: %w", err)
+		}
+		c.body, ok = any(normalizableBody).(*B)
+		if !ok {
+			return *c.body, fmt.Errorf("error retyping request body: %w",
+				fmt.Errorf("normalized body is not of type %T but should be", *new(B)))
+		}
+
+		slog.Info("Normalized body", "body", *c.body)
+	}
 
 	return *c.body, nil
 }

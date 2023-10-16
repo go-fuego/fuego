@@ -9,6 +9,11 @@ type bod struct {
 	Name string `json:"name"`
 }
 
+func (b *bod) Normalize() error {
+	b.Name = "normalized " + b.Name
+	return nil
+}
+
 type ans struct {
 	Ans string `json:"ans"`
 }
@@ -43,7 +48,7 @@ func controller2(c op.Ctx[bod]) (string, error) {
 
 func main() {
 
-	op.Options()
+	op.Options(op.WithDisallowUnknownFields(false))
 
 	op.Get("/hello", controller)
 	// op.Post("/hello", controllerPost)
