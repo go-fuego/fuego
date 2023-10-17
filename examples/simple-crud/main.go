@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"op/op"
+
+	"github.com/go-op/op"
 )
 
 type bod struct {
