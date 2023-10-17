@@ -1,3 +1,9 @@
+default: ci
+
+ci: fmt lint cover
+
+ci-full: ci fuzz
+
 test: 
 	go test
 
@@ -11,6 +17,9 @@ fuzz:
 
 fmt:
 	gofumpt -l -w .
+
+lint:
+	golangci-lint run
 
 example:
 	go run ./examples/simple-crud/main.go

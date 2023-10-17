@@ -66,7 +66,6 @@ func TestContext_Body(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, body.Name, "John")
 		require.Equal(t, body.Age, 30)
-
 	})
 
 	t.Run("can read and validate invalid JSON body", func(t *testing.T) {
@@ -83,11 +82,9 @@ func TestContext_Body(t *testing.T) {
 		require.Error(t, err)
 		require.Equal(t, body.Name, "VeryLongName")
 		require.Equal(t, body.Age, 12)
-
 	})
 
 	t.Run("can normalize JSON body with custom method", func(t *testing.T) {
-
 		reqBody := strings.NewReader(`{"name":"John","age":30}`)
 		c := &Context[testStructNormalizable]{
 			request: httptest.NewRequest("GET", "http://example.com/foo", reqBody),
@@ -96,11 +93,9 @@ func TestContext_Body(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, body.Name, "normalized John")
 		require.Equal(t, body.Age, 60)
-
 	})
 
 	t.Run("can normalize JSON body with custom method returning error", func(t *testing.T) {
-
 		reqBody := strings.NewReader(`{"name":"John","age":30}`)
 		c := &Context[testStructNormalizableWithError]{
 			request: httptest.NewRequest("GET", "http://example.com/foo", reqBody),
@@ -109,7 +104,6 @@ func TestContext_Body(t *testing.T) {
 		require.Error(t, err)
 		require.Equal(t, body.Name, "John")
 		require.Equal(t, body.Age, 30)
-
 	})
 
 	t.Run("can read string body", func(t *testing.T) {
@@ -142,6 +136,7 @@ func FuzzContext_Body(f *testing.F) {
 			request: r,
 		}
 
-		c.Body()
+		_, err := c.Body()
+		require.NoError(t, err)
 	})
 }

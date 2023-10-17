@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/go-op/op"
 )
@@ -44,31 +45,29 @@ func controllerPost(c op.Ctx[bod]) (ans, error) {
 }
 
 func controller2(c op.Ctx[bod]) (string, error) {
-	me := c.MustBody()
-
-	return "Hello " + me.Name, nil
+	return "Hello " + c.MustBody().Name, nil
 }
 
 func stdController(w http.ResponseWriter, r *http.Request) {
-	slog.Info("controller")
-
-	message := "Hello World."
-	limit, ok := r.URL.Query()["limit"]
-	if ok {
-		message += " The limit is:" + limit[0]
-	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(ans{Ans: message})
+	json.NewEncoder(w).Encode(ans{Ans: "Hello World."})
 }
 
 func main() {
+	slog.SetDefault(slog.New(
+		slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		}),
+	))
+
 	s := op.NewServer(
 		op.WithPort(":8070"),
 		op.WithDisallowUnknownFields(false),
 	)
 
 	op.Get(s, "/hello", controller)
+	op.GetStd(s, "/hello3", stdController)
 	op.Post(s, "/hello", controller)
 	op.Post(s, "/hello2", controller2)
 

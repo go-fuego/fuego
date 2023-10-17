@@ -8,7 +8,8 @@ import (
 )
 
 func (s *Server) Run() {
-	http.ListenAndServe(s.Config.Addr, s.mux)
+	slog.Info("Server running on http://localhost" + s.Config.Addr)
+	_ = http.ListenAndServe(s.Config.Addr, s.mux)
 }
 
 type Controller[ReturnType any, Body any] func(c Context[Body]) (ReturnType, error)
@@ -39,13 +40,19 @@ func httpHandler[ReturnType any, Body any](controller func(c Ctx[Body]) (ReturnT
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(status)
-			json.NewEncoder(w).Encode(errResponse)
+			err = json.NewEncoder(w).Encode(errResponse)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				_, _ = w.Write([]byte(`{"error":"Internal Server Error"}`))
+				return
+			}
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(ans)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(`{"error":"Internal Server Error"}`))
 			return
 		}
 	}
