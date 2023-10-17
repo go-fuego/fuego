@@ -40,12 +40,7 @@ func httpHandler[ReturnType any, Body any](controller func(c Ctx[Body]) (ReturnT
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(status)
-			err = json.NewEncoder(w).Encode(errResponse)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				_, _ = w.Write([]byte(`{"error":"Internal Server Error"}`))
-				return
-			}
+			_ = json.NewEncoder(w).Encode(errResponse)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
