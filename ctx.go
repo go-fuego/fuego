@@ -3,6 +3,7 @@ package op
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"log/slog"
@@ -83,21 +84,34 @@ func (c *Context[B]) Body() (B, error) {
 	// Limit the size of the request body.
 	c.request.Body = http.MaxBytesReader(nil, c.request.Body, maxBodySize)
 
-	// Deserialize the request body.
-	dec := json.NewDecoder(c.request.Body)
-	if c.config.DisallowUnknownFields {
-		dec.DisallowUnknownFields()
-	}
-	err := dec.Decode(&c.body)
-	if err != nil {
-		return *c.body, fmt.Errorf("cannot decode request body: %w", err)
-	}
-	slog.Info("Decoded body", "body", *c.body)
+	switch any(c.body).(type) {
+	case *string:
+		// Read the request body.
+		body, err := io.ReadAll(c.request.Body)
+		if err != nil {
+			return *new(B), fmt.Errorf("cannot read request body: %w", err)
+		}
+		// c.body = (*B)(unsafe.Pointer(&body))
+		s := string(body)
+		c.body = any(&s).(*B)
+		slog.Info("Read body", "body", *c.body)
+	default:
+		// Deserialize the request body.
+		dec := json.NewDecoder(c.request.Body)
+		if c.config.DisallowUnknownFields {
+			dec.DisallowUnknownFields()
+		}
+		err := dec.Decode(&c.body)
+		if err != nil {
+			return *new(B), fmt.Errorf("cannot decode request body: %w", err)
+		}
+		slog.Info("Decoded body", "body", *c.body)
 
-	// Validation
-	err = validate(*c.body)
-	if err != nil {
-		return *c.body, fmt.Errorf("cannot validate request body: %w", err)
+		// Validation
+		err = validate(*c.body)
+		if err != nil {
+			return *c.body, fmt.Errorf("cannot validate request body: %w", err)
+		}
 	}
 
 	// Normalize input if possible.
