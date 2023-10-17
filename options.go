@@ -1,10 +1,13 @@
 package op
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type Server struct {
-	mux    *http.ServeMux
-	Config Config
+	middlewares []func(http.Handler) http.Handler
+	mux         *http.ServeMux
+	Config      Config
 }
 
 type Config struct {
