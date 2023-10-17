@@ -11,7 +11,7 @@ func (s *Server) Run() {
 	http.ListenAndServe(s.Config.Addr, s.mux)
 }
 
-type Controller[ReturnType any, Body any] func(c Ctx[Body]) (ReturnType, error)
+type Controller[ReturnType any, Body any] func(c Context[Body]) (ReturnType, error)
 
 type ErrorResponse struct {
 	Error string `json:"error"` // human readable error message
@@ -21,7 +21,7 @@ type ErrorResponse struct {
 func httpHandler[ReturnType any, Body any](controller func(c Ctx[Body]) (ReturnType, error)) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := Ctx[Body]{
+		ctx := &Context[Body]{
 			request: r,
 		}
 

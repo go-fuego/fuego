@@ -12,21 +12,32 @@ const (
 	maxBodySize = 1048576
 )
 
+type Ctx[B any] interface {
+	Body() (B, error)
+	MustBody() B
+	PathParams() map[string]string
+	QueryParam(name string) string
+	QueryParams() map[string]string
+	Request() *http.Request
+}
+
 // Context for the request. BodyType is the type of the request body. Please do not use a pointer type as parameter.
-type Ctx[BodyType any] struct {
+type Context[BodyType any] struct {
 	body    *BodyType
 	request *http.Request
 
 	config Config
 }
 
+var _ Ctx[any] = &Context[any]{} // Check that Context implements Ctx.
+
 // PathParams returns the path parameters of the request.
-func (c Ctx[B]) PathParams() map[string]string {
+func (c Context[B]) PathParams() map[string]string {
 	return nil
 }
 
 // QueryParams returns the query parameters of the request.
-func (c Ctx[B]) QueryParams() map[string]string {
+func (c Context[B]) QueryParams() map[string]string {
 	queryParams := c.request.URL.Query()
 	params := make(map[string]string)
 	for k, v := range queryParams {
@@ -36,17 +47,17 @@ func (c Ctx[B]) QueryParams() map[string]string {
 }
 
 // QueryParam returns the query parameter with the given name.
-func (c Ctx[B]) QueryParam(name string) string {
+func (c Context[B]) QueryParam(name string) string {
 	return c.request.URL.Query().Get(name)
 }
 
 // Request returns the http request.
-func (c Ctx[B]) Request() *http.Request {
+func (c Context[B]) Request() *http.Request {
 	return c.request
 }
 
 // MustBody works like Body, but panics if there is an error.
-func (c *Ctx[B]) MustBody() B {
+func (c *Context[B]) MustBody() B {
 	b, err := c.Body()
 	if err != nil {
 		panic(err)
@@ -64,7 +75,7 @@ type Normalizable interface {
 // Body returns the body of the request.
 // If (*B) implements [Normalizable], it will be normalized.
 // It caches the result, so it can be called multiple times.
-func (c *Ctx[B]) Body() (B, error) {
+func (c *Context[B]) Body() (B, error) {
 	if c.body != nil {
 		return *c.body, nil
 	}
