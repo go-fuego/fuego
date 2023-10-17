@@ -19,14 +19,12 @@ type ErrorResponse struct {
 
 // httpHandler converts a controller into a http.HandlerFunc.
 func httpHandler[ReturnType any, Body any](controller func(c Ctx[Body]) (ReturnType, error)) http.HandlerFunc {
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := &Context[Body]{
 			request: r,
 		}
 
 		ans, err := controller(ctx)
-
 		if err != nil {
 			slog.Error("Error in controller", "err", err.Error())
 			errResponse := ErrorResponse{

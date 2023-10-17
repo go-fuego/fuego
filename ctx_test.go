@@ -9,7 +9,6 @@ import (
 )
 
 func TestContext_Body(t *testing.T) {
-
 	t.Run("can read JSON body", func(t *testing.T) {
 		type testStruct struct {
 			Name string `json:"name"`
@@ -33,7 +32,6 @@ func TestContext_Body(t *testing.T) {
 	})
 
 	t.Run("can read string body", func(t *testing.T) {
-
 		// Create new Reader
 		a := strings.NewReader("Hello World")
 
@@ -46,13 +44,10 @@ func TestContext_Body(t *testing.T) {
 
 		_, err := c.Body()
 		require.NoError(t, err)
-
 	})
-
 }
 
 func FuzzContext_Body(f *testing.F) {
-
 	f.Add("Hello Fuzz")
 
 	f.Fuzz(func(t *testing.T, s string) {
@@ -67,7 +62,5 @@ func FuzzContext_Body(f *testing.F) {
 		}
 
 		c.Body()
-
 	})
-
 }

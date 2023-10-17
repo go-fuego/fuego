@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
-
 	"log/slog"
+	"net/http"
 )
 
 const (

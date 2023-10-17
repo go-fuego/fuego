@@ -63,7 +63,6 @@ func stdController(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
 	s := op.NewServer(
 		op.WithPort(":8070"),
 		op.WithDisallowUnknownFields(false),
