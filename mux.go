@@ -24,7 +24,7 @@ func Register[T any, B any](s *Server, method string, path string, controller fu
 	// fullRegistration := method + " " + path // TODO: switch when go 1.22 is released
 	fullRegistration := path
 	slog.Debug("registering openapi controller " + fullRegistration)
-	s.mux.Handle(fullRegistration, withMiddlewares(http.HandlerFunc(httpHandler[T, B](controller)), s.middlewares...))
+	s.mux.Handle(fullRegistration, withMiddlewares(http.HandlerFunc(httpHandler[T, B](s, controller)), s.middlewares...))
 
 	return Route[T, B]{}
 }

@@ -3,7 +3,6 @@ package op
 import (
 	"errors"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -22,26 +21,28 @@ func testControllerWithError(c Ctx[any]) (ans, error) {
 }
 
 func TestHttpHandler(t *testing.T) {
+	s := NewServer()
+
 	t.Run("can create std http handler from op controller", func(t *testing.T) {
-		handler := httpHandler[ans, any](testController)
+		handler := httpHandler[ans, any](s, testController)
 		if handler == nil {
 			t.Error("handler is nil")
 		}
 	})
 
 	t.Run("can run http handler from op controller", func(t *testing.T) {
-		handler := httpHandler[ans, any](testController)
+		handler := httpHandler[ans, any](s, testController)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
 		handler(w, req)
 
 		body := w.Body.String()
-		require.Equal(t, body, strings.ReplaceAll(`{"ans":"Hello World"}\n`, `\n`, "\n"))
+		require.Equal(t, crlf(`{"ans":"Hello World"}`), body)
 	})
 
 	t.Run("can handle errors in http handler from op controller", func(t *testing.T) {
-		handler := httpHandler[ans, any](testControllerWithError)
+		handler := httpHandler[ans, any](s, testControllerWithError)
 		if handler == nil {
 			t.Error("handler is nil")
 		}
@@ -51,6 +52,6 @@ func TestHttpHandler(t *testing.T) {
 		handler(w, req)
 
 		body := w.Body.String()
-		require.Equal(t, body, strings.ReplaceAll(`{"error":"error happened!"}\n`, `\n`, "\n"))
+		require.Equal(t, crlf(`{"error":"error happened!"}`), body)
 	})
 }
