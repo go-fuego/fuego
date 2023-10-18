@@ -5,48 +5,52 @@ import (
 )
 
 type Server struct {
-	middlewares    []func(http.Handler) http.Handler
-	mux            *http.ServeMux
-	Config         Config
-	Serialize      func(w http.ResponseWriter, ans any)
-	SerializeError func(w http.ResponseWriter, err error)
-}
+	middlewares []func(http.Handler) http.Handler
+	mux         *http.ServeMux
 
-type Config struct {
 	Addr                  string
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
+	Serialize             func(w http.ResponseWriter, ans any)
+	SerializeError        func(w http.ResponseWriter, err error)
 }
 
 // NewServer creates a new server with the given options
-func NewServer(options ...func(*Config)) *Server {
+func NewServer(options ...func(*Server)) *Server {
 	s := &Server{
-		mux:            http.NewServeMux(),
-		Serialize:      SendJSON,
-		SerializeError: SendJSONError,
-		Config: Config{
-			Addr:                  ":8080",
-			DisallowUnknownFields: true,
-		},
+		mux: http.NewServeMux(),
+
+		Addr:                  ":8080",
+		DisallowUnknownFields: true,
+		Serialize:             SendJSON,
+		SerializeError:        SendJSONError,
 	}
 
 	for _, option := range options {
-		option(&s.Config)
+		option(s)
 	}
 
 	return s
 }
 
-func WithDisallowUnknownFields(b bool) func(*Config) {
-	return func(c *Config) { c.DisallowUnknownFields = b }
+func WithDisallowUnknownFields(b bool) func(*Server) {
+	return func(c *Server) { c.DisallowUnknownFields = b }
 }
 
-func WithPort(port string) func(*Config) {
-	return func(c *Config) { c.Addr = port }
+func WithPort(port string) func(*Server) {
+	return func(c *Server) { c.Addr = port }
 }
 
 func WithXML() func(*Server) {
-	return func(s *Server) {
-		s.Serialize = SendXML
-		s.SerializeError = SendXMLError
+	return func(c *Server) {
+		c.Serialize = SendXML
+		c.SerializeError = SendXMLError
 	}
+}
+
+func WithSerializer(serializer func(w http.ResponseWriter, ans any)) func(*Server) {
+	return func(c *Server) { c.Serialize = serializer }
+}
+
+func WithErrorSerializer(serializer func(w http.ResponseWriter, err error)) func(*Server) {
+	return func(c *Server) { c.SerializeError = serializer }
 }

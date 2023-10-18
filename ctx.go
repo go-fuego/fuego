@@ -26,7 +26,7 @@ type Context[BodyType any] struct {
 	body    *BodyType
 	request *http.Request
 
-	config Config
+	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
 }
 
 var _ Ctx[any] = &Context[any]{} // Check that Context implements Ctx.
@@ -97,7 +97,7 @@ func (c *Context[B]) Body() (B, error) {
 	default:
 		// Deserialize the request body.
 		dec := json.NewDecoder(c.request.Body)
-		if c.config.DisallowUnknownFields {
+		if c.DisallowUnknownFields {
 			dec.DisallowUnknownFields()
 		}
 		err := dec.Decode(&c.body)
