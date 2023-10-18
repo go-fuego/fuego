@@ -31,51 +31,76 @@ func ReadJSON[B any](input io.Reader) (B, error) {
 // or as a method of Context.
 // It will also read strings.
 func readJSON[B any](input io.Reader, options readOptions) (B, error) {
-	var body *B
-	switch any(body).(type) {
-	case *string:
-		// Read the request body.
-		readBody, err := io.ReadAll(input)
-		if err != nil {
-			return *new(B), fmt.Errorf("cannot read request body: %w", err)
-		}
-		// c.body = (*B)(unsafe.Pointer(&body))
-		s := string(readBody)
-		body = any(&s).(*B)
-		slog.Debug("Read body", "body", *body)
-	default:
-		// Deserialize the request body.
-		dec := json.NewDecoder(input)
-		if options.DisallowUnknownFields {
-			dec.DisallowUnknownFields()
-		}
-		err := dec.Decode(&body)
-		if err != nil {
-			return *new(B), fmt.Errorf("cannot decode request body: %w", err)
-		}
-		slog.Debug("Decoded body", "body", *body)
+	var body B
 
-		// Validation
-		err = validate(*body)
-		if err != nil {
-			return *body, fmt.Errorf("cannot validate request body: %w", err)
-		}
+	// Deserialize the request body.
+	dec := json.NewDecoder(input)
+	if options.DisallowUnknownFields {
+		dec.DisallowUnknownFields()
+	}
+	err := dec.Decode(&body)
+	if err != nil {
+		return body, fmt.Errorf("cannot decode request body: %w", err)
+	}
+	slog.Debug("Decoded body", "body", body)
+
+	// Validation
+	err = validate(body)
+	if err != nil {
+		return body, fmt.Errorf("cannot validate request body: %w", err)
 	}
 
 	// Normalize input if possible.
-	if normalizableBody, ok := any(body).(Normalizable); ok {
+	if normalizableBody, ok := any(&body).(Normalizable); ok {
 		err := normalizableBody.Normalize()
 		if err != nil {
-			return *body, fmt.Errorf("cannot normalize request body: %w", err)
+			return body, fmt.Errorf("cannot normalize request body: %w", err)
 		}
-		body, ok = any(normalizableBody).(*B)
+		bodyStar, ok := any(normalizableBody).(*B)
 		if !ok {
-			return *body, fmt.Errorf("cannot retype request body: %w",
+			return body, fmt.Errorf("cannot retype request body: %w",
 				fmt.Errorf("normalized body is not of type %T but should be", *new(B)))
 		}
+		body = *bodyStar
 
-		slog.Debug("Normalized body", "body", *body)
+		slog.Debug("Normalized body", "body", body)
 	}
 
-	return *body, nil
+	return body, nil
+}
+
+// ReadString reads the request body as string.
+// Can be used independantly from op! framework.
+// Customisable by modifying ReadOptions.
+func ReadString[B ~string](input io.Reader) (B, error) {
+	return readString[B](input, ReadOptions)
+}
+
+func readString[B ~string](input io.Reader, options readOptions) (B, error) {
+	// Read the request body.
+	readBody, err := io.ReadAll(input)
+	if err != nil {
+		return "", fmt.Errorf("cannot read request body: %w", err)
+	}
+
+	body := B(readBody)
+	slog.Debug("Read body", "body", body)
+
+	// Normalize input if possible.
+	if normalizableBody, ok := any(&body).(Normalizable); ok {
+		err := normalizableBody.Normalize()
+		if err != nil {
+			return body, fmt.Errorf("cannot normalize request body: %w", err)
+		}
+		bodyStar, ok := any(normalizableBody).(*B)
+		if !ok {
+			return body, fmt.Errorf("cannot retype request body: %w",
+				fmt.Errorf("normalized body is not of type %T but should be", *new(B)))
+		}
+		body = *bodyStar
+
+		slog.Debug("Normalized body", "body", body)
+	}
+
+	return body, nil
 }

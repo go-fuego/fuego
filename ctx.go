@@ -88,5 +88,12 @@ func (c *Context[B]) Body() (B, error) {
 		c.request.Body = http.MaxBytesReader(nil, c.request.Body, c.readOptions.MaxBodySize)
 	}
 
-	return readJSON[B](c.request.Body, c.readOptions)
+	switch any(new(B)).(type) {
+	case *string:
+		s, err := readString[string](c.request.Body, c.readOptions)
+		body := any(s).(B)
+		return body, err
+	default:
+		return readJSON[B](c.request.Body, c.readOptions)
+	}
 }
