@@ -22,7 +22,7 @@ var ReadOptions = readOptions{
 // ReadJSON reads the request body as JSON.
 // Can be used independantly from op! framework.
 // Customisable by modifying ReadOptions.
-func ReadJSON[B any](input io.ReadCloser) (B, error) {
+func ReadJSON[B any](input io.Reader) (B, error) {
 	return readJSON[B](input, ReadOptions)
 }
 
@@ -30,9 +30,9 @@ func ReadJSON[B any](input io.ReadCloser) (B, error) {
 // Can be used independantly from framework using ReadJSON,
 // or as a method of Context.
 // It will also read strings.
-func readJSON[B any](input io.ReadCloser, options readOptions) (B, error) {
+func readJSON[B any](input io.Reader, options readOptions) (B, error) {
 	var body *B
-	switch any(new(B)).(type) {
+	switch any(body).(type) {
 	case *string:
 		// Read the request body.
 		readBody, err := io.ReadAll(input)
@@ -42,18 +42,18 @@ func readJSON[B any](input io.ReadCloser, options readOptions) (B, error) {
 		// c.body = (*B)(unsafe.Pointer(&body))
 		s := string(readBody)
 		body = any(&s).(*B)
-		slog.Info("Read body", "body", *body)
+		slog.Debug("Read body", "body", *body)
 	default:
 		// Deserialize the request body.
 		dec := json.NewDecoder(input)
-		if true {
+		if options.DisallowUnknownFields {
 			dec.DisallowUnknownFields()
 		}
 		err := dec.Decode(&body)
 		if err != nil {
 			return *new(B), fmt.Errorf("cannot decode request body: %w", err)
 		}
-		slog.Info("Decoded body", "body", *body)
+		slog.Debug("Decoded body", "body", *body)
 
 		// Validation
 		err = validate(*body)
@@ -74,7 +74,7 @@ func readJSON[B any](input io.ReadCloser, options readOptions) (B, error) {
 				fmt.Errorf("normalized body is not of type %T but should be", *new(B)))
 		}
 
-		slog.Info("Normalized body", "body", *body)
+		slog.Debug("Normalized body", "body", *body)
 	}
 
 	return *body, nil

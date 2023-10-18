@@ -8,8 +8,15 @@ const (
 	maxBodySize = 1048576
 )
 
+// Ctx is the context of the request.
+// It contains the request body, the path parameters, the query parameters, and the http request.
 type Ctx[B any] interface {
+	// Body returns the body of the request.
+	// If (*B) implements [Normalizable], it will be normalized.
+	// It caches the result, so it can be called multiple times.
 	Body() (B, error)
+
+	// MustBody works like Body, but panics if there is an error.
 	MustBody() B
 	PathParams() map[string]string
 	QueryParam(name string) string
@@ -29,6 +36,7 @@ type Context[BodyType any] struct {
 type readOptions struct {
 	DisallowUnknownFields bool
 	MaxBodySize           int64
+	LogBody               bool
 }
 
 var _ Ctx[any] = &Context[any]{} // Check that Context implements Ctx.

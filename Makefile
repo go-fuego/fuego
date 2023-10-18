@@ -12,6 +12,9 @@ cover:
 	go tool cover -func=coverage.out
 	rm coverage.out
 
+bench:
+	go test -bench . -benchmem
+
 fuzz:
 	go test -fuzz Fuzz -fuzztime 10s
 
