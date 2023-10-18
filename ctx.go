@@ -26,7 +26,13 @@ type Context[BodyType any] struct {
 	body    *BodyType
 	request *http.Request
 
-	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
+	readOptions readOptions
+}
+
+// readOptions are options for reading the request body.
+type readOptions struct {
+	DisallowUnknownFields bool
+	MaxBodySize           int64
 }
 
 var _ Ctx[any] = &Context[any]{} // Check that Context implements Ctx.
@@ -81,52 +87,75 @@ func (c *Context[B]) Body() (B, error) {
 	}
 
 	// Limit the size of the request body.
-	c.request.Body = http.MaxBytesReader(nil, c.request.Body, maxBodySize)
+	if c.readOptions.MaxBodySize != 0 {
+		c.request.Body = http.MaxBytesReader(nil, c.request.Body, c.readOptions.MaxBodySize)
+	}
 
-	switch any(c.body).(type) {
+	return readJSON[B](c.request.Body, c.readOptions)
+}
+
+var ReadOptions = readOptions{
+	DisallowUnknownFields: true,
+	MaxBodySize:           maxBodySize,
+}
+
+// ReadJSON reads the request body as JSON.
+// Can be used independantly from op! framework.
+// Customisable by modifying ReadOptions.
+func ReadJSON[B any](input io.ReadCloser) (B, error) {
+	return readJSON[B](input, ReadOptions)
+}
+
+// readJSON reads the request body as JSON.
+// Can be used independantly from framework using ReadJSON,
+// or as a method of Context.
+// It will also read strings.
+func readJSON[B any](input io.ReadCloser, options readOptions) (B, error) {
+	var body *B
+	switch any(new(B)).(type) {
 	case *string:
 		// Read the request body.
-		body, err := io.ReadAll(c.request.Body)
+		readBody, err := io.ReadAll(input)
 		if err != nil {
 			return *new(B), fmt.Errorf("cannot read request body: %w", err)
 		}
 		// c.body = (*B)(unsafe.Pointer(&body))
-		s := string(body)
-		c.body = any(&s).(*B)
-		slog.Info("Read body", "body", *c.body)
+		s := string(readBody)
+		body = any(&s).(*B)
+		slog.Info("Read body", "body", *body)
 	default:
 		// Deserialize the request body.
-		dec := json.NewDecoder(c.request.Body)
-		if c.DisallowUnknownFields {
+		dec := json.NewDecoder(input)
+		if true {
 			dec.DisallowUnknownFields()
 		}
-		err := dec.Decode(&c.body)
+		err := dec.Decode(&body)
 		if err != nil {
 			return *new(B), fmt.Errorf("cannot decode request body: %w", err)
 		}
-		slog.Info("Decoded body", "body", *c.body)
+		slog.Info("Decoded body", "body", *body)
 
 		// Validation
-		err = validate(*c.body)
+		err = validate(*body)
 		if err != nil {
-			return *c.body, fmt.Errorf("cannot validate request body: %w", err)
+			return *body, fmt.Errorf("cannot validate request body: %w", err)
 		}
 	}
 
 	// Normalize input if possible.
-	if normalizableBody, ok := any(c.body).(Normalizable); ok {
+	if normalizableBody, ok := any(body).(Normalizable); ok {
 		err := normalizableBody.Normalize()
 		if err != nil {
-			return *c.body, fmt.Errorf("cannot normalize request body: %w", err)
+			return *body, fmt.Errorf("cannot normalize request body: %w", err)
 		}
-		c.body, ok = any(normalizableBody).(*B)
+		body, ok = any(normalizableBody).(*B)
 		if !ok {
-			return *c.body, fmt.Errorf("cannot retype request body: %w",
+			return *body, fmt.Errorf("cannot retype request body: %w",
 				fmt.Errorf("normalized body is not of type %T but should be", *new(B)))
 		}
 
-		slog.Info("Normalized body", "body", *c.body)
+		slog.Info("Normalized body", "body", *body)
 	}
 
-	return *c.body, nil
+	return *body, nil
 }

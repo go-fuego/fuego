@@ -17,6 +17,10 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := &Context[Body]{
 			request: r,
+			readOptions: readOptions{
+				DisallowUnknownFields: s.DisallowUnknownFields,
+				MaxBodySize:           s.maxBodySize,
+			},
 		}
 
 		ans, err := controller(ctx)

@@ -10,6 +10,7 @@ type Server struct {
 
 	Addr                  string
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
+	maxBodySize           int64
 	Serialize             func(w http.ResponseWriter, ans any)
 	SerializeError        func(w http.ResponseWriter, err error)
 }
