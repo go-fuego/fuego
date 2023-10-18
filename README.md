@@ -1,4 +1,8 @@
-# Op ⏱️
+<p align="center">
+  <img src="./op-logo.svg"  height="200" alt="Ren'Py Graphviz" />
+</p>
+
+# Op! ⏱️
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/go-op/op.svg)](https://pkg.go.dev/github.com/go-op/op)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-op/op)](https://goreportcard.com/report/github.com/go-op/op)
@@ -33,11 +37,25 @@ import (
 	"github.com/op-go/op"
 )
 
+type Received struct {
+	Name string `json:"name" validate:"required"`
+}
+
+type MyResponse struct {
+	Message       string `json:"message"`
+	BestFramework string `json:"best"`
+}
+
 func main() {
 	s := op.New()
 
-	op.Get(s, "/", func(c op.Ctx[any]) (string, error) {
-		return "Hello, World!", nil
+	op.Post(s, "/", func(c op.Ctx[Received]) (MyResponse, error) {
+		data := c.Body()
+
+		return MyResponse{
+			Message:       "Hello, " + data.Name,
+			BestFramework: "Op!",
+		}, nil
 	})
 
 	op.GetStd(s, "/std", func(w http.ResponseWriter, r *http.Request) {
