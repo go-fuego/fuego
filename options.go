@@ -2,11 +2,15 @@ package op
 
 import (
 	"net/http"
+
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 type Server struct {
 	middlewares []func(http.Handler) http.Handler
 	mux         *http.ServeMux
+
+	spec openapi3.T
 
 	Addr                  string
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
@@ -18,7 +22,8 @@ type Server struct {
 // NewServer creates a new server with the given options
 func NewServer(options ...func(*Server)) *Server {
 	s := &Server{
-		mux: http.NewServeMux(),
+		mux:  http.NewServeMux(),
+		spec: NewOpenAPI(),
 
 		Addr:                  ":8080",
 		DisallowUnknownFields: true,

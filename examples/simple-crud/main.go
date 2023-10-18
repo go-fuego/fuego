@@ -68,7 +68,7 @@ func main() {
 
 	op.Get(s, "/hello", controller)
 	op.GetStd(s, "/hello3", stdController)
-	op.Post(s, "/hello", controller)
+	// op.Post(s, "/hello", controller)
 	op.Post(s, "/hello2", controller2)
 
 	s.Run()

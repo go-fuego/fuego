@@ -1,11 +1,13 @@
 package op
 
 import (
-	"log/slog"
 	"net/http"
+
+	"log/slog"
 )
 
 func (s *Server) Run() {
+	s.GenerateOpenAPI()
 	slog.Info("Server running on http://localhost" + s.Addr)
 	_ = http.ListenAndServe(s.Addr, s.mux)
 }

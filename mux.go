@@ -26,6 +26,8 @@ func Register[T any, B any](s *Server, method string, path string, controller fu
 	slog.Debug("registering openapi controller " + fullRegistration)
 	s.mux.Handle(fullRegistration, withMiddlewares(http.HandlerFunc(httpHandler[T, B](s, controller)), s.middlewares...))
 
+	RegisterOpenAPIOperation(s, method, fullRegistration)
+
 	return Route[T, B]{}
 }
 
@@ -43,6 +45,8 @@ func RegisterStd(s *Server, method string, path string, controller func(http.Res
 	fullRegistration := path
 	slog.Debug("registering standard controller " + fullRegistration)
 	s.mux.Handle(fullRegistration, withMiddlewares(http.HandlerFunc(controller), s.middlewares...))
+
+	RegisterOpenAPIOperation(s, method, fullRegistration)
 
 	return Route[any, any]{}
 }
