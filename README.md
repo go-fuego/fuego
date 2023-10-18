@@ -1,5 +1,8 @@
 # Op ⏱️
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/go-op/op.svg)](https://pkg.go.dev/github.com/go-op/op)
+[![Go Report Card](https://goreportcard.com/badge/github.com/go-op/op)](https://goreportcard.com/report/github.com/go-op/op)
+
 > The Go framework for busy API developers
 
 The only Go framework generating OpenAPI documentation from code. The modern NestJS for Go. But also completely different.

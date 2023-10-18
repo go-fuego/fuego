@@ -26,6 +26,12 @@ func (e ErrorResponse) Status() int {
 	return e.StatusCode
 }
 
+// Send sends a string response.
+func Send(w http.ResponseWriter, text string) {
+	_, _ = w.Write([]byte(text))
+}
+
+// SendJSON sends a JSON response.
 func SendJSON(w http.ResponseWriter, ans any) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(ans)
@@ -36,6 +42,8 @@ func SendJSON(w http.ResponseWriter, ans any) {
 	}
 }
 
+// SendJSONError sends a JSON error response.
+// If the error implements ErrorWithStatus, the status code will be set.
 func SendJSONError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
 	errResponse := ErrorResponse{
@@ -52,6 +60,7 @@ func SendJSONError(w http.ResponseWriter, err error) {
 	SendJSON(w, errResponse)
 }
 
+// SendXML sends a XML response.
 func SendXML(w http.ResponseWriter, ans any) {
 	w.Header().Set("Content-Type", "application/xml")
 	err := xml.NewEncoder(w).Encode(ans)
@@ -62,6 +71,8 @@ func SendXML(w http.ResponseWriter, ans any) {
 	}
 }
 
+// SendXMLError sends a XML error response.
+// If the error implements ErrorWithStatus, the status code will be set.
 func SendXMLError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/xml")
 	errResponse := ErrorResponse{

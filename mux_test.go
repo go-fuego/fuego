@@ -24,7 +24,7 @@ func TestUseStd(t *testing.T) {
 			w.Write([]byte("middleware not registered"))
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("test successfull"))
+		w.Write([]byte("test successful"))
 	})
 
 	r := httptest.NewRequest(http.MethodGet, "/test", nil)
@@ -34,5 +34,5 @@ func TestUseStd(t *testing.T) {
 	s.mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, w.Body.String(), "test successfull")
+	require.Equal(t, w.Body.String(), "test successful")
 }
