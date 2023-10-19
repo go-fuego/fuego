@@ -3,11 +3,14 @@ package op
 import (
 	"context"
 	"encoding/json"
-	"os"
-
+	"fmt"
 	"log/slog"
+	"net/http"
+	"os"
+	"reflect"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3gen"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -43,7 +46,6 @@ func NewOpenAPI() openapi3.T {
 }
 
 func (s *Server) GenerateOpenAPI() {
-
 	// Validate
 	err := s.spec.Validate(context.Background())
 	if err != nil {
@@ -57,38 +59,102 @@ func (s *Server) GenerateOpenAPI() {
 	}
 
 	// Write spec to docs/openapi.json
-	os.MkdirAll("docs", 0755)
+	err = os.MkdirAll("docs", 0o755)
+	if err != nil {
+		slog.Error("Error creating docs directory", "error", err)
+	}
 	f, err := os.Create("docs/openapi.json")
 	if err != nil {
 		slog.Error("Error creating docs/openapi.json", "error", err)
 	}
 	defer f.Close()
-
 	_, err = f.Write(dataJSON)
 	if err != nil {
 		slog.Error("Error marshalling spec to JSON", "error", err)
 	}
 
-	// Register docs/openapi.json
-	Get(s, "/swagger/doc.json", func(ctx Ctx[any]) (any, error) {
-		return s.spec, nil
+	// Serve spec as JSON
+	GetStd(s, "/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, err := w.Write(dataJSON)
+		if err != nil {
+			slog.Error("Error writing spec to response", "error", err)
+		}
 	})
 
+	// Swagger UI
 	GetStd(s, "/swagger/", httpSwagger.Handler(
+		httpSwagger.Layout(httpSwagger.BaseLayout),
+		httpSwagger.PersistAuthorization(true),
 		httpSwagger.URL("/swagger/doc.json"), // The url pointing to API definition
 	))
 
+	slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s/swagger/index.html", s.Addr))
 }
 
-func RegisterOpenAPIOperation(s *Server, method, path string) {
+func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) {
+	generator := openapi3gen.NewGenerator(
+		openapi3gen.UseAllExportedFields(),
+	)
+
 	operation := openapi3.NewOperation()
-	requestBody := openapi3.NewRequestBody()
-	schema := openapi3.NewObjectSchema().WithProperty("id", openapi3.NewStringSchema())
-	requestBody.WithJSONSchema(schema)
-	operation.RequestBody = &openapi3.RequestBodyRef{
-		Value: requestBody,
+
+	// Request body
+	if method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch {
+		requestBody := openapi3.NewRequestBody()
+		bodySchema, err := generator.NewSchemaRefForValue(new(B), nil)
+		if err != nil {
+			panic(err)
+		}
+		requestBody.WithJSONSchema(bodySchema.Value)
+		operation.RequestBody = &openapi3.RequestBodyRef{
+			Value: requestBody,
+		}
 	}
 
-	operation.AddResponse(200, openapi3.NewResponse().WithDescription("OK"))
+	// Response body
+	responseSchema, err := generator.NewSchemaRefForValue(new(T), nil)
+	if err != nil {
+		panic(err)
+	}
+
+	// Path parameters
+	pathParams := parsePathParams(path)
+	for _, pathParam := range pathParams {
+		operation.AddParameter(&openapi3.Parameter{
+			In:          "path",
+			Name:        pathParam,
+			Description: "",
+			Required:    true,
+			Schema:      openapi3.NewStringSchema().NewRef(),
+		})
+	}
+
+	// Tags
+	tag := tagFromType(*new(T))
+	operation.Tags = []string{tag}
+
+	operation.AddResponse(200, openapi3.NewResponse().
+		WithDescription("OK").
+		WithJSONSchema(responseSchema.Value),
+	)
+
 	s.spec.AddOperation(path, method, operation)
+}
+
+func tagFromType(v any) string {
+	if v == nil {
+		return "default"
+	}
+	t := reflect.TypeOf(v)
+	switch t.Kind() {
+	case reflect.Ptr:
+		fallthrough // TODO: handle pointers to Slices
+	case reflect.Slice, reflect.Array, reflect.Map, reflect.Chan, reflect.Func, reflect.UnsafePointer:
+		return t.Elem().Name()
+	case reflect.Struct:
+		return t.Name()
+	default:
+		panic(fmt.Sprintf("unsupported type %s", t))
+	}
 }
