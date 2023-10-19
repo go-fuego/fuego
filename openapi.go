@@ -41,6 +41,9 @@ func NewOpenAPI() openapi3.T {
 		OpenAPI: "3.0.0",
 		Info:    info,
 		Paths:   paths,
+		Components: &openapi3.Components{
+			Schemas: make(map[string]*openapi3.SchemaRef),
+		},
 	}
 	return spec
 }
@@ -103,7 +106,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) {
 		if err != nil {
 			panic(err)
 		}
-		requestBody.WithJSONSchema(bodySchema.Value)
+		requestBody.WithContent(openapi3.NewContentWithJSONSchemaRef(bodySchema))
 		operation.RequestBody = &openapi3.RequestBodyRef{
 			Value: requestBody,
 		}
@@ -133,9 +136,10 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) {
 
 	operation.AddResponse(200, openapi3.NewResponse().
 		WithDescription("OK").
-		WithJSONSchema(responseSchema.Value),
+		WithContent(openapi3.NewContentWithJSONSchemaRef(responseSchema)),
 	)
 
+	s.spec.Components.Schemas[tag] = responseSchema
 	s.spec.AddOperation(path, method, operation)
 }
 
