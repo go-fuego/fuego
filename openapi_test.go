@@ -17,10 +17,7 @@ func TestTagFromType(t *testing.T) {
 	require.Equal(t, "MyStruct", tagFromType(MyStruct{}))
 	require.Equal(t, "MyStruct", tagFromType(&MyStruct{}))
 	require.Equal(t, "MyStruct", tagFromType([]MyStruct{}))
-
-	// TODO: fix this
-	// require.Equal(t, "MyStruct", tagFromType(&[]MyStruct{}))
-	require.Equal(t, "", tagFromType(&[]MyStruct{}))
+	require.Equal(t, "MyStruct", tagFromType(&[]MyStruct{}))
 }
 
 func TestServer_GenerateOpenAPI(t *testing.T) {

@@ -144,11 +144,15 @@ func tagFromType(v any) string {
 		return "default"
 	}
 	t := reflect.TypeOf(v)
+
 	switch t.Kind() {
-	case reflect.Ptr:
-		fallthrough // TODO: handle pointers to Slices
-	case reflect.Slice, reflect.Array, reflect.Map, reflect.Chan, reflect.Func, reflect.UnsafePointer:
-		return t.Elem().Name()
+	case reflect.Ptr, reflect.Slice, reflect.Array, reflect.Map, reflect.Chan, reflect.Func, reflect.UnsafePointer:
+		switch t.Elem().Kind() {
+		case reflect.Ptr, reflect.Slice, reflect.Array, reflect.Map, reflect.Chan, reflect.Func, reflect.UnsafePointer:
+			return t.Elem().Elem().Name()
+		default:
+			return t.Elem().Name()
+		}
 	case reflect.Struct:
 		return t.Name()
 	default:
