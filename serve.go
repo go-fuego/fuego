@@ -1,9 +1,8 @@
 package op
 
 import (
-	"net/http"
-
 	"log/slog"
+	"net/http"
 )
 
 func (s *Server) Run() {
@@ -23,6 +22,10 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 				DisallowUnknownFields: s.DisallowUnknownFields,
 				MaxBodySize:           s.maxBodySize,
 			},
+		}
+
+		for _, param := range parsePathParams(r.URL.Path) {
+			ctx.pathParams[param] = "coming in go1.22"
 		}
 
 		ans, err := controller(ctx)

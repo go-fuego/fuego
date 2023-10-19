@@ -1,6 +1,8 @@
 package op
 
 import (
+	"context"
+	"log/slog"
 	"net/http"
 )
 
@@ -18,16 +20,25 @@ type Ctx[B any] interface {
 
 	// MustBody works like Body, but panics if there is an error.
 	MustBody() B
+
+	PathParam(name string) string
 	PathParams() map[string]string
 	QueryParam(name string) string
 	QueryParams() map[string]string
+
+	// Request returns the underlying http request.
 	Request() *http.Request
+
+	// Context returns the context of the request.
+	// Same as c.Request().Context().
+	Context() context.Context
 }
 
 // Context for the request. BodyType is the type of the request body. Please do not use a pointer type as parameter.
 type Context[BodyType any] struct {
-	body    *BodyType
-	request *http.Request
+	body       *BodyType
+	request    *http.Request
+	pathParams map[string]string
 
 	readOptions readOptions
 }
@@ -40,6 +51,21 @@ type readOptions struct {
 }
 
 var _ Ctx[any] = &Context[any]{} // Check that Context implements Ctx.
+
+// Context returns the context of the request.
+// Same as c.Request().Context().
+func (c Context[B]) Context() context.Context {
+	return c.request.Context()
+}
+
+// PathParams returns the path parameters of the request.
+func (c Context[B]) PathParam(name string) string {
+	param := c.pathParams[name]
+	if param == "" {
+		slog.Error("Path parameter might be invalid", "name", name, "valid parameters", c.pathParams)
+	}
+	return param // TODO go1.22: get (*http.Request) PathValue(name)
+}
 
 // PathParams returns the path parameters of the request.
 func (c Context[B]) PathParams() map[string]string {
