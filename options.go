@@ -1,10 +1,15 @@
 package op
 
 import (
+	"log/slog"
 	"net/http"
+	"runtime"
+	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 )
+
+var isGo1_22 = strings.TrimPrefix(runtime.Version(), "devel ") >= "go1.22"
 
 type Server struct {
 	middlewares []func(http.Handler) http.Handler
@@ -33,6 +38,13 @@ func NewServer(options ...func(*Server)) *Server {
 
 	for _, option := range options {
 		option(s)
+	}
+
+	if !isGo1_22 {
+		slog.Warn("You are using a version of Go that is lower than 1.22. " +
+			"Please upgrade to Go 1.22 or higher to use the full functionality of op. " +
+			"With go1.21 or lower, you can't register routes with the same path but different methods. " +
+			"You also cannot use path parameters.")
 	}
 
 	return s

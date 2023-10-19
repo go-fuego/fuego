@@ -21,12 +21,14 @@ func Post[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, erro
 
 // Registers route into the default mux.
 func Register[T any, B any](s *Server, method string, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
-	// fullRegistration := method + " " + path // TODO: switch when go 1.22 is released
-	fullRegistration := path
-	slog.Debug("registering openapi controller " + fullRegistration)
-	s.mux.Handle(fullRegistration, withMiddlewares(http.HandlerFunc(httpHandler[T, B](s, controller)), s.middlewares...))
+	fullPath := path
+	if isGo1_22 {
+		fullPath = method + " " + path
+	}
+	slog.Debug("registering openapi controller " + fullPath)
+	s.mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(httpHandler[T, B](s, controller)), s.middlewares...))
 
-	RegisterOpenAPIOperation(s, method, fullRegistration)
+	RegisterOpenAPIOperation[T, B](s, method, path)
 
 	return Route[T, B]{}
 }
@@ -41,12 +43,14 @@ func GetStd(s *Server, path string, controller func(http.ResponseWriter, *http.R
 
 // RegisterStd registers a standard http handler into the default mux.
 func RegisterStd(s *Server, method string, path string, controller func(http.ResponseWriter, *http.Request)) Route[any, any] {
-	// fullRegistration := method + " " + path // TODO: switch when go 1.22 is released
-	fullRegistration := path
-	slog.Debug("registering standard controller " + fullRegistration)
-	s.mux.Handle(fullRegistration, withMiddlewares(http.HandlerFunc(controller), s.middlewares...))
+	fullPath := path
+	if isGo1_22 {
+		fullPath = method + " " + path
+	}
+	slog.Debug("registering standard controller " + fullPath)
+	s.mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(controller), s.middlewares...))
 
-	RegisterOpenAPIOperation(s, method, fullRegistration)
+	RegisterOpenAPIOperation[any, any](s, method, path)
 
 	return Route[any, any]{}
 }
