@@ -1,7 +1,6 @@
 package op
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -24,7 +23,18 @@ func TestTagFromType(t *testing.T) {
 	require.Equal(t, "", tagFromType(&[]MyStruct{}))
 }
 
-func TestSomt(t *testing.T) {
-	a := *new(any)
-	t.Log(reflect.TypeOf(a))
+func TestServer_GenerateOpenAPI(t *testing.T) {
+	s := NewServer()
+	Get(s, "/", func(Ctx[any]) (MyStruct, error) {
+		return MyStruct{}, nil
+	})
+	Post(s, "/post", func(Ctx[MyStruct]) ([]MyStruct, error) {
+		return nil, nil
+	})
+	Get(s, "/post/{id}", func(Ctx[any]) (MyStruct, error) {
+		return MyStruct{}, nil
+	})
+	require.NotPanics(t, func() {
+		s.GenerateOpenAPI()
+	})
 }

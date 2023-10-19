@@ -76,10 +76,7 @@ func (s *Server) GenerateOpenAPI() {
 	// Serve spec as JSON
 	GetStd(s, "/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write(dataJSON)
-		if err != nil {
-			slog.Error("Error writing spec to response", "error", err)
-		}
+		_, _ = w.Write(dataJSON)
 	})
 
 	// Swagger UI

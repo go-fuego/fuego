@@ -34,6 +34,22 @@ type Ctx[B any] interface {
 	Context() context.Context
 }
 
+func NewContext[B any](r *http.Request, options readOptions) *Context[B] {
+	c := &Context[B]{
+		request: r,
+		readOptions: readOptions{
+			DisallowUnknownFields: options.DisallowUnknownFields,
+			MaxBodySize:           options.MaxBodySize,
+		},
+	}
+
+	for _, param := range parsePathParams(r.URL.Path) {
+		c.pathParams[param] = "coming in go1.22"
+	}
+
+	return c
+}
+
 // Context for the request. BodyType is the type of the request body. Please do not use a pointer type as parameter.
 type Context[BodyType any] struct {
 	body       *BodyType
@@ -104,6 +120,7 @@ func (c *Context[B]) MustBody() B {
 // Body returns the body of the request.
 // If (*B) implements [Normalizable], it will be normalized.
 // It caches the result, so it can be called multiple times.
+// The reason why the body is cached is because it is not possible to read an http request body multiple times, not because of performance.
 func (c *Context[B]) Body() (B, error) {
 	if c.body != nil {
 		return *c.body, nil
@@ -114,12 +131,19 @@ func (c *Context[B]) Body() (B, error) {
 		c.request.Body = http.MaxBytesReader(nil, c.request.Body, c.readOptions.MaxBodySize)
 	}
 
+	var body B
+	var err error
 	switch any(new(B)).(type) {
 	case *string:
-		s, err := readString[string](c.request.Body, c.readOptions)
-		body := any(s).(B)
-		return body, err
+		s, errReadingString := readString[string](c.request.Body, c.readOptions)
+		body = any(s).(B)
+		err = errReadingString
+
 	default:
-		return readJSON[B](c.request.Body, c.readOptions)
+		body, err = readJSON[B](c.request.Body, c.readOptions)
 	}
+
+	c.body = &body
+
+	return body, err
 }

@@ -2,7 +2,7 @@ default: ci
 
 ci: fmt lint cover
 
-ci-full: ci fuzz
+ci-full: ci bench fuzz
 
 test: 
 	go test
@@ -10,7 +10,9 @@ test:
 cover:
 	go test -coverprofile=coverage.out
 	go tool cover -func=coverage.out
-	rm coverage.out
+
+cover-web: cover
+	go tool cover -html=coverage.out
 
 bench:
 	go test -bench . -benchmem
