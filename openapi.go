@@ -92,7 +92,7 @@ func (s *Server) GenerateOpenAPI() {
 	slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s/swagger/index.html", s.Addr))
 }
 
-func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) {
+func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*openapi3.Operation, error) {
 	generator := openapi3gen.NewGenerator(
 		openapi3gen.UseAllExportedFields(),
 	)
@@ -104,7 +104,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) {
 		requestBody := openapi3.NewRequestBody()
 		bodySchema, err := generator.NewSchemaRefForValue(new(B), nil)
 		if err != nil {
-			panic(err)
+			return operation, err
 		}
 		requestBody.WithContent(openapi3.NewContentWithJSONSchemaRef(bodySchema))
 		operation.RequestBody = &openapi3.RequestBodyRef{
@@ -115,7 +115,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) {
 	// Response body
 	responseSchema, err := generator.NewSchemaRefForValue(new(T), nil)
 	if err != nil {
-		panic(err)
+		return operation, err
 	}
 
 	// Path parameters
@@ -141,6 +141,8 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) {
 
 	s.spec.Components.Schemas[tag] = responseSchema
 	s.spec.AddOperation(path, method, operation)
+
+	return operation, nil
 }
 
 func tagFromType(v any) string {

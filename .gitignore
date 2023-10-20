@@ -1,3 +1,5 @@
 *.js
 .vscode
 coverage.out
+
+**/openapi.json

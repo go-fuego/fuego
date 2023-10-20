@@ -3,12 +3,18 @@ package op
 import (
 	"log/slog"
 	"net/http"
+	"reflect"
+	"runtime"
+	"strings"
+
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 type Route[ResponseBody any, RequestBody any] struct {
 	ReturnType ResponseBody
 	BodyType   ResponseBody
 	ErrorType  error
+	operation  *openapi3.Operation
 }
 
 func Get[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
@@ -28,9 +34,45 @@ func Register[T any, B any](s *Server, method string, path string, controller fu
 	slog.Debug("registering openapi controller " + fullPath)
 	s.mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(httpHandler[T, B](s, controller)), s.middlewares...))
 
-	RegisterOpenAPIOperation[T, B](s, method, path)
+	operation, err := RegisterOpenAPIOperation[T, B](s, method, path)
+	if err != nil {
+		slog.Warn("error documenting openapi operation", "error", err)
+	}
 
-	return Route[T, B]{}
+	operation.Summary = funcName(controller)
+	operation.Description = "controller: " + funcPathAndName(controller)
+
+	return Route[T, B]{
+		operation: operation,
+	}
+}
+
+func (r Route[ResponseBody, RequestBody]) WithDescription(description string) Route[ResponseBody, RequestBody] {
+	r.operation.Description = description
+	return r
+}
+
+func (r Route[ResponseBody, RequestBody]) WithSummary(summary string) Route[ResponseBody, RequestBody] {
+	r.operation.Summary = summary
+	return r
+}
+
+func (r Route[ResponseBody, RequestBody]) WithTags(tags ...string) Route[ResponseBody, RequestBody] {
+	r.operation.Tags = append(r.operation.Tags, tags...)
+	return r
+}
+
+func (r Route[ResponseBody, RequestBody]) WithDeprecated() Route[ResponseBody, RequestBody] {
+	r.operation.Deprecated = true
+	return r
+}
+
+func (r Route[ResponseBody, RequestBody]) WithQueryParam(name, description string) Route[ResponseBody, RequestBody] {
+	parameter := openapi3.NewQueryParameter(name)
+	parameter.Description = description
+	parameter.Schema = openapi3.NewStringSchema().NewRef()
+	r.operation.AddParameter(parameter)
+	return r
 }
 
 func UseStd(s *Server, middlewares ...func(http.Handler) http.Handler) {
@@ -50,9 +92,14 @@ func RegisterStd(s *Server, method string, path string, controller func(http.Res
 	slog.Debug("registering standard controller " + fullPath)
 	s.mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(controller), s.middlewares...))
 
-	RegisterOpenAPIOperation[any, any](s, method, path)
+	operation, err := RegisterOpenAPIOperation[any, any](s, method, path)
+	if err != nil {
+		slog.Warn("error documenting openapi operation", "error", err)
+	}
 
-	return Route[any, any]{}
+	return Route[any, any]{
+		operation: operation,
+	}
 }
 
 func withMiddlewares(controller http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
@@ -60,4 +107,14 @@ func withMiddlewares(controller http.Handler, middlewares ...func(http.Handler) 
 		controller = middleware(controller)
 	}
 	return controller
+}
+
+// funcPathAndName returns the path and name of a function.
+func funcPathAndName(f interface{}) string {
+	return strings.TrimSuffix(runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name(), "-fm")
+}
+
+func funcName(f interface{}) string {
+	fullName := strings.Split(funcPathAndName(f), ".")
+	return fullName[len(fullName)-1]
 }
