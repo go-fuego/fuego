@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 )
@@ -22,6 +23,7 @@ type Server struct {
 	maxBodySize           int64
 	Serialize             func(w http.ResponseWriter, ans any)
 	SerializeError        func(w http.ResponseWriter, err error)
+	startTime             time.Time
 }
 
 // NewServer creates a new server with the given options
@@ -46,6 +48,8 @@ func NewServer(options ...func(*Server)) *Server {
 			"With go1.21 or lower, you can't register routes with the same path but different methods. " +
 			"You also cannot use path parameters.")
 	}
+
+	s.startTime = time.Now()
 
 	return s
 }
