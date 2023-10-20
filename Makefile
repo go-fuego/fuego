@@ -27,4 +27,4 @@ lint:
 	golangci-lint run
 
 example:
-	go run ./examples/simple-crud/main.go
+	go run ./examples/simple-crud
