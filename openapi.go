@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"os"
 	"reflect"
@@ -52,28 +51,28 @@ func (s *Server) GenerateOpenAPI() {
 	// Validate
 	err := s.spec.Validate(context.Background())
 	if err != nil {
-		slog.Error("Error validating spec", "error", err)
+		s.logger.Error("Error validating spec", "error", err)
 	}
 
 	// Marshal spec to JSON
 	dataJSON, err := json.Marshal(s.spec)
 	if err != nil {
-		slog.Error("Error marshalling spec to JSON", "error", err)
+		s.logger.Error("Error marshalling spec to JSON", "error", err)
 	}
 
 	// Write spec to docs/openapi.json
 	err = os.MkdirAll("docs", 0o755)
 	if err != nil {
-		slog.Error("Error creating docs directory", "error", err)
+		s.logger.Error("Error creating docs directory", "error", err)
 	}
 	f, err := os.Create("docs/openapi.json")
 	if err != nil {
-		slog.Error("Error creating docs/openapi.json", "error", err)
+		s.logger.Error("Error creating docs/openapi.json", "error", err)
 	}
 	defer f.Close()
 	_, err = f.Write(dataJSON)
 	if err != nil {
-		slog.Error("Error marshalling spec to JSON", "error", err)
+		s.logger.Error("Error marshalling spec to JSON", "error", err)
 	}
 
 	// Serve spec as JSON
@@ -89,7 +88,7 @@ func (s *Server) GenerateOpenAPI() {
 		httpSwagger.URL("/swagger/doc.json"), // The url pointing to API definition
 	))
 
-	slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s/swagger/index.html", s.Addr))
+	s.logger.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s/swagger/index.html", s.Addr))
 }
 
 func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) {
