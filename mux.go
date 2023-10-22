@@ -1,6 +1,7 @@
 package op
 
 import (
+	"log/slog"
 	"net/http"
 )
 
@@ -24,7 +25,7 @@ func Register[T any, B any](s *Server, method string, path string, controller fu
 	if isGo1_22 {
 		fullPath = method + " " + path
 	}
-	s.logger.Debug("registering openapi controller " + fullPath)
+	slog.Debug("registering openapi controller " + fullPath)
 	s.mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(httpHandler[T, B](s, controller)), s.middlewares...))
 
 	RegisterOpenAPIOperation[T, B](s, method, path)
@@ -46,7 +47,7 @@ func RegisterStd(s *Server, method string, path string, controller func(http.Res
 	if isGo1_22 {
 		fullPath = method + " " + path
 	}
-	s.logger.Debug("registering standard controller " + fullPath)
+	slog.Debug("registering standard controller " + fullPath)
 	s.mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(controller), s.middlewares...))
 
 	RegisterOpenAPIOperation[any, any](s, method, path)

@@ -1,6 +1,7 @@
 package op
 
 import (
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -8,8 +9,8 @@ import (
 func (s *Server) Run() {
 	s.GenerateOpenAPI()
 	elapsed := time.Since(s.startTime)
-	s.logger.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (op.NewServer) and server startup (op.Run). Depending on your implementation, there might be things that do not depend on op slowing start time")
-	s.logger.Info("Server running ✅ on http://localhost"+s.Addr, "started in", elapsed.String())
+	slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (op.NewServer) and server startup (op.Run). Depending on your implementation, there might be things that do not depend on op slowing start time")
+	slog.Info("Server running ✅ on http://localhost"+s.Addr, "started in", elapsed.String())
 	_ = http.ListenAndServe(s.Addr, s.mux)
 }
 

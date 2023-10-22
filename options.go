@@ -3,7 +3,6 @@ package op
 import (
 	"log/slog"
 	"net/http"
-	"os"
 	"runtime"
 	"strings"
 	"time"
@@ -12,8 +11,6 @@ import (
 )
 
 var isGo1_22 = strings.TrimPrefix(runtime.Version(), "devel ") >= "go1.22"
-
-var defaultHandler = slog.NewTextHandler(os.Stdout, nil)
 
 type Server struct {
 	middlewares []func(http.Handler) http.Handler
@@ -27,7 +24,6 @@ type Server struct {
 	Serialize             func(w http.ResponseWriter, ans any)
 	SerializeError        func(w http.ResponseWriter, err error)
 	startTime             time.Time
-	logger                *slog.Logger
 }
 
 // NewServer creates a new server with the given options
@@ -46,12 +42,8 @@ func NewServer(options ...func(*Server)) *Server {
 		option(s)
 	}
 
-	if s.logger == nil {
-		s.logger = slog.New(defaultHandler)
-	}
-
 	if !isGo1_22 {
-		s.logger.Warn("You are using a version of Go that is lower than 1.22. " +
+		slog.Warn("You are using a version of Go that is lower than 1.22. " +
 			"Please upgrade to Go 1.22 or higher to use the full functionality of op. " +
 			"With go1.21 or lower, you can't register routes with the same path but different methods. " +
 			"You also cannot use path parameters.")
@@ -79,10 +71,9 @@ func WithXML() func(*Server) {
 
 func WithHandler(handler slog.Handler) func(*Server) {
 	return func(c *Server) {
-		if handler == nil {
-			handler = defaultHandler
+		if handler != nil {
+			slog.SetDefault(slog.New(handler))
 		}
-		c.logger = slog.New(handler)
 	}
 }
 
