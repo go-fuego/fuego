@@ -35,6 +35,8 @@ import (
 	"net/http"
 
 	"github.com/op-go/op"
+	"github.com/rs/cors"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 type Received struct {
@@ -48,6 +50,9 @@ type MyResponse struct {
 
 func main() {
 	s := op.New()
+
+    op.UseStd(s, cors.Default().Handler)
+	op.UseStd(s, chiMiddleware.Compress(5, "text/html", "text/css"))
 
 	op.Post(s, "/", func(c op.Ctx[Received]) (MyResponse, error) {
 		data := c.Body()
@@ -74,3 +79,7 @@ func main() {
 - **Serialization**: Op automatically serializes and deserializes JSON and XML based on user provided structs (or not, if you want to do it yourself)
 - **Validation**: Op provides a simple and fast validator based on go-playground/validator
 - **Normalization**: easily normalize your data after deserialization
+
+## Contributing
+
+See the [contributing guide](CONTRIBUTING.md)

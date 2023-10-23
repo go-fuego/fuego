@@ -21,10 +21,11 @@ fuzz:
 	go test -fuzz Fuzz -fuzztime 10s
 
 fmt:
-	gofumpt -l -w .
+	go run mvdan.cc/gofumpt@latest -l -w .
 
-lint:
-	golangci-lint run
+# If golangci-lint is not installed, run it from latest github version found. Installed version is faster.
+lint: 
+	golangci-lint run || (echo "Running golangci-lint from latest github version found" && go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run)
 
 example:
 	go run ./examples/simple-crud
