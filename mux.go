@@ -10,6 +10,13 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
+func Group(s *Server, path string, group func(s *Server)) {
+	ss := *s
+	ss.basePath += path
+
+	group(&ss)
+}
+
 type Route[ResponseBody any, RequestBody any] struct {
 	ReturnType ResponseBody
 	BodyType   ResponseBody
@@ -27,7 +34,7 @@ func Post[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, erro
 
 // Registers route into the default mux.
 func Register[T any, B any](s *Server, method string, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
-	fullPath := path
+	fullPath := s.basePath + path
 	if isGo1_22 {
 		fullPath = method + " " + path
 	}
@@ -41,14 +48,14 @@ func Register[T any, B any](s *Server, method string, path string, controller fu
 }
 
 func register[T any, B any](s *Server, method string, path string, controller func(http.ResponseWriter, *http.Request)) Route[T, B] {
-	fullPath := path
+	fullPath := s.basePath + path
 	if isGo1_22 {
 		fullPath = method + " " + path
 	}
 
 	s.mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(controller), s.middlewares...))
 
-	operation, err := RegisterOpenAPIOperation[T, B](s, method, path)
+	operation, err := RegisterOpenAPIOperation[T, B](s, method, s.basePath+path)
 	if err != nil {
 		slog.Warn("error documenting openapi operation", "error", err)
 	}
@@ -99,7 +106,7 @@ func GetStd(s *Server, path string, controller func(http.ResponseWriter, *http.R
 
 // RegisterStd registers a standard http handler into the default mux.
 func RegisterStd(s *Server, method string, path string, controller func(http.ResponseWriter, *http.Request)) Route[any, any] {
-	fullPath := path
+	fullPath := s.basePath + path
 	if isGo1_22 {
 		fullPath = method + " " + path
 	}

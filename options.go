@@ -15,6 +15,7 @@ var isGo1_22 = strings.TrimPrefix(runtime.Version(), "devel ") >= "go1.22"
 type Server struct {
 	middlewares []func(http.Handler) http.Handler
 	mux         *http.ServeMux
+	basePath    string
 
 	spec openapi3.T
 

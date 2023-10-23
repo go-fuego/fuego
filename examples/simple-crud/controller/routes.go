@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"fmt"
+
 	"simple-crud/store"
 
 	"github.com/go-op/op"
@@ -25,6 +27,13 @@ func (rs Ressource) Routes(s *op.Server) {
 		WithSummary("Get all recipes").
 		WithDescription("Get all recipes").
 		WithTags("custom")
+
+	for i := 0; i < 10; i++ {
+		op.Get(s, fmt.Sprintf("/recipe/%d", i), rs.getAllRecipes).
+			WithSummary("Get recipe").
+			WithDescription("Get recipe").
+			WithTags("custom")
+	}
 
 	op.Post(s, "/recipes/new", rs.newRecipe)
 

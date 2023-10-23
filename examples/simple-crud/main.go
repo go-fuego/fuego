@@ -44,5 +44,22 @@ func main() {
 	op.UseStd(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
 	rs.Routes(app)
+
+	op.Group(app, "/api", func(newS *op.Server) {
+		op.Get(newS, "/mounted-route", func(c op.Ctx[any]) (string, error) {
+			return "hello", nil
+		})
+
+		op.Post(newS, "/mounted-route-post", func(c op.Ctx[any]) (string, error) {
+			return "hello", nil
+		})
+
+		op.Group(newS, "/mounted-group", func(groupedS *op.Server) {
+			op.Get(groupedS, "/mounted-route", func(c op.Ctx[any]) (string, error) {
+				return "hello", nil
+			})
+		})
+	})
+
 	app.Run()
 }

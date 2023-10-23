@@ -25,7 +25,9 @@ func NewOpenAPI() openapi3.T {
 		Info:    info,
 		Paths:   openapi3.Paths{},
 		Components: &openapi3.Components{
-			Schemas: make(map[string]*openapi3.SchemaRef),
+			Schemas:       make(map[string]*openapi3.SchemaRef),
+			RequestBodies: make(map[string]*openapi3.RequestBodyRef),
+			Responses:     make(map[string]*openapi3.ResponseRef),
 		},
 	}
 	return spec
@@ -84,20 +86,25 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	operation := openapi3.NewOperation()
 
 	// Request body
-	if method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch {
-		requestBody := openapi3.NewRequestBody()
-		bodySchema, err := generator.NewSchemaRefForValue(new(B), nil)
+	if (method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch) && tagFromType(*new(B)) != "unknown-interface" {
+		bodySchema, err := generator.NewSchemaRefForValue(new(B), s.spec.Components.Schemas)
 		if err != nil {
 			return operation, err
 		}
-		requestBody.WithContent(openapi3.NewContentWithJSONSchemaRef(bodySchema))
+
+		requestBody := openapi3.NewRequestBody().
+			WithContent(openapi3.NewContentWithJSONSchemaRef(bodySchema))
+
+		s.spec.Components.Schemas[tagFromType(*new(B))] = bodySchema
+
+		// add request body to operation
 		operation.RequestBody = &openapi3.RequestBodyRef{
 			Value: requestBody,
 		}
 	}
 
 	// Response body
-	responseSchema, err := generator.NewSchemaRefForValue(new(T), nil)
+	responseSchema, err := generator.NewSchemaRefForValue(new(T), s.spec.Components.Schemas)
 	if err != nil {
 		return operation, err
 	}
