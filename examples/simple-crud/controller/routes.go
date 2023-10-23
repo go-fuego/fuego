@@ -17,6 +17,9 @@ type Ressource struct {
 }
 
 func (rs Ressource) Routes(s *op.Server) {
+	op.GetStd(s, "/recipes-standard-with-helpers", rs.getAllRecipesStandardWithHelpers).
+		WithTags("Recipe")
+
 	op.Get(s, "/recipes", rs.getAllRecipes).
 		WithQueryParam("limit", "number of recipes to return").
 		WithSummary("Get all recipes").

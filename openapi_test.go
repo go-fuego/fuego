@@ -13,7 +13,7 @@ type MyStruct struct {
 }
 
 func TestTagFromType(t *testing.T) {
-	require.Equal(t, "default", tagFromType(*new(any)), "behind any interface")
+	require.Equal(t, "unknown-interface", tagFromType(*new(any)), "behind any interface")
 	require.Equal(t, "MyStruct", tagFromType(MyStruct{}))
 
 	t.Run("behind pointers or pointers-like", func(t *testing.T) {

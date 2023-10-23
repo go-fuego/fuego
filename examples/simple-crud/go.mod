@@ -3,8 +3,10 @@ module simple-crud
 go 1.21.1
 
 require (
+	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-op/op v0.2.1
 	github.com/lmittmann/tint v1.0.2
+	github.com/rs/cors v1.10.1
 	modernc.org/sqlite v1.26.0
 )
 

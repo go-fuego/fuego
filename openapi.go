@@ -14,33 +14,16 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-func ptr[T any](s T) *T {
-	return &s
-}
-
 func NewOpenAPI() openapi3.T {
 	info := &openapi3.Info{
 		Title:       "OpenAPI",
 		Description: "OpenAPI",
 		Version:     "0.0.1",
 	}
-	paths := openapi3.Paths{
-		"/": &openapi3.PathItem{
-			Get: &openapi3.Operation{
-				Responses: openapi3.Responses{
-					"200": &openapi3.ResponseRef{
-						Value: &openapi3.Response{
-							Description: ptr("OK"),
-						},
-					},
-				},
-			},
-		},
-	}
 	spec := openapi3.T{
 		OpenAPI: "3.0.0",
 		Info:    info,
-		Paths:   paths,
+		Paths:   openapi3.Paths{},
 		Components: &openapi3.Components{
 			Schemas: make(map[string]*openapi3.SchemaRef),
 		},
@@ -73,8 +56,9 @@ func (s *Server) GenerateOpenAPI() {
 	defer f.Close()
 	_, err = f.Write(dataJSON)
 	if err != nil {
-		slog.Error("Error marshalling spec to JSON", "error", err)
+		slog.Error("Error writing file", "error", err)
 	}
+	slog.Info("Updated docs/openapi.json")
 
 	// Serve spec as JSON
 	GetStd(s, "/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
@@ -132,7 +116,9 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 
 	// Tags
 	tag := tagFromType(*new(T))
-	operation.Tags = []string{tag}
+	if tag != "unknown-interface" {
+		operation.Tags = append(operation.Tags, tag)
+	}
 
 	operation.AddResponse(200, openapi3.NewResponse().
 		WithDescription("OK").
@@ -147,7 +133,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 
 func tagFromType(v any) string {
 	if v == nil {
-		return "default"
+		return "unknown-interface"
 	}
 
 	return dive(reflect.TypeOf(v), 4)

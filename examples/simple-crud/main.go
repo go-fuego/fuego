@@ -8,14 +8,15 @@ import (
 	"simple-crud/controller"
 	"simple-crud/store"
 
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-op/op"
 	"github.com/lmittmann/tint"
+	"github.com/rs/cors"
 )
 
 //go:generate sqlc generate
 
 func main() {
-
 	debug := flag.Bool("debug", false, "debug mode")
 	flag.Parse()
 
@@ -39,6 +40,9 @@ func main() {
 	rs := controller.NewRessource(*queries)
 
 	app := op.NewServer()
+	op.UseStd(app, cors.Default().Handler)
+	op.UseStd(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
+
 	rs.Routes(app)
 	app.Run()
 }

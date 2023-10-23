@@ -32,7 +32,21 @@ func Register[T any, B any](s *Server, method string, path string, controller fu
 		fullPath = method + " " + path
 	}
 	slog.Debug("registering openapi controller " + fullPath)
-	s.mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(httpHandler[T, B](s, controller)), s.middlewares...))
+	route := register[T, B](s, method, path, httpHandler[T, B](s, controller))
+
+	route.operation.Summary = funcName(controller)
+	route.operation.Description = "controller: " + funcPathAndName(controller)
+
+	return route
+}
+
+func register[T any, B any](s *Server, method string, path string, controller func(http.ResponseWriter, *http.Request)) Route[T, B] {
+	fullPath := path
+	if isGo1_22 {
+		fullPath = method + " " + path
+	}
+
+	s.mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(controller), s.middlewares...))
 
 	operation, err := RegisterOpenAPIOperation[T, B](s, method, path)
 	if err != nil {
@@ -90,16 +104,7 @@ func RegisterStd(s *Server, method string, path string, controller func(http.Res
 		fullPath = method + " " + path
 	}
 	slog.Debug("registering standard controller " + fullPath)
-	s.mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(controller), s.middlewares...))
-
-	operation, err := RegisterOpenAPIOperation[any, any](s, method, path)
-	if err != nil {
-		slog.Warn("error documenting openapi operation", "error", err)
-	}
-
-	return Route[any, any]{
-		operation: operation,
-	}
+	return register[any, any](s, method, path, controller)
 }
 
 func withMiddlewares(controller http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
