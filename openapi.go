@@ -34,48 +34,50 @@ func NewOpenAPI() openapi3.T {
 }
 
 func (s *Server) GenerateOpenAPI() {
-	// Validate
-	err := s.spec.Validate(context.Background())
-	if err != nil {
-		slog.Error("Error validating spec", "error", err)
-	}
+	go func() {
+		// Validate
+		err := s.spec.Validate(context.Background())
+		if err != nil {
+			slog.Error("Error validating spec", "error", err)
+		}
 
-	// Marshal spec to JSON
-	dataJSON, err := json.Marshal(s.spec)
-	if err != nil {
-		slog.Error("Error marshalling spec to JSON", "error", err)
-	}
+		// Marshal spec to JSON
+		dataJSON, err := json.Marshal(s.spec)
+		if err != nil {
+			slog.Error("Error marshalling spec to JSON", "error", err)
+		}
 
-	// Write spec to docs/openapi.json
-	err = os.MkdirAll("docs", 0o755)
-	if err != nil {
-		slog.Error("Error creating docs directory", "error", err)
-	}
-	f, err := os.Create("docs/openapi.json")
-	if err != nil {
-		slog.Error("Error creating docs/openapi.json", "error", err)
-	}
-	defer f.Close()
-	_, err = f.Write(dataJSON)
-	if err != nil {
-		slog.Error("Error writing file", "error", err)
-	}
-	slog.Info("Updated docs/openapi.json")
+		// Write spec to docs/openapi.json
+		err = os.MkdirAll("docs", 0o755)
+		if err != nil {
+			slog.Error("Error creating docs directory", "error", err)
+		}
+		f, err := os.Create("docs/openapi.json")
+		if err != nil {
+			slog.Error("Error creating docs/openapi.json", "error", err)
+		}
+		defer f.Close()
+		_, err = f.Write(dataJSON)
+		if err != nil {
+			slog.Error("Error writing file", "error", err)
+		}
+		slog.Info("Updated docs/openapi.json")
 
-	// Serve spec as JSON
-	GetStd(s, "/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write(dataJSON)
-	})
+		// Serve spec as JSON
+		GetStd(s, "/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write(dataJSON)
+		})
 
-	// Swagger UI
-	GetStd(s, "/swagger/", httpSwagger.Handler(
-		httpSwagger.Layout(httpSwagger.BaseLayout),
-		httpSwagger.PersistAuthorization(true),
-		httpSwagger.URL("/swagger/doc.json"), // The url pointing to API definition
-	))
+		// Swagger UI
+		GetStd(s, "/swagger/", httpSwagger.Handler(
+			httpSwagger.Layout(httpSwagger.BaseLayout),
+			httpSwagger.PersistAuthorization(true),
+			httpSwagger.URL("/swagger/doc.json"), // The url pointing to API definition
+		))
 
-	slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s/swagger/index.html", s.Addr))
+		slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s/swagger/index.html", s.Addr))
+	}()
 }
 
 func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*openapi3.Operation, error) {
