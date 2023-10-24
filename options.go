@@ -1,6 +1,7 @@
 package op
 
 import (
+	"io"
 	"log/slog"
 	"net/http"
 	"runtime"
@@ -76,4 +77,10 @@ func WithSerializer(serializer func(w http.ResponseWriter, ans any)) func(*Serve
 
 func WithErrorSerializer(serializer func(w http.ResponseWriter, err error)) func(*Server) {
 	return func(c *Server) { c.SerializeError = serializer }
+}
+
+func WithoutLogger() func(*Server) {
+	return func(c *Server) {
+		slog.SetDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
+	}
 }
