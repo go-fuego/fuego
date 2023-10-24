@@ -70,6 +70,14 @@ func WithXML() func(*Server) {
 	}
 }
 
+func WithHandler(handler slog.Handler) func(*Server) {
+	return func(c *Server) {
+		if handler != nil {
+			slog.SetDefault(slog.New(handler))
+		}
+	}
+}
+
 func WithSerializer(serializer func(w http.ResponseWriter, ans any)) func(*Server) {
 	return func(c *Server) { c.Serialize = serializer }
 }
