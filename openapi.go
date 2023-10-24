@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3gen"
@@ -21,7 +22,7 @@ func NewOpenAPI() openapi3.T {
 		Version:     "0.0.1",
 	}
 	spec := openapi3.T{
-		OpenAPI: "3.0.0",
+		OpenAPI: "3.0.3",
 		Info:    info,
 		Paths:   openapi3.Paths{},
 		Components: &openapi3.Components{
@@ -62,6 +63,8 @@ func (s *Server) GenerateOpenAPI() {
 	}
 	slog.Info("Updated docs/openapi.json")
 
+	time.Sleep(2 * time.Second)
+
 	// Serve spec as JSON
 	GetStd(s, "/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -85,20 +88,36 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 
 	operation := openapi3.NewOperation()
 
+	// Tags
+	tag := tagFromType(*new(T))
+	if tag != "unknown-interface" {
+		operation.Tags = append(operation.Tags, tag)
+	}
+
 	// Request body
-	if (method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch) && tagFromType(*new(B)) != "unknown-interface" {
+	bodyTag := tagFromType(*new(B))
+	if (method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch) && bodyTag != "unknown-interface" && bodyTag != "string" {
 		bodySchema, err := generator.NewSchemaRefForValue(new(B), s.spec.Components.Schemas)
 		if err != nil {
 			return operation, err
 		}
+		s.spec.Components.Schemas[bodyTag] = bodySchema
+
+		content := openapi3.NewContentWithSchema(bodySchema.Value, []string{"application/json"})
+		content["application/json"].Schema.Ref = fmt.Sprintf("#/components/schemas/%s", bodyTag)
 
 		requestBody := openapi3.NewRequestBody().
-			WithContent(openapi3.NewContentWithJSONSchemaRef(bodySchema))
+			WithRequired(true).
+			WithDescription(fmt.Sprintf("Request body for %s", reflect.TypeOf(*new(B)).String())).
+			WithContent(content)
 
-		s.spec.Components.Schemas[tagFromType(*new(B))] = bodySchema
+		s.spec.Components.RequestBodies[bodyTag] = &openapi3.RequestBodyRef{
+			Value: requestBody,
+		}
 
 		// add request body to operation
 		operation.RequestBody = &openapi3.RequestBodyRef{
+			Ref:   fmt.Sprintf("#/components/requestBodies/%s", bodyTag),
 			Value: requestBody,
 		}
 	}
@@ -108,10 +127,17 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	if err != nil {
 		return operation, err
 	}
+	s.spec.Components.Schemas[tag] = responseSchema
+
+	content := openapi3.NewContentWithSchema(responseSchema.Value, []string{"application/json"})
+	content["application/json"].Schema.Ref = fmt.Sprintf("#/components/schemas/%s", bodyTag)
+	operation.AddResponse(200, openapi3.NewResponse().
+		WithDescription("OK").
+		WithContent(content),
+	)
 
 	// Path parameters
-	pathParams := parsePathParams(path)
-	for _, pathParam := range pathParams {
+	for _, pathParam := range parsePathParams(path) {
 		operation.AddParameter(&openapi3.Parameter{
 			In:          "path",
 			Name:        pathParam,
@@ -121,18 +147,6 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 		})
 	}
 
-	// Tags
-	tag := tagFromType(*new(T))
-	if tag != "unknown-interface" {
-		operation.Tags = append(operation.Tags, tag)
-	}
-
-	operation.AddResponse(200, openapi3.NewResponse().
-		WithDescription("OK").
-		WithContent(openapi3.NewContentWithJSONSchemaRef(responseSchema)),
-	)
-
-	s.spec.Components.Schemas[tag] = responseSchema
 	s.spec.AddOperation(path, method, operation)
 
 	return operation, nil

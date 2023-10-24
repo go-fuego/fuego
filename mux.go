@@ -18,10 +18,7 @@ func Group(s *Server, path string, group func(s *Server)) {
 }
 
 type Route[ResponseBody any, RequestBody any] struct {
-	ReturnType ResponseBody
-	BodyType   ResponseBody
-	ErrorType  error
-	operation  *openapi3.Operation
+	operation *openapi3.Operation
 }
 
 func Get[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
@@ -55,7 +52,7 @@ func Register[T any, B any](s *Server, method string, path string, controller fu
 
 	route.operation.Summary = funcName(controller)
 	route.operation.Description = "controller: " + funcPathAndName(controller)
-
+	route.operation.OperationID = fullPath + ":" + funcName(controller)
 	return route
 }
 
@@ -72,8 +69,10 @@ func register[T any, B any](s *Server, method string, path string, controller fu
 		slog.Warn("error documenting openapi operation", "error", err)
 	}
 
-	operation.Summary = funcName(controller)
+	name := funcName(controller)
+	operation.Summary = name
 	operation.Description = "controller: " + funcPathAndName(controller)
+	operation.OperationID = fullPath + ":" + name
 
 	return Route[T, B]{
 		operation: operation,
