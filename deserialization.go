@@ -44,12 +44,6 @@ func readJSON[B any](input io.Reader, options readOptions) (B, error) {
 	}
 	slog.Debug("Decoded body", "body", body)
 
-	// Validation
-	err = validate(body)
-	if err != nil {
-		return body, fmt.Errorf("cannot validate request body: %w", err)
-	}
-
 	// InTransform input if possible.
 	if inTransformerBody, ok := any(&body).(InTransformer); ok {
 		err := inTransformerBody.InTransform()
@@ -64,6 +58,12 @@ func readJSON[B any](input io.Reader, options readOptions) (B, error) {
 		body = *bodyStar
 
 		slog.Debug("InTransformd body", "body", body)
+	}
+
+	// Validation
+	err = validate(body)
+	if err != nil {
+		return body, fmt.Errorf("cannot validate request body: %w", err)
 	}
 
 	return body, nil

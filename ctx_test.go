@@ -57,7 +57,7 @@ type testStruct struct {
 }
 
 type testStructInTransformer struct {
-	Name string `json:"name" validate:"required,min=3,max=10"`
+	Name string `json:"name" validate:"required,min=3,max=20"`
 	Age  int    `json:"age" validate:"min=18"`
 }
 
