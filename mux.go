@@ -32,6 +32,18 @@ func Post[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, erro
 	return Register[T](s, http.MethodPost, path, controller)
 }
 
+func Delete[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
+	return Register[T](s, http.MethodDelete, path, controller)
+}
+
+func Put[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
+	return Register[T](s, http.MethodPut, path, controller)
+}
+
+func Patch[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
+	return Register[T](s, http.MethodPatch, path, controller)
+}
+
 // Registers route into the default mux.
 func Register[T any, B any](s *Server, method string, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
 	fullPath := s.basePath + path
@@ -102,6 +114,22 @@ func UseStd(s *Server, middlewares ...func(http.Handler) http.Handler) {
 
 func GetStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request)) Route[any, any] {
 	return RegisterStd(s, http.MethodGet, path, controller)
+}
+
+func PostStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request)) Route[any, any] {
+	return RegisterStd(s, http.MethodPost, path, controller)
+}
+
+func DeleteStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request)) Route[any, any] {
+	return RegisterStd(s, http.MethodDelete, path, controller)
+}
+
+func PutStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request)) Route[any, any] {
+	return RegisterStd(s, http.MethodPut, path, controller)
+}
+
+func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request)) Route[any, any] {
+	return RegisterStd(s, http.MethodPatch, path, controller)
 }
 
 // RegisterStd registers a standard http handler into the default mux.
