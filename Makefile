@@ -2,7 +2,7 @@ default: ci
 
 ci: fmt lint cover
 
-ci-full: ci sec bench 
+ci-full: ci sec dependencies-analyze bench 
 
 test: 
 	go test
@@ -19,6 +19,9 @@ bench:
 
 sec:
 	go run github.com/securego/gosec/v2/cmd/gosec@latest ./...
+
+dependencies-analyze:
+	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
 fmt:
 	go run mvdan.cc/gofumpt@latest -l -w .
