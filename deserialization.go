@@ -7,11 +7,11 @@ import (
 	"log/slog"
 )
 
-// Normalizable is an interface for entities that can be normalized.
-// Useful for example for trimming strings, add custom fields, etc.
+// InTransformer is an interface for entities that can be transformed.
+// Useful for example for trimming strings, changing case, etc.
 // Can also raise an error if the entity is not valid.
-type Normalizable interface {
-	Normalize() error // Normalizes the entity.
+type InTransformer interface {
+	InTransform() error // InTransforms the entity.
 }
 
 var ReadOptions = readOptions{
@@ -50,20 +50,20 @@ func readJSON[B any](input io.Reader, options readOptions) (B, error) {
 		return body, fmt.Errorf("cannot validate request body: %w", err)
 	}
 
-	// Normalize input if possible.
-	if normalizableBody, ok := any(&body).(Normalizable); ok {
-		err := normalizableBody.Normalize()
+	// InTransform input if possible.
+	if inTransformerBody, ok := any(&body).(InTransformer); ok {
+		err := inTransformerBody.InTransform()
 		if err != nil {
-			return body, fmt.Errorf("cannot normalize request body: %w", err)
+			return body, fmt.Errorf("cannot transform request body: %w", err)
 		}
-		bodyStar, ok := any(normalizableBody).(*B)
+		bodyStar, ok := any(inTransformerBody).(*B)
 		if !ok {
 			return body, fmt.Errorf("cannot retype request body: %w",
-				fmt.Errorf("normalized body is not of type %T but should be", *new(B)))
+				fmt.Errorf("transformed body is not of type %T but should be", *new(B)))
 		}
 		body = *bodyStar
 
-		slog.Debug("Normalized body", "body", body)
+		slog.Debug("InTransformd body", "body", body)
 	}
 
 	return body, nil
@@ -86,20 +86,20 @@ func readString[B ~string](input io.Reader, options readOptions) (B, error) {
 	body := B(readBody)
 	slog.Debug("Read body", "body", body)
 
-	// Normalize input if possible.
-	if normalizableBody, ok := any(&body).(Normalizable); ok {
-		err := normalizableBody.Normalize()
+	// InTransform input if possible.
+	if inTransformerBody, ok := any(&body).(InTransformer); ok {
+		err := inTransformerBody.InTransform()
 		if err != nil {
-			return body, fmt.Errorf("cannot normalize request body: %w", err)
+			return body, fmt.Errorf("cannot transform request body: %w", err)
 		}
-		bodyStar, ok := any(normalizableBody).(*B)
+		bodyStar, ok := any(inTransformerBody).(*B)
 		if !ok {
 			return body, fmt.Errorf("cannot retype request body: %w",
-				fmt.Errorf("normalized body is not of type %T but should be", *new(B)))
+				fmt.Errorf("transformd body is not of type %T but should be", *new(B)))
 		}
 		body = *bodyStar
 
-		slog.Debug("Normalized body", "body", body)
+		slog.Debug("InTransformd body", "body", body)
 	}
 
 	return body, nil

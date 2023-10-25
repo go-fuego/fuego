@@ -9,22 +9,21 @@
 
 > The Go framework for busy API developers
 
-The only Go framework generating OpenAPI documentation from code. The modern NestJS for Go. But also completely different.
+The only Go framework generating OpenAPI documentation from code. Inspired by Nest, built for Go developers.
 
 ## Why op?
 
 Chi, Gin, Fiber and Echo are great frameworks. But since they are designed a long time ago, they do not enjoy the possibilities that provide modern Go. Op provides a lot of helper functions and features that make it easy to develop APIs.
 
-- [x] **Simple**: Op is easy to learn and use
-- [x] **OpenAPI**: Automatically generates OpenAPI documentation
-- [x] **Fast**: Op is built for performance
-- [x] **Compatible**: Op is built on top of stdlib
-- [x] **Flexible**: Op is highly configurable
-- [x] **Extensible**: Op is designed to be extended
-- [x] **Testable**: Op is designed for testing
-- [x] **Secure**: Op is designed with security in mind
-- [x] **Modern**: Op is designed for modern Go
-- [x] **Reliable**: Op is designed for production
+## Features
+
+- **OpenAPI**: Op automatically generates OpenAPI documentation from code
+- **`net/http` compatibile**: Op is built on top of `net/http`, so you can use any `net/http` middleware or handler!
+- **Routing**: Op provides a simple and fast router based on Go 1.22 `net/http`
+- **Serialization/Deserialization**: Op automatically serializes and deserializes JSON and XML based on user provided structs (or not, if you want to do it yourself)
+- **Validation**: Op provides a simple and fast validator based on go-playground/validator
+- **Transformation**: easily transform your data after deserialization
+- **Middlewares**: easily add a custom `net/http` middleware, or use the built-in middlewares.
 
 ## Examples
 
@@ -51,11 +50,14 @@ type MyResponse struct {
 func main() {
 	s := op.New()
 
-    op.UseStd(s, cors.Default().Handler)
+	op.UseStd(s, cors.Default().Handler)
 	op.UseStd(s, chiMiddleware.Compress(5, "text/html", "text/css"))
 
 	op.Post(s, "/", func(c op.Ctx[Received]) (MyResponse, error) {
-		data := c.Body()
+		data, err := c.Body()
+		if err != nil {
+			return MyResponse{}, err
+		}
 
 		return MyResponse{
 			Message:       "Hello, " + data.Name,
@@ -71,15 +73,14 @@ func main() {
 }
 ```
 
-## Features
-
-- **Routing**: Op provides a simple and fast router based on `net/http`
-- **OpenAPI**: Op automatically generates OpenAPI documentation from code
-- **Middleware**: easily add a custom `net/http` middleware, or use the built-in middlewares
-- **Serialization**: Op automatically serializes and deserializes JSON and XML based on user provided structs (or not, if you want to do it yourself)
-- **Validation**: Op provides a simple and fast validator based on go-playground/validator
-- **Normalization**: easily normalize your data after deserialization
-
 ## Contributing
 
 See the [contributing guide](CONTRIBUTING.md)
+
+## Disclaimer for experienced gophers
+
+I know you might prefer to use `net/http` directly, but if having a frame can convince my company to use Go instead of Node, I'm happy to use it.
+
+## License
+
+[GPL](./LICENSE.txt)

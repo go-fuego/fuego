@@ -14,7 +14,7 @@ const (
 // It contains the request body, the path parameters, the query parameters, and the http request.
 type Ctx[B any] interface {
 	// Body returns the body of the request.
-	// If (*B) implements [Normalizable], it will be normalized.
+	// If (*B) implements [InTransformer], it will be transformed after deserialization.
 	// It caches the result, so it can be called multiple times.
 	Body() (B, error)
 
@@ -118,9 +118,10 @@ func (c *Context[B]) MustBody() B {
 }
 
 // Body returns the body of the request.
-// If (*B) implements [Normalizable], it will be normalized.
+// If (*B) implements [InTransformer], it will be transformed after deserialization.
 // It caches the result, so it can be called multiple times.
 // The reason why the body is cached is because it is not possible to read an http request body multiple times, not because of performance.
+// For decoding, it uses the Content-Type header. If it is not set, defaults to application/json.
 func (c *Context[B]) Body() (B, error) {
 	if c.body != nil {
 		return *c.body, nil

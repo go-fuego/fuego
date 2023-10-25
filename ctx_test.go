@@ -56,23 +56,23 @@ type testStruct struct {
 	Age  int    `json:"age"`
 }
 
-type testStructNormalizable struct {
+type testStructInTransformer struct {
 	Name string `json:"name" validate:"required,min=3,max=10"`
 	Age  int    `json:"age" validate:"min=18"`
 }
 
-func (b *testStructNormalizable) Normalize() error {
-	b.Name = "normalized " + b.Name
+func (b *testStructInTransformer) InTransform() error {
+	b.Name = "transformed " + b.Name
 	b.Age *= 2
 	return nil
 }
 
-type testStructNormalizableWithError struct {
+type testStructInTransformerWithError struct {
 	Name string `json:"name" validate:"required,min=3,max=10"`
 	Age  int    `json:"age" validate:"min=18"`
 }
 
-func (b *testStructNormalizableWithError) Normalize() error {
+func (b *testStructInTransformerWithError) InTransform() error {
 	return errors.New("error")
 }
 
@@ -144,21 +144,21 @@ func TestContext_Body(t *testing.T) {
 		require.Equal(t, body.Age, 12)
 	})
 
-	t.Run("can normalize JSON body with custom method", func(t *testing.T) {
+	t.Run("can transform JSON body with custom method", func(t *testing.T) {
 		reqBody := strings.NewReader(`{"name":"John","age":30}`)
-		c := NewContext[testStructNormalizable](
+		c := NewContext[testStructInTransformer](
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 			readOptions{})
 
 		body, err := c.Body()
 		require.NoError(t, err)
-		require.Equal(t, body.Name, "normalized John")
+		require.Equal(t, body.Name, "transformed John")
 		require.Equal(t, body.Age, 60)
 	})
 
-	t.Run("can normalize JSON body with custom method returning error", func(t *testing.T) {
+	t.Run("can transform JSON body with custom method returning error", func(t *testing.T) {
 		reqBody := strings.NewReader(`{"name":"John","age":30}`)
-		c := NewContext[testStructNormalizableWithError](
+		c := NewContext[testStructInTransformerWithError](
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 			readOptions{})
 
