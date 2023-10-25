@@ -11,7 +11,19 @@ func (s *Server) Run() {
 	elapsed := time.Since(s.startTime)
 	slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (op.NewServer) and server startup (op.Run). Depending on your implementation, there might be things that do not depend on op slowing start time")
 	slog.Info("Server running ✅ on http://localhost"+s.Addr, "started in", elapsed.String())
-	_ = http.ListenAndServe(s.Addr, s.mux)
+
+	server := &http.Server{
+		Addr:              s.Addr,
+		Handler:           s.mux,
+		ReadTimeout:       30 * time.Second,
+		ReadHeaderTimeout: 30 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       30 * time.Second,
+	}
+	err := server.ListenAndServe()
+	if err != nil {
+		slog.Error("Error running server", "error", err)
+	}
 }
 
 type Controller[ReturnType any, Body any] func(c Context[Body]) (ReturnType, error)

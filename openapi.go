@@ -48,7 +48,7 @@ func (s *Server) GenerateOpenAPI() {
 	}
 
 	// Write spec to docs/openapi.json
-	err = os.MkdirAll("docs", 0o755)
+	err = os.MkdirAll("docs", 0o750)
 	if err != nil {
 		slog.Error("Error creating docs directory", "error", err)
 	}

@@ -2,7 +2,7 @@ default: ci
 
 ci: fmt lint cover
 
-ci-full: ci bench fuzz
+ci-full: ci sec bench 
 
 test: 
 	go test
@@ -17,11 +17,12 @@ cover-web: cover
 bench:
 	go test -bench . -benchmem
 
-fuzz:
-	go test -fuzz Fuzz -fuzztime 10s
+sec:
+	go run github.com/securego/gosec/v2/cmd/gosec@latest ./...
 
 fmt:
 	go run mvdan.cc/gofumpt@latest -l -w .
+
 
 # If golangci-lint is not installed, run it from latest github version found. Installed version is faster.
 lint: 
