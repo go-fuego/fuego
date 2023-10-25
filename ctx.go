@@ -134,12 +134,13 @@ func (c *Context[B]) Body() (B, error) {
 
 	var body B
 	var err error
-	switch any(new(B)).(type) {
-	case *string:
+	switch c.request.Header.Get("Content-Type") {
+	case "application/x-www-form-urlencoded", "text/plain":
 		s, errReadingString := readString[string](c.request.Body, c.readOptions)
 		body = any(s).(B)
 		err = errReadingString
-
+	case "application/json":
+		fallthrough
 	default:
 		body, err = readJSON[B](c.request.Body, c.readOptions)
 	}

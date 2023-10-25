@@ -174,6 +174,7 @@ func TestContext_Body(t *testing.T) {
 
 		// Test an http request
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
+		r.Header.Set("Content-Type", "text/plain")
 
 		c := NewContext[string](r, readOptions{})
 
@@ -191,6 +192,7 @@ func FuzzContext_Body(f *testing.F) {
 
 		// Test an http request
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
+		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 		c := NewContext[string](r, readOptions{})
 
