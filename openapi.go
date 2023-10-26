@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"reflect"
-	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3gen"
@@ -62,8 +61,6 @@ func (s *Server) GenerateOpenAPI() {
 		slog.Error("Error writing file", "error", err)
 	}
 	slog.Info("Updated docs/openapi.json")
-
-	time.Sleep(2 * time.Second)
 
 	// Serve spec as JSON
 	GetStd(s, "/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
