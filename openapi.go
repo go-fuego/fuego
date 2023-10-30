@@ -7,7 +7,9 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"reflect"
+	"regexp"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3gen"
@@ -41,43 +43,103 @@ func (s *Server) GenerateOpenAPI() openapi3.T {
 	}
 
 	// Marshal spec to JSON
-	dataJSON, err := json.Marshal(s.spec)
+	jsonSpec, err := json.Marshal(s.spec)
 	if err != nil {
 		slog.Error("Error marshalling spec to JSON", "error", err)
 	}
 
-	// Write spec to docs/openapi.json
-	err = os.MkdirAll("docs", 0o750)
+	if !s.OpenapiConfig.DisableLocalSave {
+		localSave(s.OpenapiConfig.JsonSpecLocalPath, jsonSpec)
+	}
+
+	if !s.OpenapiConfig.DisableSwagger {
+		generateSwagger(s, jsonSpec)
+	}
+
+	return s.spec
+}
+
+func localSave(jsonSpecLocalPath string, jsonSpec []byte) {
+	if jsonSpecLocalPath != "" {
+		jsonSpecLocalPath = defaultOpenapiConfig.JsonSpecLocalPath
+	}
+
+	if !validateJsonSpecLocalPath(jsonSpecLocalPath) {
+		slog.Error("Error writing json spec. Value of 'jsonSpecLocalPath' option is not valid", "file", jsonSpecLocalPath)
+		return
+	}
+
+	jsonFolder := filepath.Dir(jsonSpecLocalPath)
+
+	err := os.MkdirAll(jsonFolder, 0o750)
 	if err != nil {
 		slog.Error("Error creating docs directory", "error", err)
 	}
-	f, err := os.Create("docs/openapi.json")
+
+	f, err := os.Create(jsonSpecLocalPath)
 	if err != nil {
-		slog.Error("Error creating docs/openapi.json", "error", err)
+		slog.Error("Error creating "+jsonSpecLocalPath, "error", err)
 	}
 	defer f.Close()
-	_, err = f.Write(dataJSON)
+	_, err = f.Write(jsonSpec)
 	if err != nil {
 		slog.Error("Error writing file", "error", err)
 	}
-	slog.Info("Updated docs/openapi.json")
 
-	// Serve spec as JSON
-	GetStd(s, "/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write(dataJSON)
-	})
+	slog.Info("Updated " + jsonSpecLocalPath)
+}
 
-	// Swagger UI
-	GetStd(s, "/swagger/", httpSwagger.Handler(
-		httpSwagger.Layout(httpSwagger.BaseLayout),
-		httpSwagger.PersistAuthorization(true),
-		httpSwagger.URL("/swagger/doc.json"), // The url pointing to API definition
-	))
+func generateSwagger(s *Server, jsonSpec []byte) {
+	jsonSpecUrl := setValueFromConfig(defaultOpenapiConfig.JsonSpecUrl, s.OpenapiConfig.JsonSpecUrl)
+	swaggerUrl := setValueFromConfig(defaultOpenapiConfig.SwaggerUrl, s.OpenapiConfig.SwaggerUrl)
+	isJsonSpecUrlValid := isValueValid(jsonSpecUrl, validateJsonSpecUrl, "Error serving openapi json spec. Value of 'jsonSpecUrl' option is not valid")
+	isSwaggerUrlValid := isValueValid(swaggerUrl, validateSwaggerUrl, "Error generating swagger. Value of 'swaggerUrl' option is not valid")
 
-	slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s/swagger/index.html", s.Addr))
+	if isJsonSpecUrlValid && isSwaggerUrlValid {
+		GetStd(s, jsonSpecUrl, func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write(jsonSpec)
+		})
 
-	return s.spec
+		GetStd(s, swaggerUrl+"/", httpSwagger.Handler(
+			httpSwagger.Layout(httpSwagger.BaseLayout),
+			httpSwagger.PersistAuthorization(true),
+			httpSwagger.URL(jsonSpecUrl), // The url pointing to API definition
+		))
+
+		slog.Info(fmt.Sprintf("Raw json spec available at http://localhost%s%s", s.Addr, jsonSpecUrl))
+		slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s%s/index.html", s.Addr, swaggerUrl))
+	}
+}
+
+func setValueFromConfig(defaultValue string, config string) string {
+	if config != "" {
+		return config
+	}
+	return defaultValue
+}
+
+func isValueValid(config string, validationFunction func(valueToValidate string) bool, errorMessage string) bool {
+	if !validationFunction(config) {
+		slog.Error(errorMessage)
+		return false
+	}
+	return true
+}
+
+func validateJsonSpecLocalPath(jsonSpecLocalPath string) bool {
+	jsonSpecLocalPathRegexp := regexp.MustCompile(`^[^\/][\/a-zA-Z0-9\-\_]+(.json)$`)
+	return jsonSpecLocalPathRegexp.MatchString(jsonSpecLocalPath)
+}
+
+func validateJsonSpecUrl(jsonSpecUrl string) bool {
+	jsonSpecUrlRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_]+(.json)$`)
+	return jsonSpecUrlRegexp.MatchString(jsonSpecUrl)
+}
+
+func validateSwaggerUrl(swaggerUrl string) bool {
+	swaggerUrlRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_]+[a-zA-Z0-9\-\_]$`)
+	return swaggerUrlRegexp.MatchString(swaggerUrl)
 }
 
 var generator = openapi3gen.NewGenerator(
