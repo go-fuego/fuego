@@ -89,12 +89,17 @@ func (r Route[ResponseBody, RequestBody]) WithSummary(summary string) Route[Resp
 	return r
 }
 
-func (r Route[ResponseBody, RequestBody]) WithTags(tags ...string) Route[ResponseBody, RequestBody] {
+func (r Route[ResponseBody, RequestBody]) SetTags(tags ...string) Route[ResponseBody, RequestBody] {
+	r.operation.Tags = tags
+	return r
+}
+
+func (r Route[ResponseBody, RequestBody]) AddTags(tags ...string) Route[ResponseBody, RequestBody] {
 	r.operation.Tags = append(r.operation.Tags, tags...)
 	return r
 }
 
-func (r Route[ResponseBody, RequestBody]) WithDeprecated() Route[ResponseBody, RequestBody] {
+func (r Route[ResponseBody, RequestBody]) SetDeprecated() Route[ResponseBody, RequestBody] {
 	r.operation.Deprecated = true
 	return r
 }

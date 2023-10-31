@@ -196,3 +196,19 @@ func TestDeleteStd(t *testing.T) {
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "test successful")
 }
+
+func TestSetTags(t *testing.T) {
+	s := NewServer()
+	route := Get(s, "/test", func(ctx Ctx[string]) (string, error) {
+		return "test", nil
+	}).
+		SetTags("my-tag").
+		WithDescription("my description").
+		WithSummary("my summary").
+		SetDeprecated()
+
+	require.Equal(t, route.operation.Tags, []string{"my-tag"})
+	require.Equal(t, route.operation.Description, "my description")
+	require.Equal(t, route.operation.Summary, "my summary")
+	require.Equal(t, route.operation.Deprecated, true)
+}

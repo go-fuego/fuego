@@ -20,19 +20,19 @@ type Ressource struct {
 
 func (rs Ressource) Routes(s *op.Server) {
 	op.GetStd(s, "/recipes-standard-with-helpers", rs.getAllRecipesStandardWithHelpers).
-		WithTags("Recipe")
+		AddTags("Recipe")
 
 	op.Get(s, "/recipes", rs.getAllRecipes).
 		WithQueryParam("limit", "number of recipes to return").
 		WithSummary("Get all recipes").
 		WithDescription("Get all recipes").
-		WithTags("custom")
+		AddTags("custom")
 
 	for i := 0; i < 10; i++ {
 		op.Get(s, fmt.Sprintf("/recipe/%d", i), rs.getAllRecipes).
 			WithSummary("Get recipe").
 			WithDescription("Get recipe").
-			WithTags("custom")
+			SetTags("custom")
 	}
 
 	op.Post(s, "/recipes/new", rs.newRecipe)
