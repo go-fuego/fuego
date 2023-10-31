@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -127,5 +128,31 @@ func TestHttpHandler(t *testing.T) {
 
 		body := w.Body.String()
 		require.Equal(t, "null\n", body)
+	})
+}
+
+func TestServer_Run(t *testing.T) {
+	// This is not a standard test, it is here to ensure that the server can run.
+	// Please do not run this kind of test for your controllers, it is NOT unit testing.
+	t.Run("can run server", func(t *testing.T) {
+		s := NewServer(
+			WithoutLogger(),
+		)
+
+		Get(s, "/test", func(ctx Ctx[string]) (string, error) {
+			return "OK", nil
+		})
+
+		go func() {
+			s.Run()
+		}()
+
+		require.Eventually(t, func() bool {
+			req := httptest.NewRequest("GET", "/test", nil)
+			w := httptest.NewRecorder()
+			s.mux.ServeHTTP(w, req)
+
+			return w.Body.String() == crlf(`"OK"`)
+		}, 5*time.Millisecond, 500*time.Microsecond)
 	})
 }

@@ -12,13 +12,18 @@ import (
 func TestContext_PathParam(t *testing.T) {
 	t.Run("can read path param", func(t *testing.T) {
 		t.Skip("TODO: coming in go1.22")
-		r := httptest.NewRequest("GET", "http://example.com/foo/123", nil)
 
-		c := NewContext[any](r, readOptions{})
+		s := NewServer()
+		Get(s, "/foo/{id}", func(c Ctx[any]) (ans, error) {
+			return ans{Ans: c.PathParam("id")}, nil
+		})
 
-		param := c.PathParam("id")
-		require.NotEmpty(t, param)
-		require.Equal(t, param, "123")
+		r := httptest.NewRequest("GET", "/foo/123", nil)
+		w := httptest.NewRecorder()
+
+		s.mux.ServeHTTP(w, r)
+
+		require.Equal(t, w.Body.String(), `{"ans":"123"}`)
 	})
 }
 

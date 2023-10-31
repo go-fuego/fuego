@@ -36,6 +36,10 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 			MaxBodySize:           s.maxBodySize,
 		})
 
+		for _, param := range parsePathParams(r.URL.Path) {
+			ctx.pathParams[param] = "coming in go1.22"
+		}
+
 		ans, err := controller(ctx)
 		if err != nil {
 			s.SerializeError(w, err)

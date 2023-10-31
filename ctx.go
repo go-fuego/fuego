@@ -43,10 +43,6 @@ func NewContext[B any](r *http.Request, options readOptions) *Context[B] {
 		},
 	}
 
-	for _, param := range parsePathParams(r.URL.Path) {
-		c.pathParams[param] = "coming in go1.22"
-	}
-
 	return c
 }
 
