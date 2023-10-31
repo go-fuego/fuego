@@ -45,10 +45,10 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	if !isGo1_22 {
-		slog.Warn("You are using a version of Go that is lower than 1.22. " +
-			"Please upgrade to Go 1.22 or higher to use the full functionality of op. " +
-			"With go1.21 or lower, you can't register routes with the same path but different methods. " +
-			"You also cannot use path parameters.")
+		slog.Warn(
+			"Please upgrade to Go >= 1.22. " +
+				"You are running " + runtime.Version() + ": " +
+				"you cannot use path params nor register routes with the same path but different methods. ")
 	}
 
 	s.startTime = time.Now()
