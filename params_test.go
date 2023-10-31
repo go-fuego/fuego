@@ -7,8 +7,8 @@ import (
 )
 
 func TestParsePathParams(t *testing.T) {
-	require.Equal(t, []string{}, parsePathParams("/"))
-	require.Equal(t, []string{}, parsePathParams("/item/"))
+	require.Equal(t, []string(nil), parsePathParams("/"))
+	require.Equal(t, []string(nil), parsePathParams("/item/"))
 	require.Equal(t, []string{"user"}, parsePathParams("POST /item/{user}"))
 	require.Equal(t, []string{"user"}, parsePathParams("/item/{user}"))
 	require.Equal(t, []string{"user", "id"}, parsePathParams("/item/{user}/{id}"))
@@ -38,7 +38,6 @@ func FuzzParsePathParams(f *testing.F) {
 	f.Add("")
 
 	f.Fuzz(func(t *testing.T, data string) {
-		list := parsePathParams(data)
-		require.NotNil(t, list)
+		parsePathParams(data)
 	})
 }

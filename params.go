@@ -1,17 +1,18 @@
 package op
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
-var pathParamRegex = regexp.MustCompile(`{([^}]+)}`)
+var pathParamRegex = regexp.MustCompile(`{(.+?)}`)
 
 // parsePathParams gives the list of path parameters in a path.
 // Example : /item/{user}/{id} -> [user, id]
 func parsePathParams(path string) []string {
-	matches := pathParamRegex.FindAllStringSubmatch(path, -1)
-
-	params := make([]string, len(matches))
+	matches := pathParamRegex.FindAllString(path, -1)
 	for i, match := range matches {
-		params[i] = match[1]
+		matches[i] = strings.Trim(match, "{}")
 	}
-	return params
+	return matches
 }
