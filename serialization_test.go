@@ -153,3 +153,57 @@ func BenchmarkOutTransform(b *testing.B) {
 		}
 	})
 }
+
+func TestJSONError(t *testing.T) {
+	me := validatableStruct{
+		Name:       "Napoleon Bonaparte",
+		Age:        12,
+		Email:      "not_an_email",
+		ExternalID: "not_an_uuid",
+	}
+
+	err := validate(me)
+	w := httptest.NewRecorder()
+	SendJSONError(w, err)
+
+	require.JSONEq(t, `
+	{
+		"error":"Name should be max=10, Age should be min=18, Required is required, Email should be a valid email, ExternalID should be a valid UUID",
+		"info": {
+		   "validation": [
+			  {
+				 "devField":"validatableStruct.Name",
+				 "field":"Name",
+				 "tag":"max",
+				 "param":"10",
+				 "value":"Napoleon Bonaparte"
+			  },
+			  {
+				 "devField":"validatableStruct.Age",
+				 "field":"Age",
+				 "tag":"min",
+				 "param":"18",
+				 "value":12
+			  },
+			  {
+				 "devField":"validatableStruct.Required",
+				 "field":"Required",
+				 "tag":"required",
+				 "value":""
+			  },
+			  {
+				 "devField":"validatableStruct.Email",
+				 "field":"Email",
+				 "tag":"email",
+				 "value":"not_an_email"
+			  },
+			  {
+				 "devField":"validatableStruct.ExternalID",
+				 "field":"ExternalID",
+				 "tag":"uuid",
+				 "value":"not_an_uuid"
+			  }
+		   ]
+		}
+	 }`, w.Body.String())
+}

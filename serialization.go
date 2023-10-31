@@ -72,24 +72,6 @@ func transformOut[T any](ctx context.Context, ans T) (T, error) {
 	return ans, nil
 }
 
-type ErrorResponse struct {
-	Message    string `json:"error" xml:"Error"` // human readable error message
-	StatusCode int    `json:"-" xml:"-"`         // http status code
-}
-
-var _ ErrorWithStatus = ErrorResponse{}
-
-func (e ErrorResponse) Error() string {
-	return e.Message
-}
-
-func (e ErrorResponse) Status() int {
-	if e.StatusCode == 0 {
-		return http.StatusInternalServerError
-	}
-	return e.StatusCode
-}
-
 // Send sends a string response.
 func Send(w http.ResponseWriter, text string) {
 	_, _ = w.Write([]byte(text))
@@ -109,6 +91,7 @@ func SendJSON(w http.ResponseWriter, ans any) {
 
 // SendJSONError sends a JSON error response.
 // If the error implements ErrorWithStatus, the status code will be set.
+// If the error implements ErrorWithInfo, the info will be set.
 func SendJSONError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
 	errResponse := ErrorResponse{
@@ -119,6 +102,11 @@ func SendJSONError(w http.ResponseWriter, err error) {
 	var errorStatus ErrorWithStatus
 	if errors.As(err, &errorStatus) {
 		status = errorStatus.Status()
+	}
+
+	var errorInfo ErrorWithInfo
+	if errors.As(err, &errorInfo) {
+		errResponse.MoreInfo = errorInfo.Info()
 	}
 
 	w.WriteHeader(status)
@@ -148,6 +136,11 @@ func SendXMLError(w http.ResponseWriter, err error) {
 	var errorStatus ErrorWithStatus
 	if errors.As(err, &errorStatus) {
 		status = errorStatus.Status()
+	}
+
+	var errorInfo ErrorWithInfo
+	if errors.As(err, &errorInfo) {
+		errResponse.MoreInfo = errorInfo.Info()
 	}
 
 	w.WriteHeader(status)
