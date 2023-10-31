@@ -33,7 +33,7 @@ func NewOpenAPI() openapi3.T {
 	return spec
 }
 
-func (s *Server) GenerateOpenAPI() {
+func (s *Server) GenerateOpenAPI() openapi3.T {
 	// Validate
 	err := s.spec.Validate(context.Background())
 	if err != nil {
@@ -76,6 +76,8 @@ func (s *Server) GenerateOpenAPI() {
 	))
 
 	slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s/swagger/index.html", s.Addr))
+
+	return s.spec
 }
 
 func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*openapi3.Operation, error) {
@@ -127,7 +129,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	s.spec.Components.Schemas[tag] = responseSchema
 
 	content := openapi3.NewContentWithSchema(responseSchema.Value, []string{"application/json"})
-	content["application/json"].Schema.Ref = fmt.Sprintf("#/components/schemas/%s", bodyTag)
+	content["application/json"].Schema.Ref = fmt.Sprintf("#/components/schemas/%s", tag)
 	operation.AddResponse(200, openapi3.NewResponse().
 		WithDescription("OK").
 		WithContent(content),
@@ -135,13 +137,9 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 
 	// Path parameters
 	for _, pathParam := range parsePathParams(path) {
-		operation.AddParameter(&openapi3.Parameter{
-			In:          "path",
-			Name:        pathParam,
-			Description: "",
-			Required:    true,
-			Schema:      openapi3.NewStringSchema().NewRef(),
-		})
+		parameter := openapi3.NewPathParameter(pathParam)
+		parameter.Schema = openapi3.NewStringSchema().NewRef()
+		operation.AddParameter(parameter)
 	}
 
 	s.spec.AddOperation(path, method, operation)
