@@ -50,12 +50,7 @@ func readJSON[B any](input io.Reader, options readOptions) (B, error) {
 		if err != nil {
 			return body, fmt.Errorf("cannot transform request body: %w", err)
 		}
-		bodyStar, ok := any(inTransformerBody).(*B)
-		if !ok {
-			return body, fmt.Errorf("cannot retype request body: %w",
-				fmt.Errorf("transformed body is not of type %T but should be", *new(B)))
-		}
-		body = *bodyStar
+		body = *any(inTransformerBody).(*B)
 
 		slog.Debug("InTransformd body", "body", body)
 	}
@@ -92,12 +87,7 @@ func readString[B ~string](input io.Reader, options readOptions) (B, error) {
 		if err != nil {
 			return body, fmt.Errorf("cannot transform request body: %w", err)
 		}
-		bodyStar, ok := any(inTransformerBody).(*B)
-		if !ok {
-			return body, fmt.Errorf("cannot retype request body: %w",
-				fmt.Errorf("transformd body is not of type %T but should be", *new(B)))
-		}
-		body = *bodyStar
+		body = *any(inTransformerBody).(*B)
 
 		slog.Debug("InTransformd body", "body", body)
 	}

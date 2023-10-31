@@ -1,6 +1,7 @@
 package op
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -71,4 +72,61 @@ func BenchmarkReadString(b *testing.B) {
 			b.Fatal(err)
 		}
 	}
+}
+
+type TestBodyWithInTransformer struct {
+	A string
+	B int
+}
+
+func (t *TestBodyWithInTransformer) InTransform() error {
+	t.A = "transformed " + t.A
+	return nil
+}
+
+var _ InTransformer = &TestBodyWithInTransformer{}
+
+func TestInTransform(t *testing.T) {
+	t.Run("ReadJSON", func(t *testing.T) {
+		input := strings.NewReader(`{"A":"a", "B":1}`)
+		body, err := ReadJSON[TestBodyWithInTransformer](input)
+		require.NoError(t, err)
+		require.Equal(t, TestBodyWithInTransformer{"transformed a", 1}, body)
+	})
+}
+
+type transformableString string
+
+func (t *transformableString) InTransform() error {
+	*t = "transformed " + *t
+	return nil
+}
+
+var _ InTransformer = new(transformableString)
+
+func TestInTransformString(t *testing.T) {
+	t.Run("ReadString", func(t *testing.T) {
+		input := strings.NewReader(`coucou`)
+		body, err := ReadString[transformableString](input)
+		require.NoError(t, err)
+		require.Equal(t, transformableString("transformed coucou"), body)
+	})
+}
+
+type transformableStringWithError string
+
+func (t *transformableStringWithError) InTransform() error {
+	*t = "transformed " + *t
+	return errors.New("error happened!")
+}
+
+var _ InTransformer = new(transformableStringWithError)
+
+func TestInTransformStringWithError(t *testing.T) {
+	t.Run("ReadString", func(t *testing.T) {
+		input := strings.NewReader(`coucou`)
+		body, err := ReadString[transformableStringWithError](input)
+		require.Error(t, err)
+		require.Equal(t, transformableStringWithError("transformed coucou"), body)
+	})
 }
