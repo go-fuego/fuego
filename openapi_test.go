@@ -1,6 +1,7 @@
 package op
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -48,4 +49,48 @@ func TestServer_GenerateOpenAPI(t *testing.T) {
 	require.NotPanics(t, func() {
 		s.GenerateOpenAPI()
 	})
+}
+
+func BenchmarkRoutesRegistration(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		s := NewServer(
+			WithoutLogger(),
+		)
+		Get(s, "/", func(Ctx[any]) (MyStruct, error) {
+			return MyStruct{}, nil
+		})
+		for j := 0; j < 100; j++ {
+			Post(s, fmt.Sprintf("/post/%d", j), func(Ctx[MyStruct]) ([]MyStruct, error) {
+				return nil, nil
+			})
+		}
+		for j := 0; j < 100; j++ {
+			Get(s, fmt.Sprintf("/post/{id}/%d", j), func(Ctx[any]) (MyStruct, error) {
+				return MyStruct{}, nil
+			})
+		}
+	}
+}
+
+func BenchmarkServer_GenerateOpenAPI(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		s := NewServer(
+			WithoutLogger(),
+		)
+		Get(s, "/", func(Ctx[any]) (MyStruct, error) {
+			return MyStruct{}, nil
+		})
+		for j := 0; j < 100; j++ {
+			Post(s, fmt.Sprintf("/post/%d", j), func(Ctx[MyStruct]) ([]MyStruct, error) {
+				return nil, nil
+			})
+		}
+		for j := 0; j < 100; j++ {
+			Get(s, fmt.Sprintf("/post/{id}/%d", j), func(Ctx[any]) (MyStruct, error) {
+				return MyStruct{}, nil
+			})
+		}
+
+		s.GenerateOpenAPI()
+	}
 }
