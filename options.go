@@ -28,19 +28,30 @@ type Server struct {
 	startTime             time.Time
 }
 
-// NewServer creates a new server with the given options
+// NewServer creates a new server with the given options.
+// For example:
+//
+//	app := op.NewServer(
+//		op.WithPort(":8080"),
+//		op.WithoutLogger(),
+//	)
+//
+// Option all begin with `With`.
+// Some default options are set in the function body.
 func NewServer(options ...func(*Server)) *Server {
 	s := &Server{
 		mux:  http.NewServeMux(),
 		spec: NewOpenAPI(),
-
-		Addr:                  ":8080",
-		DisallowUnknownFields: true,
-		Serialize:             SendJSON,
-		SerializeError:        SendJSONError,
 	}
 
-	for _, option := range options {
+	defaultOptions := [...]func(*Server){
+		WithPort(":8080"),
+		WithDisallowUnknownFields(true),
+		WithSerializer(SendJSON),
+		WithErrorSerializer(SendJSONError),
+	}
+
+	for _, option := range append(defaultOptions[:], options...) {
 		option(s)
 	}
 
@@ -56,10 +67,15 @@ func NewServer(options ...func(*Server)) *Server {
 	return s
 }
 
+// WithDisallowUnknownFields sets the DisallowUnknownFields option.
+// If true, the server will return an error if the request body contains unknown fields.
+// Useful for quick debugging in development.
+// Defaults to true.
 func WithDisallowUnknownFields(b bool) func(*Server) {
 	return func(c *Server) { c.DisallowUnknownFields = b }
 }
 
+// WithPort sets the port of the server. For example, ":8080".
 func WithPort(port string) func(*Server) {
 	return func(c *Server) { c.Addr = port }
 }
@@ -87,6 +103,7 @@ func WithErrorSerializer(serializer func(w http.ResponseWriter, err error)) func
 	return func(c *Server) { c.SerializeError = serializer }
 }
 
+// WithoutLogger disables the default logger.
 func WithoutLogger() func(*Server) {
 	return func(c *Server) {
 		slog.SetDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
