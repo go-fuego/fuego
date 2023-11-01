@@ -56,6 +56,8 @@ func TestServer_GenerateOpenAPI(t *testing.T) {
 	require.NotNil(t, document.Paths["/"])
 	require.Nil(t, document.Paths.Find("/unknown"))
 	require.NotNil(t, document.Paths.Find("/post"))
+	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses["200"])
+	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses["200"].Value.Content["application/json"])
 	require.Nil(t, document.Paths.Find("/post/{id}").Get.Responses["200"].Value.Content["application/json"].Schema.Value.Properties["unknown"])
 	require.Equal(t, document.Paths.Find("/post/{id}").Get.Responses["200"].Value.Content["application/json"].Schema.Value.Properties["quantity"].Value.Type, "integer")
 }

@@ -96,19 +96,26 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	// Request body
 	bodyTag := tagFromType(*new(B))
 	if (method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch) && bodyTag != "unknown-interface" && bodyTag != "string" {
-		bodySchema, err := generator.NewSchemaRefForValue(new(B), s.spec.Components.Schemas)
-		if err != nil {
-			return operation, err
-		}
-		s.spec.Components.Schemas[bodyTag] = bodySchema
 
-		content := openapi3.NewContentWithSchema(bodySchema.Value, []string{"application/json"})
-		content["application/json"].Schema.Ref = fmt.Sprintf("#/components/schemas/%s", bodyTag)
+		bodySchema, ok := s.spec.Components.Schemas[bodyTag]
+		if !ok {
+			var err error
+			bodySchema, err = generator.NewSchemaRefForValue(new(B), s.spec.Components.Schemas)
+			if err != nil {
+				return operation, err
+			}
+			s.spec.Components.Schemas[bodyTag] = bodySchema
+		}
 
 		requestBody := openapi3.NewRequestBody().
 			WithRequired(true).
-			WithDescription(fmt.Sprintf("Request body for %s", reflect.TypeOf(*new(B)).String())).
-			WithContent(content)
+			WithDescription(fmt.Sprintf("Request body for %s", reflect.TypeOf(*new(B)).String()))
+
+		if bodySchema != nil {
+			content := openapi3.NewContentWithSchema(bodySchema.Value, []string{"application/json"})
+			content["application/json"].Schema.Ref = fmt.Sprintf("#/components/schemas/%s", bodyTag)
+			requestBody.WithContent(content)
+		}
 
 		s.spec.Components.RequestBodies[bodyTag] = &openapi3.RequestBodyRef{
 			Value: requestBody,
@@ -122,18 +129,23 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	}
 
 	// Response body
-	responseSchema, err := generator.NewSchemaRefForValue(new(T), s.spec.Components.Schemas)
-	if err != nil {
-		return operation, err
+	responseSchema, ok := s.spec.Components.Schemas[tag]
+	if !ok {
+		var err error
+		responseSchema, err = generator.NewSchemaRefForValue(new(T), s.spec.Components.Schemas)
+		if err != nil {
+			return operation, err
+		}
+		s.spec.Components.Schemas[tag] = responseSchema
 	}
-	s.spec.Components.Schemas[tag] = responseSchema
 
-	content := openapi3.NewContentWithSchema(responseSchema.Value, []string{"application/json"})
-	content["application/json"].Schema.Ref = fmt.Sprintf("#/components/schemas/%s", tag)
-	operation.AddResponse(200, openapi3.NewResponse().
-		WithDescription("OK").
-		WithContent(content),
-	)
+	response := openapi3.NewResponse().WithDescription("OK")
+	if responseSchema != nil {
+		content := openapi3.NewContentWithSchema(responseSchema.Value, []string{"application/json"})
+		content["application/json"].Schema.Ref = fmt.Sprintf("#/components/schemas/%s", tag)
+		response.WithContent(content)
+	}
+	operation.AddResponse(200, response)
 
 	// Path parameters
 	for _, pathParam := range parsePathParams(path) {
