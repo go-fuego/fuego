@@ -85,7 +85,6 @@ var generator = openapi3gen.NewGenerator(
 )
 
 func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*openapi3.Operation, error) {
-
 	operation := openapi3.NewOperation()
 
 	// Tags

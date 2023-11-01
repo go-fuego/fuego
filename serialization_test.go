@@ -164,6 +164,7 @@ func TestJSONError(t *testing.T) {
 
 	err := validate(me)
 	w := httptest.NewRecorder()
+	err = ErrorHandler(err)
 	SendJSONError(w, err)
 
 	require.JSONEq(t, `

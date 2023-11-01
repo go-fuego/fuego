@@ -42,12 +42,14 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 
 		ans, err := controller(ctx)
 		if err != nil {
+			err = s.ErrorHandler(err)
 			s.SerializeError(w, err)
 			return
 		}
 
 		ans, err = transformOut(r.Context(), ans)
 		if err != nil {
+			err = s.ErrorHandler(err)
 			s.SerializeError(w, err)
 			return
 		}

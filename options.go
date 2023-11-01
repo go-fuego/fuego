@@ -23,8 +23,9 @@ type Server struct {
 	Addr                  string
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
 	maxBodySize           int64
-	Serialize             func(w http.ResponseWriter, ans any)
-	SerializeError        func(w http.ResponseWriter, err error)
+	Serialize             func(w http.ResponseWriter, ans any)   // Used to serialize the response. Defaults to [SendJSON].
+	SerializeError        func(w http.ResponseWriter, err error) // Used to serialize the error response. Defaults to [SendJSONError].
+	ErrorHandler          func(err error) error                  // Used to transform any error into a unified error type structure with status code. Defaults to [ErrorHandler]
 	startTime             time.Time
 }
 
@@ -49,6 +50,7 @@ func NewServer(options ...func(*Server)) *Server {
 		WithDisallowUnknownFields(true),
 		WithSerializer(SendJSON),
 		WithErrorSerializer(SendJSONError),
+		WithErrorHandler(ErrorHandler),
 	}
 
 	for _, option := range append(defaultOptions[:], options...) {
@@ -101,6 +103,10 @@ func WithSerializer(serializer func(w http.ResponseWriter, ans any)) func(*Serve
 
 func WithErrorSerializer(serializer func(w http.ResponseWriter, err error)) func(*Server) {
 	return func(c *Server) { c.SerializeError = serializer }
+}
+
+func WithErrorHandler(errorHandler func(err error) error) func(*Server) {
+	return func(c *Server) { c.ErrorHandler = errorHandler }
 }
 
 // WithoutLogger disables the default logger.

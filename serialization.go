@@ -91,26 +91,15 @@ func SendJSON(w http.ResponseWriter, ans any) {
 
 // SendJSONError sends a JSON error response.
 // If the error implements ErrorWithStatus, the status code will be set.
-// If the error implements ErrorWithInfo, the info will be set.
 func SendJSONError(w http.ResponseWriter, err error) {
-	w.Header().Set("Content-Type", "application/json")
-	errResponse := ErrorResponse{
-		Message: err.Error(),
-	}
-
 	status := http.StatusInternalServerError
 	var errorStatus ErrorWithStatus
 	if errors.As(err, &errorStatus) {
 		status = errorStatus.Status()
 	}
 
-	var errorInfo ErrorWithInfo
-	if errors.As(err, &errorInfo) {
-		errResponse.MoreInfo = errorInfo.Info()
-	}
-
 	w.WriteHeader(status)
-	SendJSON(w, errResponse)
+	SendJSON(w, err)
 }
 
 // SendXML sends a XML response.
@@ -127,22 +116,12 @@ func SendXML(w http.ResponseWriter, ans any) {
 // SendXMLError sends a XML error response.
 // If the error implements ErrorWithStatus, the status code will be set.
 func SendXMLError(w http.ResponseWriter, err error) {
-	w.Header().Set("Content-Type", "application/xml")
-	errResponse := ErrorResponse{
-		Message: err.Error(),
-	}
-
 	status := http.StatusInternalServerError
 	var errorStatus ErrorWithStatus
 	if errors.As(err, &errorStatus) {
 		status = errorStatus.Status()
 	}
 
-	var errorInfo ErrorWithInfo
-	if errors.As(err, &errorInfo) {
-		errResponse.MoreInfo = errorInfo.Info()
-	}
-
 	w.WriteHeader(status)
-	SendXML(w, errResponse)
+	SendXML(w, err)
 }
