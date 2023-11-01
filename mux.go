@@ -50,9 +50,10 @@ func Register[T any, B any](s *Server, method string, path string, controller fu
 	slog.Debug("registering openapi controller " + fullPath)
 	route := register[T, B](s, method, path, httpHandler[T, B](s, controller))
 
-	route.operation.Summary = funcName(controller)
-	route.operation.Description = "controller: " + funcPathAndName(controller)
-	route.operation.OperationID = fullPath + ":" + funcName(controller)
+	name, nameWithPath := funcName(controller)
+	route.operation.Summary = name
+	route.operation.Description = "controller: " + nameWithPath
+	route.operation.OperationID = fullPath + ":" + name
 	return route
 }
 
@@ -68,11 +69,6 @@ func register[T any, B any](s *Server, method string, path string, controller fu
 	if err != nil {
 		slog.Warn("error documenting openapi operation", "error", err)
 	}
-
-	name := funcName(controller)
-	operation.Summary = name
-	operation.Description = "controller: " + funcPathAndName(controller)
-	operation.OperationID = fullPath + ":" + name
 
 	return Route[T, B]{
 		operation: operation,
@@ -143,7 +139,13 @@ func RegisterStd(s *Server, method string, path string, controller func(http.Res
 		fullPath = method + " " + path
 	}
 	slog.Debug("registering standard controller " + fullPath)
-	return register[any, any](s, method, path, controller)
+	route := register[any, any](s, method, path, controller)
+
+	name, nameWithPath := funcName(controller)
+	route.operation.Summary = name
+	route.operation.Description = "controller: " + nameWithPath
+	route.operation.OperationID = fullPath + ":" + name
+	return route
 }
 
 func withMiddlewares(controller http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
@@ -153,12 +155,9 @@ func withMiddlewares(controller http.Handler, middlewares ...func(http.Handler) 
 	return controller
 }
 
-// funcPathAndName returns the path and name of a function.
-func funcPathAndName(f interface{}) string {
-	return strings.TrimSuffix(runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name(), "-fm")
-}
-
-func funcName(f interface{}) string {
-	fullName := strings.Split(funcPathAndName(f), ".")
-	return fullName[len(fullName)-1]
+// funcName returns the name of a function and the name with package path
+func funcName(f interface{}) (name string, nameWithPath string) {
+	nameWithPath = strings.TrimSuffix(runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name(), "-fm")
+	fullName := strings.Split(nameWithPath, ".")
+	return fullName[len(fullName)-1], nameWithPath
 }

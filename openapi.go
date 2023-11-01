@@ -80,10 +80,11 @@ func (s *Server) GenerateOpenAPI() openapi3.T {
 	return s.spec
 }
 
+var generator = openapi3gen.NewGenerator(
+	openapi3gen.UseAllExportedFields(),
+)
+
 func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*openapi3.Operation, error) {
-	generator := openapi3gen.NewGenerator(
-		openapi3gen.UseAllExportedFields(),
-	)
 
 	operation := openapi3.NewOperation()
 
@@ -109,11 +110,11 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 
 		requestBody := openapi3.NewRequestBody().
 			WithRequired(true).
-			WithDescription(fmt.Sprintf("Request body for %s", reflect.TypeOf(*new(B)).String()))
+			WithDescription("Request body for " + reflect.TypeOf(*new(B)).String())
 
 		if bodySchema != nil {
 			content := openapi3.NewContentWithSchema(bodySchema.Value, []string{"application/json"})
-			content["application/json"].Schema.Ref = fmt.Sprintf("#/components/schemas/%s", bodyTag)
+			content["application/json"].Schema.Ref = "#/components/schemas/" + bodyTag
 			requestBody.WithContent(content)
 		}
 
@@ -123,7 +124,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 
 		// add request body to operation
 		operation.RequestBody = &openapi3.RequestBodyRef{
-			Ref:   fmt.Sprintf("#/components/requestBodies/%s", bodyTag),
+			Ref:   "#/components/requestBodies/" + bodyTag,
 			Value: requestBody,
 		}
 	}
@@ -142,7 +143,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	response := openapi3.NewResponse().WithDescription("OK")
 	if responseSchema != nil {
 		content := openapi3.NewContentWithSchema(responseSchema.Value, []string{"application/json"})
-		content["application/json"].Schema.Ref = fmt.Sprintf("#/components/schemas/%s", tag)
+		content["application/json"].Schema.Ref = "#/components/schemas/" + tag
 		response.WithContent(content)
 	}
 	operation.AddResponse(200, response)
