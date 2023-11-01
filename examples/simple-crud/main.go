@@ -17,6 +17,7 @@ import (
 //go:generate sqlc generate
 
 func main() {
+	// Flags
 	debug := flag.Bool("debug", false, "debug mode")
 	flag.Parse()
 
@@ -25,6 +26,7 @@ func main() {
 		logLevel = slog.LevelDebug
 	}
 
+	// Set my custom colored logger
 	slog.SetDefault(slog.New(
 		tint.NewHandler(os.Stderr, &tint.Options{
 			AddSource:  true,
@@ -33,33 +35,28 @@ func main() {
 		}),
 	))
 
+	// Connect to database
 	db := store.InitDB("/tmp/recipe.db")
 
+	// Create queries
 	queries := store.New(db)
 
+	// Create ressources that will be available in controllers
 	rs := controller.NewRessource(*queries)
 
-	app := op.NewServer()
+	// Create server with some options
+	app := op.NewServer(
+		op.WithPort(":8080"),
+	)
+
+	// Register middlewares (functions that will be executed before AND after the controllers, in the order they are registered)
+	// With op, you can use any existing middleware that relies on `net/http`, or create your own
 	op.UseStd(app, cors.Default().Handler)
 	op.UseStd(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
+	// Register routes
 	rs.Routes(app)
 
-	op.Group(app, "/api", func(newS *op.Server) {
-		op.Get(newS, "/mounted-route", func(c op.Ctx[any]) (string, error) {
-			return "hello", nil
-		})
-
-		op.Post(newS, "/mounted-route-post", func(c op.Ctx[any]) (string, error) {
-			return "hello", nil
-		})
-
-		op.Group(newS, "/mounted-group", func(groupedS *op.Server) {
-			op.Get(groupedS, "/mounted-route", func(c op.Ctx[any]) (string, error) {
-				return "hello", nil
-			})
-		})
-	})
-
+	// Run the server!
 	app.Run()
 }
