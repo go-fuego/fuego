@@ -1,8 +1,10 @@
 package op
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -211,4 +213,95 @@ func TestSetTags(t *testing.T) {
 	require.Equal(t, route.operation.Description, "my description")
 	require.Equal(t, route.operation.Summary, "my summary")
 	require.Equal(t, route.operation.Deprecated, true)
+}
+
+func BenchmarkRequest(b *testing.B) {
+	type Resp struct {
+		Name string `json:"name"`
+	}
+
+	b.Run("op server and op post", func(b *testing.B) {
+		s := NewServer()
+		Post(s, "/test", func(c Ctx[MyStruct]) (Resp, error) {
+			body, err := c.Body()
+			if err != nil {
+				return Resp{}, err
+			}
+
+			return Resp{Name: body.B}, nil
+		})
+
+		for i := 0; i < b.N; i++ {
+			r := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(`{"b":"M. John","c":3}`))
+			w := httptest.NewRecorder()
+
+			s.mux.ServeHTTP(w, r)
+
+			if w.Code != http.StatusOK || w.Body.String() != crlf(`{"name":"M. John"}`) {
+				b.Fail()
+			}
+		}
+	})
+
+	b.Run("op server and std post", func(b *testing.B) {
+		s := NewServer()
+		PostStd(s, "/test", func(w http.ResponseWriter, r *http.Request) {
+			var body MyStruct
+			err := json.NewDecoder(r.Body).Decode(&body)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			resp := Resp{
+				Name: body.B,
+			}
+			err = json.NewEncoder(w).Encode(resp)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		})
+
+		for i := 0; i < b.N; i++ {
+			r := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(`{"b":"M. John","c":3}`))
+			w := httptest.NewRecorder()
+
+			s.mux.ServeHTTP(w, r)
+
+			if w.Code != http.StatusOK || w.Body.String() != crlf(`{"name":"M. John"}`) {
+				b.Fail()
+			}
+		}
+	})
+
+	b.Run("std server and std post", func(b *testing.B) {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+			var body MyStruct
+			err := json.NewDecoder(r.Body).Decode(&body)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			resp := Resp{
+				Name: body.B,
+			}
+			err = json.NewEncoder(w).Encode(resp)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		})
+
+		for i := 0; i < b.N; i++ {
+			r := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(`{"b":"M. John","c":3}`))
+			w := httptest.NewRecorder()
+
+			mux.ServeHTTP(w, r)
+
+			if w.Code != http.StatusOK || w.Body.String() != crlf(`{"name":"M. John"}`) {
+				b.Fail()
+			}
+		}
+	})
 }
