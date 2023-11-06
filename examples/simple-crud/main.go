@@ -10,6 +10,7 @@ import (
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-op/op"
+	"github.com/go-op/op/middleware/cache"
 	"github.com/lmittmann/tint"
 	"github.com/rs/cors"
 )
@@ -36,7 +37,7 @@ func main() {
 	))
 
 	// Connect to database
-	db := store.InitDB("/tmp/recipe.db")
+	db := store.InitDB("./recipe.db")
 
 	// Create queries
 	queries := store.New(db)
@@ -46,12 +47,13 @@ func main() {
 
 	// Create server with some options
 	app := op.NewServer(
-		op.WithPort(":8080"),
+		op.WithPort(":8083"),
 	)
 
 	// Register middlewares (functions that will be executed before AND after the controllers, in the order they are registered)
 	// With op, you can use any existing middleware that relies on `net/http`, or create your own
 	op.UseStd(app, cors.Default().Handler)
+	op.UseStd(app, cache.New(cache.Config{}))
 	op.UseStd(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
 	// Register routes
