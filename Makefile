@@ -5,17 +5,17 @@ ci: fmt lint cover
 ci-full: ci sec dependencies-analyze bench 
 
 test: 
-	go test
+	go test ./...
 
 cover:
-	go test -coverprofile=coverage.out
+	go test -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out
 
 cover-web: cover
 	go tool cover -html=coverage.out
 
 bench:
-	go test -bench . -benchmem
+	go test -bench ./... -benchmem
 
 sec:
 	go run github.com/securego/gosec/v2/cmd/gosec@latest ./...
