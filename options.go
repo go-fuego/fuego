@@ -60,11 +60,6 @@ func NewServer(options ...func(*Server)) *Server {
 		mux:  http.NewServeMux(),
 		spec: NewOpenAPI(),
 
-		Addr:                  ":8080",
-		DisallowUnknownFields: true,
-		Serialize:             SendJSON,
-		SerializeError:        SendJSONError,
-
 		OpenapiConfig: defaultOpenapiConfig,
 	}
 
@@ -151,7 +146,7 @@ func WithOpenapiConfig(openapiConfig OpenapiConfig) func(*Server) {
 			s.OpenapiConfig.SwaggerUrl = defaultOpenapiConfig.SwaggerUrl
 		}
 
-		if s.OpenapiConfig.JsonSpecLocalPath != "" {
+		if s.OpenapiConfig.JsonSpecLocalPath == "" {
 			s.OpenapiConfig.JsonSpecLocalPath = defaultOpenapiConfig.JsonSpecLocalPath
 		}
 
