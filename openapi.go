@@ -48,12 +48,12 @@ func (s *Server) GenerateOpenAPI() openapi3.T {
 		slog.Error("Error marshalling spec to JSON", "error", err)
 	}
 
-	if !s.OpenapiConfig.DisableLocalSave {
-		localSave(s.OpenapiConfig.JsonSpecLocalPath, jsonSpec)
-	}
-
 	if !s.OpenapiConfig.DisableSwagger {
 		generateSwagger(s, jsonSpec)
+	}
+
+	if !s.OpenapiConfig.DisableLocalSave {
+		localSave(s.OpenapiConfig.JsonSpecLocalPath, jsonSpec)
 	}
 
 	return s.spec
