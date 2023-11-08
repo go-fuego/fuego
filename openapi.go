@@ -60,15 +60,6 @@ func (s *Server) GenerateOpenAPI() openapi3.T {
 }
 
 func localSave(jsonSpecLocalPath string, jsonSpec []byte) {
-	if jsonSpecLocalPath != "" {
-		jsonSpecLocalPath = defaultOpenapiConfig.JsonSpecLocalPath
-	}
-
-	if !validateJsonSpecLocalPath(jsonSpecLocalPath) {
-		slog.Error("Error writing json spec. Value of 'jsonSpecLocalPath' option is not valid", "file", jsonSpecLocalPath)
-		return
-	}
-
 	jsonFolder := filepath.Dir(jsonSpecLocalPath)
 
 	err := os.MkdirAll(jsonFolder, 0o750)
@@ -89,42 +80,21 @@ func localSave(jsonSpecLocalPath string, jsonSpec []byte) {
 	slog.Info("Updated " + jsonSpecLocalPath)
 }
 
+// Registers the routes to serve the OpenAPI spec and Swagger UI.
 func generateSwagger(s *Server, jsonSpec []byte) {
-	jsonSpecUrl := setValueFromConfig(defaultOpenapiConfig.JsonSpecUrl, s.OpenapiConfig.JsonSpecUrl)
-	swaggerUrl := setValueFromConfig(defaultOpenapiConfig.SwaggerUrl, s.OpenapiConfig.SwaggerUrl)
-	isJsonSpecUrlValid := isValueValid(jsonSpecUrl, validateJsonSpecUrl, "Error serving openapi json spec. Value of 'jsonSpecUrl' option is not valid")
-	isSwaggerUrlValid := isValueValid(swaggerUrl, validateSwaggerUrl, "Error generating swagger. Value of 'swaggerUrl' option is not valid")
+	GetStd(s, s.OpenapiConfig.JsonSpecUrl, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(jsonSpec)
+	})
 
-	if isJsonSpecUrlValid && isSwaggerUrlValid {
-		GetStd(s, jsonSpecUrl, func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write(jsonSpec)
-		})
+	GetStd(s, s.OpenapiConfig.SwaggerUrl+"/", httpSwagger.Handler(
+		httpSwagger.Layout(httpSwagger.BaseLayout),
+		httpSwagger.PersistAuthorization(true),
+		httpSwagger.URL(s.OpenapiConfig.JsonSpecUrl), // The url pointing to API definition
+	))
 
-		GetStd(s, swaggerUrl+"/", httpSwagger.Handler(
-			httpSwagger.Layout(httpSwagger.BaseLayout),
-			httpSwagger.PersistAuthorization(true),
-			httpSwagger.URL(jsonSpecUrl), // The url pointing to API definition
-		))
-
-		slog.Info(fmt.Sprintf("Raw json spec available at http://localhost%s%s", s.Addr, jsonSpecUrl))
-		slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s%s/index.html", s.Addr, swaggerUrl))
-	}
-}
-
-func setValueFromConfig(defaultValue string, config string) string {
-	if config != "" {
-		return config
-	}
-	return defaultValue
-}
-
-func isValueValid(config string, validationFunction func(valueToValidate string) bool, errorMessage string) bool {
-	if !validationFunction(config) {
-		slog.Error(errorMessage)
-		return false
-	}
-	return true
+	slog.Info(fmt.Sprintf("Raw json spec available at http://localhost%s%s", s.Addr, s.OpenapiConfig.JsonSpecUrl))
+	slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s%s/index.html", s.Addr, s.OpenapiConfig.SwaggerUrl))
 }
 
 func validateJsonSpecLocalPath(jsonSpecLocalPath string) bool {
