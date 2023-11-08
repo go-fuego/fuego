@@ -105,3 +105,35 @@ func BenchmarkServer_GenerateOpenAPI(b *testing.B) {
 		s.GenerateOpenAPI()
 	}
 }
+
+func TestValidateJsonSpecLocalPath(t *testing.T) {
+	require.Equal(t, true, validateJsonSpecLocalPath("path/to/jsonSpec.json"))
+	require.Equal(t, true, validateJsonSpecLocalPath("spec.json"))
+	require.Equal(t, true, validateJsonSpecLocalPath("path_/jsonSpec.json"))
+	require.Equal(t, true, validateJsonSpecLocalPath("Path_2000-12-08/json_Spec-007.json"))
+	require.Equal(t, false, validateJsonSpecLocalPath("path/to/jsonSpec"))
+	require.Equal(t, false, validateJsonSpecLocalPath("path/to/jsonSpec.jsn"))
+	require.Equal(t, false, validateJsonSpecLocalPath("path.to/js?.test.jsn"))
+}
+
+func TestValidateJsonSpecUrl(t *testing.T) {
+	require.Equal(t, true, validateJsonSpecUrl("/path/to/jsonSpec.json"))
+	require.Equal(t, true, validateJsonSpecUrl("/spec.json"))
+	require.Equal(t, true, validateJsonSpecUrl("/path_/jsonSpec.json"))
+	require.Equal(t, false, validateJsonSpecUrl("path/to/jsonSpec.json"))
+	require.Equal(t, false, validateJsonSpecUrl("/path/to/jsonSpec"))
+	require.Equal(t, false, validateJsonSpecUrl("/path/to/jsonSpec.jsn"))
+}
+
+func TestValidateSwaggerUrl(t *testing.T) {
+	require.Equal(t, true, validateSwaggerUrl("/path/to/jsonSpec"))
+	require.Equal(t, true, validateSwaggerUrl("/swagger"))
+	require.Equal(t, true, validateSwaggerUrl("/Super-usefull_swagger-2000"))
+	require.Equal(t, true, validateSwaggerUrl("/Super-usefull_swagger-"))
+	require.Equal(t, true, validateSwaggerUrl("/Super-usefull_swagger__"))
+	require.Equal(t, true, validateSwaggerUrl("/Super-usefull_swaggeR"))
+	require.Equal(t, false, validateSwaggerUrl("/spec.json"))
+	require.Equal(t, false, validateSwaggerUrl("/path_/swagger.json"))
+	require.Equal(t, false, validateSwaggerUrl("path/to/jsonSpec."))
+	require.Equal(t, false, validateSwaggerUrl("path/to/jsonSpec%"))
+}
