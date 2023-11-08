@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"log/slog"
 	"net/http"
+	"time"
 )
 
 type Storage interface {
@@ -21,7 +22,7 @@ func New(config Config) func(http.Handler) http.Handler {
 	storage := config.Storage
 
 	if storage == nil {
-		storage = NewTTL()
+		storage = NewInMemoryCache(3*time.Second, 1000)
 	}
 
 	return func(h http.Handler) http.Handler {
