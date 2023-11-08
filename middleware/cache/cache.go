@@ -52,6 +52,11 @@ func New(config Config) func(http.Handler) http.Handler {
 				return
 			}
 
+			if r.Header.Get("Cache-Control") == "no-store" {
+				h.ServeHTTP(w, r)
+				return
+			}
+
 			multiWriter := &MultiHTTPWriter{
 				ResponseWriter: w,
 				cacheWriter:    &bytes.Buffer{},
