@@ -11,6 +11,7 @@ import (
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-op/op"
 	"github.com/go-op/op/middleware/cache"
+	"github.com/go-op/op/middleware/httpLog"
 	"github.com/lmittmann/tint"
 	"github.com/rs/cors"
 )
@@ -52,6 +53,7 @@ func main() {
 
 	// Register middlewares (functions that will be executed before AND after the controllers, in the order they are registered)
 	// With op, you can use any existing middleware that relies on `net/http`, or create your own
+	op.UseStd(app, httpLog.New())
 	op.UseStd(app, cors.Default().Handler)
 	op.UseStd(app, cache.New(cache.Config{}))
 	op.UseStd(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
