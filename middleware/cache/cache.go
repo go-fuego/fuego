@@ -64,6 +64,10 @@ func New(config Config) func(http.Handler) http.Handler {
 
 			h.ServeHTTP(multiWriter, r)
 
+			if multiWriter.status != http.StatusOK {
+				return
+			}
+
 			storage.Set(key, multiWriter.cacheWriter.(*bytes.Buffer).String())
 			storage.Set(key+"_response-content-type", multiWriter.Header().Get("Content-Type"))
 
