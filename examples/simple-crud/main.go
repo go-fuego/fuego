@@ -48,7 +48,10 @@ func main() {
 	// Create server with some options
 	app := op.NewServer(
 		op.WithPort(":8083"),
+		op.WithAutoAuth(controller.LoginFunc),
 	)
+
+	rs.Security = app.Security
 
 	// Register middlewares (functions that will be executed before AND after the controllers, in the order they are registered)
 	// With op, you can use any existing middleware that relies on `net/http`, or create your own

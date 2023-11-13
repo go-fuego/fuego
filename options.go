@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var isGo1_22 = strings.TrimPrefix(runtime.Version(), "devel ") >= "go1.22"
@@ -33,6 +34,10 @@ type Server struct {
 	basePath    string
 
 	spec openapi3.T
+
+	Security Security
+
+	autoAuth AutoAuthConfig
 
 	Addr                  string
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
@@ -61,6 +66,8 @@ func NewServer(options ...func(*Server)) *Server {
 		spec: NewOpenAPI(),
 
 		OpenapiConfig: defaultOpenapiConfig,
+
+		Security: NewSecurity(),
 	}
 
 	defaultOptions := [...]func(*Server){
@@ -84,7 +91,25 @@ func NewServer(options ...func(*Server)) *Server {
 
 	s.startTime = time.Now()
 
+	if s.autoAuth.Enabled {
+		Post(s, "/auth/login", s.Security.LoginHandler(s.autoAuth.VerifyUserInfo)).SetTags("Auth").WithSummary("Login")
+		PostStd(s, "/auth/logout", s.Security.CookieLogoutHandler).SetTags("Auth").WithSummary("Logout")
+
+		s.middlewares = []func(http.Handler) http.Handler{
+			s.Security.TokenToContext(TokenFromCookie, TokenFromHeader),
+		}
+
+		PostStd(s, "/auth/refresh", s.Security.RefreshHandler).SetTags("Auth").WithSummary("Refresh token")
+	}
+
 	return s
+}
+
+func WithAutoAuth(verifyUserInfo func(user, password string) (jwt.Claims, error)) func(*Server) {
+	return func(c *Server) {
+		c.autoAuth.Enabled = true
+		c.autoAuth.VerifyUserInfo = verifyUserInfo
+	}
 }
 
 // WithDisallowUnknownFields sets the DisallowUnknownFields option.

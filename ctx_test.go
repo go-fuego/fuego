@@ -29,8 +29,9 @@ func TestContext_PathParam(t *testing.T) {
 
 func TestContext_QueryParam(t *testing.T) {
 	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello", nil)
+	w := httptest.NewRecorder()
 
-	c := NewContext[any](r, readOptions{})
+	c := NewContext[any](w, r, readOptions{})
 
 	param := c.QueryParam("id")
 	require.NotEmpty(t, param)
@@ -46,8 +47,9 @@ func TestContext_QueryParam(t *testing.T) {
 
 func TestContext_QueryParams(t *testing.T) {
 	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello", nil)
+	w := httptest.NewRecorder()
 
-	c := NewContext[any](r, readOptions{})
+	c := NewContext[any](w, r, readOptions{})
 
 	params := c.QueryParams()
 	require.NotEmpty(t, params)
@@ -87,9 +89,10 @@ func TestContext_Body(t *testing.T) {
 		a := strings.NewReader(`{"name":"John","age":30}`)
 
 		// Test an http request
+		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 
-		c := NewContext[testStruct](r, readOptions{})
+		c := NewContext[testStruct](w, r, readOptions{})
 
 		body, err := c.Body()
 		require.NoError(t, err)
@@ -100,9 +103,10 @@ func TestContext_Body(t *testing.T) {
 	t.Run("can read JSON body twice", func(t *testing.T) {
 		a := strings.NewReader(`{"name":"John","age":30}`)
 
+		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 
-		c := NewContext[testStruct](r, readOptions{})
+		c := NewContext[testStruct](w, r, readOptions{})
 
 		body, err := c.Body()
 		require.NoError(t, err)
@@ -123,6 +127,7 @@ func TestContext_Body(t *testing.T) {
 
 		reqBody := strings.NewReader(`{"name":"John","age":30}`)
 		c := NewContext[testStruct](
+			httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 			readOptions{})
 
@@ -140,6 +145,7 @@ func TestContext_Body(t *testing.T) {
 
 		reqBody := strings.NewReader(`{"name":"VeryLongName","age":12}`)
 		c := NewContext[testStruct](
+			httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 			readOptions{})
 
@@ -152,6 +158,7 @@ func TestContext_Body(t *testing.T) {
 	t.Run("can transform JSON body with custom method", func(t *testing.T) {
 		reqBody := strings.NewReader(`{"name":"John","age":30}`)
 		c := NewContext[testStructInTransformer](
+			httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 			readOptions{})
 
@@ -164,6 +171,7 @@ func TestContext_Body(t *testing.T) {
 	t.Run("can transform JSON body with custom method returning error", func(t *testing.T) {
 		reqBody := strings.NewReader(`{"name":"John","age":30}`)
 		c := NewContext[testStructInTransformerWithError](
+			httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 			readOptions{})
 
@@ -178,10 +186,11 @@ func TestContext_Body(t *testing.T) {
 		a := strings.NewReader("Hello World")
 
 		// Test an http request
+		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 		r.Header.Set("Content-Type", "text/plain")
 
-		c := NewContext[string](r, readOptions{})
+		c := NewContext[string](w, r, readOptions{})
 
 		_, err := c.Body()
 		require.NoError(t, err)
@@ -196,10 +205,11 @@ func FuzzContext_Body(f *testing.F) {
 		a := strings.NewReader(s)
 
 		// Test an http request
+		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-		c := NewContext[string](r, readOptions{})
+		c := NewContext[string](w, r, readOptions{})
 
 		_, err := c.Body()
 		require.NoError(t, err)
@@ -211,6 +221,7 @@ func BenchmarkContext_Body(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			reqBody := strings.NewReader(`{"name":"John","age":30}`)
 			c := NewContext[testStruct](
+				httptest.NewRecorder(),
 				httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 				readOptions{})
 			_, err := c.Body()
@@ -226,6 +237,7 @@ func BenchmarkContext_Body(b *testing.B) {
 	b.Run("valid JSON body cache", func(b *testing.B) {
 		reqBody := strings.NewReader(`{"name":"John","age":30}`)
 		c := NewContext[testStruct](
+			httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 			readOptions{})
 		for i := 0; i < b.N; i++ {
@@ -240,6 +252,7 @@ func BenchmarkContext_Body(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			reqBody := strings.NewReader(`{"name":"John","age":30}`)
 			c := NewContext[testStruct](
+				httptest.NewRecorder(),
 				httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 				readOptions{})
 			_, err := c.Body()
@@ -253,6 +266,7 @@ func BenchmarkContext_Body(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			reqBody := strings.NewReader(`{"name":"John","age":30}`)
 			c := NewContext[testStruct](
+				httptest.NewRecorder(),
 				httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 				readOptions{})
 			_, err := c.Body()
@@ -269,9 +283,10 @@ func TestContext_MustBody(t *testing.T) {
 		a := strings.NewReader(`{"name":"John","age":30}`)
 
 		// Test an http request
+		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 
-		c := NewContext[testStruct](r, readOptions{})
+		c := NewContext[testStruct](w, r, readOptions{})
 
 		body := c.MustBody()
 		require.Equal(t, body.Name, "John")
@@ -286,6 +301,7 @@ func TestContext_MustBody(t *testing.T) {
 
 		reqBody := strings.NewReader(`{"name":"VeryLongName","age":12}`)
 		c := NewContext[testStruct](
+			httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 			readOptions{})
 
