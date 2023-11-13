@@ -93,13 +93,15 @@ func SendJSON(w http.ResponseWriter, ans any) {
 // If the error implements ErrorWithStatus, the status code will be set.
 func SendJSONError(w http.ResponseWriter, err error) {
 	status := http.StatusInternalServerError
-	var errorStatus ErrorWithStatus
+	errorStatus := ErrorResponse{
+		Message: err.Error(),
+	}
 	if errors.As(err, &errorStatus) {
 		status = errorStatus.Status()
 	}
 
 	w.WriteHeader(status)
-	SendJSON(w, err)
+	SendJSON(w, errorStatus)
 }
 
 // SendXML sends a XML response.

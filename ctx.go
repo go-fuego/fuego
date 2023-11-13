@@ -21,22 +21,31 @@ type Ctx[B any] interface {
 	// MustBody works like Body, but panics if there is an error.
 	MustBody() B
 
+	// PathParam returns the path parameter with the given name.
+	// If it does not exist, it returns an empty string.
+	// Example:
+	//   op.Get(s, "/recipes/{recipe_id}", func(c op.Ctx[any]) (any, error) {
+	//	 	id := c.PathParam("recipe_id")
+	//   	...
+	//   })
 	PathParam(name string) string
 	PathParams() map[string]string
 	QueryParam(name string) string
 	QueryParams() map[string]string
 
-	// Request returns the underlying http request.
-	Request() *http.Request
+	Request() *http.Request        // Request returns the underlying http request.
+	Response() http.ResponseWriter // Response returns the underlying http response writer.
 
 	// Context returns the context of the request.
 	// Same as c.Request().Context().
+	// This is the context related to the request, not the context of the server.
 	Context() context.Context
 }
 
-func NewContext[B any](r *http.Request, options readOptions) *Context[B] {
+func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) *Context[B] {
 	c := &Context[B]{
-		request: r,
+		response: w,
+		request:  r,
 		readOptions: readOptions{
 			DisallowUnknownFields: options.DisallowUnknownFields,
 			MaxBodySize:           options.MaxBodySize,
@@ -50,6 +59,7 @@ func NewContext[B any](r *http.Request, options readOptions) *Context[B] {
 type Context[BodyType any] struct {
 	body       *BodyType
 	request    *http.Request
+	response   http.ResponseWriter
 	pathParams map[string]string
 
 	readOptions readOptions
@@ -102,6 +112,11 @@ func (c Context[B]) QueryParam(name string) string {
 // Request returns the http request.
 func (c Context[B]) Request() *http.Request {
 	return c.request
+}
+
+// Response returns the http response writer.
+func (c Context[B]) Response() http.ResponseWriter {
+	return c.response
 }
 
 // MustBody works like Body, but panics if there is an error.
