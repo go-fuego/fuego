@@ -254,7 +254,7 @@ func checkRolesRegex(acceptedRolesRegex *regexp.Regexp) func(userRoles []string)
 	}
 }
 
-// AuthWall is a middleware that checks if the user is authenticated.
+// AuthWall is a middleware that checks if the user is authorized.
 // If not, it returns an error.
 // If authorized roles are provided, the user must have at least one of its role in the list.
 // For example:
@@ -268,7 +268,7 @@ func AuthWall(authorizedRoles ...string) func(next http.Handler) http.Handler {
 	return authWall(checkRolesOr(authorizedRoles))
 }
 
-// AuthWallRegexp is a middleware that checks if the user is authenticated.
+// AuthWallRegexp is a middleware that checks if the user is authorized.
 // If not, it returns an error.
 // If authorized roles are provided, the user must have at least one of its role in the list that matches the regex.
 // For example:
@@ -281,7 +281,7 @@ func AuthWallRegexp(acceptedRolesRegex *regexp.Regexp) func(next http.Handler) h
 	return authWall(checkRolesRegex(acceptedRolesRegex))
 }
 
-// AuthWallRegex is a middleware that checks if the user is authenticated.
+// AuthWallRegex is a middleware that checks if the user is authorized.
 // If not, it returns an error.
 // If authorized roles are provided, the user must have at least one of its role in the list that matches the regex.
 // For example:
@@ -294,7 +294,7 @@ func AuthWallRegex(acceptedRolesRegex string) func(next http.Handler) http.Handl
 	return AuthWallRegexp(re)
 }
 
-// AuthWall is a middleware that checks if the user is authenticated.
+// AuthWall is a middleware that checks if the user is authorized.
 // It takes a function that checks if the user is authorized.
 func authWall(authorizeFunc func(userRoles []string) bool) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
