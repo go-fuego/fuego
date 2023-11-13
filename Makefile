@@ -30,4 +30,4 @@ lint:
 	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run
 
 example:
-	go run ./examples/simple-crud
+	( cd examples/simple-crud && go run . )

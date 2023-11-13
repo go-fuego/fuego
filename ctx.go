@@ -2,8 +2,13 @@ package op
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"html/template"
+	"io/fs"
 	"log/slog"
 	"net/http"
+	"os"
 )
 
 const (
@@ -33,6 +38,8 @@ type Ctx[B any] interface {
 	QueryParam(name string) string
 	QueryParams() map[string]string
 
+	Render(data any, templates ...string) (HTML, error)
+
 	Request() *http.Request        // Request returns the underlying http request.
 	Response() http.ResponseWriter // Response returns the underlying http response writer.
 
@@ -50,6 +57,8 @@ func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptio
 			DisallowUnknownFields: options.DisallowUnknownFields,
 			MaxBodySize:           options.MaxBodySize,
 		},
+		fsInitMessage: "(filesystem given '.' from current working directory)",
+		fs:            os.DirFS("."),
 	}
 
 	return c
@@ -61,6 +70,9 @@ type Context[BodyType any] struct {
 	request    *http.Request
 	response   http.ResponseWriter
 	pathParams map[string]string
+
+	fsInitMessage string // The input given to NewContext. Used for error messages.
+	fs            fs.FS
 
 	readOptions readOptions
 }
@@ -78,6 +90,27 @@ var _ Ctx[any] = &Context[any]{} // Check that Context implements Ctx.
 // Same as c.Request().Context().
 func (c Context[B]) Context() context.Context {
 	return c.request.Context()
+}
+
+// Render renders the given templates with the given data.
+// It returns just an empty string, because the response is written directly to the http.ResponseWriter.
+func (c Context[B]) Render(data any, templates ...string) (HTML, error) {
+	tmpl, err := template.ParseFS(c.fs, templates...)
+	if err != nil {
+
+		var pathError *fs.PathError
+		if errors.As(err, &pathError) {
+			wd, _ := os.Getwd()
+			return "", fmt.Errorf("template '%s' does not exist in directory '%s': %w", pathError.Path, wd, err)
+		}
+
+		return "", fmt.Errorf("%w %s", err, c.fsInitMessage)
+	}
+
+	c.response.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmpl.Execute(c.response, data)
+
+	return "", err
 }
 
 // PathParams returns the path parameters of the request.

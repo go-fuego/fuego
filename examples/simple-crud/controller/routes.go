@@ -6,6 +6,7 @@ import (
 	"simple-crud/store"
 
 	"github.com/go-op/op"
+	"github.com/rs/cors"
 )
 
 // Ressource is the struct that holds useful sources of informations available for the controllers.
@@ -26,6 +27,8 @@ type Ressource struct {
 }
 
 func (rs Ressource) Routes(s *op.Server) {
+	op.UseStd(s, cors.Default().Handler)
+
 	op.GetStd(s, "/recipes-standard-with-helpers", rs.getAllRecipesStandardWithHelpers).
 		AddTags("Recipe")
 
