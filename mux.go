@@ -10,11 +10,15 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
-func Group(s *Server, path string, group func(s *Server)) {
+func Group(s *Server, path string, group func(s *Server)) *Server {
 	ss := *s
-	ss.basePath += path
+	newServer := &ss
+	newServer.basePath += path
 
-	group(&ss)
+	if group != nil {
+		group(newServer)
+	}
+	return newServer
 }
 
 type Route[ResponseBody any, RequestBody any] struct {
@@ -25,7 +29,7 @@ func Get[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error
 	return Register[T](s, http.MethodGet, path, controller)
 }
 
-func Post[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
+func Post[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register[T](s, http.MethodPost, path, controller)
 }
 
