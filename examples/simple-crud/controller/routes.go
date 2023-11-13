@@ -69,4 +69,8 @@ func (rs Ressource) Routes(s *op.Server) {
 			op.Get(groupedS, "/mounted-route", placeholderController)
 		})
 	})
+
+	// Grouping with only a prefix and not custom middlewares
+	apiv2 := op.Group(s, "/v2", nil)
+	op.Get(apiv2, "/recipes", rs.getAllRecipes)
 }
