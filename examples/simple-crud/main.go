@@ -7,12 +7,12 @@ import (
 
 	"simple-crud/controller"
 	"simple-crud/store"
+	"simple-crud/views"
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-op/op"
 	"github.com/go-op/op/middleware/cache"
 	"github.com/lmittmann/tint"
-	"github.com/rs/cors"
 )
 
 //go:generate sqlc generate
@@ -42,8 +42,11 @@ func main() {
 	// Create queries
 	queries := store.New(db)
 
-	// Create ressources that will be available in controllers
+	// Create ressources that will be available in API controllers
 	rs := controller.NewRessource(*queries)
+
+	// Create ressources that will be available in HTML controllers
+	viewsRessources := views.NewRessource(*queries)
 
 	// Create server with some options
 	app := op.NewServer(
@@ -55,12 +58,14 @@ func main() {
 
 	// Register middlewares (functions that will be executed before AND after the controllers, in the order they are registered)
 	// With op, you can use any existing middleware that relies on `net/http`, or create your own
-	op.UseStd(app, cors.Default().Handler)
 	op.UseStd(app, cache.New(cache.Config{}))
 	op.UseStd(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
-	// Register routes
-	rs.Routes(app)
+	// Register views (controllers that return HTML pages)
+	op.Group(app, "", viewsRessources.Routes)
+
+	// Register API routes (controllers that return JSON)
+	op.Group(app, "/api", rs.Routes)
 
 	// Run the server!
 	app.Run()

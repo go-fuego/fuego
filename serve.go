@@ -3,6 +3,7 @@ package op
 import (
 	"log/slog"
 	"net/http"
+	"reflect"
 	"time"
 )
 
@@ -30,6 +31,8 @@ type Controller[ReturnType any, Body any] func(c Context[Body]) (ReturnType, err
 
 // httpHandler converts a controller into a http.HandlerFunc.
 func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body]) (ReturnType, error)) http.HandlerFunc {
+	returnsHTML := reflect.TypeOf(controller).Out(0).Name() == "HTML"
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := NewContext[Body](w, r, readOptions{
 			DisallowUnknownFields: s.DisallowUnknownFields,
@@ -44,6 +47,19 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 		if err != nil {
 			err = s.ErrorHandler(err)
 			s.SerializeError(w, err)
+			return
+		}
+
+		if reflect.TypeOf(ans) == nil {
+			return
+		}
+
+		if returnsHTML {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			_, err = w.Write([]byte(any(ans).(HTML)))
+			if err != nil {
+				s.SerializeError(w, err)
+			}
 			return
 		}
 
