@@ -8,6 +8,7 @@ import (
 // MultiHTTPWriter is a http.ResponseWriter that writes the response to multiple writers
 type MultiHTTPWriter struct {
 	http.ResponseWriter
+	status      int       // status is the status code that will be written to the response
 	cacheWriter io.Writer // cacheWriter is the writer that will be used to cache the response
 }
 
@@ -20,4 +21,8 @@ func (m *MultiHTTPWriter) Write(p []byte) (int, error) {
 
 func (m *MultiHTTPWriter) Unwrap() http.ResponseWriter {
 	return m.ResponseWriter
+}
+func (m *MultiHTTPWriter) WriteHeader(statusCode int) {
+	m.status = statusCode
+	m.ResponseWriter.WriteHeader(statusCode)
 }
