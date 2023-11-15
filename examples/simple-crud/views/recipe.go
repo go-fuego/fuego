@@ -8,6 +8,7 @@ import (
 	"simple-crud/store"
 
 	"github.com/go-op/op"
+	"github.com/google/uuid"
 )
 
 func NewRessource(queries store.Queries) Ressource {
@@ -55,7 +56,7 @@ func (rs Ressource) addRecipe(c op.Ctx[store.CreateRecipeParams]) (op.HTML, erro
 		return "", err
 	}
 
-	body.ID = "test"
+	body.ID = uuid.NewString()
 
 	_, err = rs.Queries.CreateRecipe(c.Context(), body)
 	if err != nil {
