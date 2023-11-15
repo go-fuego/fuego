@@ -1,15 +1,17 @@
-{{template "main.layout.html" .}} INGREDIENTS START {{define "page"}}
-<div>
-  <h1>List of all my favorite ingredients</h1>
-  <ul>
-    {{ range $recipe := . }}
-    <li>
-      <span>
-        <strong> {{ $recipe.Name }} </strong>
-        {{ $recipe.Description }}
-      </span>
-    </li>
-    {{ end }}
-  </ul>
-</div>
-{{end}} INGREDIENTS END
+{{ template "main.layout.html" . }}
+
+{{ define "page" }}
+  <div>
+    <h1>List of all my favorite ingredients</h1>
+    <ul>
+      {{ range $ingredient := . }}
+        <li>
+          <span>
+            <strong> {{ $ingredient.Name }} </strong>
+            {{ $ingredient.Description }}
+          </span>
+        </li>
+      {{ end }}
+    </ul>
+  </div>
+{{ end }}

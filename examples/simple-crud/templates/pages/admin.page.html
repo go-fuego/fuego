@@ -1,20 +1,24 @@
-<div>
-  <!-- Admin page -->
-  <h1>Admin page</h1>
-  <p>Here you can manage data.</p>
-  <p><a href="/admin/users">Manage users</a></p>
+{{ template "main.layout.html" . }}
 
+{{ define "page" }}
   <div>
-    <h2>Add a recipe</h2>
-    <form action="/recipes-new" method="POST">
-      <label for="name">Name</label>
-      <input type="text" id="name" name="name" required />
-      <label for="description">Description</label>
-      <input type="text" id="description" name="description" required />
+    <!-- Admin page -->
+    <h1>Admin page</h1>
+    <p>Here you can manage data.</p>
+    <p><a href="/admin/users">Manage users</a></p>
 
-      <input type="submit" value="Add" />
-    </form>
+    <div>
+      <h2>Add a recipe</h2>
+      <form action="/recipes-new" method="POST">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required />
+        <label for="description">Description</label>
+        <input type="text" id="description" name="description" required />
 
-    <div id="recipe-list"></div>
+        <input type="submit" value="Add" />
+      </form>
+
+      <div id="recipe-list"></div>
+    </div>
   </div>
-</div>
+{{ end }}

@@ -2,19 +2,28 @@
 
 <html lang="en">
   <head>
-    <script src="https://unpkg.com/htmx.org@1.9.8"></script>
+    <meta charset="utf-8" />
+
+    {{ block "head.partial.html" . }}
+      <script src="https://unpkg.com/htmx.org@1.9.8"></script>
+    {{ end }}
   </head>
   <body>
-    {{block "navbar.partial.html" .}} {{end}}
+    {{ template "navbar.partial.html" . }}
 
-    <main>{{template "page" .}}</main>
 
-    {{block "footer.partial.html" .}} {{end}}
+    <main>{{ template "page" . }}</main>
+
+    {{ template "footer.partial.html" . }}
   </body>
 </html>
 
 <style>
   body {
     margin: 0;
+  }
+
+  main {
+    padding: 1rem;
   }
 </style>

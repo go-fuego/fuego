@@ -91,9 +91,11 @@ func (c Context[B]) Context() context.Context {
 // Render renders the given templates with the given data.
 // It returns just an empty string, because the response is written directly to the http.ResponseWriter.
 func (c Context[B]) Render(data any, templates ...string) (HTML, error) {
-	if !strings.HasPrefix("pages/", templates[0]) {
+	if !strings.HasPrefix(templates[0], "pages/") {
 		templates[0] = "pages/" + templates[0]
 	}
+
+	templates = append(templates, templates[0]) // To override all blocks defined in the main template
 
 	tmpl, err := template.ParseFS(c.fs, templates...)
 	if err != nil {
@@ -107,7 +109,7 @@ func (c Context[B]) Render(data any, templates ...string) (HTML, error) {
 		}
 	}
 
-	templateToExecute := templates[0][len("pages/"):]
+	templateToExecute := strings.TrimPrefix(templates[0], "pages/")
 
 	c.response.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err = tmpl.ExecuteTemplate(c.response, templateToExecute, data)
