@@ -47,7 +47,7 @@ func (rs Ressource) showRecipes(c op.Ctx[any]) (op.HTML, error) {
 		return "", err
 	}
 
-	return c.Render(recipes, "pages/recipes.page.html", "layouts/main.layout.html", "partials/**.html")
+	return c.Render(recipes, "pages/recipes.page.html")
 }
 
 func (rs Ressource) addRecipe(c op.Ctx[store.CreateRecipeParams]) (op.HTML, error) {
@@ -68,7 +68,7 @@ func (rs Ressource) addRecipe(c op.Ctx[store.CreateRecipeParams]) (op.HTML, erro
 		return "", err
 	}
 
-	return c.Render(recipes, "pages/admin.page.html", "layouts/main.layout.html", "partials/**.html")
+	return c.Render(recipes, "pages/admin.page.html")
 }
 
 func (rs Ressource) showIngredients(c op.Ctx[any]) (op.HTML, error) {
@@ -77,7 +77,7 @@ func (rs Ressource) showIngredients(c op.Ctx[any]) (op.HTML, error) {
 		return "", err
 	}
 
-	return c.Render(ingredients, "pages/ingredients.page.html", "layouts/main.layout.html", "partials/**.html")
+	return c.Render(ingredients, "pages/ingredients.page.html")
 }
 
 func (rs Ressource) showHTML(c op.Ctx[any]) (op.HTML, error) {

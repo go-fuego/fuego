@@ -4,3 +4,4 @@ docs
 tmp
 recipe.db
 node_modules
+tmp/*

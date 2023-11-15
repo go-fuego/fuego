@@ -68,7 +68,8 @@ type Context[BodyType any] struct {
 	response   http.ResponseWriter
 	pathParams map[string]string
 
-	fs fs.FS
+	fs        fs.FS
+	templates *template.Template
 
 	readOptions readOptions
 }
@@ -97,7 +98,7 @@ func (c Context[B]) Render(data any, templates ...string) (HTML, error) {
 
 	templates = append(templates, templates[0]) // To override all blocks defined in the main template
 
-	tmpl, err := template.ParseFS(c.fs, templates...)
+	tmpl, err := c.templates.ParseFS(c.fs, templates...)
 	if err != nil {
 		return "", ErrorResponse{
 			StatusCode: http.StatusInternalServerError,

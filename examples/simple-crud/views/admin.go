@@ -8,5 +8,5 @@ func (rs Ressource) pageAdmin(c op.Ctx[any]) (op.HTML, error) {
 		return "", err
 	}
 
-	return c.Render(ingredients, "pages/admin.page.html", "layouts/main.layout.html", "partials/**.html")
+	return c.Render(ingredients, "pages/admin.page.html")
 }

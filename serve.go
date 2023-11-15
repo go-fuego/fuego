@@ -1,6 +1,7 @@
 package op
 
 import (
+	"html/template"
 	"log/slog"
 	"net/http"
 	"reflect"
@@ -39,6 +40,7 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 			MaxBodySize:           s.maxBodySize,
 		})
 		ctx.fs = s.fs
+		ctx.templates = template.Must(s.template.Clone())
 
 		for _, param := range parsePathParams(r.URL.Path) {
 			ctx.pathParams[param] = "coming in go1.22"
