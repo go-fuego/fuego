@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net/http"
+
+	"github.com/gorilla/schema"
 )
 
 // InTransformer is an interface for entities that can be transformed.
@@ -90,6 +93,52 @@ func readString[B ~string](input io.Reader, options readOptions) (B, error) {
 		body = *any(inTransformerBody).(*B)
 
 		slog.Debug("InTransformd body", "body", body)
+	}
+
+	return body, nil
+}
+
+var decoder = schema.NewDecoder()
+
+// ReadURLEncoded reads the request body as HTML Form.
+func ReadURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
+	return readURLEncoded[B](r, ReadOptions)
+}
+
+// readURLEncoded reads the request body as HTML Form.
+// Can be used independantly from framework using [ReadURLEncoded],
+// or as a method of Context.
+func readURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
+	var body B
+
+	err := r.ParseForm()
+	if err != nil {
+		return body, fmt.Errorf("cannot parse form: %w", err)
+	}
+
+	decoder.IgnoreUnknownKeys(!options.DisallowUnknownFields)
+
+	err = decoder.Decode(&body, r.PostForm)
+	if err != nil {
+		return body, fmt.Errorf("cannot decode request body: %w", err)
+	}
+	slog.Debug("Decoded body", "body", body)
+
+	// InTransform input if possible.
+	if inTransformerBody, ok := any(&body).(InTransformer); ok {
+		err := inTransformerBody.InTransform()
+		if err != nil {
+			return body, fmt.Errorf("cannot transform request body: %w", err)
+		}
+		body = *any(inTransformerBody).(*B)
+
+		slog.Debug("InTransformd body", "body", body)
+	}
+
+	// Validation
+	err = validate(body)
+	if err != nil {
+		return body, fmt.Errorf("cannot validate request body: %w", err)
 	}
 
 	return body, nil

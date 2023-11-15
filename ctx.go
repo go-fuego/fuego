@@ -191,10 +191,12 @@ func (c *Context[B]) Body() (B, error) {
 	var body B
 	var err error
 	switch c.request.Header.Get("Content-Type") {
-	case "application/x-www-form-urlencoded", "text/plain":
+	case "text/plain":
 		s, errReadingString := readString[string](c.request.Body, c.readOptions)
 		body = any(s).(B)
 		err = errReadingString
+	case "application/x-www-form-urlencoded", "multipart/form-data":
+		body, err = readURLEncoded[B](c.request, c.readOptions)
 	case "application/json":
 		fallthrough
 	default:
