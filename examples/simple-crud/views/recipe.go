@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 	"path"
+
 	"simple-crud/store"
 
 	"github.com/go-op/op"
@@ -45,7 +46,37 @@ func (rs Ressource) showRecipes(c op.Ctx[any]) (op.HTML, error) {
 		return "", err
 	}
 
-	return c.Render(recipes, "views/templates/recipes.html")
+	return c.Render(recipes, "pages/recipes.page.html", "layouts/main.layout.html", "partials/**.html")
+}
+
+func (rs Ressource) addRecipe(c op.Ctx[store.CreateRecipeParams]) (op.HTML, error) {
+	body, err := c.Body()
+	if err != nil {
+		return "", err
+	}
+
+	body.ID = "test"
+
+	_, err = rs.Queries.CreateRecipe(c.Context(), body)
+	if err != nil {
+		return "", err
+	}
+
+	recipes, err := rs.Queries.GetRecipes(c.Context())
+	if err != nil {
+		return "", err
+	}
+
+	return c.Render(recipes, "pages/admin.page.html", "layouts/main.layout.html", "partials/**.html")
+}
+
+func (rs Ressource) showIngredients(c op.Ctx[any]) (op.HTML, error) {
+	ingredients, err := rs.Queries.GetIngredients(c.Context())
+	if err != nil {
+		return "", err
+	}
+
+	return c.Render(ingredients, "pages/ingredients.page.html", "layouts/main.layout.html", "partials/**.html")
 }
 
 func (rs Ressource) showHTML(c op.Ctx[any]) (op.HTML, error) {

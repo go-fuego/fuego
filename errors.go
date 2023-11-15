@@ -2,6 +2,7 @@ package op
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 )
 
@@ -63,6 +64,8 @@ func ErrorHandler(err error) error {
 	if errors.As(err, &errorInfo) {
 		errResponse.MoreInfo = errorInfo.Info()
 	}
+
+	slog.Error("Error : "+errResponse.Message, "status:", errResponse.StatusCode, "info:", errResponse.MoreInfo)
 
 	return errResponse
 }

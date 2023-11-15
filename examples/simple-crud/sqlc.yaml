@@ -9,5 +9,5 @@ sql:
         out: "store"
         emit_json_tags: true
         overrides:
-        - column: "dosing.quantity"
-          go_struct_tag: 'validate:"required,gt=0"'
+          - column: "dosing.quantity"
+            go_struct_tag: 'validate:"required,gt=0"'

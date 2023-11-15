@@ -2,13 +2,12 @@ package op
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"html/template"
 	"io/fs"
 	"log/slog"
 	"net/http"
-	"os"
+	"strings"
 )
 
 const (
@@ -57,8 +56,6 @@ func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptio
 			DisallowUnknownFields: options.DisallowUnknownFields,
 			MaxBodySize:           options.MaxBodySize,
 		},
-		fsInitMessage: "(filesystem given '.' from current working directory)",
-		fs:            os.DirFS("."),
 	}
 
 	return c
@@ -71,8 +68,7 @@ type Context[BodyType any] struct {
 	response   http.ResponseWriter
 	pathParams map[string]string
 
-	fsInitMessage string // The input given to NewContext. Used for error messages.
-	fs            fs.FS
+	fs fs.FS
 
 	readOptions readOptions
 }
@@ -95,20 +91,36 @@ func (c Context[B]) Context() context.Context {
 // Render renders the given templates with the given data.
 // It returns just an empty string, because the response is written directly to the http.ResponseWriter.
 func (c Context[B]) Render(data any, templates ...string) (HTML, error) {
-	tmpl, err := template.ParseFS(c.fs, templates...)
-	if err != nil {
-
-		var pathError *fs.PathError
-		if errors.As(err, &pathError) {
-			wd, _ := os.Getwd()
-			return "", fmt.Errorf("template '%s' does not exist in directory '%s': %w", pathError.Path, wd, err)
-		}
-
-		return "", fmt.Errorf("%w %s", err, c.fsInitMessage)
+	if !strings.HasPrefix("pages/", templates[0]) {
+		templates[0] = "pages/" + templates[0]
 	}
 
+	tmpl, err := template.ParseFS(c.fs, templates...)
+	if err != nil {
+		return "", ErrorResponse{
+			StatusCode: http.StatusInternalServerError,
+			Message:    fmt.Errorf("error parsing template '%s': %w", templates, err).Error(),
+			MoreInfo: map[string]any{
+				"templates": templates,
+				"help":      "Check that the template exists and have the correct extension.",
+			},
+		}
+	}
+
+	templateToExecute := templates[0][len("pages/"):]
+
 	c.response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err = tmpl.Execute(c.response, data)
+	err = tmpl.ExecuteTemplate(c.response, templateToExecute, data)
+	if err != nil {
+		return "", ErrorResponse{
+			StatusCode: http.StatusInternalServerError,
+			Message:    fmt.Errorf("error executing template '%s': %w", templateToExecute, err).Error(),
+			MoreInfo: map[string]any{
+				"templates": templates,
+				"help":      "Check that the template exists and have the correct extension.",
+			},
+		}
+	}
 
 	return "", err
 }

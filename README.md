@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./op-logo.svg"  height="200" alt="Ren'Py Graphviz" />
+  <img src="./op-logo.svg" height="200" alt="Ren'Py Graphviz" />
 </p>
 
 # Op! ⏱️
@@ -13,17 +13,17 @@ The only Go framework generating OpenAPI documentation from code. Inspired by Ne
 
 ## Why op?
 
-Chi, Gin, Fiber and Echo are great frameworks. But since they are designed a long time ago, they do not enjoy the possibilities that provide modern Go. Op provides a lot of helper functions and features that make it easy to develop APIs.
+Chi, Gin, Fiber and Echo are great frameworks. But since they were designed a long time ago, they do not enjoy the possibilities that modern Go provides. Op offers a lot of helper functions and features that make it easy to develop APIs.
 
 ## Features
 
 - **OpenAPI**: Op automatically generates OpenAPI documentation from code
-- **`net/http` compatibile**: Op is built on top of `net/http`, so you can use any `net/http` middleware or handler!
+- **`net/http` compatible**: Op is built on top of `net/http`, so you can use any `net/http` middleware or handler!
 - **Routing**: Op provides a simple and fast router based on Go 1.22 `net/http`
-- **Serialization/Deserialization**: Op automatically serializes and deserializes JSON and XML based on user provided structs (or not, if you want to do it yourself)
+- **Serialization/Deserialization**: Op automatically serializes and deserializes JSON and XML based on user-provided structs (or not, if you want to do it yourself)
 - **Validation**: Op provides a simple and fast validator based on go-playground/validator
 - **Transformation**: easily transform your data after deserialization
-- **Middlewares**: easily add a custom `net/http` middleware, or use the built-in middlewares.
+- **Middlewares**: easily add a custom `net/http` middleware or use the built-in middlewares.
 
 ## Examples
 

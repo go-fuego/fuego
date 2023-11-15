@@ -1,7 +1,9 @@
 package op
 
 import (
+	"html/template"
 	"io"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"runtime"
@@ -38,6 +40,8 @@ type Server struct {
 	Security Security
 
 	autoAuth AutoAuthConfig
+	fs       fs.FS
+	template *template.Template // TODO: use preparsed templates
 
 	Addr                  string
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
@@ -81,6 +85,13 @@ func NewServer(options ...func(*Server)) *Server {
 	for _, option := range append(defaultOptions[:], options...) {
 		option(s)
 	}
+
+	err := s.LoadTemplates(nil)
+	if err != nil {
+		slog.Error("Error loading templates", "error", err)
+		panic(err)
+	}
+	slog.Debug("pre-loaded templates " + s.template.DefinedTemplates())
 
 	if !isGo1_22 {
 		slog.Warn(

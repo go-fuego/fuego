@@ -1,5 +1,6 @@
-<main>
-  <h1>List of all my favorite recipes</h1>
+{{template "main.layout.html" .}} INGREDIENTS START {{define "page"}}
+<div>
+  <h1>List of all my favorite ingredients</h1>
   <ul>
     {{ range $recipe := . }}
     <li>
@@ -10,4 +11,5 @@
     </li>
     {{ end }}
   </ul>
-</main>
+</div>
+{{end}} INGREDIENTS END

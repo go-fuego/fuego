@@ -38,6 +38,7 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 			DisallowUnknownFields: s.DisallowUnknownFields,
 			MaxBodySize:           s.maxBodySize,
 		})
+		ctx.fs = s.fs
 
 		for _, param := range parsePathParams(r.URL.Path) {
 			ctx.pathParams[param] = "coming in go1.22"
