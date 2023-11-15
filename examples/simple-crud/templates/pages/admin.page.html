@@ -9,13 +9,19 @@
 
     <div>
       <h2>Add a recipe</h2>
-      <form action="/recipes-new" method="POST">
-        <label for="name">Name</label>
-        <input type="text" id="name" name="name" required />
-        <label for="description">Description</label>
-        <input type="text" id="description" name="description" required />
+      <form class="flex flex-col space-y-4" action="/recipes-new" method="POST">
+        <label class="label" for="name">Name</label>
+        <input class="input" type="text" id="name" name="name" required />
+        <label class="label" for="description">Description</label>
+        <input
+          class="input"
+          type="text"
+          id="description"
+          name="description"
+          required
+        />
 
-        <input type="submit" value="Add" />
+        <input class="btn" type="submit" value="Add" />
       </form>
 
       <div id="recipe-list"></div>

@@ -8,22 +8,14 @@
       <script src="https://unpkg.com/htmx.org@1.9.8"></script>
     {{ end }}
   </head>
-  <body>
+  <body class="m-0">
     {{ template "navbar.partial.html" . }}
 
 
-    <main>{{ template "page" . }}</main>
+    <main class="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8">
+      {{ template "page" . }}
+    </main>
 
     {{ template "footer.partial.html" . }}
   </body>
 </html>
-
-<style>
-  body {
-    margin: 0;
-  }
-
-  main {
-    padding: 1rem;
-  }
-</style>

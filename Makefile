@@ -31,3 +31,6 @@ lint:
 
 example:
 	( cd examples/simple-crud && go run . -debug )
+
+example-watch:
+	( cd examples/simple-crud && air -- -debug )
