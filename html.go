@@ -12,6 +12,9 @@ import (
 // To use templating, use [Ctx.Render].
 type HTML string
 
+// H is a shortcut for map[string]any
+type H map[string]any
+
 // LoadTemplates
 // Deprecated: Just not used.
 func (s *Server) LoadTemplates(myFs fs.FS, patterns ...string) error {

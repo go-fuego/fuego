@@ -37,7 +37,23 @@ type Ctx[B any] interface {
 	QueryParam(name string) string
 	QueryParams() map[string]string
 
-	Render(data any, templates ...string) (HTML, error)
+	// Render renders the given templates with the given data.
+	// Example:
+	//   op.Get(s, "/recipes", func(c op.Ctx[any]) (any, error) {
+	//   	recipes, _ := rs.Queries.GetRecipes(c.Context())
+	//   		...
+	//   	return c.Render("pages/recipes.page.html", recipes)
+	//   })
+	// For the Go templates reference, see https://pkg.go.dev/html/template
+	//
+	// [templateGlobsToOverride] is a list of templates to override.
+	// For example, if you have 2 conflicting templates
+	//   - with the same name "partials/aaa/nav.partial.html" and "partials/bbb/nav.partial.html"
+	//   - or two templates with different names but that define the same block "page" for example,
+	// and you want to override one above the other, you can do:
+	//   c.Render("admin.page.html", recipes, "partials/aaa/nav.partial.html")
+	// By default, [templateToExecute] is added to the list of templates to override.
+	Render(templateToExecute string, data any, templateGlobsToOverride ...string) (HTML, error)
 
 	Request() *http.Request        // Request returns the underlying http request.
 	Response() http.ResponseWriter // Response returns the underlying http response writer.
@@ -91,26 +107,25 @@ func (c Context[B]) Context() context.Context {
 
 // Render renders the given templates with the given data.
 // It returns just an empty string, because the response is written directly to the http.ResponseWriter.
-func (c Context[B]) Render(data any, templates ...string) (HTML, error) {
-	if !strings.HasPrefix(templates[0], "pages/") {
-		templates[0] = "pages/" + templates[0]
-	}
+func (c Context[B]) Render(templateToExecute string, data any, layoutsGlobs ...string) (HTML, error) {
 
-	templates = append(templates, templates[0]) // To override all blocks defined in the main template
+	layoutsGlobs = append(layoutsGlobs, templateToExecute) // To override all blocks defined in the main template
 
-	tmpl, err := c.templates.ParseFS(c.fs, templates...)
+	tmpl, err := c.templates.ParseFS(c.fs, layoutsGlobs...)
 	if err != nil {
 		return "", ErrorResponse{
 			StatusCode: http.StatusInternalServerError,
-			Message:    fmt.Errorf("error parsing template '%s': %w", templates, err).Error(),
+			Message:    fmt.Errorf("error parsing template '%s': %w", layoutsGlobs, err).Error(),
 			MoreInfo: map[string]any{
-				"templates": templates,
+				"templates": layoutsGlobs,
 				"help":      "Check that the template exists and have the correct extension.",
 			},
 		}
 	}
 
-	templateToExecute := strings.TrimPrefix(templates[0], "pages/")
+	// Get only last template name (for example, with partials/nav/main/nav.partial.html, get nav.partial.html)
+	myTemplate := strings.Split(templateToExecute, "/")
+	templateToExecute = myTemplate[len(myTemplate)-1]
 
 	c.response.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err = tmpl.ExecuteTemplate(c.response, templateToExecute, data)
@@ -119,7 +134,7 @@ func (c Context[B]) Render(data any, templates ...string) (HTML, error) {
 			StatusCode: http.StatusInternalServerError,
 			Message:    fmt.Errorf("error executing template '%s': %w", templateToExecute, err).Error(),
 			MoreInfo: map[string]any{
-				"templates": templates,
+				"templates": layoutsGlobs,
 				"help":      "Check that the template exists and have the correct extension.",
 			},
 		}
