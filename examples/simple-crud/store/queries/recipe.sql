@@ -10,5 +10,9 @@ WHERE recipe.id = ?;
 -- name: GetRecipes :many
 SELECT * FROM recipe;
 
+-- name: SearchRecipes :many
+-- Saerch anything that contains the given string
+SELECT * FROM recipe WHERE name LIKE ?;
+
 -- name: CreateRecipe :one
 INSERT INTO recipe (id, name, description) VALUES (?, ?, ?) RETURNING *;
