@@ -1,5 +1,10 @@
 <title>{{ block "title" . }}Mon app{{ end }}</title>
-<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- htmx -->
+<script src="https://unpkg.com/htmx.org/dist/htmx.js" defer></script>
+
+<!-- tailwindcss -->
+<script src="https://cdn.tailwindcss.com/3.3.5"></script>
 <style type="text/tailwindcss">
   @layer utilities {
     .input {
@@ -15,11 +20,15 @@
     }
 
     h1 {
-      @apply text-3xl font-bold text-gray-900;
+      @apply text-3xl font-bold text-gray-900 mt-4 mb-2;
     }
 
     h2 {
-      @apply text-2xl font-bold text-gray-900;
+      @apply text-2xl font-bold text-gray-900 mt-4 mb-2;
+    }
+
+    h3 {
+      @apply text-xl font-bold text-gray-900 mt-4 mb-2;
     }
   }
 </style>

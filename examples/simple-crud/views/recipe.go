@@ -2,6 +2,7 @@ package views
 
 import (
 	"html/template"
+	"log/slog"
 	"net/http"
 	"path"
 
@@ -47,7 +48,25 @@ func (rs Ressource) showRecipes(c op.Ctx[any]) (op.HTML, error) {
 		return "", err
 	}
 
-	return c.Render(recipes, "pages/recipes.page.html")
+	return c.Render("pages/recipes.page.html", recipes)
+}
+
+func (rs Ressource) searchRecipes(c op.Ctx[any]) (op.HTML, error) {
+	recipes, err := rs.Queries.SearchRecipes(c.Context(), "%"+c.QueryParam("search")+"%")
+	if err != nil {
+		return "", err
+	}
+
+	slog.Debug("recipes", "recipes", recipes, "search", c.QueryParam("search"))
+
+	return c.Render("partials/search-result.partial.html", op.H{
+		"Recipes": recipes,
+		"Search":  c.QueryParam("search"),
+		"Filters": op.H{
+			"Types":       []any{"Entrée", "Plat", "Dessert", "Apéritif"},
+			"Ingredients": []any{"Poivron", "Tomate", "Oignon", "Ail", "Piment"},
+		},
+	})
 }
 
 func (rs Ressource) addRecipe(c op.Ctx[store.CreateRecipeParams]) (op.HTML, error) {
@@ -68,7 +87,9 @@ func (rs Ressource) addRecipe(c op.Ctx[store.CreateRecipeParams]) (op.HTML, erro
 		return "", err
 	}
 
-	return c.Render(recipes, "pages/admin.page.html")
+	return c.Render("pages/admin.page.html", op.H{
+		"Recipes": recipes,
+	})
 }
 
 func (rs Ressource) showIngredients(c op.Ctx[any]) (op.HTML, error) {
@@ -77,7 +98,7 @@ func (rs Ressource) showIngredients(c op.Ctx[any]) (op.HTML, error) {
 		return "", err
 	}
 
-	return c.Render(ingredients, "pages/ingredients.page.html")
+	return c.Render("pages/ingredients.page.html", ingredients)
 }
 
 func (rs Ressource) showHTML(c op.Ctx[any]) (op.HTML, error) {

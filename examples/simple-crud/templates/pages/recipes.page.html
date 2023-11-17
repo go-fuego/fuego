@@ -5,15 +5,8 @@
 {{ define "page" }}
   <div>
     <h1>List of all my favorite recipes</h1>
-    <ul>
-      {{ range $recipe := . }}
-        <li>
-          <span>
-            <strong> {{ $recipe.Name }} </strong>
-            {{ $recipe.Description }}
-          </span>
-        </li>
-      {{ end }}
+    {{ template "recipes-list.partial.html" . }}
+   
     </ul>
   </div>
 {{ end }}

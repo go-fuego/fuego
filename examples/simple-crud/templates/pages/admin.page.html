@@ -24,7 +24,9 @@
         <input class="btn" type="submit" value="Add" />
       </form>
 
-      <div id="recipe-list"></div>
+      <div id="recipe-list" class="mt-4">
+        {{ template "recipes-list.partial.html" .Recipes }}
+      </div>
     </div>
   </div>
 {{ end }}

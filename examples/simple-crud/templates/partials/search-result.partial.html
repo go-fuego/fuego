@@ -1,0 +1,39 @@
+<div class="flex gap-8">
+  <div id="filters" class="flex flex-col">
+    <!-- TYPE -->
+    <h3>Type de repas</h3>
+    <div class="flex flex-col">
+      {{ range .Filters.Types }}
+        <label class="">
+          <input type="checkbox" />
+          {{ . }}
+        </label>
+      {{ end }}
+    </div>
+
+    <!-- INGREDIENTS -->
+    <h3>Ingrédients</h3>
+    <div class="flex flex-col">
+      {{ range .Filters.Ingredients }}
+        <label class="">
+          <input type="checkbox" />
+          {{ . }}
+        </label>
+      {{ end }}
+    </div>
+  </div>
+
+  <div>
+    <h2>
+      {{ if .Search }}
+        Search results for <strong>{{ .Search }}</strong>
+      {{ else }}
+        All recipes
+      {{ end }}
+    </h2>
+
+    <div id="search-results">
+      {{ template "recipes-list.partial.html" .Recipes }}
+    </div>
+  </div>
+</div>

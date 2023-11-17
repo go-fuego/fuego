@@ -4,11 +4,11 @@
   <div>
     <h1>List of all my favorite ingredients</h1>
     <ul>
-      {{ range $ingredient := . }}
+      {{ range . }}
         <li>
           <span>
-            <strong> {{ $ingredient.Name }} </strong>
-            {{ $ingredient.Description }}
+            <strong> {{ .Name }} </strong>
+            {{ .Description }}
           </span>
         </li>
       {{ end }}
