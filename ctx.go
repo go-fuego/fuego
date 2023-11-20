@@ -84,10 +84,23 @@ type Context[BodyType any] struct {
 	response   http.ResponseWriter
 	pathParams map[string]string
 
-	fs        fs.FS
-	templates *template.Template
+	fs              fs.FS
+	templates       *template.Template
+	templatesParsed bool
 
 	readOptions readOptions
+}
+
+// SafeShallowCopy returns a safe shallow copy of the context.
+// It allows to modify the base context while modifying the request context.
+// It is data-safe, meaning that any sensitive data will not be shared between the original context and the copy.
+func (c *Context[B]) SafeShallowCopy() *Context[B] {
+	c.pathParams = nil
+	c.body = nil
+	c.request = nil
+	c.response = nil
+
+	return c
 }
 
 // readOptions are options for reading the request body.
@@ -107,19 +120,30 @@ func (c Context[B]) Context() context.Context {
 
 // Render renders the given templates with the given data.
 // It returns just an empty string, because the response is written directly to the http.ResponseWriter.
-func (c Context[B]) Render(templateToExecute string, data any, layoutsGlobs ...string) (HTML, error) {
-	layoutsGlobs = append(layoutsGlobs, templateToExecute) // To override all blocks defined in the main template
+//
+// Init templates if not already done.
+// This have the side effect of making the Render method static, meaning
+// that the templates will be parsed only once, removing
+// the need to parse the templates on each request but also preventing
+// to dynamically use new templates.
+func (c *Context[B]) Render(templateToExecute string, data any, layoutsGlobs ...string) (HTML, error) {
 
-	tmpl, err := c.templates.ParseFS(c.fs, layoutsGlobs...)
-	if err != nil {
-		return "", ErrorResponse{
-			StatusCode: http.StatusInternalServerError,
-			Message:    fmt.Errorf("error parsing template '%s': %w", layoutsGlobs, err).Error(),
-			MoreInfo: map[string]any{
-				"templates": layoutsGlobs,
-				"help":      "Check that the template exists and have the correct extension.",
-			},
+	if !c.templatesParsed {
+		layoutsGlobs = append(layoutsGlobs, templateToExecute) // To override all blocks defined in the main template
+		cloned := template.Must(c.templates.Clone())
+		tmpl, err := cloned.ParseFS(c.fs, layoutsGlobs...)
+		if err != nil {
+			return "", ErrorResponse{
+				StatusCode: http.StatusInternalServerError,
+				Message:    fmt.Errorf("error parsing template '%s': %w", layoutsGlobs, err).Error(),
+				MoreInfo: map[string]any{
+					"templates": layoutsGlobs,
+					"help":      "Check that the template exists and have the correct extension.",
+				},
+			}
 		}
+		c.templates = template.Must(tmpl.Clone())
+		c.templatesParsed = true
 	}
 
 	// Get only last template name (for example, with partials/nav/main/nav.partial.html, get nav.partial.html)
@@ -127,7 +151,7 @@ func (c Context[B]) Render(templateToExecute string, data any, layoutsGlobs ...s
 	templateToExecute = myTemplate[len(myTemplate)-1]
 
 	c.response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err = tmpl.ExecuteTemplate(c.response, templateToExecute, data)
+	err := c.templates.ExecuteTemplate(c.response, templateToExecute, data)
 	if err != nil {
 		return "", ErrorResponse{
 			StatusCode: http.StatusInternalServerError,

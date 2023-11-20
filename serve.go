@@ -44,10 +44,10 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctxCopy := *baseCtx
-		ctx := &ctxCopy
+		ctx := baseCtx.SafeShallowCopy()
 		ctx.response = w
 		ctx.request = r
+
 		for _, param := range parsePathParams(r.URL.Path) {
 			ctx.pathParams[param] = "coming in go1.22"
 		}
