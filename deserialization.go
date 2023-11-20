@@ -45,18 +45,18 @@ func readJSON[B any](input io.Reader, options readOptions) (B, error) {
 	}
 	err := dec.Decode(&body)
 	if err != nil {
-		return body, fmt.Errorf("cannot decode request body: %w", err)
+		return body, BadRequestError{"cannot decode request body: " + err.Error()}
 	}
 	slog.Debug("Decoded body", "body", body)
 
 	body, err = transform(body)
 	if err != nil {
-		return body, fmt.Errorf("cannot transform request body: %w", err)
+		return body, BadRequestError{"cannot transform request body: " + err.Error()}
 	}
 
 	err = validate(body)
 	if err != nil {
-		return body, fmt.Errorf("cannot validate request body: %w", err)
+		return body, BadRequestError{"cannot validate request body: " + err.Error()}
 	}
 
 	return body, nil
@@ -73,7 +73,7 @@ func readString[B ~string](input io.Reader, options readOptions) (B, error) {
 	// Read the request body.
 	readBody, err := io.ReadAll(input)
 	if err != nil {
-		return "", fmt.Errorf("cannot read request body: %w", err)
+		return "", BadRequestError{"cannot read request body: " + err.Error()}
 	}
 
 	body := B(readBody)
@@ -150,7 +150,7 @@ func transform[B any](body B) (B, error) {
 	if inTransformerBody, ok := any(&body).(InTransformer); ok {
 		err := inTransformerBody.InTransform()
 		if err != nil {
-			return body, fmt.Errorf("cannot transform request body: %w", err)
+			return body, BadRequestError{"cannot transform request body: " + err.Error()}
 		}
 		body = *any(inTransformerBody).(*B)
 

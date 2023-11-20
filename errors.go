@@ -46,6 +46,19 @@ func (e ErrorResponse) Info() map[string]any {
 	return e.MoreInfo
 }
 
+// BadRequestError is an error used to return a 400 status code.
+type BadRequestError struct {
+	Message string
+}
+
+func (e BadRequestError) Error() string {
+	return e.Message
+}
+
+func (e BadRequestError) Status() int {
+	return http.StatusBadRequest
+}
+
 // ErrorHandler is the default error handler used by the framework.
 // It transforms any error into the unified error type [ErrorResponse],
 // Using the [ErrorWithStatus] and [ErrorWithInfo] interfaces.

@@ -26,7 +26,7 @@ func TestReadJSON(t *testing.T) {
 
 	t.Run("cannot read invalid JSON", func(t *testing.T) {
 		_, err := ReadJSON[TestBody](input)
-		require.Error(t, err)
+		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 	})
 
 	t.Run("cannot deserialize JSON to wrong struct", func(t *testing.T) {
@@ -36,7 +36,7 @@ func TestReadJSON(t *testing.T) {
 			// Missing C bool
 		}
 		_, err := ReadJSON[WrongBody](input)
-		require.Error(t, err)
+		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 	})
 }
 
@@ -127,7 +127,7 @@ func TestInTransformStringWithError(t *testing.T) {
 	t.Run("ReadString", func(t *testing.T) {
 		input := strings.NewReader(`coucou`)
 		body, err := ReadString[transformableStringWithError](input)
-		require.Error(t, err)
+		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 		require.Equal(t, transformableStringWithError("transformed coucou"), body)
 	})
 }
