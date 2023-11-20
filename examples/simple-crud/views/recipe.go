@@ -69,6 +69,17 @@ func (rs Ressource) searchRecipes(c op.Ctx[any]) (op.HTML, error) {
 	})
 }
 
+func (rs Ressource) showRecipesList(c op.Ctx[any]) (op.HTML, error) {
+	recipes, err := rs.Queries.SearchRecipes(c.Context(), "%"+c.QueryParam("search")+"%")
+	if err != nil {
+		return "", err
+	}
+
+	slog.Debug("recipes", "recipes", recipes, "search", c.QueryParam("search"))
+
+	return c.Render("partials/recipes-list.partial.html", recipes)
+}
+
 func (rs Ressource) addRecipe(c op.Ctx[store.CreateRecipeParams]) (op.HTML, error) {
 	body, err := c.Body()
 	if err != nil {

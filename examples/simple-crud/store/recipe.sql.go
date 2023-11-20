@@ -26,6 +26,15 @@ func (q *Queries) CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Rec
 	return i, err
 }
 
+const deleteRecipe = `-- name: DeleteRecipe :exec
+DELETE FROM recipe WHERE id = ?
+`
+
+func (q *Queries) DeleteRecipe(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, deleteRecipe, id)
+	return err
+}
+
 const getRecipe = `-- name: GetRecipe :one
 SELECT id, name, description FROM recipe WHERE id = ?
 `
@@ -106,6 +115,7 @@ const searchRecipes = `-- name: SearchRecipes :many
 SELECT id, name, description FROM recipe WHERE name LIKE ?
 `
 
+// Saerch anything that contains the given string
 func (q *Queries) SearchRecipes(ctx context.Context, name string) ([]Recipe, error) {
 	rows, err := q.db.QueryContext(ctx, searchRecipes, name)
 	if err != nil {

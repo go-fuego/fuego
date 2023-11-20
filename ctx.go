@@ -62,6 +62,14 @@ type Ctx[B any] interface {
 	// Same as c.Request().Context().
 	// This is the context related to the request, not the context of the server.
 	Context() context.Context
+
+	// Redirect redirects to the given url with the given status code.
+	// Example:
+	//   op.Get(s, "/recipes", func(c op.Ctx[any]) (any, error) {
+	//   	...
+	//   	return c.Redirect(301, "/recipes-list")
+	//   })
+	Redirect(code int, url string) (any, error)
 }
 
 func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) *Context[B] {
@@ -116,6 +124,12 @@ var _ Ctx[any] = &Context[any]{} // Check that Context implements Ctx.
 // Same as c.Request().Context().
 func (c Context[B]) Context() context.Context {
 	return c.request.Context()
+}
+
+func (c Context[B]) Redirect(code int, url string) (any, error) {
+	http.Redirect(c.response, c.request, url, code)
+
+	return nil, nil
 }
 
 // Render renders the given templates with the given data.

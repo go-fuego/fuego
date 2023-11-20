@@ -19,5 +19,7 @@ func (rs Ressource) Routes(s *op.Server) {
 	op.Get(s, "/admin", rs.pageAdmin)
 
 	// Chunks
+	op.Get(s, "/recipes-list", rs.showRecipesList)
 	op.Get(s, "/search", rs.searchRecipes)
+	op.Delete(s, "/recipes/del", rs.deleteRecipe)
 }
