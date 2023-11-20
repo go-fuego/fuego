@@ -28,7 +28,7 @@ func TestRender(t *testing.T) {
 
 		s.mux.ServeHTTP(w, r)
 
-		require.Equal(t, w.Code, http.StatusOK)
+		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, w.Body.String(), "<main>\n  <h1>Test</h1>\n  <p>Your name is: test</p>\n</main>\n")
 	})
 
@@ -38,9 +38,38 @@ func TestRender(t *testing.T) {
 
 		s.mux.ServeHTTP(w, r)
 
-		require.Equal(t, w.Code, http.StatusOK)
+		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, w.Body.String(), "<main>\n  <h1>Test</h1>\n  <p>Your name is: test</p>\n</main>\n")
 	})
+
+	t.Run("cannot parse unexisting file", func(t *testing.T) {
+		Get(s, "/file-not-found", func(ctx Ctx[any]) (HTML, error) {
+			return ctx.Render("testdata/not-found.html", H{"Name": "test"})
+		})
+
+		r := httptest.NewRequest(http.MethodGet, "/file-not-found", nil)
+		w := httptest.NewRecorder()
+
+		s.mux.ServeHTTP(w, r)
+
+		require.Equal(t, http.StatusInternalServerError, w.Code)
+	})
+
+	t.Run("can execute template with missing variable", func(t *testing.T) {
+		Get(s, "/impossible", func(ctx Ctx[any]) (HTML, error) {
+			return ctx.Render("testdata/test.html", H{"NotName": "test"})
+		})
+
+		r := httptest.NewRequest(http.MethodGet, "/impossible", nil)
+		w := httptest.NewRecorder()
+
+		s.mux.ServeHTTP(w, r)
+
+		t.Log(w.Body.String())
+
+		require.Equal(t, http.StatusOK, w.Code)
+	})
+
 }
 
 func BenchmarkRender(b *testing.B) {
