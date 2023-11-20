@@ -52,6 +52,7 @@ func main() {
 	app := op.NewServer(
 		op.WithPort(":8083"),
 		op.WithAutoAuth(controller.LoginFunc),
+		op.WithTemplateGlobs("**/*.html"),
 	)
 
 	rs.Security = app.Security

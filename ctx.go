@@ -108,7 +108,6 @@ func (c Context[B]) Context() context.Context {
 // Render renders the given templates with the given data.
 // It returns just an empty string, because the response is written directly to the http.ResponseWriter.
 func (c Context[B]) Render(templateToExecute string, data any, layoutsGlobs ...string) (HTML, error) {
-
 	layoutsGlobs = append(layoutsGlobs, templateToExecute) // To override all blocks defined in the main template
 
 	tmpl, err := c.templates.ParseFS(c.fs, layoutsGlobs...)

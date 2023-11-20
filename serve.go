@@ -30,18 +30,24 @@ func (s *Server) Run() {
 
 type Controller[ReturnType any, Body any] func(c Context[Body]) (ReturnType, error)
 
-// httpHandler converts a controller into a http.HandlerFunc.
+// httpHandler converts a framework controller into a http.HandlerFunc.
 func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body]) (ReturnType, error)) http.HandlerFunc {
 	returnsHTML := reflect.TypeOf(controller).Out(0).Name() == "HTML"
 
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := NewContext[Body](w, r, readOptions{
-			DisallowUnknownFields: s.DisallowUnknownFields,
-			MaxBodySize:           s.maxBodySize,
-		})
-		ctx.fs = s.fs
-		ctx.templates = template.Must(s.template.Clone())
+	baseCtx := NewContext[Body](nil, nil, readOptions{
+		DisallowUnknownFields: s.DisallowUnknownFields,
+		MaxBodySize:           s.maxBodySize,
+	})
+	baseCtx.fs = s.fs
+	if s.template != nil {
+		baseCtx.templates = template.Must(s.template.Clone())
+	}
 
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctxCopy := *baseCtx
+		ctx := &ctxCopy
+		ctx.response = w
+		ctx.request = r
 		for _, param := range parsePathParams(r.URL.Path) {
 			ctx.pathParams[param] = "coming in go1.22"
 		}

@@ -10,7 +10,6 @@ func (rs Ressource) Routes(s *op.Server) {
 	op.GetStd(s, "/recipes-std", rs.showRecipesStd)
 	op.Get(s, "/", rs.showRecipes)
 	op.Get(s, "/recipes", rs.showRecipes)
-	op.Get(s, "/search", rs.searchRecipes)
 	op.Post(s, "/recipes-new", rs.addRecipe)
 	op.Get(s, "/ingredients", rs.showIngredients)
 	op.Get(s, "/html", rs.showHTML)
@@ -19,4 +18,6 @@ func (rs Ressource) Routes(s *op.Server) {
 	op.UseStd(s, basicauth.New(basicauth.Config{Username: "admin", Password: "admin"}))
 	op.Get(s, "/admin", rs.pageAdmin)
 
+	// Chunks
+	op.Get(s, "/search", rs.searchRecipes)
 }

@@ -15,17 +15,9 @@ type HTML string
 // H is a shortcut for map[string]any
 type H map[string]any
 
-// LoadTemplates
-// Deprecated: Just not used.
-func (s *Server) LoadTemplates(myFs fs.FS, patterns ...string) error {
-	if myFs == nil {
-		myFs = os.DirFS("./templates")
-	}
-	s.fs = myFs
-	if len(patterns) == 0 {
-		patterns = []string{"**/*.html"}
-	}
-	tmpl, err := template.ParseFS(myFs, patterns...)
+// loadTemplates
+func (s *Server) loadTemplates(patterns ...string) error {
+	tmpl, err := template.ParseFS(s.fs, patterns...)
 	if err != nil {
 		var pathError *fs.PathError
 		if errors.As(err, &pathError) {

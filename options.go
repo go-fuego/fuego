@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"os"
 	"runtime"
 	"strings"
 	"time"
@@ -86,13 +87,6 @@ func NewServer(options ...func(*Server)) *Server {
 		option(s)
 	}
 
-	err := s.LoadTemplates(nil)
-	if err != nil {
-		slog.Error("Error loading templates", "error", err)
-		panic(err)
-	}
-	slog.Debug("pre-loaded templates " + s.template.DefinedTemplates())
-
 	if !isGo1_22 {
 		slog.Warn(
 			"Please upgrade to Go >= 1.22. " +
@@ -114,6 +108,61 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	return s
+}
+
+// WithTemplateFS sets the filesystem used to load templates.
+// To be used with [WithTemplateGlobs] or [WithTemplates].
+// For example:
+//
+//	WithTemplateFS(os.DirFS("./templates"))
+//
+// or with embedded templates:
+//
+//	//go:embed templates
+//	var templates embed.FS
+//	...
+//	WithTemplateFS(templates)
+func WithTemplateFS(fs fs.FS) func(*Server) {
+	return func(c *Server) { c.fs = fs }
+}
+
+// WithTemplates loads the templates used to render HTML.
+// To be used with [WithTemplateFS]. If not set, it will use the os filesystem, at folder "./templates".
+func WithTemplates(templates *template.Template) func(*Server) {
+	return func(s *Server) {
+		if s.fs == nil {
+			s.fs = os.DirFS("./templates")
+			slog.Warn("No template filesystem set. Using os filesystem at './templates'.")
+		}
+		s.template = templates
+	}
+}
+
+// WithTemplateGlobs loads templates matching the given patterns from the server filesystem.
+// If the server filesystem is not set, it will use the os filesystem, at folder "./templates".
+// For example:
+//
+//	WithTemplateGlobs("**/*.html")
+func WithTemplateGlobs(patterns ...string) func(*Server) {
+	return func(s *Server) {
+		if s.fs == nil {
+			s.fs = os.DirFS("./templates")
+			slog.Warn("No template filesystem set. Using os filesystem at './templates'.")
+		}
+		err := s.loadTemplates(patterns...)
+		if err != nil {
+			slog.Error("Error loading templates", "error", err)
+			panic(err)
+		}
+	}
+}
+
+func WithBasePath(basePath string) func(*Server) {
+	return func(c *Server) { c.basePath = basePath }
+}
+
+func WithMaxBodySize(maxBodySize int64) func(*Server) {
+	return func(c *Server) { c.maxBodySize = maxBodySize }
 }
 
 func WithAutoAuth(verifyUserInfo func(user, password string) (jwt.Claims, error)) func(*Server) {
