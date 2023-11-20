@@ -59,14 +59,14 @@ func main() {
 
 	// Register middlewares (functions that will be executed before AND after the controllers, in the order they are registered)
 	// With op, you can use any existing middleware that relies on `net/http`, or create your own
-	op.UseStd(app, cache.New(cache.Config{}))
-	op.UseStd(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
+	op.Use(app, cache.New(cache.Config{}))
+	op.Use(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
 	// Register views (controllers that return HTML pages)
-	op.Group(app, "", viewsRessources.Routes)
+	viewsRessources.Routes(op.Group(app, ""))
 
 	// Register API routes (controllers that return JSON)
-	op.Group(app, "/api", rs.Routes)
+	rs.Routes(op.Group(app, "/api"))
 
 	// Run the server!
 	app.Run()
