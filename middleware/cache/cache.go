@@ -57,16 +57,13 @@ func New(config Config) func(http.Handler) http.Handler {
 				return
 			}
 
+			buf := &bytes.Buffer{}
 			multiWriter := &MultiHTTPWriter{
 				ResponseWriter: w,
-				cacheWriter:    &bytes.Buffer{},
+				cacheWriter:    buf,
 			}
 
 			h.ServeHTTP(multiWriter, r)
-
-			if multiWriter.status != http.StatusOK {
-				return
-			}
 
 			storage.Set(key, multiWriter.cacheWriter.(*bytes.Buffer).String())
 			storage.Set(key+"_response-content-type", multiWriter.Header().Get("Content-Type"))

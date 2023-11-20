@@ -110,6 +110,10 @@ func NewServer(options ...func(*Server)) *Server {
 	return s
 }
 
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.mux.ServeHTTP(w, r)
+}
+
 // WithTemplateFS sets the filesystem used to load templates.
 // To be used with [WithTemplateGlobs] or [WithTemplates].
 // For example:
