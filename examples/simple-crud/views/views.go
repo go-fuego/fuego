@@ -6,7 +6,7 @@ import (
 )
 
 func (rs Ressource) Routes(s *op.Server) {
-	// Pages
+	// Public Pages
 	op.GetStd(s, "/recipes-std", rs.showRecipesStd)
 	op.Get(s, "/", rs.showRecipes)
 	op.Get(s, "/recipes", rs.showRecipes)
@@ -15,11 +15,19 @@ func (rs Ressource) Routes(s *op.Server) {
 	op.Get(s, "/html", rs.showHTML)
 	op.Get(s, "/h1string", rs.showString)
 
-	op.UseStd(s, basicauth.New(basicauth.Config{Username: "admin", Password: "admin"}))
-	op.Get(s, "/admin", rs.pageAdmin)
-
-	// Chunks
+	// Public Chunks
 	op.Get(s, "/recipes-list", rs.showRecipesList)
 	op.Get(s, "/search", rs.searchRecipes)
-	op.Delete(s, "/recipes/del", rs.deleteRecipe)
+
+	// Admin Pages
+	adminRoutes := op.Group(s, "/admin")
+	op.UseStd(adminRoutes, basicauth.New(basicauth.Config{Username: "admin", Password: "admin"}))
+	op.Get(adminRoutes, "/", rs.pageAdmin)
+	op.Get(adminRoutes, "/recipes", rs.adminRecipes)
+	op.Post(adminRoutes, "/recipes-new", rs.adminAddRecipes)
+	op.Get(adminRoutes, "/ingredients", rs.adminIngredients)
+	op.Get(adminRoutes, "/users", rs.adminRecipes)
+
+	// Admin Chunks
+	op.Delete(adminRoutes, "/recipes/del", rs.deleteRecipe)
 }

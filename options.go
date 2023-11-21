@@ -139,6 +139,8 @@ func WithTemplates(templates *template.Template) func(*Server) {
 			slog.Warn("No template filesystem set. Using os filesystem at './templates'.")
 		}
 		s.template = templates
+
+		slog.Debug("Loaded templates", "templates", s.template.DefinedTemplates())
 	}
 }
 
@@ -158,6 +160,8 @@ func WithTemplateGlobs(patterns ...string) func(*Server) {
 			slog.Error("Error loading templates", "error", err)
 			panic(err)
 		}
+
+		slog.Debug("Loaded templates", "templates", s.template.DefinedTemplates())
 	}
 }
 

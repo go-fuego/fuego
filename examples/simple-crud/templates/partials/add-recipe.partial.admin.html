@@ -1,0 +1,21 @@
+<form
+  class="flex flex-col space-y-4"
+  method="POST"
+  action="/admin/recipes-new"
+  hx-boost="true"
+  hx-select="#recipe-list"
+  hx-target="#recipe-list"
+>
+  <label class="label" for="name">Name</label>
+  <input class="input" type="text" id="name" name="name" required />
+  <label class="label" for="description">Description</label>
+  <input
+    class="input"
+    type="text"
+    id="description"
+    name="description"
+    required
+  />
+
+  <input class="btn" type="submit" value="Add" />
+</form>
