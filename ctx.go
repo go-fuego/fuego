@@ -141,7 +141,6 @@ func (c Context[B]) Redirect(code int, url string) (any, error) {
 // the need to parse the templates on each request but also preventing
 // to dynamically use new templates.
 func (c *Context[B]) Render(templateToExecute string, data any, layoutsGlobs ...string) (HTML, error) {
-
 	if !c.templatesParsed {
 		layoutsGlobs = append(layoutsGlobs, templateToExecute) // To override all blocks defined in the main template
 		cloned := template.Must(c.templates.Clone())

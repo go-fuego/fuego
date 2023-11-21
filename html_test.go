@@ -69,7 +69,6 @@ func TestRender(t *testing.T) {
 
 		require.Equal(t, http.StatusOK, w.Code)
 	})
-
 }
 
 func BenchmarkRender(b *testing.B) {

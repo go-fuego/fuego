@@ -47,18 +47,11 @@ func readJSON[B any](input io.Reader, options readOptions) (B, error) {
 	}
 	slog.Debug("Decoded body", "body", body)
 
-	// InTransform input if possible.
-	if inTransformerBody, ok := any(&body).(InTransformer); ok {
-		err := inTransformerBody.InTransform()
-		if err != nil {
-			return body, fmt.Errorf("cannot transform request body: %w", err)
-		}
-		body = *any(inTransformerBody).(*B)
-
-		slog.Debug("InTransformd body", "body", body)
+	body, err = transform(body)
+	if err != nil {
+		return body, fmt.Errorf("cannot transform request body: %w", err)
 	}
 
-	// Validation
 	err = validate(body)
 	if err != nil {
 		return body, fmt.Errorf("cannot validate request body: %w", err)
@@ -84,24 +77,13 @@ func readString[B ~string](input io.Reader, options readOptions) (B, error) {
 	body := B(readBody)
 	slog.Debug("Read body", "body", body)
 
-	// InTransform input if possible.
-	if inTransformerBody, ok := any(&body).(InTransformer); ok {
-		err := inTransformerBody.InTransform()
-		if err != nil {
-			return body, fmt.Errorf("cannot transform request body: %w", err)
-		}
-		body = *any(inTransformerBody).(*B)
-
-		slog.Debug("InTransformd body", "body", body)
-	}
-
-	return body, nil
+	return transform(body)
 }
 
 var decoder = schema.NewDecoder()
 
 // ReadURLEncoded reads the request body as HTML Form.
-func ReadURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
+func ReadURLEncoded[B any](r *http.Request) (B, error) {
 	return readURLEncoded[B](r, ReadOptions)
 }
 
@@ -124,7 +106,21 @@ func readURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
 	}
 	slog.Debug("Decoded body", "body", body)
 
-	// InTransform input if possible.
+	body, err = transform(body)
+	if err != nil {
+		return body, fmt.Errorf("cannot transform request body: %w", err)
+	}
+
+	err = validate(body)
+	if err != nil {
+		return body, fmt.Errorf("cannot validate request body: %w", err)
+	}
+
+	return body, nil
+}
+
+// transforms the input if possible.
+func transform[B any](body B) (B, error) {
 	if inTransformerBody, ok := any(&body).(InTransformer); ok {
 		err := inTransformerBody.InTransform()
 		if err != nil {
@@ -133,12 +129,6 @@ func readURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
 		body = *any(inTransformerBody).(*B)
 
 		slog.Debug("InTransformd body", "body", body)
-	}
-
-	// Validation
-	err = validate(body)
-	if err != nil {
-		return body, fmt.Errorf("cannot validate request body: %w", err)
 	}
 
 	return body, nil
