@@ -54,11 +54,11 @@ func TestXML(t *testing.T) {
 
 	t.Run("can serialize xml error", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		err := ErrorResponse{Message: "Hello World"}
+		err := HTTPError{Message: "Hello World"}
 		SendXMLError(w, err)
 		body := w.Body.String()
 
-		require.Equal(t, `<ErrorResponse><Error>Hello World</Error></ErrorResponse>`, body)
+		require.Equal(t, `<HTTPError><Error>Hello World</Error></HTTPError>`, body)
 	})
 }
 

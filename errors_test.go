@@ -20,10 +20,10 @@ func TestErrorHandler(t *testing.T) {
 		err := errors.New("test error")
 
 		errResponse := ErrorHandler(err)
-		require.ErrorAs(t, errResponse, &ErrorResponse{})
+		require.ErrorAs(t, errResponse, &HTTPError{})
 		require.Equal(t, "test error", errResponse.Error())
-		require.Equal(t, http.StatusInternalServerError, errResponse.(ErrorResponse).Status())
-		require.Nil(t, errResponse.(ErrorResponse).Info())
+		require.Equal(t, http.StatusInternalServerError, errResponse.(HTTPError).Status())
+		require.Nil(t, errResponse.(HTTPError).Info())
 	})
 
 	t.Run("error with status ", func(t *testing.T) {
@@ -31,14 +31,14 @@ func TestErrorHandler(t *testing.T) {
 			status: http.StatusNotFound,
 		}
 		errResponse := ErrorHandler(err)
-		require.ErrorAs(t, errResponse, &ErrorResponse{})
+		require.ErrorAs(t, errResponse, &HTTPError{})
 		require.Equal(t, "test error", errResponse.Error())
-		require.Equal(t, http.StatusNotFound, errResponse.(ErrorResponse).Status())
-		require.Nil(t, errResponse.(ErrorResponse).Info())
+		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).Status())
+		require.Nil(t, errResponse.(HTTPError).Info())
 	})
 
 	t.Run("error with status and info", func(t *testing.T) {
-		err := ErrorResponse{
+		err := HTTPError{
 			Message:    "test error",
 			StatusCode: http.StatusNotFound,
 			MoreInfo: map[string]any{
@@ -46,9 +46,9 @@ func TestErrorHandler(t *testing.T) {
 			},
 		}
 		errResponse := ErrorHandler(err)
-		require.ErrorAs(t, errResponse, &ErrorResponse{})
+		require.ErrorAs(t, errResponse, &HTTPError{})
 		require.Equal(t, "test error", errResponse.Error())
-		require.Equal(t, http.StatusNotFound, errResponse.(ErrorResponse).Status())
-		require.NotNil(t, errResponse.(ErrorResponse).Info())
+		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).Status())
+		require.NotNil(t, errResponse.(HTTPError).Info())
 	})
 }
