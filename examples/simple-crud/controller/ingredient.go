@@ -5,10 +5,10 @@ import (
 
 	"simple-crud/store"
 
-	"github.com/go-op/op"
+	"github.com/go-fuego/fuego"
 )
 
-func (rs Ressource) getAllIngredients(c op.Ctx[any]) ([]store.Ingredient, error) {
+func (rs Ressource) getAllIngredients(c fuego.Ctx[any]) ([]store.Ingredient, error) {
 	ingredients, err := rs.Queries.GetIngredients(c.Context())
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (ci *CreateIngredient) InTransform() error {
 	return nil
 }
 
-func (rs Ressource) newIngredient(c op.Ctx[CreateIngredient]) (store.Ingredient, error) {
+func (rs Ressource) newIngredient(c fuego.Ctx[CreateIngredient]) (store.Ingredient, error) {
 	body, err := c.Body()
 	if err != nil {
 		return store.Ingredient{}, err

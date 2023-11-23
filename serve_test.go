@@ -1,4 +1,4 @@
-package op
+package fuego
 
 import (
 	"context"
@@ -54,14 +54,14 @@ func testControllerWithOutTransformerStarNil(c Ctx[any]) (*testOutTransformer, e
 func TestHttpHandler(t *testing.T) {
 	s := NewServer()
 
-	t.Run("can create std http handler from op controller", func(t *testing.T) {
+	t.Run("can create std http handler from fuego controller", func(t *testing.T) {
 		handler := httpHandler[ans, any](s, testController)
 		if handler == nil {
 			t.Error("handler is nil")
 		}
 	})
 
-	t.Run("can run http handler from op controller", func(t *testing.T) {
+	t.Run("can run http handler from fuego controller", func(t *testing.T) {
 		handler := httpHandler(s, testController)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
@@ -72,7 +72,7 @@ func TestHttpHandler(t *testing.T) {
 		require.Equal(t, crlf(`{"ans":"Hello World"}`), body)
 	})
 
-	t.Run("can handle errors in http handler from op controller", func(t *testing.T) {
+	t.Run("can handle errors in http handler from fuego controller", func(t *testing.T) {
 		handler := httpHandler(s, testControllerWithError)
 		if handler == nil {
 			t.Error("handler is nil")

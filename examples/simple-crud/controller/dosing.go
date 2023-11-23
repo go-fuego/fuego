@@ -3,10 +3,10 @@ package controller
 import (
 	"simple-crud/store"
 
-	"github.com/go-op/op"
+	"github.com/go-fuego/fuego"
 )
 
-func (rs Ressource) newDosing(c op.Ctx[store.CreateDosingParams]) (store.Dosing, error) {
+func (rs Ressource) newDosing(c fuego.Ctx[store.CreateDosingParams]) (store.Dosing, error) {
 	body, err := c.Body()
 	if err != nil {
 		return store.Dosing{}, err

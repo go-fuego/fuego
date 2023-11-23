@@ -1,4 +1,4 @@
-package op
+package fuego
 
 import (
 	"encoding/json"
@@ -23,7 +23,7 @@ var ReadOptions = readOptions{
 }
 
 // ReadJSON reads the request body as JSON.
-// Can be used independantly from op! framework.
+// Can be used independantly from Fuego framework.
 // Customisable by modifying ReadOptions.
 func ReadJSON[B any](input io.Reader) (B, error) {
 	return readJSON[B](input, ReadOptions)
@@ -61,7 +61,7 @@ func readJSON[B any](input io.Reader, options readOptions) (B, error) {
 }
 
 // ReadString reads the request body as string.
-// Can be used independantly from op! framework.
+// Can be used independantly from Fuego framework.
 // Customisable by modifying ReadOptions.
 func ReadString[B ~string](input io.Reader) (B, error) {
 	return readString[B](input, ReadOptions)

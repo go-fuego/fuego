@@ -1,4 +1,4 @@
-package op
+package fuego
 
 import (
 	"context"
@@ -28,7 +28,7 @@ type Ctx[B any] interface {
 	// PathParam returns the path parameter with the given name.
 	// If it does not exist, it returns an empty string.
 	// Example:
-	//   op.Get(s, "/recipes/{recipe_id}", func(c op.Ctx[any]) (any, error) {
+	//   fuego.Get(s, "/recipes/{recipe_id}", func(c fuego.Ctx[any]) (any, error) {
 	//	 	id := c.PathParam("recipe_id")
 	//   	...
 	//   })
@@ -39,7 +39,7 @@ type Ctx[B any] interface {
 
 	// Render renders the given templates with the given data.
 	// Example:
-	//   op.Get(s, "/recipes", func(c op.Ctx[any]) (any, error) {
+	//   fuego.Get(s, "/recipes", func(c fuego.Ctx[any]) (any, error) {
 	//   	recipes, _ := rs.Queries.GetRecipes(c.Context())
 	//   		...
 	//   	return c.Render("pages/recipes.page.html", recipes)
@@ -65,7 +65,7 @@ type Ctx[B any] interface {
 
 	// Redirect redirects to the given url with the given status code.
 	// Example:
-	//   op.Get(s, "/recipes", func(c op.Ctx[any]) (any, error) {
+	//   fuego.Get(s, "/recipes", func(c fuego.Ctx[any]) (any, error) {
 	//   	...
 	//   	return c.Redirect(301, "/recipes-list")
 	//   })

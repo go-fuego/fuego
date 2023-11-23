@@ -10,8 +10,8 @@ import (
 	"simple-crud/views"
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
-	"github.com/go-op/op"
-	"github.com/go-op/op/middleware/cache"
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/middleware/cache"
 	"github.com/lmittmann/tint"
 )
 
@@ -49,24 +49,24 @@ func main() {
 	viewsRessources := views.NewRessource(*queries)
 
 	// Create server with some options
-	app := op.NewServer(
-		op.WithPort(":8083"),
-		op.WithAutoAuth(controller.LoginFunc),
-		op.WithTemplateGlobs("**/*.html", "**/**/*.html"),
+	app := fuego.NewServer(
+		fuego.WithPort(":8083"),
+		fuego.WithAutoAuth(controller.LoginFunc),
+		fuego.WithTemplateGlobs("**/*.html", "**/**/*.html"),
 	)
 
 	rs.Security = app.Security
 
 	// Register middlewares (functions that will be executed before AND after the controllers, in the order they are registered)
-	// With op, you can use any existing middleware that relies on `net/http`, or create your own
-	op.Use(app, cache.New(cache.Config{}))
-	op.Use(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
+	// With fuego, you can use any existing middleware that relies on `net/http`, or create your own
+	fuego.Use(app, cache.New(cache.Config{}))
+	fuego.Use(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
 	// Register views (controllers that return HTML pages)
-	viewsRessources.Routes(op.Group(app, ""))
+	viewsRessources.Routes(fuego.Group(app, ""))
 
 	// Register API routes (controllers that return JSON)
-	rs.Routes(op.Group(app, "/api"))
+	rs.Routes(fuego.Group(app, "/api"))
 
 	// Run the server!
 	app.Run()

@@ -1,33 +1,33 @@
 package views
 
 import (
-	"github.com/go-op/op"
-	"github.com/go-op/op/middleware/basicauth"
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/middleware/basicauth"
 )
 
-func (rs Ressource) Routes(s *op.Server) {
+func (rs Ressource) Routes(s *fuego.Server) {
 	// Public Pages
-	op.GetStd(s, "/recipes-std", rs.showRecipesStd)
-	op.Get(s, "/", rs.showRecipes)
-	op.Get(s, "/recipes", rs.showRecipes)
-	op.Post(s, "/recipes-new", rs.addRecipe)
-	op.Get(s, "/ingredients", rs.showIngredients)
-	op.Get(s, "/html", rs.showHTML)
-	op.Get(s, "/h1string", rs.showString)
+	fuego.GetStd(s, "/recipes-std", rs.showRecipesStd)
+	fuego.Get(s, "/", rs.showRecipes)
+	fuego.Get(s, "/recipes", rs.showRecipes)
+	fuego.Post(s, "/recipes-new", rs.addRecipe)
+	fuego.Get(s, "/ingredients", rs.showIngredients)
+	fuego.Get(s, "/html", rs.showHTML)
+	fuego.Get(s, "/h1string", rs.showString)
 
 	// Public Chunks
-	op.Get(s, "/recipes-list", rs.showRecipesList)
-	op.Get(s, "/search", rs.searchRecipes)
+	fuego.Get(s, "/recipes-list", rs.showRecipesList)
+	fuego.Get(s, "/search", rs.searchRecipes)
 
 	// Admin Pages
-	adminRoutes := op.Group(s, "/admin")
-	op.UseStd(adminRoutes, basicauth.New(basicauth.Config{Username: "admin", Password: "admin"}))
-	op.Get(adminRoutes, "/", rs.pageAdmin)
-	op.Get(adminRoutes, "/recipes", rs.adminRecipes)
-	op.Post(adminRoutes, "/recipes-new", rs.adminAddRecipes)
-	op.Get(adminRoutes, "/ingredients", rs.adminIngredients)
-	op.Get(adminRoutes, "/users", rs.adminRecipes)
+	adminRoutes := fuego.Group(s, "/admin")
+	fuego.UseStd(adminRoutes, basicauth.New(basicauth.Config{Username: "admin", Password: "admin"}))
+	fuego.Get(adminRoutes, "/", rs.pageAdmin)
+	fuego.Get(adminRoutes, "/recipes", rs.adminRecipes)
+	fuego.Post(adminRoutes, "/recipes-new", rs.adminAddRecipes)
+	fuego.Get(adminRoutes, "/ingredients", rs.adminIngredients)
+	fuego.Get(adminRoutes, "/users", rs.adminRecipes)
 
 	// Admin Chunks
-	op.Delete(adminRoutes, "/recipes/del", rs.deleteRecipe)
+	fuego.Delete(adminRoutes, "/recipes/del", rs.deleteRecipe)
 }

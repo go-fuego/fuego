@@ -1,4 +1,4 @@
-module github.com/go-op/op
+module github.com/go-fuego/fuego
 
 go 1.21.3
 

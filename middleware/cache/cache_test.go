@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-op/op"
+	"github.com/go-fuego/fuego"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,19 +17,19 @@ type testStruct struct {
 
 const waitTime = 10 * time.Millisecond
 
-func baseController(ctx op.Ctx[any]) (testStruct, error) {
+func baseController(ctx fuego.Ctx[any]) (testStruct, error) {
 	time.Sleep(waitTime)
 	return testStruct{Name: "test", Age: 10}, nil
 }
 
 func TestCache(t *testing.T) {
-	s := op.NewServer()
+	s := fuego.NewServer()
 
-	op.Get(s, "/without-cache", baseController)
+	fuego.Get(s, "/without-cache", baseController)
 
-	op.Use(s, New(Config{}))
+	fuego.Use(s, New(Config{}))
 
-	op.Get(s, "/with-cache", baseController)
+	fuego.Get(s, "/with-cache", baseController)
 
 	t.Run("Answer once", func(t *testing.T) {
 		r := httptest.NewRequest("GET", "/without-cache", nil)
@@ -85,13 +85,13 @@ func TestCache(t *testing.T) {
 }
 
 func BenchmarkCache(b *testing.B) {
-	s := op.NewServer()
+	s := fuego.NewServer()
 
-	op.Get(s, "/without-cache", baseController)
+	fuego.Get(s, "/without-cache", baseController)
 
-	op.Use(s, New(Config{}))
+	fuego.Use(s, New(Config{}))
 
-	op.Get(s, "/with-cache", baseController)
+	fuego.Get(s, "/with-cache", baseController)
 
 	b.Run("without cache", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {

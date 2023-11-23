@@ -1,4 +1,4 @@
-package op
+package fuego
 
 import (
 	"context"
@@ -120,7 +120,7 @@ const (
 // Even though it returns a jwt.MapClaims, the real underlying type is the one you chose when calling [GenerateToken].
 // Example:
 //
-//	token, err := op.TokenFromContext[MyCustomTokenType](ctx.Context())
+//	token, err := fuego.TokenFromContext[MyCustomTokenType](ctx.Context())
 func TokenFromContext(ctx context.Context) (jwt.Claims, error) {
 	claims, ok := ctx.Value(JWTInfoCtxKey).(jwt.MapClaims)
 	if claims == nil {
@@ -137,7 +137,7 @@ func TokenFromContext(ctx context.Context) (jwt.Claims, error) {
 // To check if the user is authorized, use the [AuthWall] middleware, or create your own middleware.
 // Example:
 //
-//	token, err := op.GetToken[MyCustomTokenType](ctx.Context())
+//	token, err := fuego.GetToken[MyCustomTokenType](ctx.Context())
 func GetToken[T any](ctx context.Context) (T, error) {
 	var myClaims T
 	claims, err := TokenFromContext(ctx)
@@ -337,9 +337,9 @@ type tokenResponse struct {
 // It takes a function that checks if the user is authorized.
 // Example:
 //
-//	security := op.NewSecurity()
+//	security := fuego.NewSecurity()
 //	security.ExpiresInterval = 24 * time.Hour
-//	op.Post(s, "/login", security.StdLoginHandler(verifyUserInfo))
+//	fuego.Post(s, "/login", security.StdLoginHandler(verifyUserInfo))
 //	...
 //	func verifyUserInfo(r *http.Request) (jwt.Claims, error) {
 //		// Get the username and password from the request
@@ -396,9 +396,9 @@ type LoginPayload struct {
 // It takes a function that checks if the user is authorized.
 // Example:
 //
-//	security := op.NewSecurity()
+//	security := fuego.NewSecurity()
 //	security.ExpiresInterval = 24 * time.Hour
-//	op.Post(s, "/login", security.LoginHandler(verifyUserInfo))
+//	fuego.Post(s, "/login", security.LoginHandler(verifyUserInfo))
 //	...
 //	func verifyUserInfo(r *http.Request) (jwt.Claims, error) {
 //		// Get the username and password from the request
@@ -454,7 +454,7 @@ func (security Security) LoginHandler(verifyUserInfo func(user, password string)
 // It sends the new token to the cookies and to the response.
 // Usage:
 //
-//	op.PostStd(s, "/auth/refresh", security.RefreshHandler)
+//	fuego.PostStd(s, "/auth/refresh", security.RefreshHandler)
 func (security Security) RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	claims, err := TokenFromContext(r.Context())
 	if err != nil {
@@ -478,7 +478,7 @@ func (security Security) RefreshHandler(w http.ResponseWriter, r *http.Request) 
 // RemoveTokenFromCookies generates a JWT token with the given claims and writes it to the cookies.
 // Usage:
 //
-//	op.PostStd(s, "/auth/logout", security.CookieLogoutHandler)
+//	fuego.PostStd(s, "/auth/logout", security.CookieLogoutHandler)
 //
 // Dependancy to [Security] is for symmetry with [RefreshHandler].
 func (security Security) CookieLogoutHandler(w http.ResponseWriter, r *http.Request) {

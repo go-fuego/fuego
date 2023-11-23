@@ -5,20 +5,20 @@ import (
 
 	"simple-crud/store"
 
-	"github.com/go-op/op"
+	"github.com/go-fuego/fuego"
 )
 
 func (rs Ressource) getAllRecipesStandardWithHelpers(w http.ResponseWriter, r *http.Request) {
 	recipes, err := rs.Queries.GetRecipes(r.Context())
 	if err != nil {
-		op.SendJSONError(w, err)
+		fuego.SendJSONError(w, err)
 		return
 	}
 
-	op.SendJSON(w, recipes)
+	fuego.SendJSON(w, recipes)
 }
 
-func (rs Ressource) getAllRecipes(c op.Ctx[any]) ([]store.Recipe, error) {
+func (rs Ressource) getAllRecipes(c fuego.Ctx[any]) ([]store.Recipe, error) {
 	recipes, err := rs.Queries.GetRecipes(c.Context())
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (rs Ressource) getAllRecipes(c op.Ctx[any]) ([]store.Recipe, error) {
 	return recipes, nil
 }
 
-func (rs Ressource) newRecipe(c op.Ctx[store.CreateRecipeParams]) (store.Recipe, error) {
+func (rs Ressource) newRecipe(c fuego.Ctx[store.CreateRecipeParams]) (store.Recipe, error) {
 	body, err := c.Body()
 	if err != nil {
 		return store.Recipe{}, err
@@ -41,7 +41,7 @@ func (rs Ressource) newRecipe(c op.Ctx[store.CreateRecipeParams]) (store.Recipe,
 	return recipe, nil
 }
 
-func (rs Ressource) getRecipeWithIngredients(c op.Ctx[any]) ([]store.GetIngredientsOfRecipeRow, error) {
+func (rs Ressource) getRecipeWithIngredients(c fuego.Ctx[any]) ([]store.GetIngredientsOfRecipeRow, error) {
 	recipe, err := rs.Queries.GetIngredientsOfRecipe(c.Context(), "uggjghj")
 	if err != nil {
 		return nil, err
