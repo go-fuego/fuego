@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// Run starts the server.
 func (s *Server) Run() {
 	go s.GenerateOpenAPI()
 	elapsed := time.Since(s.startTime)

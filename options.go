@@ -148,7 +148,10 @@ func WithTemplates(templates *template.Template) func(*Server) {
 // If the server filesystem is not set, it will use the os filesystem, at folder "./templates".
 // For example:
 //
-//	WithTemplateGlobs("**/*.html")
+//	WithTemplateGlobs("*.html, */*.html", "*/*/*.html")
+//	WithTemplateGlobs("pages/*.html", "pages/admin/*.html")
+//
+// for reference about the glob patterns in Go (no ** support for example): https://pkg.go.dev/path/filepath?utm_source=godoc#Match
 func WithTemplateGlobs(patterns ...string) func(*Server) {
 	return func(s *Server) {
 		if s.fs == nil {

@@ -46,12 +46,12 @@ func (rs Ressource) adminAddRecipes(c op.Ctx[store.CreateRecipeParams]) (any, er
 }
 
 func (rs Ressource) adminIngredients(c op.Ctx[any]) (op.HTML, error) {
-	recipes, err := rs.Queries.GetIngredients(c.Context())
+	ingredients, err := rs.Queries.GetIngredients(c.Context())
 	if err != nil {
 		return "", err
 	}
 
 	return c.Render("pages/admin/ingredients.page.html", op.H{
-		"Recipes": recipes,
+		"Ingredients": ingredients,
 	})
 }
