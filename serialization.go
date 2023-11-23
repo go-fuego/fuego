@@ -1,5 +1,5 @@
 // Description: This file contains functions for sending JSON and XML responses.
-package op
+package fuego
 
 import (
 	"context"

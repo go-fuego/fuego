@@ -5,7 +5,7 @@ import (
 
 	"simple-crud/store"
 
-	"github.com/go-op/op"
+	"github.com/go-fuego/fuego"
 	"github.com/rs/cors"
 )
 
@@ -23,29 +23,29 @@ type Ressource struct {
 	ExternalAPI interface{}            // External API
 	Cache       map[string]interface{} // Some cache
 	Now         func() time.Time       // Function to get the current time. Mocked in tests.
-	Security    op.Security            // Security configuration
+	Security    fuego.Security         // Security configuration
 }
 
-func (rs Ressource) Routes(s *op.Server) {
-	op.Use(s, cors.Default().Handler)
+func (rs Ressource) Routes(s *fuego.Server) {
+	fuego.Use(s, cors.Default().Handler)
 
-	op.GetStd(s, "/recipes-standard-with-helpers", rs.getAllRecipesStandardWithHelpers).
+	fuego.GetStd(s, "/recipes-standard-with-helpers", rs.getAllRecipesStandardWithHelpers).
 		AddTags("Recipe")
 
-	op.Get(s, "/recipes", rs.getAllRecipes).
+	fuego.Get(s, "/recipes", rs.getAllRecipes).
 		WithSummary("Get all recipes").WithDescription("Get all recipes").
 		WithQueryParam("limit", "number of recipes to return").
 		AddTags("custom")
 
-	op.Post(s, "/recipes/new", rs.newRecipe)
-	op.Get(s, "/recipes/{id}", rs.getRecipeWithIngredients)
-	op.Get(s, "/ingredients", rs.getAllIngredients)
-	op.Post(s, "/ingredients/new", rs.newIngredient)
-	op.Post(s, "/dosings/new", rs.newDosing)
+	fuego.Post(s, "/recipes/new", rs.newRecipe)
+	fuego.Get(s, "/recipes/{id}", rs.getRecipeWithIngredients)
+	fuego.Get(s, "/ingredients", rs.getAllIngredients)
+	fuego.Post(s, "/ingredients/new", rs.newIngredient)
+	fuego.Post(s, "/dosings/new", rs.newDosing)
 
 	// Me ! Get the current user information
-	op.Get(s, "/users/me", func(c op.Ctx[any]) (string, error) {
-		claims, err := op.GetToken[MyCustomToken](c.Context())
+	fuego.Get(s, "/users/me", func(c fuego.Ctx[any]) (string, error) {
+		claims, err := fuego.GetToken[MyCustomToken](c.Context())
 		if err != nil {
 			return "", err
 		}
@@ -53,23 +53,23 @@ func (rs Ressource) Routes(s *op.Server) {
 		return "My name is" + claims.Username, nil
 	})
 
-	adminRoutes := op.Group(s, "/admin")
-	op.Use(adminRoutes, op.AuthWall("admin", "superadmin"))  // Only admin and superadmin can access the routes in this group
-	op.Use(adminRoutes, op.AuthWallRegex(`^(super)?admin$`)) // Same as above, but with a regex
+	adminRoutes := fuego.Group(s, "/admin")
+	fuego.Use(adminRoutes, fuego.AuthWall("admin", "superadmin"))  // Only admin and superadmin can access the routes in this group
+	fuego.Use(adminRoutes, fuego.AuthWallRegex(`^(super)?admin$`)) // Same as above, but with a regex
 
-	op.Get(adminRoutes, "/users", placeholderController).
+	fuego.Get(adminRoutes, "/users", placeholderController).
 		WithDescription("Get all users").
 		WithSummary("Get all users").
 		SetTags("Admin")
 
-	testRoutes := op.Group(s, "/tests")
-	op.Get(testRoutes, "/slow", slow).WithDescription("This is a slow route").WithSummary("Slow route")
-	op.Get(testRoutes, "/mounted-route", placeholderController)
-	op.Post(testRoutes, "/mounted-route-post", placeholderController)
+	testRoutes := fuego.Group(s, "/tests")
+	fuego.Get(testRoutes, "/slow", slow).WithDescription("This is a slow route").WithSummary("Slow route")
+	fuego.Get(testRoutes, "/mounted-route", placeholderController)
+	fuego.Post(testRoutes, "/mounted-route-post", placeholderController)
 
-	mountedGroup := op.Group(testRoutes, "/mounted-group")
-	op.Get(mountedGroup, "/mounted-route", placeholderController)
+	mountedGroup := fuego.Group(testRoutes, "/mounted-group")
+	fuego.Get(mountedGroup, "/mounted-route", placeholderController)
 
-	apiv2 := op.Group(s, "/v2")
-	op.Get(apiv2, "/recipes", rs.getAllRecipes)
+	apiv2 := fuego.Group(s, "/v2")
+	fuego.Get(apiv2, "/recipes", rs.getAllRecipes)
 }

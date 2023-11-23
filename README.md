@@ -4,8 +4,8 @@
 
 # Fuego 🔥
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/go-op/op.svg)](https://pkg.go.dev/github.com/go-op/op)
-[![Go Report Card](https://goreportcard.com/badge/github.com/go-op/op)](https://goreportcard.com/report/github.com/go-op/op)
+[![Go Reference](https://pkg.go.dev/badge/github.com/go-fuego/fuego.svg)](https://pkg.go.dev/github.com/go-fuego/fuego)
+[![Go Report Card](https://goreportcard.com/badge/github.com/go-fuego/fuego)](https://goreportcard.com/report/github.com/go-fuego/fuego)
 
 > The Go framework for busy API developers
 
@@ -35,7 +35,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/op-go/op"
+	"github.com/go-fuego/fuego"
 	"github.com/rs/cors"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 )
@@ -50,12 +50,13 @@ type MyResponse struct {
 }
 
 func main() {
-	s := op.New()
+	s := fuego.New()
 
-	op.UseStd(s, cors.Default().Handler)
-	op.UseStd(s, chiMiddleware.Compress(5, "text/html", "text/css"))
+	fuego.Use(s, cors.Default().Handler)
+	fuego.Use(s, chiMiddleware.Compress(5, "text/html", "text/css"))
 
-	op.Post(s, "/", func(c op.Ctx[Received]) (MyResponse, error) {
+	// Fuego 🔥 handler with automatic OpenAPI generation, validation, (de)serialization and error handling
+	fuego.Post(s, "/", func(c fuego.Ctx[Received]) (MyResponse, error) {
 		data, err := c.Body()
 		if err != nil {
 			return MyResponse{}, err
@@ -67,7 +68,8 @@ func main() {
 		}, nil
 	})
 
-	op.GetStd(s, "/std", func(w http.ResponseWriter, r *http.Request) {
+	// Standard net/http handler with automatic OpenAPI route declaration
+	fuego.GetStd(s, "/std", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello, World!"))
 	})
 

@@ -1,4 +1,4 @@
-package op
+package fuego
 
 import (
 	"html/template"
@@ -58,9 +58,9 @@ type Server struct {
 // NewServer creates a new server with the given options.
 // For example:
 //
-//	app := op.NewServer(
-//		op.WithPort(":8080"),
-//		op.WithoutLogger(),
+//	app := fuego.NewServer(
+//		fuego.WithPort(":8080"),
+//		fuego.WithoutLogger(),
 //	)
 //
 // Option all begin with `With`.

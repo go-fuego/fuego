@@ -1,4 +1,4 @@
-package op
+package fuego
 
 import (
 	"encoding/json"
@@ -221,7 +221,7 @@ func BenchmarkRequest(b *testing.B) {
 		Name string `json:"name"`
 	}
 
-	b.Run("op server and op post", func(b *testing.B) {
+	b.Run("fuego server and fuego post", func(b *testing.B) {
 		s := NewServer()
 		Post(s, "/test", func(c Ctx[MyStruct]) (Resp, error) {
 			body, err := c.Body()
@@ -244,7 +244,7 @@ func BenchmarkRequest(b *testing.B) {
 		}
 	})
 
-	b.Run("op server and std post", func(b *testing.B) {
+	b.Run("fuego server and std post", func(b *testing.B) {
 		s := NewServer()
 		PostStd(s, "/test", func(w http.ResponseWriter, r *http.Request) {
 			var body MyStruct

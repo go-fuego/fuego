@@ -1,4 +1,4 @@
-package op
+package fuego
 
 import (
 	"log/slog"
@@ -14,13 +14,13 @@ import (
 // Middlewares are scoped to the group.
 // For example:
 //
-//	s := op.NewServer()
-//	viewsRoutes := op.Group("")
-//	apiRoutes := op.Group("/api")
+//	s := fuego.NewServer()
+//	viewsRoutes := fuego.Group("")
+//	apiRoutes := fuego.Group("/api")
 //	// Registering a middlewares scoped to /api only
-//	op.Use(apiRoutes, myMiddleware)
+//	fuego.Use(apiRoutes, myMiddleware)
 //	// Registering a route under /api/users
-//	op.Get(apiRoutes, "/users", func(c op.Ctx[any]) (ans, error) {
+//	fuego.Get(apiRoutes, "/users", func(c fuego.Ctx[any]) (ans, error) {
 //		return ans{Ans: "users"}, nil
 //	})
 //	s.Run()

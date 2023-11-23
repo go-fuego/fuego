@@ -4,7 +4,7 @@ go 1.21.3
 
 require (
 	github.com/go-chi/chi/v5 v5.0.10
-	github.com/go-op/op v0.2.1
+	github.com/go-fuego/fuego v0.2.1
 	github.com/golang-jwt/jwt/v5 v5.1.0
 	github.com/google/uuid v1.4.0
 	github.com/lmittmann/tint v1.0.2
@@ -56,4 +56,4 @@ require (
 	modernc.org/token v1.0.1 // indirect
 )
 
-replace github.com/go-op/op => ../..
+replace github.com/go-fuego/fuego => ../..

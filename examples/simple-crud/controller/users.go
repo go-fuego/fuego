@@ -3,7 +3,7 @@ package controller
 import (
 	"time"
 
-	"github.com/go-op/op"
+	"github.com/go-fuego/fuego"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -27,7 +27,7 @@ type TokenResponse struct {
 }
 
 // Custom login controller
-func (rs Ressource) login(c op.Ctx[LoginPayload]) (TokenResponse, error) {
+func (rs Ressource) login(c fuego.Ctx[LoginPayload]) (TokenResponse, error) {
 	body, err := c.Body()
 	if err != nil {
 		return TokenResponse{}, err
@@ -36,7 +36,7 @@ func (rs Ressource) login(c op.Ctx[LoginPayload]) (TokenResponse, error) {
 	// Check credentials.
 	// In a real application, you should check the credentials against a database.
 	if body.Username != "admin" || body.Password != "adminadmin" {
-		return TokenResponse{}, op.ErrUnauthorized
+		return TokenResponse{}, fuego.ErrUnauthorized
 	}
 
 	myToken := MyCustomToken{
@@ -62,7 +62,7 @@ func LoginFunc(user, password string) (jwt.Claims, error) {
 	// Check credentials.
 	// In a real application, you should check the credentials against a database.
 	if user != "admin" || password != "adminadmin" {
-		return MyCustomToken{}, op.ErrUnauthorized
+		return MyCustomToken{}, fuego.ErrUnauthorized
 	}
 
 	return MyCustomToken{

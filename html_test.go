@@ -1,4 +1,4 @@
-package op
+package fuego
 
 import (
 	"embed"

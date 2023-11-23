@@ -1,10 +1,10 @@
 # Benchmark against other frameworks
 
-We have benchmarked the API and the performance of Op! against other popular frameworks. The results are shown below.
+We have benchmarked the API and the performance of Fuego against other popular frameworks. The results are shown below.
 
 ## API
 
-| Context     | Op!                              | net/http                                                                                                  | gin                                | echo                               | fasthttp                              | fastapi                                         | nestJS                                                           |
+| Context     | Fuego                            | net/http                                                                                                  | gin                                | echo                               | fasthttp                              | fastapi                                         | nestJS                                                           |
 | ----------- | -------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------- | ---------------------------------- | ------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------- |
 | query param | `QueryParam(string) string`      | `r.URL.Query().Get("string")`                                                                             | `c.Query("string")`                | `c.QueryParam("string")`           | `c.QueryArgs().Peek("string")`        | `@app.get("/string") def string(string: str):`  | `@Get("/string") string(@QueryParam("string") string: string):`  |
 | path param  | `PathParam(string) string`       | `mux.Vars(r)["string"]`                                                                                   | `c.Param("string")`                | `c.Param("string")`                | `c.Param("string")`                   | `@app.get("/string") def string(string: str):`  | `@Get("/string") string(@Param("string") string: string):`       |

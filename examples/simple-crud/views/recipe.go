@@ -8,7 +8,7 @@ import (
 
 	"simple-crud/store"
 
-	"github.com/go-op/op"
+	"github.com/go-fuego/fuego"
 	"github.com/google/uuid"
 )
 
@@ -42,7 +42,7 @@ func (rs Ressource) showRecipesStd(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (rs Ressource) showRecipes(c op.Ctx[any]) (op.HTML, error) {
+func (rs Ressource) showRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
 	recipes, err := rs.Queries.GetRecipes(c.Context())
 	if err != nil {
 		return "", err
@@ -51,7 +51,7 @@ func (rs Ressource) showRecipes(c op.Ctx[any]) (op.HTML, error) {
 	return c.Render("pages/recipes.page.html", recipes)
 }
 
-func (rs Ressource) searchRecipes(c op.Ctx[any]) (op.HTML, error) {
+func (rs Ressource) searchRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
 	recipes, err := rs.Queries.SearchRecipes(c.Context(), "%"+c.QueryParam("search")+"%")
 	if err != nil {
 		return "", err
@@ -59,17 +59,17 @@ func (rs Ressource) searchRecipes(c op.Ctx[any]) (op.HTML, error) {
 
 	slog.Debug("recipes", "recipes", recipes, "search", c.QueryParam("search"))
 
-	return c.Render("partials/search-result.partial.html", op.H{
+	return c.Render("partials/search-result.partial.html", fuego.H{
 		"Recipes": recipes,
 		"Search":  c.QueryParam("search"),
-		"Filters": op.H{
+		"Filters": fuego.H{
 			"Types":       []any{"Entrée", "Plat", "Dessert", "Apéritif"},
 			"Ingredients": []any{"Poivron", "Tomate", "Oignon", "Ail", "Piment"},
 		},
 	})
 }
 
-func (rs Ressource) showRecipesList(c op.Ctx[any]) (op.HTML, error) {
+func (rs Ressource) showRecipesList(c fuego.Ctx[any]) (fuego.HTML, error) {
 	recipes, err := rs.Queries.SearchRecipes(c.Context(), "%"+c.QueryParam("search")+"%")
 	if err != nil {
 		return "", err
@@ -80,7 +80,7 @@ func (rs Ressource) showRecipesList(c op.Ctx[any]) (op.HTML, error) {
 	return c.Render("partials/recipes-list.partial.html", recipes)
 }
 
-func (rs Ressource) addRecipe(c op.Ctx[store.CreateRecipeParams]) (op.HTML, error) {
+func (rs Ressource) addRecipe(c fuego.Ctx[store.CreateRecipeParams]) (fuego.HTML, error) {
 	body, err := c.Body()
 	if err != nil {
 		return "", err
@@ -98,12 +98,12 @@ func (rs Ressource) addRecipe(c op.Ctx[store.CreateRecipeParams]) (op.HTML, erro
 		return "", err
 	}
 
-	return c.Render("pages/admin.page.html", op.H{
+	return c.Render("pages/admin.page.html", fuego.H{
 		"Recipes": recipes,
 	})
 }
 
-func (rs Ressource) showIngredients(c op.Ctx[any]) (op.HTML, error) {
+func (rs Ressource) showIngredients(c fuego.Ctx[any]) (fuego.HTML, error) {
 	ingredients, err := rs.Queries.GetIngredients(c.Context())
 	if err != nil {
 		return "", err
@@ -112,10 +112,10 @@ func (rs Ressource) showIngredients(c op.Ctx[any]) (op.HTML, error) {
 	return c.Render("pages/ingredients.page.html", ingredients)
 }
 
-func (rs Ressource) showHTML(c op.Ctx[any]) (op.HTML, error) {
+func (rs Ressource) showHTML(c fuego.Ctx[any]) (fuego.HTML, error) {
 	return `<h1>test</h1>`, nil
 }
 
-func (rs Ressource) showString(c op.Ctx[any]) (string, error) {
+func (rs Ressource) showString(c fuego.Ctx[any]) (string, error) {
 	return `<h1>test</h1>`, nil
 }

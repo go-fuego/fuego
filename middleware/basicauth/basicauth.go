@@ -3,7 +3,7 @@ package basicauth
 import (
 	"net/http"
 
-	"github.com/go-op/op"
+	"github.com/go-fuego/fuego"
 )
 
 type Config struct {
@@ -29,13 +29,13 @@ func New(config Config) func(http.Handler) http.Handler {
 				return
 			}
 
-			err := op.ErrorResponse{
+			err := fuego.ErrorResponse{
 				Message:    "unauthorized",
 				StatusCode: http.StatusUnauthorized,
 			}
 
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			op.SendJSONError(w, err)
+			fuego.SendJSONError(w, err)
 		})
 	}
 }
