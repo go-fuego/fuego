@@ -25,34 +25,34 @@ type Route[ResponseBody any, RequestBody any] struct {
 	operation *openapi3.Operation
 }
 
-func Get[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
-	return Register[T](s, http.MethodGet, path, controller)
+func Get[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+	return Register[T](s, http.MethodGet, path, controller, middlewares...)
 }
 
 func Post[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
-	return Register[T](s, http.MethodPost, path, controller)
+	return Register[T](s, http.MethodPost, path, controller, middlewares...)
 }
 
-func Delete[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
-	return Register[T](s, http.MethodDelete, path, controller)
+func Delete[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+	return Register[T](s, http.MethodDelete, path, controller, middlewares...)
 }
 
-func Put[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
-	return Register[T](s, http.MethodPut, path, controller)
+func Put[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+	return Register[T](s, http.MethodPut, path, controller, middlewares...)
 }
 
-func Patch[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
-	return Register[T](s, http.MethodPatch, path, controller)
+func Patch[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+	return Register[T](s, http.MethodPatch, path, controller, middlewares...)
 }
 
 // Registers route into the default mux.
-func Register[T any, B any](s *Server, method string, path string, controller func(Ctx[B]) (T, error)) Route[T, B] {
+func Register[T any, B any](s *Server, method string, path string, controller func(Ctx[B]) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	fullPath := s.basePath + path
 	if isGo1_22 {
 		fullPath = method + " " + path
 	}
 	slog.Debug("registering openapi controller " + fullPath)
-	route := register[T, B](s, method, path, httpHandler[T, B](s, controller))
+	route := register[T, B](s, method, path, httpHandler[T, B](s, controller), middlewares...)
 
 	name, nameWithPath := funcName(controller)
 	route.operation.Summary = name
@@ -61,13 +61,14 @@ func Register[T any, B any](s *Server, method string, path string, controller fu
 	return route
 }
 
-func register[T any, B any](s *Server, method string, path string, controller func(http.ResponseWriter, *http.Request)) Route[T, B] {
+func register[T any, B any](s *Server, method string, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	fullPath := s.basePath + path
 	if isGo1_22 {
 		fullPath = method + " " + path
 	}
 
-	s.mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(controller), s.middlewares...))
+	allMiddlewares := append(middlewares, s.middlewares...)
+	s.mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(controller), allMiddlewares...))
 
 	operation, err := RegisterOpenAPIOperation[T, B](s, method, s.basePath+path)
 	if err != nil {
@@ -116,34 +117,34 @@ func UseStd(s *Server, middlewares ...func(http.Handler) http.Handler) {
 	s.middlewares = append(s.middlewares, middlewares...)
 }
 
-func GetStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request)) Route[any, any] {
-	return RegisterStd(s, http.MethodGet, path, controller)
+func GetStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
+	return RegisterStd(s, http.MethodGet, path, controller, middlewares...)
 }
 
-func PostStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request)) Route[any, any] {
-	return RegisterStd(s, http.MethodPost, path, controller)
+func PostStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
+	return RegisterStd(s, http.MethodPost, path, controller, middlewares...)
 }
 
-func DeleteStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request)) Route[any, any] {
-	return RegisterStd(s, http.MethodDelete, path, controller)
+func DeleteStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
+	return RegisterStd(s, http.MethodDelete, path, controller, middlewares...)
 }
 
-func PutStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request)) Route[any, any] {
-	return RegisterStd(s, http.MethodPut, path, controller)
+func PutStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
+	return RegisterStd(s, http.MethodPut, path, controller, middlewares...)
 }
 
-func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request)) Route[any, any] {
-	return RegisterStd(s, http.MethodPatch, path, controller)
+func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
+	return RegisterStd(s, http.MethodPatch, path, controller, middlewares...)
 }
 
 // RegisterStd registers a standard http handler into the default mux.
-func RegisterStd(s *Server, method string, path string, controller func(http.ResponseWriter, *http.Request)) Route[any, any] {
+func RegisterStd(s *Server, method string, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
 	fullPath := s.basePath + path
 	if isGo1_22 {
 		fullPath = method + " " + path
 	}
 	slog.Debug("registering standard controller " + fullPath)
-	route := register[any, any](s, method, path, controller)
+	route := register[any, any](s, method, path, controller, middlewares...)
 
 	name, nameWithPath := funcName(controller)
 	route.operation.Summary = name

@@ -13,6 +13,7 @@ import (
 func dummyMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.Header.Set("X-Test", "test")
+		w.Header().Set("X-Test-Response", "response")
 		handler.ServeHTTP(w, r)
 	})
 }
@@ -303,5 +304,39 @@ func BenchmarkRequest(b *testing.B) {
 				b.Fail()
 			}
 		}
+	})
+}
+
+func TestPerRouteMiddleware(t *testing.T) {
+	s := NewServer()
+
+	Get(s, "/withMiddleware", func(ctx Ctx[string]) (string, error) {
+		return "withmiddleware", nil
+	}, dummyMiddleware)
+
+	Get(s, "/withoutMiddleware", func(ctx Ctx[string]) (string, error) {
+		return "withoutmiddleware", nil
+	})
+
+	t.Run("withMiddleware", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/withMiddleware", nil)
+
+		w := httptest.NewRecorder()
+
+		s.mux.ServeHTTP(w, r)
+
+		require.Equal(t, w.Body.String(), "\"withmiddleware\"\n")
+		require.Equal(t, "response", w.Header().Get("X-Test-Response"))
+	})
+
+	t.Run("withoutMiddleware", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/withoutMiddleware", nil)
+
+		w := httptest.NewRecorder()
+
+		s.mux.ServeHTTP(w, r)
+
+		require.Equal(t, w.Body.String(), "\"withoutmiddleware\"\n")
+		require.Equal(t, "", w.Header().Get("X-Test-Response"))
 	})
 }
