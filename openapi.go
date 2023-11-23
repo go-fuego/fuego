@@ -16,7 +16,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-func NewOpenAPI() openapi3.T {
+func NewOpenApiSpec() openapi3.T {
 	info := &openapi3.Info{
 		Title:       "OpenAPI",
 		Description: "OpenAPI",
@@ -35,15 +35,15 @@ func NewOpenAPI() openapi3.T {
 	return spec
 }
 
-func (s *Server) GenerateOpenAPI() openapi3.T {
+func (s *Server) generateOpenAPI() openapi3.T {
 	// Validate
-	err := s.spec.Validate(context.Background())
+	err := s.OpenApiSpec.Validate(context.Background())
 	if err != nil {
 		slog.Error("Error validating spec", "error", err)
 	}
 
 	// Marshal spec to JSON
-	jsonSpec, err := json.Marshal(s.spec)
+	jsonSpec, err := json.Marshal(s.OpenApiSpec)
 	if err != nil {
 		slog.Error("Error marshalling spec to JSON", "error", err)
 	}
@@ -56,7 +56,7 @@ func (s *Server) GenerateOpenAPI() openapi3.T {
 		localSave(s.OpenapiConfig.JsonSpecLocalPath, jsonSpec)
 	}
 
-	return s.spec
+	return s.OpenApiSpec
 }
 
 func localSave(jsonSpecLocalPath string, jsonSpec []byte) {
@@ -129,14 +129,14 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	bodyTag := tagFromType(*new(B))
 	if (method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch) && bodyTag != "unknown-interface" && bodyTag != "string" {
 
-		bodySchema, ok := s.spec.Components.Schemas[bodyTag]
+		bodySchema, ok := s.OpenApiSpec.Components.Schemas[bodyTag]
 		if !ok {
 			var err error
-			bodySchema, err = generator.NewSchemaRefForValue(new(B), s.spec.Components.Schemas)
+			bodySchema, err = generator.NewSchemaRefForValue(new(B), s.OpenApiSpec.Components.Schemas)
 			if err != nil {
 				return operation, err
 			}
-			s.spec.Components.Schemas[bodyTag] = bodySchema
+			s.OpenApiSpec.Components.Schemas[bodyTag] = bodySchema
 		}
 
 		requestBody := openapi3.NewRequestBody().
@@ -149,7 +149,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 			requestBody.WithContent(content)
 		}
 
-		s.spec.Components.RequestBodies[bodyTag] = &openapi3.RequestBodyRef{
+		s.OpenApiSpec.Components.RequestBodies[bodyTag] = &openapi3.RequestBodyRef{
 			Value: requestBody,
 		}
 
@@ -161,14 +161,14 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	}
 
 	// Response body
-	responseSchema, ok := s.spec.Components.Schemas[tag]
+	responseSchema, ok := s.OpenApiSpec.Components.Schemas[tag]
 	if !ok {
 		var err error
-		responseSchema, err = generator.NewSchemaRefForValue(new(T), s.spec.Components.Schemas)
+		responseSchema, err = generator.NewSchemaRefForValue(new(T), s.OpenApiSpec.Components.Schemas)
 		if err != nil {
 			return operation, err
 		}
-		s.spec.Components.Schemas[tag] = responseSchema
+		s.OpenApiSpec.Components.Schemas[tag] = responseSchema
 	}
 
 	response := openapi3.NewResponse().WithDescription("OK")
@@ -186,7 +186,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 		operation.AddParameter(parameter)
 	}
 
-	s.spec.AddOperation(path, method, operation)
+	s.OpenApiSpec.AddOperation(path, method, operation)
 
 	return operation, nil
 }

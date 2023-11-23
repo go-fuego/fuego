@@ -10,7 +10,7 @@ import (
 
 // Run starts the server.
 func (s *Server) Run() {
-	go s.GenerateOpenAPI()
+	go s.generateOpenAPI()
 	elapsed := time.Since(s.startTime)
 	slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (op.NewServer) and server startup (op.Run). Depending on your implementation, there might be things that do not depend on op slowing start time")
 	slog.Info("Server running ✅ on http://localhost"+s.Addr, "started in", elapsed.String())

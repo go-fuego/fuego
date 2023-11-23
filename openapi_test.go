@@ -40,7 +40,7 @@ func TestTagFromType(t *testing.T) {
 	})
 }
 
-func TestServer_GenerateOpenAPI(t *testing.T) {
+func TestServer_generateOpenAPI(t *testing.T) {
 	s := NewServer()
 	Get(s, "/", func(Ctx[any]) (MyStruct, error) {
 		return MyStruct{}, nil
@@ -51,7 +51,7 @@ func TestServer_GenerateOpenAPI(t *testing.T) {
 	Get(s, "/post/{id}", func(Ctx[any]) (MyOutputStruct, error) {
 		return MyOutputStruct{}, nil
 	})
-	document := s.GenerateOpenAPI()
+	document := s.generateOpenAPI()
 	require.NotNil(t, document)
 	require.NotNil(t, document.Paths["/"])
 	require.Nil(t, document.Paths.Find("/unknown"))
@@ -83,7 +83,7 @@ func BenchmarkRoutesRegistration(b *testing.B) {
 	}
 }
 
-func BenchmarkServer_GenerateOpenAPI(b *testing.B) {
+func BenchmarkServer_generateOpenAPI(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		s := NewServer(
 			WithoutLogger(),
@@ -102,7 +102,7 @@ func BenchmarkServer_GenerateOpenAPI(b *testing.B) {
 			})
 		}
 
-		s.GenerateOpenAPI()
+		s.generateOpenAPI()
 	}
 }
 
