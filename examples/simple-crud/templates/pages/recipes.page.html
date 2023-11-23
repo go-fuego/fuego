@@ -1,0 +1,15 @@
+{{ template "main.layout.html" . }}
+
+{{ define "title" }}My recipes{{ end }}
+
+{{ define "page" }}
+  <div>
+    <h1>List of all my favorite recipes</h1>
+    {{ template "recipes-list.partial.html" . }}
+   
+    </ul>
+  </div>
+{{ end }}
+
+
+<div></div>

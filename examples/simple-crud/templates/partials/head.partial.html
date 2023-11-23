@@ -1,0 +1,38 @@
+<title>{{ block "title" . }}Mon app{{ end }}</title>
+
+<!-- htmx -->
+<script src="https://unpkg.com/htmx.org/dist/htmx.js" defer></script>
+
+<!-- tailwindcss -->
+<script src="https://cdn.tailwindcss.com/3.3.5"></script>
+<style type="text/tailwindcss">
+  @layer utilities {
+    .input {
+      @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm;
+    }
+
+    .label {
+      @apply block text-sm font-medium text-gray-700;
+    }
+
+    .btn {
+      @apply inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500;
+    }
+
+    .btn-danger {
+      @apply inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500;
+    }
+
+    h1 {
+      @apply text-3xl font-bold text-gray-900 mt-4 mb-2;
+    }
+
+    h2 {
+      @apply text-2xl font-bold text-gray-900 mt-4 mb-2;
+    }
+
+    h3 {
+      @apply text-xl font-bold text-gray-900 mt-4 mb-2;
+    }
+  }
+</style>

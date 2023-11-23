@@ -2,13 +2,12 @@ package op
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"html/template"
 	"io/fs"
 	"log/slog"
 	"net/http"
-	"os"
+	"strings"
 )
 
 const (
@@ -38,7 +37,23 @@ type Ctx[B any] interface {
 	QueryParam(name string) string
 	QueryParams() map[string]string
 
-	Render(data any, templates ...string) (HTML, error)
+	// Render renders the given templates with the given data.
+	// Example:
+	//   op.Get(s, "/recipes", func(c op.Ctx[any]) (any, error) {
+	//   	recipes, _ := rs.Queries.GetRecipes(c.Context())
+	//   		...
+	//   	return c.Render("pages/recipes.page.html", recipes)
+	//   })
+	// For the Go templates reference, see https://pkg.go.dev/html/template
+	//
+	// [templateGlobsToOverride] is a list of templates to override.
+	// For example, if you have 2 conflicting templates
+	//   - with the same name "partials/aaa/nav.partial.html" and "partials/bbb/nav.partial.html"
+	//   - or two templates with different names but that define the same block "page" for example,
+	// and you want to override one above the other, you can do:
+	//   c.Render("admin.page.html", recipes, "partials/aaa/nav.partial.html")
+	// By default, [templateToExecute] is added to the list of templates to override.
+	Render(templateToExecute string, data any, templateGlobsToOverride ...string) (HTML, error)
 
 	Request() *http.Request        // Request returns the underlying http request.
 	Response() http.ResponseWriter // Response returns the underlying http response writer.
@@ -47,6 +62,14 @@ type Ctx[B any] interface {
 	// Same as c.Request().Context().
 	// This is the context related to the request, not the context of the server.
 	Context() context.Context
+
+	// Redirect redirects to the given url with the given status code.
+	// Example:
+	//   op.Get(s, "/recipes", func(c op.Ctx[any]) (any, error) {
+	//   	...
+	//   	return c.Redirect(301, "/recipes-list")
+	//   })
+	Redirect(code int, url string) (any, error)
 }
 
 func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) *Context[B] {
@@ -57,8 +80,6 @@ func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptio
 			DisallowUnknownFields: options.DisallowUnknownFields,
 			MaxBodySize:           options.MaxBodySize,
 		},
-		fsInitMessage: "(filesystem given '.' from current working directory)",
-		fs:            os.DirFS("."),
 	}
 
 	return c
@@ -71,10 +92,23 @@ type Context[BodyType any] struct {
 	response   http.ResponseWriter
 	pathParams map[string]string
 
-	fsInitMessage string // The input given to NewContext. Used for error messages.
-	fs            fs.FS
+	fs              fs.FS
+	templates       *template.Template
+	templatesParsed bool
 
 	readOptions readOptions
+}
+
+// SafeShallowCopy returns a safe shallow copy of the context.
+// It allows to modify the base context while modifying the request context.
+// It is data-safe, meaning that any sensitive data will not be shared between the original context and the copy.
+func (c *Context[B]) SafeShallowCopy() *Context[B] {
+	c.pathParams = nil
+	c.body = nil
+	c.request = nil
+	c.response = nil
+
+	return c
 }
 
 // readOptions are options for reading the request body.
@@ -92,23 +126,55 @@ func (c Context[B]) Context() context.Context {
 	return c.request.Context()
 }
 
+func (c Context[B]) Redirect(code int, url string) (any, error) {
+	http.Redirect(c.response, c.request, url, code)
+
+	return nil, nil
+}
+
 // Render renders the given templates with the given data.
 // It returns just an empty string, because the response is written directly to the http.ResponseWriter.
-func (c Context[B]) Render(data any, templates ...string) (HTML, error) {
-	tmpl, err := template.ParseFS(c.fs, templates...)
-	if err != nil {
-
-		var pathError *fs.PathError
-		if errors.As(err, &pathError) {
-			wd, _ := os.Getwd()
-			return "", fmt.Errorf("template '%s' does not exist in directory '%s': %w", pathError.Path, wd, err)
+//
+// Init templates if not already done.
+// This have the side effect of making the Render method static, meaning
+// that the templates will be parsed only once, removing
+// the need to parse the templates on each request but also preventing
+// to dynamically use new templates.
+func (c *Context[B]) Render(templateToExecute string, data any, layoutsGlobs ...string) (HTML, error) {
+	if !c.templatesParsed {
+		layoutsGlobs = append(layoutsGlobs, templateToExecute) // To override all blocks defined in the main template
+		cloned := template.Must(c.templates.Clone())
+		tmpl, err := cloned.ParseFS(c.fs, layoutsGlobs...)
+		if err != nil {
+			return "", ErrorResponse{
+				StatusCode: http.StatusInternalServerError,
+				Message:    fmt.Errorf("error parsing template '%s': %w", layoutsGlobs, err).Error(),
+				MoreInfo: map[string]any{
+					"templates": layoutsGlobs,
+					"help":      "Check that the template exists and have the correct extension.",
+				},
+			}
 		}
-
-		return "", fmt.Errorf("%w %s", err, c.fsInitMessage)
+		c.templates = template.Must(tmpl.Clone())
+		c.templatesParsed = true
 	}
 
+	// Get only last template name (for example, with partials/nav/main/nav.partial.html, get nav.partial.html)
+	myTemplate := strings.Split(templateToExecute, "/")
+	templateToExecute = myTemplate[len(myTemplate)-1]
+
 	c.response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err = tmpl.Execute(c.response, data)
+	err := c.templates.ExecuteTemplate(c.response, templateToExecute, data)
+	if err != nil {
+		return "", ErrorResponse{
+			StatusCode: http.StatusInternalServerError,
+			Message:    fmt.Errorf("error executing template '%s': %w", templateToExecute, err).Error(),
+			MoreInfo: map[string]any{
+				"templates": layoutsGlobs,
+				"help":      "Check that the template exists and have the correct extension.",
+			},
+		}
+	}
 
 	return "", err
 }
@@ -179,10 +245,12 @@ func (c *Context[B]) Body() (B, error) {
 	var body B
 	var err error
 	switch c.request.Header.Get("Content-Type") {
-	case "application/x-www-form-urlencoded", "text/plain":
+	case "text/plain":
 		s, errReadingString := readString[string](c.request.Body, c.readOptions)
 		body = any(s).(B)
 		err = errReadingString
+	case "application/x-www-form-urlencoded", "multipart/form-data":
+		body, err = readURLEncoded[B](c.request, c.readOptions)
 	case "application/json":
 		fallthrough
 	default:

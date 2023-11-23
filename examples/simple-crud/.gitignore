@@ -1,4 +1,7 @@
 simple-crud
 docs
 .vscode
+tmp
 recipe.db
+node_modules
+tmp/*

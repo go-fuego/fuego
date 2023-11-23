@@ -164,6 +164,10 @@ func TokenFromHeader(r *http.Request) string {
 		return ""
 	}
 
+	if !strings.HasPrefix(authorizationHeader, "Bearer ") {
+		return ""
+	}
+
 	// Removes "Bearer " from the header
 	return strings.TrimSpace(authorizationHeader[7:])
 }

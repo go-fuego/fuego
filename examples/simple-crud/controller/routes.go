@@ -27,7 +27,7 @@ type Ressource struct {
 }
 
 func (rs Ressource) Routes(s *op.Server) {
-	op.UseStd(s, cors.Default().Handler)
+	op.Use(s, cors.Default().Handler)
 
 	op.GetStd(s, "/recipes-standard-with-helpers", rs.getAllRecipesStandardWithHelpers).
 		AddTags("Recipe")
@@ -53,27 +53,23 @@ func (rs Ressource) Routes(s *op.Server) {
 		return "My name is" + claims.Username, nil
 	})
 
-	op.Group(s, "/admin", func(s *op.Server) {
-		op.UseStd(s, op.AuthWall("admin", "superadmin"))  // Only admin and superadmin can access the routes in this group
-		op.UseStd(s, op.AuthWallRegex(`^(super)?admin$`)) // Same as above, but with a regex
+	adminRoutes := op.Group(s, "/admin")
+	op.Use(adminRoutes, op.AuthWall("admin", "superadmin"))  // Only admin and superadmin can access the routes in this group
+	op.Use(adminRoutes, op.AuthWallRegex(`^(super)?admin$`)) // Same as above, but with a regex
 
-		op.Get(s, "/users", placeholderController).
-			WithDescription("Get all users").
-			WithSummary("Get all users").
-			SetTags("Admin")
-	})
+	op.Get(adminRoutes, "/users", placeholderController).
+		WithDescription("Get all users").
+		WithSummary("Get all users").
+		SetTags("Admin")
 
-	op.Group(s, "/tests", func(s *op.Server) {
-		op.Get(s, "/slow", slow).WithDescription("This is a slow route").WithSummary("Slow route")
-		op.Get(s, "/mounted-route", placeholderController)
-		op.Post(s, "/mounted-route-post", placeholderController)
+	testRoutes := op.Group(s, "/tests")
+	op.Get(testRoutes, "/slow", slow).WithDescription("This is a slow route").WithSummary("Slow route")
+	op.Get(testRoutes, "/mounted-route", placeholderController)
+	op.Post(testRoutes, "/mounted-route-post", placeholderController)
 
-		op.Group(s, "/mounted-group", func(groupedS *op.Server) {
-			op.Get(groupedS, "/mounted-route", placeholderController)
-		})
-	})
+	mountedGroup := op.Group(testRoutes, "/mounted-group")
+	op.Get(mountedGroup, "/mounted-route", placeholderController)
 
-	// Grouping with only a prefix and not custom middlewares
-	apiv2 := op.Group(s, "/v2", nil)
+	apiv2 := op.Group(s, "/v2")
 	op.Get(apiv2, "/recipes", rs.getAllRecipes)
 }

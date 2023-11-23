@@ -30,4 +30,7 @@ lint:
 	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run
 
 example:
-	( cd examples/simple-crud && go run . )
+	( cd examples/simple-crud && go run . -debug )
+
+example-watch:
+	( cd examples/simple-crud && air -- -debug )

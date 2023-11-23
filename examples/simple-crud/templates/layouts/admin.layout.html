@@ -1,0 +1,53 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+
+    {{ block "head.partial.html" . }}
+      <script src="https://unpkg.com/htmx.org@1.9.8"></script>
+    {{ end }}
+  </head>
+
+  <body class="m-0">
+    <div class="flex">
+      <!-- Admin navbar on the side -->
+      <nav
+        class="bg-gray-800 text-gray-400 w-64 px-4 py-8 space-y-6"
+        hx-boost="true"
+        hx-target="#page"
+        hx-select="#page"
+      >
+        <h1 class="text-white text-2xl mb-4">
+          <a href="/"> Gourmet </a>
+        </h1>
+        <ul>
+          <li
+            class="text-white text-xl mb-4 hover:text-gray-200 hover:underline"
+          >
+            <a href="/admin/recipes">Recipes</a>
+          </li>
+          <li
+            class="text-white text-xl mb-4 hover:text-gray-200 hover:underline"
+          >
+            <a href="/admin/ingredients">Ingredients</a>
+          </li>
+          <li
+            class="text-white text-xl mb-4 hover:text-gray-200 hover:underline"
+          >
+            <a href="/admin/users">Users</a>
+          </li>
+        </ul>
+      </nav>
+
+      <main
+        id="page"
+        class="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8"
+      >
+        {{ template "page" . }}
+      </main>
+    </div>
+
+    {{ template "footer.partial.html" . }}
+  </body>
+</html>

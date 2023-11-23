@@ -1,0 +1,7 @@
+<ul class="flex flex-wrap ">
+  {{ range . }}
+    <li class="w-1/3 p-2">
+      {{ template "recipe-card.partial.html" . }}
+    </li>
+  {{ end }}
+</ul>

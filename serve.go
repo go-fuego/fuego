@@ -1,14 +1,16 @@
 package op
 
 import (
+	"html/template"
 	"log/slog"
 	"net/http"
 	"reflect"
 	"time"
 )
 
+// Run starts the server.
 func (s *Server) Run() {
-	go s.GenerateOpenAPI()
+	go s.generateOpenAPI()
 	elapsed := time.Since(s.startTime)
 	slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (op.NewServer) and server startup (op.Run). Depending on your implementation, there might be things that do not depend on op slowing start time")
 	slog.Info("Server running ✅ on http://localhost"+s.Addr, "started in", elapsed.String())
@@ -29,15 +31,23 @@ func (s *Server) Run() {
 
 type Controller[ReturnType any, Body any] func(c Context[Body]) (ReturnType, error)
 
-// httpHandler converts a controller into a http.HandlerFunc.
+// httpHandler converts a framework controller into a http.HandlerFunc.
 func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body]) (ReturnType, error)) http.HandlerFunc {
 	returnsHTML := reflect.TypeOf(controller).Out(0).Name() == "HTML"
 
+	baseCtx := NewContext[Body](nil, nil, readOptions{
+		DisallowUnknownFields: s.DisallowUnknownFields,
+		MaxBodySize:           s.maxBodySize,
+	})
+	baseCtx.fs = s.fs
+	if s.template != nil {
+		baseCtx.templates = template.Must(s.template.Clone())
+	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := NewContext[Body](w, r, readOptions{
-			DisallowUnknownFields: s.DisallowUnknownFields,
-			MaxBodySize:           s.maxBodySize,
-		})
+		ctx := baseCtx.SafeShallowCopy()
+		ctx.response = w
+		ctx.request = r
 
 		for _, param := range parsePathParams(r.URL.Path) {
 			ctx.pathParams[param] = "coming in go1.22"

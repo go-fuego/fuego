@@ -22,6 +22,7 @@ func (m *MultiHTTPWriter) Write(p []byte) (int, error) {
 func (m *MultiHTTPWriter) Unwrap() http.ResponseWriter {
 	return m.ResponseWriter
 }
+
 func (m *MultiHTTPWriter) WriteHeader(statusCode int) {
 	m.status = statusCode
 	m.ResponseWriter.WriteHeader(statusCode)

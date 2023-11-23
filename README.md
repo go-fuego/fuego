@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="./op-logo.svg"  height="200" alt="Ren'Py Graphviz" />
+  <img src="./data/fuego.svg" height="200" alt="Fuego Logo" />
 </p>
 
-# Op! ⏱️
+# Fuego 🔥
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/go-op/op.svg)](https://pkg.go.dev/github.com/go-op/op)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-op/op)](https://goreportcard.com/report/github.com/go-op/op)
@@ -11,19 +11,21 @@
 
 The only Go framework generating OpenAPI documentation from code. Inspired by Nest, built for Go developers.
 
-## Why op?
+## Why Fuego?
 
-Chi, Gin, Fiber and Echo are great frameworks. But since they are designed a long time ago, they do not enjoy the possibilities that provide modern Go. Op provides a lot of helper functions and features that make it easy to develop APIs.
+Chi, Gin, Fiber and Echo are great frameworks. But since they were designed a long time ago, they do not enjoy the possibilities that modern Go provides. Fuego offers a lot of helper functions and features that make it easy to develop APIs.
 
 ## Features
 
-- **OpenAPI**: Op automatically generates OpenAPI documentation from code
-- **`net/http` compatibile**: Op is built on top of `net/http`, so you can use any `net/http` middleware or handler!
-- **Routing**: Op provides a simple and fast router based on Go 1.22 `net/http`
-- **Serialization/Deserialization**: Op automatically serializes and deserializes JSON and XML based on user provided structs (or not, if you want to do it yourself)
-- **Validation**: Op provides a simple and fast validator based on go-playground/validator
-- **Transformation**: easily transform your data after deserialization
-- **Middlewares**: easily add a custom `net/http` middleware, or use the built-in middlewares.
+- **OpenAPI**: Fuego automatically generates OpenAPI documentation from code
+- **`net/http` compatible**: Fuego is built on top of `net/http`, so you can use any `http.Handler` middleware or handler! Fuego also supports `log/slog`, `context` and
+- **Routing**: Fuego provides a simple and fast router based on Go 1.22 `net/http`
+- **Serialization/Deserialization**: Fuego automatically serializes and deserializes JSON, XML and HTML Forms based on user-provided structs (or not, if you want to do it yourself)
+- **Validation**: Fuego provides a simple and fast validator based on `go-playground/validator`
+- **Transformation**: easily transform your data by implementing the `fuego.InTransform` and `fuego.OutTransform` interfaces
+- **Middlewares**: easily add a custom `net/http` middleware or use the provided middlewares.
+- **Error handling**: Fuego provides a simple and fast error handling system
+- **Rendering**: Fuego provides a simple and fast rendering system based on `html/template` - you can still also use your own template system like `templ` or `gomponents`
 
 ## Examples
 
@@ -61,7 +63,7 @@ func main() {
 
 		return MyResponse{
 			Message:       "Hello, " + data.Name,
-			BestFramework: "Op!",
+			BestFramework: "Fuego!",
 		}, nil
 	})
 

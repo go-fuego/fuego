@@ -1,0 +1,22 @@
+{{ template "admin.layout.html" . }}
+
+{{ define "title" }}Admin - Recipes{{ end }}
+
+{{ define "page" }}
+
+  <h1>Admin - Recipes</h1>
+
+  <div>
+    <h2>Add a recipe</h2>
+
+    {{ template "add-recipe.partial.admin.html" }}
+  </div>
+
+  <hr class="my-4" />
+
+  <div id="recipe-list" class="mt-4">
+    <h2>All recipes</h2>
+
+    {{ template "recipes-list.partial.html" .Recipes }}
+  </div>
+{{ end }}

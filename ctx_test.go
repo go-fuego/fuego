@@ -209,7 +209,7 @@ func FuzzContext_Body(f *testing.F) {
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-		c := NewContext[string](w, r, readOptions{})
+		c := NewContext[testStruct](w, r, readOptions{})
 
 		_, err := c.Body()
 		require.NoError(t, err)

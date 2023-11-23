@@ -5,7 +5,8 @@ go 1.21.3
 require (
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-op/op v0.2.1
-	github.com/golang-jwt/jwt/v5 v5.0.0
+	github.com/golang-jwt/jwt/v5 v5.1.0
+	github.com/google/uuid v1.4.0
 	github.com/lmittmann/tint v1.0.2
 	github.com/rs/cors v1.10.1
 	modernc.org/sqlite v1.26.0
@@ -23,7 +24,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.15.5 // indirect
-	github.com/google/uuid v1.3.0 // indirect
+	github.com/gorilla/schema v1.2.1 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/invopop/yaml v0.2.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect

@@ -10,14 +10,25 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
-func Group(s *Server, path string, group func(s *Server)) *Server {
+// Group allows to group routes under a common path.
+// Middlewares are scoped to the group.
+// For example:
+//
+//	s := op.NewServer()
+//	viewsRoutes := op.Group("")
+//	apiRoutes := op.Group("/api")
+//	// Registering a middlewares scoped to /api only
+//	op.Use(apiRoutes, myMiddleware)
+//	// Registering a route under /api/users
+//	op.Get(apiRoutes, "/users", func(c op.Ctx[any]) (ans, error) {
+//		return ans{Ans: "users"}, nil
+//	})
+//	s.Run()
+func Group(s *Server, path string) *Server {
 	ss := *s
 	newServer := &ss
 	newServer.basePath += path
 
-	if group != nil {
-		group(newServer)
-	}
 	return newServer
 }
 
@@ -114,6 +125,10 @@ func (r Route[ResponseBody, RequestBody]) WithQueryParam(name, description strin
 }
 
 func UseStd(s *Server, middlewares ...func(http.Handler) http.Handler) {
+	Use(s, middlewares...)
+}
+
+func Use(s *Server, middlewares ...func(http.Handler) http.Handler) {
 	s.middlewares = append(s.middlewares, middlewares...)
 }
 

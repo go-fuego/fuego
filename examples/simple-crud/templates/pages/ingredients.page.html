@@ -1,0 +1,17 @@
+{{ template "main.layout.html" . }}
+
+{{ define "page" }}
+  <div>
+    <h1>List of all my favorite ingredients</h1>
+    <ul>
+      {{ range . }}
+        <li>
+          <span>
+            <strong> {{ .Name }} </strong>
+            {{ .Description }}
+          </span>
+        </li>
+      {{ end }}
+    </ul>
+  </div>
+{{ end }}

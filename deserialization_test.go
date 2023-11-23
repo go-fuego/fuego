@@ -2,6 +2,7 @@ package op
 
 import (
 	"errors"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -128,5 +129,25 @@ func TestInTransformStringWithError(t *testing.T) {
 		body, err := ReadString[transformableStringWithError](input)
 		require.Error(t, err)
 		require.Equal(t, transformableStringWithError("transformed coucou"), body)
+	})
+}
+
+func TestReadURLEncoded(t *testing.T) {
+	t.Run("read urlencoded", func(t *testing.T) {
+		input := strings.NewReader(`A=a&B=1&C=true`)
+		r := httptest.NewRequest("POST", "/", input)
+		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		res, err := ReadURLEncoded[TestBody](r)
+		require.NoError(t, err)
+		require.Equal(t, TestBody{"a", 1, true}, res)
+	})
+
+	t.Run("read urlencoded with type error", func(t *testing.T) {
+		input := strings.NewReader(`A=a&B=wrongtype&C=true`)
+		r := httptest.NewRequest("POST", "/", input)
+		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		res, err := ReadURLEncoded[TestBody](r)
+		require.Error(t, err)
+		require.Equal(t, TestBody{"a", 0, true}, res)
 	})
 }
