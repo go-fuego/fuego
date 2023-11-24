@@ -1,0 +1,7 @@
+<ul class="flex flex-col gap-2">
+  {{ range . }}
+    <li class="">
+      {{ template "recipe-line.partial.html" . }}
+    </li>
+  {{ end }}
+</ul>

@@ -42,6 +42,10 @@ func (rs Ressource) showRecipesStd(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (rs Ressource) showIndex(c fuego.Ctx[any]) (fuego.HTML, error) {
+	return c.Render("pages/index.page.html", nil)
+}
+
 func (rs Ressource) showRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
 	recipes, err := rs.Queries.GetRecipes(c.Context())
 	if err != nil {
@@ -52,16 +56,18 @@ func (rs Ressource) showRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
 }
 
 func (rs Ressource) searchRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
-	recipes, err := rs.Queries.SearchRecipes(c.Context(), "%"+c.QueryParam("search")+"%")
+	search := c.QueryParam("q")
+
+	recipes, err := rs.Queries.SearchRecipes(c.Context(), "%"+search+"%")
 	if err != nil {
 		return "", err
 	}
 
-	slog.Debug("recipes", "recipes", recipes, "search", c.QueryParam("search"))
+	slog.Debug("recipes", "recipes", recipes, "search", search)
 
-	return c.Render("partials/search-result.partial.html", fuego.H{
+	return c.Render("pages/search.page.html", fuego.H{
 		"Recipes": recipes,
-		"Search":  c.QueryParam("search"),
+		"Search":  search,
 		"Filters": fuego.H{
 			"Types":       []any{"Entrée", "Plat", "Dessert", "Apéritif"},
 			"Ingredients": []any{"Poivron", "Tomate", "Oignon", "Ail", "Piment"},

@@ -18,8 +18,17 @@
         hx-target="#page"
         hx-select="#page"
       >
-        <h1 class="text-white text-2xl mb-4">
-          <a href="/"> Gourmet </a>
+        <h1 class="mb-4 text-center">
+          <a
+            class="text-2xl italic
+              font-serif
+              bg-gradient-to-r from-orange-300 to-orange-500
+              inline-block text-transparent bg-clip-text font-bold"
+            href="/"
+            hx-boost="false"
+          >
+            Gourmet
+          </a>
         </h1>
         <ul>
           <li
@@ -40,10 +49,7 @@
         </ul>
       </nav>
 
-      <main
-        id="page"
-        class="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8"
-      >
+      <main id="page" class="container mx-auto">
         {{ template "page" . }}
       </main>
     </div>

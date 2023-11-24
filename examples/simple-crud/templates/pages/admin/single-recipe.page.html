@@ -1,0 +1,58 @@
+{{ template "admin.layout.html" . }}
+
+{{ define "title" }}Admin - Ingredients{{ end }}
+
+{{ define "page" }}
+
+  <div class="m-4 md:m-8">
+
+    <h1>Admin - Recipe</h1>
+
+    <hgroup
+      class="sticky top-0 flex justify-between items-center mb-4 bg-white w-full"
+    >
+      <h2 class="text-3xl font-bold mb-4">{{ .Name }}</h1>
+      <button class="btn btn-primary" form="myform">
+       Save
+      </button>
+    </hgroup>
+
+    <form id="myform" method="POST" action="/admin/recipes/{{ .ID }}/edit">
+      <label class="label">
+        Name
+        <input
+          type="text"
+          name="name"
+          required
+          placeholder="Name"
+          class="input"
+          value="{{ .Name }}"
+        />
+      </label>
+
+      <label class="label">
+        Description
+        <textarea class="input">{{ .Description }}</textarea>
+      </label>
+    </form>
+
+    <section>
+      <h2 class="text-2xl font-bold mb-2">Ingredients</h2>
+      
+      <ul class="list-disc pl-4">
+        {{ range .Ingredients }}
+          <li>{{ . }}</li>
+        {{ end }}
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-2xl font-bold mb-2">Instructions</h2>
+      <ol class="list-decimal pl-4">
+        {{ range .Instructions }}
+          <li>{{ . }}</li>
+        {{ end }}
+      </ol>
+    </section>
+  </div>
+{{ end }}
