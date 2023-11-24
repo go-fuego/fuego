@@ -1,13 +1,30 @@
 version: "2"
 sql:
   - engine: "sqlite"
-    schema: "store/queries/_schema.sql"
-    queries: "store/queries/"
+    schema: "store/migrations/_schema.sql"
+    queries: "store/recipes/recipe.sql"
     gen:
       go:
-        package: "store"
-        out: "store"
+        package: "recipes"
+        out: "store/recipes"
+        emit_json_tags: true
+  - engine: "sqlite"
+    schema: "store/migrations/_schema.sql"
+    queries: "store/dosings/dosing.sql"
+    gen:
+      go:
+        package: "dosings"
+        out: "store/dosings"
         emit_json_tags: true
         overrides:
           - column: "dosing.quantity"
             go_struct_tag: 'validate:"required,gt=0"'
+  - engine: "sqlite"
+    schema: "store/migrations/_schema.sql"
+    queries: "store/ingredients/ingredient.sql"
+    gen:
+      go:
+        package: "ingredients"
+        out: "store/ingredients"
+        emit_json_tags: true
+       

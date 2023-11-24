@@ -39,14 +39,11 @@ func main() {
 	// Connect to database
 	db := store.InitDB("./recipe.db")
 
-	// Create queries
-	queries := store.New(db)
-
 	// Create ressources that will be available in API controllers
-	rs := controller.NewRessource(*queries)
+	apiRessources := controller.NewRessource(db)
 
 	// Create ressources that will be available in HTML controllers
-	viewsRessources := views.NewRessource(*queries)
+	viewsRessources := views.NewRessource(db)
 
 	// Create server with some options
 	app := fuego.NewServer(
@@ -55,7 +52,7 @@ func main() {
 		fuego.WithTemplateGlobs("**/*.html", "**/**/*.html"),
 	)
 
-	rs.Security = app.Security
+	apiRessources.Security = app.Security
 
 	// Register middlewares (functions that will be executed before AND after the controllers, in the order they are registered)
 	// With fuego, you can use any existing middleware that relies on `net/http`, or create your own
@@ -66,7 +63,7 @@ func main() {
 	viewsRessources.Routes(fuego.Group(app, ""))
 
 	// Register API routes (controllers that return JSON)
-	rs.Routes(fuego.Group(app, "/api"))
+	apiRessources.MountRoutes(fuego.Group(app, "/api"))
 
 	// Run the server!
 	app.Run()

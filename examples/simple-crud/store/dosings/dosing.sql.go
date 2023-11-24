@@ -3,7 +3,7 @@
 //   sqlc v1.23.0
 // source: dosing.sql
 
-package store
+package dosings
 
 import (
 	"context"

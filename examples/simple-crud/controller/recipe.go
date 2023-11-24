@@ -3,13 +3,32 @@ package controller
 import (
 	"net/http"
 
-	"simple-crud/store"
+	"simple-crud/store/ingredients"
+	"simple-crud/store/recipes"
 
 	"github.com/go-fuego/fuego"
 )
 
-func (rs Ressource) getAllRecipesStandardWithHelpers(w http.ResponseWriter, r *http.Request) {
-	recipes, err := rs.Queries.GetRecipes(r.Context())
+type recipeRessource struct {
+	recipeQueries      recipes.Queries
+	ingredientsQueries ingredients.Queries
+}
+
+func (rs recipeRessource) MountRoutes(s *fuego.Server) {
+	fuego.GetStd(s, "/recipes-standard-with-helpers", rs.getAllRecipesStandardWithHelpers).
+		AddTags("Recipe")
+
+	fuego.Get(s, "/recipes", rs.getAllRecipes).
+		WithSummary("Get all recipes").WithDescription("Get all recipes").
+		WithQueryParam("limit", "number of recipes to return").
+		AddTags("custom")
+
+	fuego.Post(s, "/recipes/new", rs.newRecipe)
+	fuego.Get(s, "/recipes/{id}", rs.getRecipeWithIngredients)
+}
+
+func (rs recipeRessource) getAllRecipesStandardWithHelpers(w http.ResponseWriter, r *http.Request) {
+	recipes, err := rs.recipeQueries.GetRecipes(r.Context())
 	if err != nil {
 		fuego.SendJSONError(w, err)
 		return
@@ -18,8 +37,8 @@ func (rs Ressource) getAllRecipesStandardWithHelpers(w http.ResponseWriter, r *h
 	fuego.SendJSON(w, recipes)
 }
 
-func (rs Ressource) getAllRecipes(c fuego.Ctx[any]) ([]store.Recipe, error) {
-	recipes, err := rs.Queries.GetRecipes(c.Context())
+func (rs recipeRessource) getAllRecipes(c fuego.Ctx[any]) ([]recipes.Recipe, error) {
+	recipes, err := rs.recipeQueries.GetRecipes(c.Context())
 	if err != nil {
 		return nil, err
 	}
@@ -27,22 +46,22 @@ func (rs Ressource) getAllRecipes(c fuego.Ctx[any]) ([]store.Recipe, error) {
 	return recipes, nil
 }
 
-func (rs Ressource) newRecipe(c fuego.Ctx[store.CreateRecipeParams]) (store.Recipe, error) {
+func (rs recipeRessource) newRecipe(c fuego.Ctx[recipes.CreateRecipeParams]) (recipes.Recipe, error) {
 	body, err := c.Body()
 	if err != nil {
-		return store.Recipe{}, err
+		return recipes.Recipe{}, err
 	}
 
-	recipe, err := rs.Queries.CreateRecipe(c.Context(), body)
+	recipe, err := rs.recipeQueries.CreateRecipe(c.Context(), body)
 	if err != nil {
-		return store.Recipe{}, err
+		return recipes.Recipe{}, err
 	}
 
 	return recipe, nil
 }
 
-func (rs Ressource) getRecipeWithIngredients(c fuego.Ctx[any]) ([]store.GetIngredientsOfRecipeRow, error) {
-	recipe, err := rs.Queries.GetIngredientsOfRecipe(c.Context(), "uggjghj")
+func (rs recipeRessource) getRecipeWithIngredients(c fuego.Ctx[any]) ([]ingredients.GetIngredientsOfRecipeRow, error) {
+	recipe, err := rs.ingredientsQueries.GetIngredientsOfRecipe(c.Context(), c.QueryParam("id"))
 	if err != nil {
 		return nil, err
 	}

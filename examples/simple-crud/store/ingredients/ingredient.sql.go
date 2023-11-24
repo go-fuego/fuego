@@ -3,7 +3,7 @@
 //   sqlc v1.23.0
 // source: ingredient.sql
 
-package store
+package ingredients
 
 import (
 	"context"
@@ -71,7 +71,7 @@ WHERE dosing.recipe_id = ?
 `
 
 type GetIngredientsOfRecipeRow struct {
-	Quantity   int64      `json:"quantity" validate:"required,gt=0"`
+	Quantity   int64      `json:"quantity"`
 	Ingredient Ingredient `json:"ingredient"`
 }
 

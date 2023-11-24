@@ -1,4 +1,4 @@
-package store
+package recipes
 
 import (
 	"strings"

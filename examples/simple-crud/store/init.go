@@ -11,7 +11,7 @@ import (
 	"modernc.org/sqlite"
 )
 
-//go:embed queries/_schema.sql
+//go:embed migrations/_schema.sql
 var schema []byte
 
 // InitDB initialize the database.

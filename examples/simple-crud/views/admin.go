@@ -1,7 +1,8 @@
 package views
 
 import (
-	"simple-crud/store"
+	"simple-crud/store/ingredients"
+	"simple-crud/store/recipes"
 
 	"github.com/go-fuego/fuego"
 )
@@ -12,7 +13,7 @@ func (rs Ressource) pageAdmin(c fuego.Ctx[any]) (any, error) {
 
 func (rs Ressource) deleteRecipe(c fuego.Ctx[any]) (any, error) {
 	id := c.QueryParam("id") // TODO use PathParam
-	err := rs.Queries.DeleteRecipe(c.Context(), id)
+	err := rs.RecipesQueries.DeleteRecipe(c.Context(), id)
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +22,7 @@ func (rs Ressource) deleteRecipe(c fuego.Ctx[any]) (any, error) {
 }
 
 func (rs Ressource) adminRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
-	recipes, err := rs.Queries.GetRecipes(c.Context())
+	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
 	if err != nil {
 		return "", err
 	}
@@ -34,12 +35,12 @@ func (rs Ressource) adminRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
 func (rs Ressource) adminOneRecipe(c fuego.Ctx[any]) (fuego.HTML, error) {
 	id := c.QueryParam("id") // TODO use PathParam
 
-	recipe, err := rs.Queries.GetRecipe(c.Context(), id)
+	recipe, err := rs.RecipesQueries.GetRecipe(c.Context(), id)
 	if err != nil {
 		return "", err
 	}
 
-	ingredients, err := rs.Queries.GetIngredientsOfRecipe(c.Context(), id)
+	ingredients, err := rs.IngredientsQueries.GetIngredientsOfRecipe(c.Context(), id)
 	if err != nil {
 		return "", err
 	}
@@ -52,13 +53,13 @@ func (rs Ressource) adminOneRecipe(c fuego.Ctx[any]) (fuego.HTML, error) {
 	})
 }
 
-func (rs Ressource) adminAddRecipes(c fuego.Ctx[store.CreateRecipeParams]) (any, error) {
+func (rs Ressource) adminAddRecipes(c fuego.Ctx[recipes.CreateRecipeParams]) (any, error) {
 	body, err := c.Body()
 	if err != nil {
 		return "", err
 	}
 
-	_, err = rs.Queries.CreateRecipe(c.Context(), body)
+	_, err = rs.RecipesQueries.CreateRecipe(c.Context(), body)
 	if err != nil {
 		return "", err
 	}
@@ -67,7 +68,7 @@ func (rs Ressource) adminAddRecipes(c fuego.Ctx[store.CreateRecipeParams]) (any,
 }
 
 func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (fuego.HTML, error) {
-	ingredients, err := rs.Queries.GetIngredients(c.Context())
+	ingredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
 	if err != nil {
 		return "", err
 	}
@@ -77,13 +78,13 @@ func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (fuego.HTML, error) {
 	})
 }
 
-func (rs Ressource) adminAddIngredient(c fuego.Ctx[store.CreateIngredientParams]) (any, error) {
+func (rs Ressource) adminAddIngredient(c fuego.Ctx[ingredients.CreateIngredientParams]) (any, error) {
 	body, err := c.Body()
 	if err != nil {
 		return "", err
 	}
 
-	_, err = rs.Queries.CreateIngredient(c.Context(), body)
+	_, err = rs.IngredientsQueries.CreateIngredient(c.Context(), body)
 	if err != nil {
 		return "", err
 	}
