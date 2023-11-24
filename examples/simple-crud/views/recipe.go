@@ -1,30 +1,37 @@
 package views
 
 import (
+	"database/sql"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"path"
 
-	"simple-crud/store"
+	"simple-crud/store/dosings"
+	"simple-crud/store/ingredients"
+	"simple-crud/store/recipes"
 
 	"github.com/go-fuego/fuego"
 	"github.com/google/uuid"
 )
 
-func NewRessource(queries store.Queries) Ressource {
+func NewRessource(db *sql.DB) Ressource {
 	return Ressource{
-		Queries: queries,
+		RecipesQueries:     *recipes.New(db),
+		IngredientsQueries: *ingredients.New(db),
+		DosingQueries:      *dosings.New(db),
 	}
 }
 
 // Ressource is the struct that holds useful sources of informations available for the controllers.
 type Ressource struct {
-	Queries store.Queries // Database queries
+	DosingQueries      dosings.Queries
+	RecipesQueries     recipes.Queries
+	IngredientsQueries ingredients.Queries
 }
 
 func (rs Ressource) showRecipesStd(w http.ResponseWriter, r *http.Request) {
-	recipes, err := rs.Queries.GetRecipes(r.Context())
+	recipes, err := rs.RecipesQueries.GetRecipes(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -47,7 +54,7 @@ func (rs Ressource) showIndex(c fuego.Ctx[any]) (fuego.HTML, error) {
 }
 
 func (rs Ressource) showRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
-	recipes, err := rs.Queries.GetRecipes(c.Context())
+	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
 	if err != nil {
 		return "", err
 	}
@@ -58,7 +65,7 @@ func (rs Ressource) showRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
 func (rs Ressource) searchRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
 	search := c.QueryParam("q")
 
-	recipes, err := rs.Queries.SearchRecipes(c.Context(), "%"+search+"%")
+	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), "%"+search+"%")
 	if err != nil {
 		return "", err
 	}
@@ -76,7 +83,7 @@ func (rs Ressource) searchRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
 }
 
 func (rs Ressource) showRecipesList(c fuego.Ctx[any]) (fuego.HTML, error) {
-	recipes, err := rs.Queries.SearchRecipes(c.Context(), "%"+c.QueryParam("search")+"%")
+	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), "%"+c.QueryParam("search")+"%")
 	if err != nil {
 		return "", err
 	}
@@ -86,7 +93,7 @@ func (rs Ressource) showRecipesList(c fuego.Ctx[any]) (fuego.HTML, error) {
 	return c.Render("partials/recipes-list.partial.html", recipes)
 }
 
-func (rs Ressource) addRecipe(c fuego.Ctx[store.CreateRecipeParams]) (fuego.HTML, error) {
+func (rs Ressource) addRecipe(c fuego.Ctx[recipes.CreateRecipeParams]) (fuego.HTML, error) {
 	body, err := c.Body()
 	if err != nil {
 		return "", err
@@ -94,12 +101,12 @@ func (rs Ressource) addRecipe(c fuego.Ctx[store.CreateRecipeParams]) (fuego.HTML
 
 	body.ID = uuid.NewString()
 
-	_, err = rs.Queries.CreateRecipe(c.Context(), body)
+	_, err = rs.RecipesQueries.CreateRecipe(c.Context(), body)
 	if err != nil {
 		return "", err
 	}
 
-	recipes, err := rs.Queries.GetRecipes(c.Context())
+	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
 	if err != nil {
 		return "", err
 	}
@@ -107,15 +114,6 @@ func (rs Ressource) addRecipe(c fuego.Ctx[store.CreateRecipeParams]) (fuego.HTML
 	return c.Render("pages/admin.page.html", fuego.H{
 		"Recipes": recipes,
 	})
-}
-
-func (rs Ressource) showIngredients(c fuego.Ctx[any]) (fuego.HTML, error) {
-	ingredients, err := rs.Queries.GetIngredients(c.Context())
-	if err != nil {
-		return "", err
-	}
-
-	return c.Render("pages/ingredients.page.html", ingredients)
 }
 
 func (rs Ressource) showHTML(c fuego.Ctx[any]) (fuego.HTML, error) {

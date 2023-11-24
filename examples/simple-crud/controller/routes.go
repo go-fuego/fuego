@@ -1,47 +1,53 @@
 package controller
 
 import (
+	"database/sql"
 	"time"
 
-	"simple-crud/store"
+	"simple-crud/store/dosings"
+	"simple-crud/store/ingredients"
+	"simple-crud/store/recipes"
 
 	"github.com/go-fuego/fuego"
 	"github.com/rs/cors"
 )
 
 // Ressource is the struct that holds useful sources of informations available for the controllers.
-func NewRessource(queries store.Queries) Ressource {
+func NewRessource(db *sql.DB) Ressource {
 	return Ressource{
-		Queries: queries,
+		RecipesQueries:     *recipes.New(db),
+		IngredientsQueries: *ingredients.New(db),
+		DosingQueries:      *dosings.New(db),
 	}
 }
 
-// Ressource is the struct that holds useful sources of informations available for the controllers.
+// Ressource is the global struct that holds useful sources of informations available for the controllers.
+// Usually not used directly, but passed to the controllers.
 type Ressource struct {
-	Queries     store.Queries          // Database queries
-	UserQueries store.Queries          // Database queries from another store
+	DosingQueries      dosings.Queries
+	RecipesQueries     recipes.Queries
+	IngredientsQueries ingredients.Queries
+
 	ExternalAPI interface{}            // External API
 	Cache       map[string]interface{} // Some cache
 	Now         func() time.Time       // Function to get the current time. Mocked in tests.
 	Security    fuego.Security         // Security configuration
 }
 
-func (rs Ressource) Routes(s *fuego.Server) {
+func (rs Ressource) MountRoutes(s *fuego.Server) {
 	fuego.Use(s, cors.Default().Handler)
 
-	fuego.GetStd(s, "/recipes-standard-with-helpers", rs.getAllRecipesStandardWithHelpers).
-		AddTags("Recipe")
+	recipeRessource{
+		recipeQueries: rs.RecipesQueries,
+	}.MountRoutes(s)
 
-	fuego.Get(s, "/recipes", rs.getAllRecipes).
-		WithSummary("Get all recipes").WithDescription("Get all recipes").
-		WithQueryParam("limit", "number of recipes to return").
-		AddTags("custom")
+	ingredientRessource{
+		Queries: rs.IngredientsQueries,
+	}.MountRoutes(s)
 
-	fuego.Post(s, "/recipes/new", rs.newRecipe)
-	fuego.Get(s, "/recipes/{id}", rs.getRecipeWithIngredients)
-	fuego.Get(s, "/ingredients", rs.getAllIngredients)
-	fuego.Post(s, "/ingredients/new", rs.newIngredient)
-	fuego.Post(s, "/dosings/new", rs.newDosing)
+	dosingRessource{
+		Queries: rs.DosingQueries,
+	}.MountRoutes(s)
 
 	// Me ! Get the current user information
 	fuego.Get(s, "/users/me", func(c fuego.Ctx[any]) (string, error) {
@@ -69,7 +75,4 @@ func (rs Ressource) Routes(s *fuego.Server) {
 
 	mountedGroup := fuego.Group(testRoutes, "/mounted-group")
 	fuego.Get(mountedGroup, "/mounted-route", placeholderController)
-
-	apiv2 := fuego.Group(s, "/v2")
-	fuego.Get(apiv2, "/recipes", rs.getAllRecipes)
 }

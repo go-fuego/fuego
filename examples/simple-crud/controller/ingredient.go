@@ -3,12 +3,21 @@ package controller
 import (
 	"strings"
 
-	"simple-crud/store"
+	"simple-crud/store/ingredients"
 
 	"github.com/go-fuego/fuego"
 )
 
-func (rs Ressource) getAllIngredients(c fuego.Ctx[any]) ([]store.Ingredient, error) {
+type ingredientRessource struct {
+	Queries ingredients.Queries
+}
+
+func (rs ingredientRessource) MountRoutes(s *fuego.Server) {
+	fuego.Get(s, "/ingredients", rs.getAllIngredients)
+	fuego.Post(s, "/ingredients/new", rs.newIngredient)
+}
+
+func (rs ingredientRessource) getAllIngredients(c fuego.Ctx[any]) ([]ingredients.Ingredient, error) {
 	ingredients, err := rs.Queries.GetIngredients(c.Context())
 	if err != nil {
 		return nil, err
@@ -30,13 +39,13 @@ func (ci *CreateIngredient) InTransform() error {
 	return nil
 }
 
-func (rs Ressource) newIngredient(c fuego.Ctx[CreateIngredient]) (store.Ingredient, error) {
+func (rs ingredientRessource) newIngredient(c fuego.Ctx[CreateIngredient]) (ingredients.Ingredient, error) {
 	body, err := c.Body()
 	if err != nil {
-		return store.Ingredient{}, err
+		return ingredients.Ingredient{}, err
 	}
 
-	payload := store.CreateIngredientParams{
+	payload := ingredients.CreateIngredientParams{
 		ID:          generateID(),
 		Name:        body.Name,
 		Description: body.Description,
@@ -44,7 +53,7 @@ func (rs Ressource) newIngredient(c fuego.Ctx[CreateIngredient]) (store.Ingredie
 
 	ingredient, err := rs.Queries.CreateIngredient(c.Context(), payload)
 	if err != nil {
-		return store.Ingredient{}, err
+		return ingredients.Ingredient{}, err
 	}
 
 	return ingredient, nil
