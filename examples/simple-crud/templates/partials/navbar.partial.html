@@ -1,44 +1,81 @@
-<header>
-  <div class="flex justify-center">
-    <input
-      class="m-1 md:m-3 p-2 px-4 text-stone-500 h-full hover:bg-stone-100 rounded-full border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      type="text"
-      id="searchInput"
-      name="search"
-      placeholder="Search"
-      hx-get="/search"
-      hx-trigger="keyup changed delay:300ms"
-      hx-target="#page"
-      hx-indicator="#search-indicator"
-    />
+<header
+  class="
+    sticky top-0 z-50
+    backdrop-blur-md bg-white/70
+  "
+>
+  <div class="flex gap-2 md:gap-4 justify-center items-center bg-white/75">
+    <a
+      class="text-2xl italic
+        font-serif
+        bg-gradient-to-r from-orange-300 to-orange-500
+        inline-block text-transparent bg-clip-text font-bold"
+      href="/"
+    >
+      Gourmet
+    </a>
+    <div class="relative m-1 md:m-3">
+      <input
+        class="p-2 px-4 text-stone-500 h-full hover:bg-stone-100 rounded-full border border-stone-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        type="text"
+        id="searchInput"
+        name="q"
+        placeholder="orange, crème brulée..."
+        hx-get="/search"
+        hx-push-url="true"
+        hx-trigger="keyup changed delay:100ms"
+        hx-target="#page"
+        hx-select="#page"
+        hx-swap="outerHTML"
+        hx-indicator="#search-indicator"
+      />
+      <span
+        class="hidden md:inline pl-2 flex-none text-xs text-stone-500
+      absolute top-1/2 right-4 transform -translate-y-1/2"
+        >⌘K</span
+      >
+    </div>
+
+    <span id="search-indicator" class="hidden">
+      <div class="spinner">coucou</div>
+    </span>
   </div>
   <nav
-    class="flex justify-center items-center border border-b-stone-200 shadow-sm px-8 py-1 md:py-3"
+    class="flex justify-center items-center
+    border border-b-stone-200 shadow-sm
+    w-full
+    overflow-x-auto 
+    "
   >
-    <div class="flex justify-center max-w-xl gap-8">
+    <div
+      class="flex justify-center max-w-xl  gap-8
+   
+    px-8 py-2 md:py-3"
+    >
       <a
-        class="text-stone-500 h-full active:text-blue-800 hover:text-stone-800 hover:underline "
-        href="/"
+        class="text-stone-500 whitespace-nowrap h-full active:text-blue-800 hover:text-stone-800 hover:underline"
+        href="/planner"
       >
-        Home
+        Planner
       </a>
       <a
-        class="text-stone-500 h-full active:text-blue-800 hover:text-stone-800 hover:underline"
+        class="text-stone-500 whitespace-nowrap h-full active:text-blue-800 hover:text-stone-800 hover:underline"
         href="/recipes"
       >
         Recipes
       </a>
       <a
-        class="text-stone-500 h-full active:text-blue-800 hover:text-stone-800 hover:underline"
+        class="text-stone-500 whitespace-nowrap h-full active:text-blue-800 hover:text-stone-800 hover:underline"
         href="/ingredients"
       >
         Ingredients
       </a>
+
       <a
-        class="text-stone-500 h-full active:text-blue-800 hover:text-stone-800 hover:underline"
-        href="/admin"
+        class="text-stone-500 whitespace-nowrap h-full active:text-blue-800 hover:text-stone-800 hover:underline"
+        href="/fast"
       >
-        Admin
+        Quick
       </a>
     </div>
   </nav>
@@ -46,9 +83,9 @@
 
 <script>
   document.addEventListener("keydown", function (e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+    if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "s")) {
       e.preventDefault();
-      document.getElementById("searchInput").focus();
+      document.getElementById("searchInput").select();
     }
   });
 </script>

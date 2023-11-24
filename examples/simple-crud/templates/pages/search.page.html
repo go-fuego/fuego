@@ -1,0 +1,20 @@
+{{ template "main.layout.html" . }}
+
+{{ define "title" }}
+  Gourmet -
+  {{ if .Search }}
+    {{ .Search }}
+  {{ else }}
+    Search
+  {{ end }}
+{{ end }}
+
+{{ define "page" }}
+
+  <div class="p-2 md:p-4">
+    {{ template "search-result.partial.html" . }}
+  </div>
+{{ end }}
+
+
+<div></div>

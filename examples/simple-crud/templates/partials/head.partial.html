@@ -1,5 +1,10 @@
 <title>{{ block "title" . }}Mon app{{ end }}</title>
 
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Gourmet" />
+<meta property="og:site_name" content="Gourmet" />
+
 <!-- htmx -->
 <script src="https://unpkg.com/htmx.org/dist/htmx.js" defer></script>
 
@@ -7,6 +12,9 @@
 <script src="https://cdn.tailwindcss.com/3.3.5"></script>
 <style type="text/tailwindcss">
   @layer utilities {
+    body {
+      @apply font-light antialiased;
+    }
     .input {
       @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm;
     }
