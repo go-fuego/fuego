@@ -2,6 +2,6 @@ simple-crud
 docs
 .vscode
 tmp
-recipe.db
+*.db
 node_modules
 tmp/*

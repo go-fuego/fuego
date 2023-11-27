@@ -4,7 +4,9 @@
 
 package ingredients
 
-import ()
+import (
+	"time"
+)
 
 type Dosing struct {
 	RecipeID     string `json:"recipe_id"`
@@ -14,13 +16,16 @@ type Dosing struct {
 }
 
 type Ingredient struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID          string    `json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
 }
 
 type Recipe struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID           string    `json:"id"`
+	CreatedAt    time.Time `json:"created_at"`
+	Name         string    `json:"name"`
+	Description  string    `json:"description"`
+	Instructions string    `json:"instructions"`
 }

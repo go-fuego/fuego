@@ -10,7 +10,7 @@ import (
 )
 
 const createIngredient = `-- name: CreateIngredient :one
-INSERT INTO ingredient (id, name, description) VALUES (?, ?, ?) RETURNING id, name, description
+INSERT INTO ingredient (id, name, description) VALUES (?, ?, ?) RETURNING id, created_at, name, description
 `
 
 type CreateIngredientParams struct {
@@ -22,23 +22,33 @@ type CreateIngredientParams struct {
 func (q *Queries) CreateIngredient(ctx context.Context, arg CreateIngredientParams) (Ingredient, error) {
 	row := q.db.QueryRowContext(ctx, createIngredient, arg.ID, arg.Name, arg.Description)
 	var i Ingredient
-	err := row.Scan(&i.ID, &i.Name, &i.Description)
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.Name,
+		&i.Description,
+	)
 	return i, err
 }
 
 const getIngredient = `-- name: GetIngredient :one
-SELECT id, name, description FROM ingredient WHERE id = ?
+SELECT id, created_at, name, description FROM ingredient WHERE id = ?
 `
 
 func (q *Queries) GetIngredient(ctx context.Context, id string) (Ingredient, error) {
 	row := q.db.QueryRowContext(ctx, getIngredient, id)
 	var i Ingredient
-	err := row.Scan(&i.ID, &i.Name, &i.Description)
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.Name,
+		&i.Description,
+	)
 	return i, err
 }
 
 const getIngredients = `-- name: GetIngredients :many
-SELECT id, name, description FROM ingredient
+SELECT id, created_at, name, description FROM ingredient
 `
 
 func (q *Queries) GetIngredients(ctx context.Context) ([]Ingredient, error) {
@@ -50,7 +60,12 @@ func (q *Queries) GetIngredients(ctx context.Context) ([]Ingredient, error) {
 	var items []Ingredient
 	for rows.Next() {
 		var i Ingredient
-		if err := rows.Scan(&i.ID, &i.Name, &i.Description); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.Name,
+			&i.Description,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -65,7 +80,7 @@ func (q *Queries) GetIngredients(ctx context.Context) ([]Ingredient, error) {
 }
 
 const getIngredientsOfRecipe = `-- name: GetIngredientsOfRecipe :many
-SELECT quantity, ingredient.id, ingredient.name, ingredient.description FROM ingredient
+SELECT quantity, ingredient.id, ingredient.created_at, ingredient.name, ingredient.description FROM ingredient
 JOIN dosing ON ingredient.id = dosing.ingredient_id
 WHERE dosing.recipe_id = ?
 `
@@ -87,6 +102,7 @@ func (q *Queries) GetIngredientsOfRecipe(ctx context.Context, recipeID string) (
 		if err := rows.Scan(
 			&i.Quantity,
 			&i.Ingredient.ID,
+			&i.Ingredient.CreatedAt,
 			&i.Ingredient.Name,
 			&i.Ingredient.Description,
 		); err != nil {

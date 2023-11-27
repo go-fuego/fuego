@@ -4,23 +4,28 @@
 
 package recipes
 
-import ()
+import (
+	"time"
+)
 
 type Dosing struct {
 	RecipeID     string `json:"recipe_id"`
 	IngredientID string `json:"ingredient_id"`
-	Quantity     int64  `json:"quantity" validate:"required,gt=0"`
+	Quantity     int64  `json:"quantity"`
 	Unit         string `json:"unit"`
 }
 
 type Ingredient struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID          string    `json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
 }
 
 type Recipe struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID           string    `json:"id"`
+	CreatedAt    time.Time `json:"created_at"`
+	Name         string    `json:"name"`
+	Description  string    `json:"description"`
+	Instructions string    `json:"instructions"`
 }
