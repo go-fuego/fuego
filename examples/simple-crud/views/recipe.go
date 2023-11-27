@@ -1,33 +1,34 @@
 package views
 
 import (
+	"context"
 	"database/sql"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"path"
 
-	"simple-crud/store/dosings"
-	"simple-crud/store/ingredients"
-	"simple-crud/store/recipes"
+	"simple-crud/store"
 
 	"github.com/go-fuego/fuego"
 	"github.com/google/uuid"
 )
 
 func NewRessource(db *sql.DB) Ressource {
+	store := store.New(db)
+
 	return Ressource{
-		RecipesQueries:     *recipes.New(db),
-		IngredientsQueries: *ingredients.New(db),
-		DosingQueries:      *dosings.New(db),
+		RecipesQueries:     store,
+		IngredientsQueries: store,
+		DosingQueries:      store,
 	}
 }
 
 // Ressource is the struct that holds useful sources of informations available for the controllers.
 type Ressource struct {
-	DosingQueries      dosings.Queries
-	RecipesQueries     recipes.Queries
-	IngredientsQueries ingredients.Queries
+	DosingQueries      DosingRepository
+	RecipesQueries     RecipeRepository
+	IngredientsQueries IngredientRepository
 }
 
 func (rs Ressource) showRecipesStd(w http.ResponseWriter, r *http.Request) {
@@ -93,7 +94,7 @@ func (rs Ressource) showRecipesList(c fuego.Ctx[any]) (fuego.HTML, error) {
 	return c.Render("partials/recipes-list.partial.html", recipes)
 }
 
-func (rs Ressource) addRecipe(c fuego.Ctx[recipes.CreateRecipeParams]) (fuego.HTML, error) {
+func (rs Ressource) addRecipe(c fuego.Ctx[store.CreateRecipeParams]) (fuego.HTML, error) {
 	body, err := c.Body()
 	if err != nil {
 		return "", err
@@ -123,3 +124,14 @@ func (rs Ressource) showHTML(c fuego.Ctx[any]) (fuego.HTML, error) {
 func (rs Ressource) showString(c fuego.Ctx[any]) (string, error) {
 	return `<h1>test</h1>`, nil
 }
+
+type RecipeRepository interface {
+	CreateRecipe(ctx context.Context, arg store.CreateRecipeParams) (store.Recipe, error)
+	DeleteRecipe(ctx context.Context, id string) error
+	GetRecipe(ctx context.Context, id string) (store.Recipe, error)
+	GetRecipeWithIngredients(ctx context.Context, id string) (store.GetRecipeWithIngredientsRow, error)
+	GetRecipes(ctx context.Context) ([]store.Recipe, error)
+	SearchRecipes(ctx context.Context, name string) ([]store.Recipe, error)
+}
+
+var _ RecipeRepository = (*store.Queries)(nil)

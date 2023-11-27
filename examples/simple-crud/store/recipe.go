@@ -1,4 +1,4 @@
-package recipes
+package store
 
 import (
 	"net/url"

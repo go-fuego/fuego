@@ -1,15 +1,16 @@
 package controller
 
 import (
+	"context"
 	"strings"
 
-	"simple-crud/store/ingredients"
+	"simple-crud/store"
 
 	"github.com/go-fuego/fuego"
 )
 
 type ingredientRessource struct {
-	Queries ingredients.Queries
+	IngredientRepository IngredientRepository
 }
 
 func (rs ingredientRessource) MountRoutes(s *fuego.Server) {
@@ -17,8 +18,8 @@ func (rs ingredientRessource) MountRoutes(s *fuego.Server) {
 	fuego.Post(s, "/ingredients/new", rs.newIngredient)
 }
 
-func (rs ingredientRessource) getAllIngredients(c fuego.Ctx[any]) ([]ingredients.Ingredient, error) {
-	ingredients, err := rs.Queries.GetIngredients(c.Context())
+func (rs ingredientRessource) getAllIngredients(c fuego.Ctx[any]) ([]store.Ingredient, error) {
+	ingredients, err := rs.IngredientRepository.GetIngredients(c.Context())
 	if err != nil {
 		return nil, err
 	}
@@ -39,22 +40,31 @@ func (ci *CreateIngredient) InTransform() error {
 	return nil
 }
 
-func (rs ingredientRessource) newIngredient(c fuego.Ctx[CreateIngredient]) (ingredients.Ingredient, error) {
+func (rs ingredientRessource) newIngredient(c fuego.Ctx[CreateIngredient]) (store.Ingredient, error) {
 	body, err := c.Body()
 	if err != nil {
-		return ingredients.Ingredient{}, err
+		return store.Ingredient{}, err
 	}
 
-	payload := ingredients.CreateIngredientParams{
+	payload := store.CreateIngredientParams{
 		ID:          generateID(),
 		Name:        body.Name,
 		Description: body.Description,
 	}
 
-	ingredient, err := rs.Queries.CreateIngredient(c.Context(), payload)
+	ingredient, err := rs.IngredientRepository.CreateIngredient(c.Context(), payload)
 	if err != nil {
-		return ingredients.Ingredient{}, err
+		return store.Ingredient{}, err
 	}
 
 	return ingredient, nil
 }
+
+type IngredientRepository interface {
+	CreateIngredient(ctx context.Context, arg store.CreateIngredientParams) (store.Ingredient, error)
+	GetIngredient(ctx context.Context, id string) (store.Ingredient, error)
+	GetIngredients(ctx context.Context) ([]store.Ingredient, error)
+	GetIngredientsOfRecipe(ctx context.Context, recipeID string) ([]store.GetIngredientsOfRecipeRow, error)
+}
+
+var _ IngredientRepository = (*store.Queries)(nil)

@@ -4,9 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"simple-crud/store/dosings"
-	"simple-crud/store/ingredients"
-	"simple-crud/store/recipes"
+	"simple-crud/store"
 
 	"github.com/go-fuego/fuego"
 	"github.com/rs/cors"
@@ -14,19 +12,20 @@ import (
 
 // Ressource is the struct that holds useful sources of informations available for the controllers.
 func NewRessource(db *sql.DB) Ressource {
+	store := store.New(db)
 	return Ressource{
-		RecipesQueries:     *recipes.New(db),
-		IngredientsQueries: *ingredients.New(db),
-		DosingQueries:      *dosings.New(db),
+		RecipesQueries:     store,
+		IngredientsQueries: store,
+		DosingQueries:      store,
 	}
 }
 
 // Ressource is the global struct that holds useful sources of informations available for the controllers.
 // Usually not used directly, but passed to the controllers.
 type Ressource struct {
-	DosingQueries      dosings.Queries
-	RecipesQueries     recipes.Queries
-	IngredientsQueries ingredients.Queries
+	DosingQueries      DosingRepository
+	RecipesQueries     RecipeRepository
+	IngredientsQueries IngredientRepository
 
 	ExternalAPI interface{}            // External API
 	Cache       map[string]interface{} // Some cache
@@ -38,11 +37,11 @@ func (rs Ressource) MountRoutes(s *fuego.Server) {
 	fuego.Use(s, cors.Default().Handler)
 
 	recipeRessource{
-		recipeQueries: rs.RecipesQueries,
+		RecipeRepository: rs.RecipesQueries,
 	}.MountRoutes(s)
 
 	ingredientRessource{
-		Queries: rs.IngredientsQueries,
+		IngredientRepository: rs.IngredientsQueries,
 	}.MountRoutes(s)
 
 	dosingRessource{
