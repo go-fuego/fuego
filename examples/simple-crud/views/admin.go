@@ -2,6 +2,8 @@ package views
 
 import (
 	"database/sql"
+	"slices"
+	"strings"
 
 	"simple-crud/store"
 
@@ -62,11 +64,20 @@ func (rs Ressource) adminOneRecipe(c fuego.Ctx[any]) (fuego.HTML, error) {
 		return "", err
 	}
 
+	allIngredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
+	if err != nil {
+		return "", err
+	}
+
+	slices.SortFunc(allIngredients, func(a, b store.Ingredient) int {
+		return strings.Compare(a.Name, b.Name)
+	})
+
 	return c.Render("pages/admin/single-recipe.page.html", fuego.H{
-		"Name":         recipe.Name,
-		"Description":  recipe.Description,
-		"Ingredients":  ingredients,
-		"Instructions": nil,
+		"Recipe":         recipe,
+		"Ingredients":    ingredients,
+		"Instructions":   nil,
+		"AllIngredients": allIngredients,
 	})
 }
 
@@ -82,6 +93,20 @@ func (rs Ressource) adminAddRecipes(c fuego.Ctx[store.CreateRecipeParams]) (any,
 	}
 
 	return c.Redirect(301, "/admin/recipes")
+}
+
+func (rs Ressource) adminAddDosing(c fuego.Ctx[store.CreateDosingParams]) (any, error) {
+	body, err := c.Body()
+	if err != nil {
+		return "", err
+	}
+
+	_, err = rs.DosingQueries.CreateDosing(c.Context(), body)
+	if err != nil {
+		return "", err
+	}
+
+	return c.Redirect(301, "/admin/recipes/one?id="+body.RecipeID)
 }
 
 func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (fuego.HTML, error) {
