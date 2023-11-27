@@ -13,8 +13,6 @@ func (rs Ressource) Routes(s *fuego.Server) {
 	fuego.Get(s, "/recipes/one", rs.recipePage)
 	fuego.Post(s, "/recipes-new", rs.addRecipe)
 	fuego.Get(s, "/ingredients", rs.showIngredients)
-	fuego.Get(s, "/html", rs.showHTML)
-	fuego.Get(s, "/h1string", rs.showString)
 
 	// Public Chunks
 	fuego.Get(s, "/recipes-list", rs.showRecipesList)
