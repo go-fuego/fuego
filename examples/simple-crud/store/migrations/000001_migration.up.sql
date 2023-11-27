@@ -1,16 +1,21 @@
-CREATE TABLE recipe (
+CREATE TABLE IF NOT EXISTS recipe (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    description TEXT NOT NULL
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    name TEXT NOT NULL UNIQUE,
+    description TEXT NOT NULL,
+    instructions TEXT NOT NULL
 );
 
-CREATE TABLE ingredient (
+
+CREATE TABLE IF NOT EXISTS ingredient (
   id TEXT PRIMARY KEY,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   name TEXT NOT NULL,
   description TEXT NOT NULL
 );
 
-CREATE TABLE dosing (
+CREATE TABLE IF NOT EXISTS dosing (
   recipe_id TEXT NOT NULL,
   ingredient_id TEXT NOT NULL,
   quantity INTEGER NOT NULL,

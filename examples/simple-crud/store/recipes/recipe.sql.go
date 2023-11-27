@@ -7,22 +7,35 @@ package recipes
 
 import (
 	"context"
+	"time"
 )
 
 const createRecipe = `-- name: CreateRecipe :one
-INSERT INTO recipe (id, name, description) VALUES (?, ?, ?) RETURNING id, name, description
+INSERT INTO recipe (id, name, description, instructions) VALUES (?, ?, ?, ?) RETURNING id, created_at, name, description, instructions
 `
 
 type CreateRecipeParams struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	Instructions string `json:"instructions"`
 }
 
 func (q *Queries) CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Recipe, error) {
-	row := q.db.QueryRowContext(ctx, createRecipe, arg.ID, arg.Name, arg.Description)
+	row := q.db.QueryRowContext(ctx, createRecipe,
+		arg.ID,
+		arg.Name,
+		arg.Description,
+		arg.Instructions,
+	)
 	var i Recipe
-	err := row.Scan(&i.ID, &i.Name, &i.Description)
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.Name,
+		&i.Description,
+		&i.Instructions,
+	)
 	return i, err
 }
 
@@ -36,34 +49,43 @@ func (q *Queries) DeleteRecipe(ctx context.Context, id string) error {
 }
 
 const getRecipe = `-- name: GetRecipe :one
-SELECT id, name, description FROM recipe WHERE id = ?
+SELECT id, created_at, name, description, instructions FROM recipe WHERE id = ?
 `
 
 func (q *Queries) GetRecipe(ctx context.Context, id string) (Recipe, error) {
 	row := q.db.QueryRowContext(ctx, getRecipe, id)
 	var i Recipe
-	err := row.Scan(&i.ID, &i.Name, &i.Description)
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.Name,
+		&i.Description,
+		&i.Instructions,
+	)
 	return i, err
 }
 
 const getRecipeWithIngredients = `-- name: GetRecipeWithIngredients :one
-SELECT recipe.id, recipe.name, recipe.description, recipe_id, ingredient_id, quantity, unit, ingredient.id, ingredient.name, ingredient.description FROM recipe
+SELECT recipe.id, recipe.created_at, recipe.name, recipe.description, instructions, recipe_id, ingredient_id, quantity, unit, ingredient.id, ingredient.created_at, ingredient.name, ingredient.description FROM recipe
 JOIN dosing ON recipe.id = dosing.recipe_id
 JOIN ingredient ON dosing.ingredient_id = ingredient.id
 WHERE recipe.id = ?
 `
 
 type GetRecipeWithIngredientsRow struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	Description   string `json:"description"`
-	RecipeID      string `json:"recipe_id"`
-	IngredientID  string `json:"ingredient_id"`
-	Quantity      int64  `json:"quantity" validate:"required,gt=0"`
-	Unit          string `json:"unit"`
-	ID_2          string `json:"id_2"`
-	Name_2        string `json:"name_2"`
-	Description_2 string `json:"description_2"`
+	ID            string    `json:"id"`
+	CreatedAt     time.Time `json:"created_at"`
+	Name          string    `json:"name"`
+	Description   string    `json:"description"`
+	Instructions  string    `json:"instructions"`
+	RecipeID      string    `json:"recipe_id"`
+	IngredientID  string    `json:"ingredient_id"`
+	Quantity      int64     `json:"quantity"`
+	Unit          string    `json:"unit"`
+	ID_2          string    `json:"id_2"`
+	CreatedAt_2   time.Time `json:"created_at_2"`
+	Name_2        string    `json:"name_2"`
+	Description_2 string    `json:"description_2"`
 }
 
 func (q *Queries) GetRecipeWithIngredients(ctx context.Context, id string) (GetRecipeWithIngredientsRow, error) {
@@ -71,13 +93,16 @@ func (q *Queries) GetRecipeWithIngredients(ctx context.Context, id string) (GetR
 	var i GetRecipeWithIngredientsRow
 	err := row.Scan(
 		&i.ID,
+		&i.CreatedAt,
 		&i.Name,
 		&i.Description,
+		&i.Instructions,
 		&i.RecipeID,
 		&i.IngredientID,
 		&i.Quantity,
 		&i.Unit,
 		&i.ID_2,
+		&i.CreatedAt_2,
 		&i.Name_2,
 		&i.Description_2,
 	)
@@ -85,7 +110,7 @@ func (q *Queries) GetRecipeWithIngredients(ctx context.Context, id string) (GetR
 }
 
 const getRecipes = `-- name: GetRecipes :many
-SELECT id, name, description FROM recipe
+SELECT id, created_at, name, description, instructions FROM recipe
 `
 
 func (q *Queries) GetRecipes(ctx context.Context) ([]Recipe, error) {
@@ -97,7 +122,13 @@ func (q *Queries) GetRecipes(ctx context.Context) ([]Recipe, error) {
 	var items []Recipe
 	for rows.Next() {
 		var i Recipe
-		if err := rows.Scan(&i.ID, &i.Name, &i.Description); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.Name,
+			&i.Description,
+			&i.Instructions,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -112,7 +143,7 @@ func (q *Queries) GetRecipes(ctx context.Context) ([]Recipe, error) {
 }
 
 const searchRecipes = `-- name: SearchRecipes :many
-SELECT id, name, description FROM recipe WHERE name LIKE ?
+SELECT id, created_at, name, description, instructions FROM recipe WHERE name LIKE ?
 `
 
 // Saerch anything that contains the given string
@@ -125,7 +156,13 @@ func (q *Queries) SearchRecipes(ctx context.Context, name string) ([]Recipe, err
 	var items []Recipe
 	for rows.Next() {
 		var i Recipe
-		if err := rows.Scan(&i.ID, &i.Name, &i.Description); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.Name,
+			&i.Description,
+			&i.Instructions,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

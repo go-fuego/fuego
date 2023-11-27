@@ -15,7 +15,7 @@ SELECT * FROM recipe;
 SELECT * FROM recipe WHERE name LIKE ?;
 
 -- name: CreateRecipe :one
-INSERT INTO recipe (id, name, description) VALUES (?, ?, ?) RETURNING *;
+INSERT INTO recipe (id, name, description, instructions) VALUES (?, ?, ?, ?) RETURNING *;
 
 -- name: DeleteRecipe :exec
 DELETE FROM recipe WHERE id = ?;

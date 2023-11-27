@@ -3,16 +3,16 @@ package store
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"log/slog"
 
 	_ "embed"
 
-	"modernc.org/sqlite"
-)
+	_ "modernc.org/sqlite"
 
-//go:embed migrations/_schema.sql
-var schema []byte
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/sqlite" // SQLite driver for migration
+	_ "github.com/golang-migrate/migrate/v4/source/file"     // Migration files
+)
 
 // InitDB initialize the database.
 // SchemaPath is imported from schema.sql
@@ -27,21 +27,27 @@ func InitDB(path string) *sql.DB {
 		slog.Error("cannot ping db", "err", err)
 	}
 
-	slog.Info("Database connected", "address", path)
-
-	_, err = db.Exec(string(schema))
+	m, err := migrate.New("file://./store/migrations/", "sqlite://"+path)
 	if err != nil {
-		var sqliteError *sqlite.Error
-		if errors.As(err, &sqliteError) {
-			if sqliteError.Code() == 1 {
-				slog.Info("Database already initialized")
-				return db
-			}
-		}
-
-		slog.Error(fmt.Sprintf("%q: %s\n", err, string(schema)))
-		return nil
+		slog.Error("cannot migrate db", "err", err)
+		panic("cannot migrate db")
 	}
+
+	err = m.Up()
+	if !errors.Is(err, migrate.ErrNoChange) {
+		if err != nil {
+			slog.Error("database migration failed",
+				slog.Any("error", err),
+				slog.String("database", "migrating: failure"))
+
+			panic("database migration failed")
+		}
+		slog.Info("", slog.String("database", "migrating: success"))
+	} else {
+		slog.Info("", slog.String("database", "migrating: no change required"))
+	}
+
+	slog.Info("Database connected", "address", path)
 
 	slog.Info("Database initialized")
 

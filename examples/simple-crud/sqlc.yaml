@@ -1,7 +1,7 @@
 version: "2"
 sql:
   - engine: "sqlite"
-    schema: "store/migrations/_schema.sql"
+    schema: "store/migrations/"
     queries: "store/recipes/recipe.sql"
     gen:
       go:
@@ -9,7 +9,7 @@ sql:
         out: "store/recipes"
         emit_json_tags: true
   - engine: "sqlite"
-    schema: "store/migrations/_schema.sql"
+    schema: "store/migrations/"
     queries: "store/dosings/dosing.sql"
     gen:
       go:
@@ -20,7 +20,7 @@ sql:
           - column: "dosing.quantity"
             go_struct_tag: 'validate:"required,gt=0"'
   - engine: "sqlite"
-    schema: "store/migrations/_schema.sql"
+    schema: "store/migrations/"
     queries: "store/ingredients/ingredient.sql"
     gen:
       go:
