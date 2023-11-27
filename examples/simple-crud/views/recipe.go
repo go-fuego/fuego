@@ -117,14 +117,6 @@ func (rs Ressource) addRecipe(c fuego.Ctx[store.CreateRecipeParams]) (fuego.HTML
 	})
 }
 
-func (rs Ressource) showHTML(c fuego.Ctx[any]) (fuego.HTML, error) {
-	return `<h1>test</h1>`, nil
-}
-
-func (rs Ressource) showString(c fuego.Ctx[any]) (string, error) {
-	return `<h1>test</h1>`, nil
-}
-
 func (rs Ressource) recipePage(c fuego.Ctx[any]) (fuego.HTML, error) {
 	id := c.QueryParam("id")
 
