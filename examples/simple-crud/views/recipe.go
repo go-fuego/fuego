@@ -125,6 +125,25 @@ func (rs Ressource) showString(c fuego.Ctx[any]) (string, error) {
 	return `<h1>test</h1>`, nil
 }
 
+func (rs Ressource) recipePage(c fuego.Ctx[any]) (fuego.HTML, error) {
+	id := c.QueryParam("id")
+
+	recipe, err := rs.RecipesQueries.GetRecipeWithIngredients(c.Context(), id)
+	if err != nil {
+		return "", err
+	}
+
+	ingredients, err := rs.IngredientsQueries.GetIngredientsOfRecipe(c.Context(), id)
+	if err != nil {
+		return "", err
+	}
+
+	return c.Render("pages/recipe.page.html", fuego.H{
+		"Recipe":      recipe,
+		"Ingredients": ingredients,
+	})
+}
+
 type RecipeRepository interface {
 	CreateRecipe(ctx context.Context, arg store.CreateRecipeParams) (store.Recipe, error)
 	DeleteRecipe(ctx context.Context, id string) error

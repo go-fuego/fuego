@@ -5,19 +5,25 @@
 {{ define "page" }}
 
   <div class="m-4 md:m-8">
-
     <h1>Admin - Recipe</h1>
 
     <hgroup
       class="sticky top-0 flex justify-between items-center mb-4 bg-white w-full"
     >
-      <h2 class="text-3xl font-bold mb-4">{{ .Name }}</h1>
-      <button class="btn btn-primary" form="myform">
-       Save
-      </button>
+      <h2 class="text-3xl font-bold mb-4">{{ .Recipe.Name }}</h2>
+      <div class="flex justify-between gap-2 md:gap-4">
+        <a class="btn btn-secondary" href="/recipes/one?id={{ .Recipe.ID }}">
+          See
+        </a>
+        <button class="btn btn-primary" form="myform">Save</button>
+      </div>
     </hgroup>
 
-    <form id="myform" method="POST" action="/admin/recipes/{{ .ID }}/edit">
+    <form
+      id="myform"
+      method="POST"
+      action="/admin/recipes/{{ .Recipe.ID }}/edit"
+    >
       <label class="label">
         Name
         <input
@@ -26,25 +32,15 @@
           required
           placeholder="Name"
           class="input"
-          value="{{ .Name }}"
+          value="{{ .Recipe.Name }}"
         />
       </label>
 
       <label class="label">
         Description
-        <textarea class="input">{{ .Description }}</textarea>
+        <textarea class="input">{{ .Recipe.Description }}</textarea>
       </label>
     </form>
-
-    <section>
-      <h2 class="text-2xl font-bold mb-2">Ingredients</h2>
-      
-      <ul class="list-disc pl-4">
-        {{ range .Ingredients }}
-          <li>{{ . }}</li>
-        {{ end }}
-      </ul>
-    </section>
 
     <section>
       <h2 class="text-2xl font-bold mb-2">Instructions</h2>
@@ -53,6 +49,55 @@
           <li>{{ . }}</li>
         {{ end }}
       </ol>
+    </section>
+
+    <section id="ingredients-section">
+      <h2 class="text-2xl font-bold mb-2">Ingredients</h2>
+
+      <ul class="list-disc pl-4">
+        {{ range .Ingredients }}
+          <li>
+            {{ .Quantity }}
+            {{ .Ingredient.Name }}
+          </li>
+        {{ end }}
+      </ul>
+
+      <form
+        method="POST"
+        action="/admin/dosings-new"
+        hx-boost="true"
+        hx-target="#ingredients-section"
+        hx-select="#ingredients-section"
+      >
+        <input type="hidden" name="RecipeID" value="{{ .Recipe.ID }}" />
+
+        <div class="w-full flex gap-2 md:gap-4 items-baseline">
+          <label class="label">
+            Name
+            <select name="IngredientID" class="input">
+              <option value="" selected>-</option>
+              {{ range .AllIngredients }}
+                <option value="{{ .ID }}">{{ .Name }}</option>
+              {{ end }}
+            </select>
+          </label>
+
+          <label class="label">
+            Quantity
+            <input class="input" type="number" name="quantity" />
+          </label>
+
+          <label class="label">
+            Optional
+            <div>
+              <input type="checkbox" name="" />
+            </div>
+          </label>
+        </div>
+
+        <button class="btn btn-primary">Add</button>
+      </form>
     </section>
   </div>
 {{ end }}
