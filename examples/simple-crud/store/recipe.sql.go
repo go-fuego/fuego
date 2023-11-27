@@ -3,7 +3,7 @@
 //   sqlc v1.23.0
 // source: recipe.sql
 
-package recipes
+package store
 
 import (
 	"context"
@@ -80,7 +80,7 @@ type GetRecipeWithIngredientsRow struct {
 	Instructions  string    `json:"instructions"`
 	RecipeID      string    `json:"recipe_id"`
 	IngredientID  string    `json:"ingredient_id"`
-	Quantity      int64     `json:"quantity"`
+	Quantity      int64     `json:"quantity" validate:"required,gt=0"`
 	Unit          string    `json:"unit"`
 	ID_2          string    `json:"id_2"`
 	CreatedAt_2   time.Time `json:"created_at_2"`

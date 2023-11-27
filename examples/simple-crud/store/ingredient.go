@@ -1,4 +1,4 @@
-package ingredients
+package store
 
 import (
 	"strings"

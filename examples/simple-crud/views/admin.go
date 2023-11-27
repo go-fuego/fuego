@@ -1,11 +1,28 @@
 package views
 
 import (
-	"simple-crud/store/ingredients"
-	"simple-crud/store/recipes"
+	"database/sql"
+
+	"simple-crud/store"
 
 	"github.com/go-fuego/fuego"
 )
+
+func NewAdminRessource(db *sql.DB) AdminRessource {
+	store := store.New(db)
+
+	return AdminRessource{
+		RecipesQueries:     store,
+		IngredientsQueries: store,
+		DosingQueries:      store,
+	}
+}
+
+type AdminRessource struct {
+	DosingQueries      DosingRepository
+	RecipesQueries     RecipeRepository
+	IngredientsQueries IngredientRepository
+}
 
 func (rs Ressource) pageAdmin(c fuego.Ctx[any]) (any, error) {
 	return c.Redirect(301, "/admin/recipes")
@@ -53,7 +70,7 @@ func (rs Ressource) adminOneRecipe(c fuego.Ctx[any]) (fuego.HTML, error) {
 	})
 }
 
-func (rs Ressource) adminAddRecipes(c fuego.Ctx[recipes.CreateRecipeParams]) (any, error) {
+func (rs Ressource) adminAddRecipes(c fuego.Ctx[store.CreateRecipeParams]) (any, error) {
 	body, err := c.Body()
 	if err != nil {
 		return "", err
@@ -78,7 +95,7 @@ func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (fuego.HTML, error) {
 	})
 }
 
-func (rs Ressource) adminAddIngredient(c fuego.Ctx[ingredients.CreateIngredientParams]) (any, error) {
+func (rs Ressource) adminAddIngredient(c fuego.Ctx[store.CreateIngredientParams]) (any, error) {
 	body, err := c.Body()
 	if err != nil {
 		return "", err
