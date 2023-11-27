@@ -127,7 +127,7 @@ func (rs Ressource) recipePage(c fuego.Ctx[any]) (fuego.HTML, error) {
 
 	ingredients, err := rs.IngredientsQueries.GetIngredientsOfRecipe(c.Context(), id)
 	if err != nil {
-		return "", err
+		slog.Error("Error getting ingredients of recipe", "error", err)
 	}
 
 	return c.Render("pages/recipe.page.html", fuego.H{
