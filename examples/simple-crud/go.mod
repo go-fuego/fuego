@@ -8,6 +8,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.1.0
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/google/uuid v1.4.0
+	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.0.2
 	github.com/rs/cors v1.10.1
 	golang.org/x/text v0.13.0

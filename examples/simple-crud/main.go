@@ -13,12 +13,20 @@ import (
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/middleware/cache"
+	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
 )
 
 //go:generate sqlc generate
 
 func main() {
+	// Load .env.local then .env files
+	err := godotenv.Load(".env.local", ".env")
+	if err != nil {
+		slog.Error("Error loading .env files: %s", err)
+		return
+	}
+
 	// Flags
 	debug := flag.Bool("debug", false, "debug mode")
 	flag.Parse()
