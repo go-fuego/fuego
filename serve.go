@@ -13,17 +13,10 @@ func (s *Server) Run() {
 	go s.generateOpenAPI()
 	elapsed := time.Since(s.startTime)
 	slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
-	slog.Info("Server running ✅ on http://localhost"+s.Addr, "started in", elapsed.String())
+	slog.Info("Server running ✅ on http://localhost"+s.Server.Addr, "started in", elapsed.String())
 
-	server := &http.Server{
-		Addr:              s.Addr,
-		Handler:           s.Mux,
-		ReadTimeout:       30 * time.Second,
-		ReadHeaderTimeout: 30 * time.Second,
-		WriteTimeout:      30 * time.Second,
-		IdleTimeout:       30 * time.Second,
-	}
-	err := server.ListenAndServe()
+	s.Server.Handler = s.Mux
+	err := s.Server.ListenAndServe()
 	if err != nil {
 		slog.Error("Error running server", "error", err)
 	}

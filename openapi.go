@@ -93,8 +93,8 @@ func generateSwagger(s *Server, jsonSpec []byte) {
 		httpSwagger.URL(s.OpenapiConfig.JsonSpecUrl), // The url pointing to API definition
 	))
 
-	slog.Info(fmt.Sprintf("Raw json spec available at http://localhost%s%s", s.Addr, s.OpenapiConfig.JsonSpecUrl))
-	slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s%s/index.html", s.Addr, s.OpenapiConfig.SwaggerUrl))
+	slog.Info(fmt.Sprintf("Raw json spec available at http://localhost%s%s", s.Server.Addr, s.OpenapiConfig.JsonSpecUrl))
+	slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s%s/index.html", s.Server.Addr, s.OpenapiConfig.SwaggerUrl))
 }
 
 func validateJsonSpecLocalPath(jsonSpecLocalPath string) bool {
