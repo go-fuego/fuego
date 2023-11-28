@@ -21,7 +21,7 @@ func TestContext_PathParam(t *testing.T) {
 		r := httptest.NewRequest("GET", "/foo/123", nil)
 		w := httptest.NewRecorder()
 
-		s.mux.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, w.Body.String(), `{"ans":"123"}`)
 	})

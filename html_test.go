@@ -26,7 +26,7 @@ func TestRender(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/test", nil)
 		w := httptest.NewRecorder()
 
-		s.mux.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, w.Body.String(), "<main>\n  <h1>Test</h1>\n  <p>Your name is: test</p>\n</main>\n")
@@ -36,7 +36,7 @@ func TestRender(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/test", nil)
 		w := httptest.NewRecorder()
 
-		s.mux.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, w.Body.String(), "<main>\n  <h1>Test</h1>\n  <p>Your name is: test</p>\n</main>\n")
@@ -50,7 +50,7 @@ func TestRender(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/file-not-found", nil)
 		w := httptest.NewRecorder()
 
-		s.mux.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, http.StatusInternalServerError, w.Code)
 	})
@@ -63,7 +63,7 @@ func TestRender(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/impossible", nil)
 		w := httptest.NewRecorder()
 
-		s.mux.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 
 		t.Log(w.Body.String())
 
@@ -87,7 +87,7 @@ func BenchmarkRender(b *testing.B) {
 		r := httptest.NewRequest(http.MethodGet, "/test", nil)
 		w := httptest.NewRecorder()
 
-		s.mux.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 		if w.Code != http.StatusOK {
 			b.Fail()
 		}

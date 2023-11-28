@@ -34,7 +34,7 @@ func TestUseStd(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	s.mux.ServeHTTP(w, r)
+	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "test successful")
@@ -49,7 +49,7 @@ func TestGet(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/test", nil)
 	w := httptest.NewRecorder()
 
-	s.mux.ServeHTTP(w, r)
+	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "\"test\"\n")
@@ -64,7 +64,7 @@ func TestPost(t *testing.T) {
 	r := httptest.NewRequest(http.MethodPost, "/test", nil)
 	w := httptest.NewRecorder()
 
-	s.mux.ServeHTTP(w, r)
+	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "\"test\"\n")
@@ -79,7 +79,7 @@ func TestPut(t *testing.T) {
 	r := httptest.NewRequest(http.MethodPut, "/test", nil)
 	w := httptest.NewRecorder()
 
-	s.mux.ServeHTTP(w, r)
+	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "\"test\"\n")
@@ -94,7 +94,7 @@ func TestPatch(t *testing.T) {
 	r := httptest.NewRequest(http.MethodPatch, "/test", nil)
 	w := httptest.NewRecorder()
 
-	s.mux.ServeHTTP(w, r)
+	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "\"test\"\n")
@@ -109,7 +109,7 @@ func TestDelete(t *testing.T) {
 	r := httptest.NewRequest(http.MethodDelete, "/test", nil)
 	w := httptest.NewRecorder()
 
-	s.mux.ServeHTTP(w, r)
+	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "\"test\"\n")
@@ -126,7 +126,7 @@ func TestGetStd(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	s.mux.ServeHTTP(w, r)
+	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "test successful")
@@ -143,7 +143,7 @@ func TestPostStd(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	s.mux.ServeHTTP(w, r)
+	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "test successful")
@@ -160,7 +160,7 @@ func TestPutStd(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	s.mux.ServeHTTP(w, r)
+	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "test successful")
@@ -177,7 +177,7 @@ func TestPatchStd(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	s.mux.ServeHTTP(w, r)
+	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "test successful")
@@ -194,7 +194,7 @@ func TestDeleteStd(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	s.mux.ServeHTTP(w, r)
+	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "test successful")
@@ -236,7 +236,7 @@ func BenchmarkRequest(b *testing.B) {
 			r := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(`{"b":"M. John","c":3}`))
 			w := httptest.NewRecorder()
 
-			s.mux.ServeHTTP(w, r)
+			s.Mux.ServeHTTP(w, r)
 
 			if w.Code != http.StatusOK || w.Body.String() != crlf(`{"name":"M. John"}`) {
 				b.Fail()
@@ -267,7 +267,7 @@ func BenchmarkRequest(b *testing.B) {
 			r := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(`{"b":"M. John","c":3}`))
 			w := httptest.NewRecorder()
 
-			s.mux.ServeHTTP(w, r)
+			s.Mux.ServeHTTP(w, r)
 
 			if w.Code != http.StatusOK || w.Body.String() != crlf(`{"name":"M. John"}`) {
 				b.Fail()
@@ -323,7 +323,7 @@ func TestPerRouteMiddleware(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		s.mux.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, w.Body.String(), "\"withmiddleware\"\n")
 		require.Equal(t, "response", w.Header().Get("X-Test-Response"))
@@ -334,7 +334,7 @@ func TestPerRouteMiddleware(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		s.mux.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, w.Body.String(), "\"withoutmiddleware\"\n")
 		require.Equal(t, "", w.Header().Get("X-Test-Response"))

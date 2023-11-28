@@ -35,7 +35,7 @@ func TestCache(t *testing.T) {
 		r := httptest.NewRequest("GET", "/without-cache", nil)
 		w := httptest.NewRecorder()
 
-		s.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, w.Body.String(), `{"Name":"test","Age":10}`+"\n")
@@ -45,7 +45,7 @@ func TestCache(t *testing.T) {
 		r := httptest.NewRequest("GET", "/without-cache", nil)
 		w := httptest.NewRecorder()
 
-		s.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, w.Body.String(), `{"Name":"test","Age":10}`+"\n")
@@ -54,7 +54,7 @@ func TestCache(t *testing.T) {
 		w = httptest.NewRecorder()
 
 		start := time.Now()
-		s.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 		elapsed := time.Since(start)
 		require.True(t, elapsed >= waitTime)
 
@@ -66,7 +66,7 @@ func TestCache(t *testing.T) {
 		r := httptest.NewRequest("GET", "/with-cache", nil)
 		w := httptest.NewRecorder()
 
-		s.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, w.Body.String(), `{"Name":"test","Age":10}`+"\n")
@@ -75,7 +75,7 @@ func TestCache(t *testing.T) {
 		w = httptest.NewRecorder()
 
 		start := time.Now()
-		s.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 		elapsed := time.Since(start)
 		require.True(t, elapsed < waitTime)
 
@@ -98,7 +98,7 @@ func BenchmarkCache(b *testing.B) {
 			r := httptest.NewRequest("GET", "/without-cache", nil)
 			w := httptest.NewRecorder()
 
-			s.ServeHTTP(w, r)
+			s.Mux.ServeHTTP(w, r)
 
 			if w.Code != http.StatusOK {
 				b.Fail()
@@ -112,7 +112,7 @@ func BenchmarkCache(b *testing.B) {
 			r := httptest.NewRequest("GET", "/with-cache", nil)
 			w := httptest.NewRecorder()
 
-			s.ServeHTTP(w, r)
+			s.Mux.ServeHTTP(w, r)
 
 			if w.Code != http.StatusOK {
 				b.Fail()

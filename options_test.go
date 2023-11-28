@@ -25,7 +25,7 @@ func TestNewServer(t *testing.T) {
 		recorder := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/", nil)
 
-		s.mux.ServeHTTP(recorder, req)
+		s.Mux.ServeHTTP(recorder, req)
 
 		require.Equal(t, 200, recorder.Code)
 	})
@@ -42,7 +42,7 @@ func TestWithXML(t *testing.T) {
 		recorder := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/", nil)
 
-		s.mux.ServeHTTP(recorder, req)
+		s.Mux.ServeHTTP(recorder, req)
 
 		require.Equal(t, 200, recorder.Code)
 		require.Equal(t, "application/xml", recorder.Header().Get("Content-Type"))
@@ -53,7 +53,7 @@ func TestWithXML(t *testing.T) {
 		recorder := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/error", nil)
 
-		s.mux.ServeHTTP(recorder, req)
+		s.Mux.ServeHTTP(recorder, req)
 
 		require.Equal(t, 500, recorder.Code)
 		require.Equal(t, "application/xml", recorder.Header().Get("Content-Type"))
