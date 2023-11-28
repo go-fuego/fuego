@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"simple-crud/controller"
+	"simple-crud/static"
 	"simple-crud/store"
 	"simple-crud/views"
 
@@ -58,6 +59,8 @@ func main() {
 	// With fuego, you can use any existing middleware that relies on `net/http`, or create your own
 	fuego.Use(app, cache.New(cache.Config{}))
 	fuego.Use(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
+
+	app.Mux.Handle("/favicon.ico", static.Handler())
 
 	// Register views (controllers that return HTML pages)
 	viewsRessources.Routes(fuego.Group(app, ""))
