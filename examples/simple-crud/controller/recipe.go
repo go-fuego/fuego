@@ -73,7 +73,6 @@ type RecipeRepository interface {
 	CreateRecipe(ctx context.Context, arg store.CreateRecipeParams) (store.Recipe, error)
 	DeleteRecipe(ctx context.Context, id string) error
 	GetRecipe(ctx context.Context, id string) (store.Recipe, error)
-	GetRecipeWithIngredients(ctx context.Context, id string) (store.GetRecipeWithIngredientsRow, error)
 	GetRecipes(ctx context.Context) ([]store.Recipe, error)
 	SearchRecipes(ctx context.Context, name string) ([]store.Recipe, error)
 }

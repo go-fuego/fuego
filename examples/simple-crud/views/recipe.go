@@ -3,6 +3,7 @@ package views
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"html/template"
 	"log/slog"
 	"net/http"
@@ -120,9 +121,9 @@ func (rs Ressource) addRecipe(c fuego.Ctx[store.CreateRecipeParams]) (fuego.HTML
 func (rs Ressource) recipePage(c fuego.Ctx[any]) (fuego.HTML, error) {
 	id := c.QueryParam("id")
 
-	recipe, err := rs.RecipesQueries.GetRecipeWithIngredients(c.Context(), id)
+	recipe, err := rs.RecipesQueries.GetRecipe(c.Context(), id)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error getting recipe %s: %w", id, err)
 	}
 
 	ingredients, err := rs.IngredientsQueries.GetIngredientsOfRecipe(c.Context(), id)
@@ -140,7 +141,7 @@ type RecipeRepository interface {
 	CreateRecipe(ctx context.Context, arg store.CreateRecipeParams) (store.Recipe, error)
 	DeleteRecipe(ctx context.Context, id string) error
 	GetRecipe(ctx context.Context, id string) (store.Recipe, error)
-	GetRecipeWithIngredients(ctx context.Context, id string) (store.GetRecipeWithIngredientsRow, error)
+	UpdateRecipe(ctx context.Context, arg store.UpdateRecipeParams) (store.Recipe, error)
 	GetRecipes(ctx context.Context) ([]store.Recipe, error)
 	SearchRecipes(ctx context.Context, name string) ([]store.Recipe, error)
 }

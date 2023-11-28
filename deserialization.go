@@ -1,11 +1,13 @@
 package fuego
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
+	"reflect"
 
 	"github.com/gorilla/schema"
 )
@@ -80,7 +82,22 @@ func readString[B ~string](input io.Reader, options readOptions) (B, error) {
 	return transform(body)
 }
 
-var decoder = schema.NewDecoder()
+func convertSQLNullString(value string) reflect.Value {
+	v := sql.NullString{}
+	if err := v.Scan(value); err != nil {
+		return reflect.Value{}
+	}
+
+	return reflect.ValueOf(v)
+}
+
+func newDecoder() *schema.Decoder {
+	decoder := schema.NewDecoder()
+	decoder.RegisterConverter(sql.NullString{}, convertSQLNullString)
+	return decoder
+}
+
+var decoder = newDecoder()
 
 // ReadURLEncoded reads the request body as HTML Form.
 func ReadURLEncoded[B any](r *http.Request) (B, error) {

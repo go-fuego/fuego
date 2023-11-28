@@ -81,6 +81,22 @@ func (rs Ressource) adminOneRecipe(c fuego.Ctx[any]) (fuego.HTML, error) {
 	})
 }
 
+func (rs Ressource) editRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (any, error) {
+	updateRecipeArgs, err := c.Body()
+	if err != nil {
+		return "", err
+	}
+
+	updateRecipeArgs.ID = c.QueryParam("id") // TODO use PathParam
+
+	recipe, err := rs.RecipesQueries.UpdateRecipe(c.Context(), updateRecipeArgs)
+	if err != nil {
+		return "", err
+	}
+
+	return c.Redirect(301, "/admin/recipes/one?id="+recipe.ID)
+}
+
 func (rs Ressource) adminAddRecipes(c fuego.Ctx[store.CreateRecipeParams]) (any, error) {
 	body, err := c.Body()
 	if err != nil {
