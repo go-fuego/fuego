@@ -117,7 +117,7 @@ const (
 
 // TokenFromContext returns the validated token from the context, if found.
 // To check if the user is authorized, use the [AuthWall] middleware, or create your own middleware.
-// Even though it returns a jwt.MapClaims, the real underlying type is the one you chose when calling [GenerateToken].
+// Even though it returns a jwt.MapClaims, the real underlying type is the one you chose when calling [Security.GenerateToken].
 // Example:
 //
 //	token, err := fuego.TokenFromContext[MyCustomTokenType](ctx.Context())
