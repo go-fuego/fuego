@@ -67,7 +67,7 @@ func localSave(jsonSpecLocalPath string, jsonSpec []byte) {
 		slog.Error("Error creating docs directory", "error", err)
 	}
 
-	f, err := os.Create(jsonSpecLocalPath)
+	f, err := os.Create(jsonSpecLocalPath) // #nosec G304 (file path provided by developer, not by user)
 	if err != nil {
 		slog.Error("Error creating "+jsonSpecLocalPath, "error", err)
 	}
