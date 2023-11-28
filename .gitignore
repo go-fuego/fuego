@@ -1,7 +1,7 @@
 *.js
 .vscode
 coverage.out
-
+.DS_Store
 **/openapi.json
 
 recipe.db

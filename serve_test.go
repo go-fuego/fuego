@@ -150,7 +150,7 @@ func TestServer_Run(t *testing.T) {
 		require.Eventually(t, func() bool {
 			req := httptest.NewRequest("GET", "/test", nil)
 			w := httptest.NewRecorder()
-			s.mux.ServeHTTP(w, req)
+			s.Mux.ServeHTTP(w, req)
 
 			return w.Body.String() == crlf(`"OK"`)
 		}, 5*time.Millisecond, 500*time.Microsecond)

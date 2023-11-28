@@ -79,7 +79,7 @@ func register[T any, B any](s *Server, method string, path string, controller fu
 	}
 
 	allMiddlewares := append(middlewares, s.middlewares...)
-	s.mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(controller), allMiddlewares...))
+	s.Mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(controller), allMiddlewares...))
 
 	operation, err := RegisterOpenAPIOperation[T, B](s, method, s.basePath+path)
 	if err != nil {

@@ -17,7 +17,7 @@ func (s *Server) Run() {
 
 	server := &http.Server{
 		Addr:              s.Addr,
-		Handler:           s.mux,
+		Handler:           s.Mux,
 		ReadTimeout:       30 * time.Second,
 		ReadHeaderTimeout: 30 * time.Second,
 		WriteTimeout:      30 * time.Second,
