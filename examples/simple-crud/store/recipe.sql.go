@@ -7,7 +7,7 @@ package store
 
 import (
 	"context"
-	"time"
+	"database/sql"
 )
 
 const createRecipe = `-- name: CreateRecipe :one
@@ -61,50 +61,6 @@ func (q *Queries) GetRecipe(ctx context.Context, id string) (Recipe, error) {
 		&i.Name,
 		&i.Description,
 		&i.Instructions,
-	)
-	return i, err
-}
-
-const getRecipeWithIngredients = `-- name: GetRecipeWithIngredients :one
-SELECT recipe.id, recipe.created_at, recipe.name, recipe.description, instructions, recipe_id, ingredient_id, quantity, unit, ingredient.id, ingredient.created_at, ingredient.name, ingredient.description FROM recipe
-JOIN dosing ON recipe.id = dosing.recipe_id
-JOIN ingredient ON dosing.ingredient_id = ingredient.id
-WHERE recipe.id = ?
-`
-
-type GetRecipeWithIngredientsRow struct {
-	ID            string    `json:"id"`
-	CreatedAt     time.Time `json:"created_at"`
-	Name          string    `json:"name"`
-	Description   string    `json:"description"`
-	Instructions  string    `json:"instructions"`
-	RecipeID      string    `json:"recipe_id"`
-	IngredientID  string    `json:"ingredient_id"`
-	Quantity      int64     `json:"quantity" validate:"required,gt=0"`
-	Unit          string    `json:"unit"`
-	ID_2          string    `json:"id_2"`
-	CreatedAt_2   time.Time `json:"created_at_2"`
-	Name_2        string    `json:"name_2"`
-	Description_2 string    `json:"description_2"`
-}
-
-func (q *Queries) GetRecipeWithIngredients(ctx context.Context, id string) (GetRecipeWithIngredientsRow, error) {
-	row := q.db.QueryRowContext(ctx, getRecipeWithIngredients, id)
-	var i GetRecipeWithIngredientsRow
-	err := row.Scan(
-		&i.ID,
-		&i.CreatedAt,
-		&i.Name,
-		&i.Description,
-		&i.Instructions,
-		&i.RecipeID,
-		&i.IngredientID,
-		&i.Quantity,
-		&i.Unit,
-		&i.ID_2,
-		&i.CreatedAt_2,
-		&i.Name_2,
-		&i.Description_2,
 	)
 	return i, err
 }
@@ -174,4 +130,38 @@ func (q *Queries) SearchRecipes(ctx context.Context, name string) ([]Recipe, err
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateRecipe = `-- name: UpdateRecipe :one
+UPDATE recipe SET 
+  name=COALESCE(?1, name),
+  description=COALESCE(?2, description),
+  instructions=COALESCE(?3, instructions)
+WHERE id = ?4
+RETURNING id, created_at, name, description, instructions
+`
+
+type UpdateRecipeParams struct {
+	Name         string         `json:"name"`
+	Description  sql.NullString `json:"description"`
+	Instructions sql.NullString `json:"instructions"`
+	ID           string         `json:"id"`
+}
+
+func (q *Queries) UpdateRecipe(ctx context.Context, arg UpdateRecipeParams) (Recipe, error) {
+	row := q.db.QueryRowContext(ctx, updateRecipe,
+		arg.Name,
+		arg.Description,
+		arg.Instructions,
+		arg.ID,
+	)
+	var i Recipe
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.Name,
+		&i.Description,
+		&i.Instructions,
+	)
+	return i, err
 }

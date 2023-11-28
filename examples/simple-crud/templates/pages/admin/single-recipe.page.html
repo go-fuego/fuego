@@ -22,7 +22,7 @@
     <form
       id="myform"
       method="POST"
-      action="/admin/recipes/{{ .Recipe.ID }}/edit"
+      action="/admin/recipes/edit?id={{ .Recipe.ID }}"
     >
       <label class="label">
         Name
@@ -38,7 +38,10 @@
 
       <label class="label">
         Description
-        <textarea class="input">{{ .Recipe.Description }}</textarea>
+        <textarea class="input" name="description">
+          {{ .Recipe.Description }}
+        </textarea
+        >
       </label>
     </form>
 

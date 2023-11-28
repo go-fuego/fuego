@@ -24,6 +24,7 @@ func (rs Ressource) Routes(s *fuego.Server) {
 	fuego.Get(adminRoutes, "/", rs.pageAdmin)
 	fuego.Get(adminRoutes, "/recipes", rs.adminRecipes)
 	fuego.Get(adminRoutes, "/recipes/one", rs.adminOneRecipe)
+	fuego.Put(adminRoutes, "/recipes/edit", rs.editRecipe)
 	fuego.Post(adminRoutes, "/recipes-new", rs.adminAddRecipes)
 	fuego.Post(adminRoutes, "/dosings-new", rs.adminAddDosing)
 	fuego.Get(adminRoutes, "/ingredients", rs.adminIngredients)

@@ -1,12 +1,6 @@
 -- name: GetRecipe :one
 SELECT * FROM recipe WHERE id = ?;
 
--- name: GetRecipeWithIngredients :one
-SELECT * FROM recipe
-JOIN dosing ON recipe.id = dosing.recipe_id
-JOIN ingredient ON dosing.ingredient_id = ingredient.id
-WHERE recipe.id = ?;
-
 -- name: GetRecipes :many
 SELECT * FROM recipe;
 
@@ -19,3 +13,12 @@ INSERT INTO recipe (id, name, description, instructions) VALUES (?, ?, ?, ?) RET
 
 -- name: DeleteRecipe :exec
 DELETE FROM recipe WHERE id = ?;
+
+-- name: UpdateRecipe :one
+UPDATE recipe SET 
+  name=COALESCE(sqlc.arg(name), name),
+  description=COALESCE(sqlc.narg(description), description),
+  instructions=COALESCE(sqlc.narg(instructions), instructions)
+WHERE id = @id
+RETURNING *;
+

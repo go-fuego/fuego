@@ -1,19 +1,41 @@
 {{ template "main.layout.html" . }}
 
-{{ define "title" }}{{ .Name }}{{ end }}
+{{ define "title" }}
+  {{ .Name }}
+{{ end }}
 
 {{ define "page" }}
   <div class="p-2 md:p-4">
-    <h1>{{ .Recipe.Name }}</h1>
-    {{ .Recipe.Description }}
+    <hgroup>
+      <h1 class="text-4xl font-bold">{{ .Recipe.Name }}</h1>
+      {{ if .Admin }}
+        <div class="flex items-center">
+          <a
+            href="/admin/recipes/one?id={{ .Recipe.ID }}"
+            class="btn btn-secondary"
+          >
+            Edit
+          </a>
+        </div>
+      {{ end }}
+    </hgroup>
+    <p class="mt-2 text-gray-600">{{ .Recipe.Description }}</p>
+
+    {{ if false }}
+      <img
+        src="{{ .Recipe.ImageURL }}"
+        alt="{{ .Recipe.Name }}"
+        class="mt-4 rounded-lg shadow-md"
+      />
+    {{ end }}
 
 
-    <h2>Ingredients</h2>
-    <ul class="list-disc pl-4">
+    <h2 class="mt-4 text-2xl font-bold">Ingredients</h2>
+    <ul class="list-disc pl-4 mt-2">
       {{ range .Ingredients }}
-        <li>
-          {{ .Quantity }}
-          {{ .Ingredient.Name }}
+        <li class="mb-1">
+          <span class="font-semibold">{{ .Quantity }}</span>
+          <span>{{ .Ingredient.Name }}</span>
         </li>
       {{ end }}
     </ul>
