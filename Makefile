@@ -34,3 +34,10 @@ example:
 
 example-watch:
 	( cd examples/simple-crud && air -- -debug )
+
+# Documentation website
+docs:
+	go run golang.org/x/pkgsite/cmd/pkgsite@latest -http localhost:8084
+
+docs-open:
+	go run golang.org/x/pkgsite/cmd/pkgsite@latest -http localhost:8084 -open
