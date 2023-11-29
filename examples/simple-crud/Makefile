@@ -5,7 +5,10 @@ dev:
 preview: build
 	./bin/gourmet
 
-build:
+prettier:
+	npx prettier --write .
+
+build: prettier
 	npx tailwindcss -i ./tailwind.css -o ./static/tailwind.min.css --minify
 	go build -o bin/gourmet -v .
 
