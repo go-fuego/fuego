@@ -1,6 +1,6 @@
 dev:
-	go generate ./... &
 	npx tailwindcss -i ./tailwind.css -o ./static/tailwind.min.css --watch &
+	go generate ./...
 	air -- -debug
 
 preview: build
