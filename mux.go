@@ -72,14 +72,14 @@ func Register[T any, B any](s *Server, method string, path string, controller fu
 	return route
 }
 
-func register[T any, B any](s *Server, method string, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func register[T any, B any](s *Server, method string, path string, controller http.Handler, middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	fullPath := s.basePath + path
 	if isGo1_22 {
 		fullPath = method + " " + path
 	}
 
 	allMiddlewares := append(middlewares, s.middlewares...)
-	s.Mux.Handle(fullPath, withMiddlewares(http.HandlerFunc(controller), allMiddlewares...))
+	s.Mux.Handle(fullPath, withMiddlewares(controller, allMiddlewares...))
 
 	operation, err := RegisterOpenAPIOperation[T, B](s, method, s.basePath+path)
 	if err != nil {
@@ -132,6 +132,12 @@ func Use(s *Server, middlewares ...func(http.Handler) http.Handler) {
 	s.middlewares = append(s.middlewares, middlewares...)
 }
 
+// Handle registers a standard http handler into the default mux.
+// Use this function if you want to use a standard http handler instead of a fuego controller.
+func Handle(s *Server, path string, controller http.Handler, middlewares ...func(http.Handler) http.Handler) Route[any, any] {
+	return register[any, any](s, http.MethodGet, path, controller, middlewares...)
+}
+
 func GetStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
 	return RegisterStd(s, http.MethodGet, path, controller, middlewares...)
 }
@@ -159,7 +165,7 @@ func RegisterStd(s *Server, method string, path string, controller func(http.Res
 		fullPath = method + " " + path
 	}
 	slog.Debug("registering standard controller " + fullPath)
-	route := register[any, any](s, method, path, controller, middlewares...)
+	route := register[any, any](s, method, path, http.HandlerFunc(controller), middlewares...)
 
 	name, nameWithPath := funcName(controller)
 	route.operation.Summary = name
