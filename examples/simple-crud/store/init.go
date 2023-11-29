@@ -3,7 +3,9 @@ package store
 import (
 	"database/sql"
 	"errors"
+	"log"
 	"log/slog"
+	"simple-crud/store/migrations"
 
 	_ "embed"
 
@@ -12,6 +14,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite" // SQLite driver for migration
 	_ "github.com/golang-migrate/migrate/v4/source/file"     // Migration files
+	"github.com/golang-migrate/migrate/v4/source/iofs"       // Migration files
 )
 
 // InitDB initialize the database.
@@ -27,7 +30,12 @@ func InitDB(path string) *sql.DB {
 		slog.Error("cannot ping db", "err", err)
 	}
 
-	m, err := migrate.New("file://./store/migrations/", "sqlite://"+path)
+	d, err := iofs.New(migrations.FS, ".")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	m, err := migrate.NewWithSourceInstance("embed://", d, "sqlite://"+path)
 	if err != nil {
 		slog.Error("cannot migrate db", "err", err)
 		panic("cannot migrate db")
