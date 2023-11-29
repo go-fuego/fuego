@@ -5,3 +5,4 @@ coverage.out
 **/openapi.json
 .env.local
 recipe.db
+bin
