@@ -2,16 +2,19 @@
 
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <!-- Scale to mobiles -->
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    {{ block "head.partial.html" . }}
-      <script src="https://unpkg.com/htmx.org@1.9.8"></script>
-    {{ end }}
+    {{ template "head.partial.html" . }}
   </head>
 
   <body class="m-0">
+    <div
+      id="errormessages"
+      class="fixed z-50 bottom-0 bg-red-500 text-white text-center p-2 alert alert-danger w-screen justify-between items-center hidden"
+      role="alert"
+    >
+      <h4 class="ml-4">An error occurred</h4>
+      <button class="btn btn-red-bg" onclick="errormessage_off()">Close</button>
+    </div>
+
     {{ template "navbar.partial.html" . }}
 
 
@@ -20,5 +23,6 @@
     </main>
 
     {{ template "footer.partial.html" . }}
+    {{ template "scripts.partial.html" . }}
   </body>
 </html>
