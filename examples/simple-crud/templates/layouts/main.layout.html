@@ -8,7 +8,7 @@
   <body class="m-0">
     <div
       id="errormessages"
-      class="fixed z-50 bottom-0 bg-red-500 text-white text-center p-2 alert alert-danger w-screen justify-between items-center hidden"
+      class="alert alert-danger fixed bottom-0 z-50 hidden w-screen items-center justify-between bg-red-500 p-2 text-center text-white"
       role="alert"
     >
       <h4 class="ml-4">An error occurred</h4>
@@ -18,7 +18,7 @@
     {{ template "navbar.partial.html" . }}
 
 
-    <main id="page" class="container md:max-w-3xl md:mx-auto">
+    <main id="page" class="container md:mx-auto md:max-w-3xl">
       {{ template "page" . }}
     </main>
 

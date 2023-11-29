@@ -8,9 +8,9 @@
     <h1>Admin - Recipe</h1>
 
     <hgroup
-      class="sticky top-0 flex justify-between items-center mb-4 bg-white w-full"
+      class="sticky top-0 mb-4 flex w-full items-center justify-between bg-white"
     >
-      <h2 class="text-3xl font-bold mb-4">{{ .Recipe.Name }}</h2>
+      <h2 class="mb-4 text-3xl font-bold">{{ .Recipe.Name }}</h2>
       <div class="flex justify-between gap-2 md:gap-4">
         <a class="btn btn-secondary" href="/recipes/one?id={{ .Recipe.ID }}">
           See
@@ -45,7 +45,7 @@
     </form>
 
     <section>
-      <h2 class="text-2xl font-bold mb-2">Instructions</h2>
+      <h2 class="mb-2 text-2xl font-bold">Instructions</h2>
       <ol class="list-decimal pl-4">
         {{ range .Instructions }}
           <li>{{ . }}</li>
@@ -54,7 +54,7 @@
     </section>
 
     <section id="ingredients-section">
-      <h2 class="text-2xl font-bold mb-2">Ingredients</h2>
+      <h2 class="mb-2 text-2xl font-bold">Ingredients</h2>
 
       <ul class="list-disc pl-4">
         {{ range .Ingredients }}
@@ -74,7 +74,7 @@
       >
         <input type="hidden" name="RecipeID" value="{{ .Recipe.ID }}" />
 
-        <div class="w-full flex gap-2 md:gap-4 items-baseline">
+        <div class="flex w-full items-baseline gap-2 md:gap-4">
           <label class="label">
             Name
             <select name="IngredientID" class="input">

@@ -9,17 +9,17 @@
     <div class="flex">
       <!-- Admin navbar on the side -->
       <nav
-        class="hidden md:block bg-gray-800 text-gray-400 w-64 px-4 py-8 space-y-6"
+        class="hidden w-64 space-y-6 bg-gray-800 px-4 py-8 text-gray-400 md:block"
         hx-boost="true"
         hx-target="#page"
         hx-select="#page"
       >
         <h1 class="mb-4 text-center">
           <a
-            class="text-2xl italic
-              font-serif
-              bg-gradient-to-r from-orange-300 to-orange-500
-              inline-block text-transparent bg-clip-text font-bold"
+            class="inline-block bg-gradient-to-r
+              from-orange-300
+              to-orange-500 bg-clip-text font-serif
+              text-2xl font-bold italic text-transparent"
             href="/"
             hx-boost="false"
           >
@@ -28,17 +28,17 @@
         </h1>
         <ul>
           <li
-            class="text-white text-xl mb-4 hover:text-gray-200 hover:underline"
+            class="mb-4 text-xl text-white hover:text-gray-200 hover:underline"
           >
             <a href="/admin/recipes">Recipes</a>
           </li>
           <li
-            class="text-white text-xl mb-4 hover:text-gray-200 hover:underline"
+            class="mb-4 text-xl text-white hover:text-gray-200 hover:underline"
           >
             <a href="/admin/ingredients">Ingredients</a>
           </li>
           <li
-            class="text-white text-xl mb-4 hover:text-gray-200 hover:underline"
+            class="mb-4 text-xl text-white hover:text-gray-200 hover:underline"
           >
             <a href="/admin/users">Users</a>
           </li>
