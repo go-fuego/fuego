@@ -1,0 +1,18 @@
+<script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
+<script defer>
+  htmx.on("htmx:sendError", function (evt) {
+    errormessage_on();
+  });
+
+  function errormessage_on() {
+    const errDiv = document.getElementById("errormessages");
+    errDiv.classList.remove("hidden");
+    errDiv.classList.add("flex");
+  }
+
+  function errormessage_off() {
+    const errDiv = document.getElementById("errormessages");
+    errDiv.classList.add("hidden");
+    errDiv.classList.remove("flex");
+  }
+</script>

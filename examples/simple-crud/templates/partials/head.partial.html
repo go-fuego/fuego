@@ -1,12 +1,42 @@
 <title>{{ block "title" . }}Mon app{{ end }}</title>
 
+<meta charset="utf-8" />
+<!-- Scale to mobiles -->
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<!-- Open Graph -->
 <meta property="og:locale" content="en_US" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Gourmet" />
 <meta property="og:site_name" content="Gourmet" />
+<meta property="og:url" content="https://gourmet.quimerch.com" />
+<meta
+  property="og:image"
+  content="https://e1.pxfuel.com/desktop-wallpaper/421/613/desktop-wallpaper-pin-on-art-culinary.jpg"
+/>
+<meta property="og:image:width" content="850" />
+<meta property="og:image:height" content="567" />
+<meta property="og:description" content="Gourmet is a recipe planner" />
 
-<!-- htmx -->
-<script src="https://unpkg.com/htmx.org/dist/htmx.js" defer></script>
+<!-- SEO -->
+<meta name="description" content="Gourmet is a recipe planner" />
+<meta name="keywords" content="recipes, food, cooking" />
+<meta name="author" content="Gourmet" />
+
+<!-- json-ld -->
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Gourmet",
+    "url": "https://gourmet.quimerch.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://gourmet.quimerch.com/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+</script>
 
 <!-- tailwindcss -->
 <script src="https://cdn.tailwindcss.com/3.3.5"></script>
@@ -29,6 +59,10 @@
 
     .btn-secondary {
       @apply text-indigo-600 hover:text-indigo-700 bg-white hover:bg-gray-100 border-indigo-600 hover:border-indigo-700;
+    }
+
+    .btn-red-bg {
+      @apply bg-transparent border-white;
     }
 
     .btn-danger {

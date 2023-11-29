@@ -2,18 +2,14 @@
 
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-
-    {{ block "head.partial.html" . }}
-      <script src="https://unpkg.com/htmx.org@1.9.8"></script>
-    {{ end }}
+    {{ template "head.partial.html" . }}
   </head>
 
   <body class="m-0">
     <div class="flex">
       <!-- Admin navbar on the side -->
       <nav
-        class="bg-gray-800 text-gray-400 w-64 px-4 py-8 space-y-6"
+        class="hidden md:block bg-gray-800 text-gray-400 w-64 px-4 py-8 space-y-6"
         hx-boost="true"
         hx-target="#page"
         hx-select="#page"
@@ -55,5 +51,6 @@
     </div>
 
     {{ template "footer.partial.html" . }}
+    {{ template "scripts.partial.html" . }}
   </body>
 </html>
