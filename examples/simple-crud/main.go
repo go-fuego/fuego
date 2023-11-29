@@ -74,6 +74,7 @@ func main() {
 	fuego.Use(app, cache.New(cache.Config{}))
 	fuego.Use(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
+	app.Mux.Handle("/tailwind.min.css", static.Handler())
 	app.Mux.Handle("/favicon.ico", static.Handler())
 
 	// Register views (controllers that return HTML pages)
