@@ -10,6 +10,8 @@ import (
 	"simple-crud/store"
 	"simple-crud/views"
 
+	"simple-crud/templates"
+
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/middleware/cache"
@@ -23,11 +25,14 @@ func main() {
 	// Load .env.local then .env files
 	err := godotenv.Load(".env.local", ".env")
 	if err != nil {
-		slog.Error("Error loading .env files: %s", err)
+		wd, _ := os.Getwd()
+		slog.Error("Error loading .env files: %s in dir %s", err, wd)
 		return
 	}
 
 	// Flags
+	port := flag.String("port", ":8083", "port to listen to")
+	dbPath := flag.String("db", "./recipe.db", "path to database file")
 	debug := flag.Bool("debug", false, "debug mode")
 	flag.Parse()
 
@@ -46,7 +51,7 @@ func main() {
 	))
 
 	// Connect to database
-	db := store.InitDB("./recipe.db")
+	db := store.InitDB(*dbPath)
 
 	// Create ressources that will be available in API controllers
 	apiRessources := controller.NewRessource(db)
@@ -56,8 +61,9 @@ func main() {
 
 	// Create server with some options
 	app := fuego.NewServer(
-		fuego.WithPort(":8083"),
+		fuego.WithPort(*port),
 		fuego.WithAutoAuth(controller.LoginFunc),
+		fuego.WithTemplateFS(templates.FS),
 		fuego.WithTemplateGlobs("**/*.html", "**/**/*.html"),
 	)
 
