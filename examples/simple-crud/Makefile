@@ -1,4 +1,5 @@
 dev:
+	go generate ./... &
 	npx tailwindcss -i ./tailwind.css -o ./static/tailwind.min.css --watch &
 	air -- -debug
 
@@ -8,12 +9,18 @@ preview: build
 prettier:
 	npx prettier --write .
 
-build: prettier
+build: 
 	npx tailwindcss -i ./tailwind.css -o ./static/tailwind.min.css --minify
-	go build -o bin/gourmet -v .
+	go build -v -ldflags="-s -w" -o gourmet-app
 
-deploy: build backup
-	operations/deploy.sh && open https://gourmet.quimerch.com
+deploy:
+	make backup & GOARCH=amd64 GOOS=linux make build
+	operations/deploy.sh
+	open https://gourmet.quimerch.com
+	make logs
+
+logs:
+	operations/logs.sh
 
 backup:
 	operations/backup.sh
