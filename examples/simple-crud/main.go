@@ -14,7 +14,6 @@ import (
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-fuego/fuego"
-	"github.com/go-fuego/fuego/middleware/cache"
 	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
 )
@@ -71,11 +70,10 @@ func main() {
 
 	// Register middlewares (functions that will be executed before AND after the controllers, in the order they are registered)
 	// With fuego, you can use any existing middleware that relies on `net/http`, or create your own
-	fuego.Use(app, cache.New(cache.Config{}))
 	fuego.Use(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
-	app.Mux.Handle("/tailwind.min.css", static.Handler())
-	app.Mux.Handle("/favicon.ico", static.Handler())
+	fuego.Handle(app, "/tailwind.min.css", static.Handler())
+	fuego.Handle(app, "/favicon.ico", static.Handler())
 
 	// Register views (controllers that return HTML pages)
 	viewsRessources.Routes(fuego.Group(app, ""))
