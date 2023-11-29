@@ -37,7 +37,8 @@ func (rs Ressource) MountRoutes(s *fuego.Server) {
 	fuego.Use(s, cors.Default().Handler)
 
 	recipeRessource{
-		RecipeRepository: rs.RecipesQueries,
+		RecipeRepository:     rs.RecipesQueries,
+		IngredientRepository: rs.IngredientsQueries,
 	}.MountRoutes(s)
 
 	ingredientRessource{
