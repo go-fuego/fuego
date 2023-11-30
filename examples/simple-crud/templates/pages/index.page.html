@@ -23,14 +23,7 @@
     class="flex w-full flex-col gap-4 border-b border-stone-200 p-2 md:gap-8 md:p-4"
   >
     <h2>Today's recipes 📅</h2>
-    <p>
-      Eiusmod laboris fugiat incididunt quis culpa. Ut laborum ullamco anim
-      fugiat. Voluptate Lorem dolor labore consequat fugiat fugiat sint officia
-      et et aliqua. Incididunt enim culpa ut voluptate velit pariatur nulla sunt
-      mollit. Est ut laborum voluptate amet labore in duis ad. Sunt consequat
-      qui cillum proident amet adipisicing sit cupidatat eiusmod. Ad sint ex
-      Lorem est deserunt. Eu enim nostrud ipsum eiusmod ullamco enim occaecat.
-    </p>
+    {{ template "recipe-slider.partial.html" .Recipes }}
   </section>
 
   <section

@@ -29,15 +29,17 @@
       />
     {{ end }}
 
+    {{ if .Ingredients }}
+      <h2 class="mt-4 text-2xl font-bold">Ingredients</h2>
+      <ul class="mt-2 list-disc  pl-4">
+        {{ range .Ingredients }}
+          <li class="mb-1">
+            <span class="font-semibold">{{ .Quantity }}</span>
+            <span>{{ .Ingredient.Name }}</span>
+          </li>
+        {{ end }}
+      </ul>
+    {{ end }}
 
-    <h2 class="mt-4 text-2xl font-bold">Ingredients</h2>
-    <ul class="mt-2 list-disc  pl-4">
-      {{ range .Ingredients }}
-        <li class="mb-1">
-          <span class="font-semibold">{{ .Quantity }}</span>
-          <span>{{ .Ingredient.Name }}</span>
-        </li>
-      {{ end }}
-    </ul>
   </div>
 {{ end }}

@@ -15,8 +15,8 @@ echo "===> Zipping the binary"
 zip gourmetapp.zip gourmet-app
 
 echo "===> Copying the binary into server with temporary location so the downtime is minimal"
-scp -i $SSH_KEY_PATH gourmetapp.zip $TARGET_HOST:/home/ubuntu/gourmet-tmp.zip & scp -i $SSH_KEY_PATH ./operations/gourmet.service $TARGET_HOST:/tmp/gourmet.service
-
+scp -i $SSH_KEY_PATH ./operations/gourmet.service $TARGET_HOST:/tmp/gourmet.service &
+scp -i $SSH_KEY_PATH gourmetapp.zip $TARGET_HOST:/home/ubuntu/gourmet-tmp.zip
 
 echo "===> Unzipping the binary"
 ssh -i $SSH_KEY_PATH $TARGET_HOST 'unzip -o /home/ubuntu/gourmet-tmp.zip -d /home/ubuntu/'

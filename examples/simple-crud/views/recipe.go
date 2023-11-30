@@ -52,7 +52,20 @@ func (rs Ressource) showRecipesStd(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs Ressource) showIndex(c fuego.Ctx[any]) (fuego.HTML, error) {
-	return c.Render("pages/index.page.html", nil)
+	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
+	if err != nil {
+		return "", err
+	}
+
+	ingredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
+	if err != nil {
+		return "", err
+	}
+
+	return c.Render("pages/index.page.html", fuego.H{
+		"Recipes":     recipes,
+		"Ingredients": ingredients,
+	})
 }
 
 func (rs Ressource) showRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
