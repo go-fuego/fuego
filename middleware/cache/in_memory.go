@@ -25,7 +25,3 @@ func (t *TTLCache) Get(key string) (string, bool) {
 func (t *TTLCache) Set(key string, value string) {
 	t.cache.Add(key, value)
 }
-
-func (t *TTLCache) Delete(key string) {
-	t.cache.Remove(key)
-}
