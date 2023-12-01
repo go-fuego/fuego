@@ -6,13 +6,10 @@ import (
 	"os"
 
 	"simple-crud/controller"
-	"simple-crud/static"
+	"simple-crud/server"
 	"simple-crud/store"
 	"simple-crud/views"
 
-	"simple-crud/templates"
-
-	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-fuego/fuego"
 	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
@@ -52,34 +49,28 @@ func main() {
 	// Connect to database
 	db := store.InitDB(*dbPath)
 
+	store := store.New(db)
+
 	// Create ressources that will be available in API controllers
-	apiRessources := controller.NewRessource(db)
+	apiRessources := controller.Ressource{
+		RecipesQueries:     store,
+		IngredientsQueries: store,
+		DosingQueries:      store,
+	}
 
 	// Create ressources that will be available in HTML controllers
-	viewsRessources := views.NewRessource(db)
+	viewsRessources := views.Ressource{
+		RecipesQueries:     store,
+		IngredientsQueries: store,
+		DosingQueries:      store,
+	}
 
-	// Create server with some options
-	app := fuego.NewServer(
-		fuego.WithPort(*port),
-		fuego.WithAutoAuth(controller.LoginFunc),
-		fuego.WithTemplateFS(templates.FS),
-		fuego.WithTemplateGlobs("**/*.html", "**/**/*.html"),
-	)
+	rs := server.Ressources{
+		API:   apiRessources,
+		Views: viewsRessources,
+	}
 
-	apiRessources.Security = app.Security
-
-	// Register middlewares (functions that will be executed before AND after the controllers, in the order they are registered)
-	// With fuego, you can use any existing middleware that relies on `net/http`, or create your own
-	fuego.Use(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
-
-	fuego.Handle(app, "/tailwind.min.css", static.Handler())
-	fuego.Handle(app, "/favicon.ico", static.Handler())
-
-	// Register views (controllers that return HTML pages)
-	viewsRessources.Routes(fuego.Group(app, ""))
-
-	// Register API routes (controllers that return JSON)
-	apiRessources.MountRoutes(fuego.Group(app, "/api"))
+	app := rs.Setup(fuego.WithPort(*port))
 
 	// Run the server!
 	app.Run()
