@@ -1,24 +1,11 @@
 package controller
 
 import (
-	"database/sql"
 	"time"
-
-	"simple-crud/store"
 
 	"github.com/go-fuego/fuego"
 	"github.com/rs/cors"
 )
-
-// Ressource is the struct that holds useful sources of informations available for the controllers.
-func NewRessource(db *sql.DB) Ressource {
-	store := store.New(db)
-	return Ressource{
-		RecipesQueries:     store,
-		IngredientsQueries: store,
-		DosingQueries:      store,
-	}
-}
 
 // Ressource is the global struct that holds useful sources of informations available for the controllers.
 // Usually not used directly, but passed to the controllers.
