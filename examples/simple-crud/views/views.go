@@ -11,7 +11,7 @@ import (
 func (rs Ressource) Routes(s *fuego.Server) {
 	// Public Pages
 	fuego.GetStd(s, "/recipes-std", rs.showRecipesStd)
-	fuego.Get(s, "/", rs.showIndex, cache.New(cache.Config{}))
+	fuego.Get(s, "/", rs.showIndex, cache.New())
 	fuego.Get(s, "/recipes", rs.showRecipes)
 	fuego.Get(s, "/recipes/one", rs.recipePage)
 	fuego.Post(s, "/recipes-new", rs.addRecipe)
