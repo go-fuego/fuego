@@ -6,8 +6,13 @@
   body {
     @apply font-light antialiased;
   }
+
   .input {
-    @apply block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm;
+    @apply block w-full rounded-md border border-gray-300 px-3 py-2 font-light placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm;
+  }
+
+  .form {
+    @apply flex max-w-md flex-col gap-1 md:gap-2;
   }
 
   .label {

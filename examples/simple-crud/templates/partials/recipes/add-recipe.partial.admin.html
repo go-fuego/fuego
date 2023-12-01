@@ -1,6 +1,6 @@
 <form
-  class="flex flex-col space-y-4"
   method="POST"
+  class="form"
   action="/admin/recipes-new"
   hx-boost="true"
   hx-select="#recipe-list"
@@ -17,13 +17,15 @@
     required
   />
   <label class="label" for="instructions">Instructions</label>
-  <input
+  <textarea
     class="input"
     type="text"
     id="instructions"
     name="instructions"
+    rows="8"
     required
-  />
+  >
+  </textarea>
 
   <input class="btn" type="submit" value="Add" />
 </form>

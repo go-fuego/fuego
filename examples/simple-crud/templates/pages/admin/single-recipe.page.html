@@ -21,6 +21,7 @@
 
     <form
       id="myform"
+      class="form"
       method="POST"
       action="/admin/recipes/edit?id={{ .Recipe.ID }}"
     >
@@ -38,8 +39,24 @@
 
       <label class="label">
         Description
-        <textarea class="input" name="description">
-{{ .Recipe.Description }}</textarea
+        <input
+          class="input"
+          name="description"
+          placeholder="Description"
+          value="{{ .Recipe.Description }}"
+        />
+      </label>
+
+      <label class="label">
+        Instructions
+        <textarea
+          class="input"
+          name="instructions"
+          rows="8"
+          placeholder="- Etape 1
+- Etape 2"
+        >
+{{ .Recipe.Instructions }}</textarea
         >
       </label>
     </form>
@@ -67,6 +84,7 @@
 
       <form
         method="POST"
+        class="form"
         action="/admin/dosings-new"
         hx-boost="true"
         hx-target="#ingredients-section"
