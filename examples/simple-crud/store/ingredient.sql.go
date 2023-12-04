@@ -10,7 +10,7 @@ import (
 )
 
 const createIngredient = `-- name: CreateIngredient :one
-INSERT INTO ingredient (id, name, description) VALUES (?, ?, ?) RETURNING id, created_at, name, description
+INSERT INTO ingredient (id, name, description) VALUES (?, ?, ?) RETURNING id, created_at, name, description, default_unit
 `
 
 type CreateIngredientParams struct {
@@ -27,12 +27,13 @@ func (q *Queries) CreateIngredient(ctx context.Context, arg CreateIngredientPara
 		&i.CreatedAt,
 		&i.Name,
 		&i.Description,
+		&i.DefaultUnit,
 	)
 	return i, err
 }
 
 const getIngredient = `-- name: GetIngredient :one
-SELECT id, created_at, name, description FROM ingredient WHERE id = ?
+SELECT id, created_at, name, description, default_unit FROM ingredient WHERE id = ?
 `
 
 func (q *Queries) GetIngredient(ctx context.Context, id string) (Ingredient, error) {
@@ -43,12 +44,13 @@ func (q *Queries) GetIngredient(ctx context.Context, id string) (Ingredient, err
 		&i.CreatedAt,
 		&i.Name,
 		&i.Description,
+		&i.DefaultUnit,
 	)
 	return i, err
 }
 
 const getIngredients = `-- name: GetIngredients :many
-SELECT id, created_at, name, description FROM ingredient
+SELECT id, created_at, name, description, default_unit FROM ingredient
 `
 
 func (q *Queries) GetIngredients(ctx context.Context) ([]Ingredient, error) {
@@ -65,6 +67,7 @@ func (q *Queries) GetIngredients(ctx context.Context) ([]Ingredient, error) {
 			&i.CreatedAt,
 			&i.Name,
 			&i.Description,
+			&i.DefaultUnit,
 		); err != nil {
 			return nil, err
 		}
@@ -80,7 +83,7 @@ func (q *Queries) GetIngredients(ctx context.Context) ([]Ingredient, error) {
 }
 
 const getIngredientsOfRecipe = `-- name: GetIngredientsOfRecipe :many
-SELECT quantity, unit, ingredient.id, ingredient.created_at, ingredient.name, ingredient.description FROM ingredient
+SELECT quantity, unit, ingredient.id, ingredient.created_at, ingredient.name, ingredient.description, ingredient.default_unit FROM ingredient
 JOIN dosing ON ingredient.id = dosing.ingredient_id
 WHERE dosing.recipe_id = ?
 `
@@ -107,6 +110,7 @@ func (q *Queries) GetIngredientsOfRecipe(ctx context.Context, recipeID string) (
 			&i.Ingredient.CreatedAt,
 			&i.Ingredient.Name,
 			&i.Ingredient.Description,
+			&i.Ingredient.DefaultUnit,
 		); err != nil {
 			return nil, err
 		}

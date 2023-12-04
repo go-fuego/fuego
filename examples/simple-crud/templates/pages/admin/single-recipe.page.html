@@ -90,7 +90,15 @@
         <div class="flex w-full items-end gap-2 md:gap-4">
           <label class="label">
             Name
-            <select name="IngredientID" class="input">
+            <select
+              name="IngredientID"
+              class="input"
+              hx-get="/ingredients/preselect-unit"
+              hx-trigger="change"
+              hx-target="#unit"
+              hx-select="#unit"
+              hx-swap="outerHTML"
+            >
               <option value="" selected>-</option>
               {{ range .AllIngredients }}
                 <option value="{{ .ID }}">{{ .Name }}</option>
@@ -105,7 +113,12 @@
 
           <label class="label">
             Unit
-            <select name="unit" class="input">
+            <select
+              id="unit"
+              name="unit"
+              class="input"
+              style="min-width: 5rem;"
+            >
               {{ range .Units }}
                 <option value="{{ . }}">{{ . }}</option>
               {{ end }}

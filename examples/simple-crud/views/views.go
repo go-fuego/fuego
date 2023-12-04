@@ -20,6 +20,7 @@ func (rs Ressource) Routes(s *fuego.Server) {
 	// Public Chunks
 	fuego.Get(s, "/recipes-list", rs.showRecipesList)
 	fuego.Get(s, "/search", rs.searchRecipes)
+	fuego.Get(s, "/ingredients/preselect-unit", rs.unitPreselected).WithQueryParam("id", "")
 
 	// Admin Pages
 	adminRoutes := fuego.Group(s, "/admin")
