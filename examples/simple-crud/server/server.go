@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+
 	"simple-crud/controller"
 	"simple-crud/static"
 	"simple-crud/templates"
@@ -17,8 +18,8 @@ type Ressources struct {
 }
 
 func (rs Ressources) Setup(
-	options ...func(*fuego.Server)) *fuego.Server {
-
+	options ...func(*fuego.Server),
+) *fuego.Server {
 	serverOptions := []func(*fuego.Server){
 		fuego.WithAutoAuth(controller.LoginFunc),
 		fuego.WithTemplateFS(templates.FS),
@@ -37,6 +38,7 @@ func (rs Ressources) Setup(
 	fuego.Use(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
 	fuego.Handle(app, "/static/", http.StripPrefix("/static", static.Handler()))
+	fuego.Handle(app, "/manifest.json", static.Handler())
 	fuego.Handle(app, "/favicon.ico", static.Handler())
 
 	// Register views (controllers that return HTML pages)

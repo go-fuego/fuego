@@ -145,8 +145,9 @@ func (rs Ressource) recipePage(c fuego.Ctx[any]) (fuego.HTML, error) {
 	}
 
 	return c.Render("pages/recipe.page.html", fuego.H{
-		"Recipe":      recipe,
-		"Ingredients": ingredients,
+		"Recipe":       recipe,
+		"Ingredients":  ingredients,
+		"Instructions": fuego.Markdown(recipe.Instructions),
 	})
 }
 

@@ -21,6 +21,13 @@
     </hgroup>
     <p class="mt-2 text-gray-600">{{ .Recipe.Description }}</p>
 
+    {{ if .Instructions }}
+      <h2 class="mt-4 text-2xl font-bold">Instructions</h2>
+      <div class="markdown">
+        {{ .Instructions }}
+      </div>
+    {{ end }}
+
     {{ if false }}
       <img
         src="{{ .Recipe.ImageURL }}"
