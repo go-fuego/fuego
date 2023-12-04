@@ -6,6 +6,7 @@ require (
 	github.com/getkin/kin-openapi v0.120.0
 	github.com/go-playground/validator/v10 v10.15.5
 	github.com/golang-jwt/jwt/v5 v5.1.0
+	github.com/gomarkdown/markdown v0.0.0-20231115200524-a660076da3fd
 	github.com/gorilla/schema v1.2.1
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/stretchr/testify v1.8.4

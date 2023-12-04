@@ -46,4 +46,10 @@
   h3 {
     @apply mb-2 mt-4 text-xl font-bold text-gray-900;
   }
+
+  .markdown {
+    ul {
+      @apply list-inside list-disc;
+    }
+  }
 }
