@@ -3,6 +3,12 @@ dev:
 	go generate ./...
 	air -- -debug
 
+prepare-db: backup
+	cp gourmet.bak.db recipe.db
+
+db-upload:
+	operations/upload-db.sh
+
 preview: build
 	./bin/gourmet
 

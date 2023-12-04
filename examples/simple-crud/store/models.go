@@ -12,7 +12,7 @@ type Dosing struct {
 	RecipeID     string `json:"recipe_id"`
 	IngredientID string `json:"ingredient_id"`
 	Quantity     int64  `json:"quantity" validate:"required,gt=0"`
-	Unit         string `json:"unit"`
+	Unit         string `json:"unit" validate:"required"`
 }
 
 type Ingredient struct {

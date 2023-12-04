@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"log/slog"
+
 	"simple-crud/store/migrations"
 
 	_ "embed"

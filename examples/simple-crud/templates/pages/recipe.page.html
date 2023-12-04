@@ -41,8 +41,12 @@
       <ul class="mt-2 list-disc  pl-4">
         {{ range .Ingredients }}
           <li class="mb-1">
-            <span class="font-semibold">{{ .Quantity }}</span>
             <span>{{ .Ingredient.Name }}</span>
+            {{ if ne .Unit "unit" }}
+              : <span class="font-semibold">{{ .Quantity }}</span>{{ if .Unit }}
+                {{ .Unit }}
+              {{ end }}
+            {{ end }}
           </li>
         {{ end }}
       </ul>

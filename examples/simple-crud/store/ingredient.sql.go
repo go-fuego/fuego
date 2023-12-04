@@ -80,13 +80,14 @@ func (q *Queries) GetIngredients(ctx context.Context) ([]Ingredient, error) {
 }
 
 const getIngredientsOfRecipe = `-- name: GetIngredientsOfRecipe :many
-SELECT quantity, ingredient.id, ingredient.created_at, ingredient.name, ingredient.description FROM ingredient
+SELECT quantity, unit, ingredient.id, ingredient.created_at, ingredient.name, ingredient.description FROM ingredient
 JOIN dosing ON ingredient.id = dosing.ingredient_id
 WHERE dosing.recipe_id = ?
 `
 
 type GetIngredientsOfRecipeRow struct {
 	Quantity   int64      `json:"quantity" validate:"required,gt=0"`
+	Unit       string     `json:"unit" validate:"required"`
 	Ingredient Ingredient `json:"ingredient"`
 }
 
@@ -101,6 +102,7 @@ func (q *Queries) GetIngredientsOfRecipe(ctx context.Context, recipeID string) (
 		var i GetIngredientsOfRecipeRow
 		if err := rows.Scan(
 			&i.Quantity,
+			&i.Unit,
 			&i.Ingredient.ID,
 			&i.Ingredient.CreatedAt,
 			&i.Ingredient.Name,

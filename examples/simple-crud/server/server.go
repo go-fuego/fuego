@@ -37,9 +37,14 @@ func (rs Ressources) Setup(
 	// With fuego, you can use any existing middleware that relies on `net/http`, or create your own
 	fuego.Use(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
-	fuego.Handle(app, "/static/", http.StripPrefix("/static", static.Handler()))
-	fuego.Handle(app, "/manifest.json", static.Handler())
-	fuego.Handle(app, "/favicon.ico", static.Handler())
+	fuego.Handle(app, "/static/", http.StripPrefix("/static", static.Handler()), func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			w.Header().Set("Cache-Control", "public, max-age=600")
+
+			h.ServeHTTP(w, r)
+		})
+	})
 
 	// Register views (controllers that return HTML pages)
 	rs.Views.Routes(fuego.Group(app, "/"))
