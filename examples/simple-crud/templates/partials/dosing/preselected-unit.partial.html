@@ -1,0 +1,12 @@
+<select id="unit" name="unit" class="input" style="min-width: 5rem;">
+  {{ range .Units }}
+    <option
+      value="{{ . }}"
+      {{ if eq . $.SelectedUnit }}
+        selected
+      {{ end }}
+    >
+      {{ . }}
+    </option>
+  {{ end }}
+</select>

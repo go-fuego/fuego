@@ -20,6 +20,7 @@ type Ingredient struct {
 	CreatedAt   time.Time `json:"created_at"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
+	DefaultUnit string    `json:"default_unit"`
 }
 
 type Recipe struct {
