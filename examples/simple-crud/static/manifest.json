@@ -1,0 +1,16 @@
+{
+  "name": "Gourmet",
+  "short_name": "Gourmet",
+  "description": "Gourmet - Healthy Recipes",
+  "start_url": "/",
+  "background_color": "white",
+  "theme_color": "#282828",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

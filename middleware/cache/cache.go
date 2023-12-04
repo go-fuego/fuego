@@ -2,7 +2,7 @@ package cache
 
 import (
 	"bytes"
-	"log/slog"
+
 	"net/http"
 	"time"
 )
@@ -67,7 +67,6 @@ func New(config ...Config) func(http.Handler) http.Handler {
 				}
 
 				w.WriteHeader(http.StatusOK)
-				slog.Debug("Cache hit", "key", key, "value", string(val), "content-type", respContentType)
 				w.Header().Set("Cache", "hit")
 				_, _ = w.Write([]byte(val))
 				return
@@ -89,7 +88,6 @@ func New(config ...Config) func(http.Handler) http.Handler {
 			c.Storage.Set(key, multiWriter.cacheWriter.(*bytes.Buffer).String())
 			c.Storage.Set(key+"_response-content-type", multiWriter.Header().Get("Content-Type"))
 
-			slog.Debug("Cached", "key", key)
 		})
 	}
 }

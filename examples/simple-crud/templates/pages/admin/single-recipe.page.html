@@ -61,23 +61,18 @@
       </label>
     </form>
 
-    <section>
-      <h2 class="mb-2 text-2xl font-bold">Instructions</h2>
-      <ol class="list-decimal pl-4">
-        {{ range .Instructions }}
-          <li>{{ . }}</li>
-        {{ end }}
-      </ol>
-    </section>
-
     <section id="ingredients-section">
       <h2 class="mb-2 text-2xl font-bold">Ingredients</h2>
 
       <ul class="list-disc pl-4">
         {{ range .Ingredients }}
-          <li>
-            {{ .Quantity }}
-            {{ .Ingredient.Name }}
+          <li class="mb-1">
+            <span>{{ .Ingredient.Name }}</span>
+            {{ if ne .Unit "unit" }}
+              : <span class="font-semibold">{{ .Quantity }}</span>{{ if .Unit }}
+                {{ .Unit }}
+              {{ end }}
+            {{ end }}
           </li>
         {{ end }}
       </ul>
@@ -92,7 +87,7 @@
       >
         <input type="hidden" name="RecipeID" value="{{ .Recipe.ID }}" />
 
-        <div class="flex w-full items-baseline gap-2 md:gap-4">
+        <div class="flex w-full items-end gap-2 md:gap-4">
           <label class="label">
             Name
             <select name="IngredientID" class="input">
@@ -109,14 +104,22 @@
           </label>
 
           <label class="label">
+            Unit
+            <select name="unit" class="input">
+              {{ range .Units }}
+                <option value="{{ . }}">{{ . }}</option>
+              {{ end }}
+            </select>
+          </label>
+
+          <label class="label">
             Optional
-            <div>
+            <div class="flex items-center justify-center">
               <input type="checkbox" name="" />
             </div>
           </label>
+          <button class="btn btn-primary aspect-square">+</button>
         </div>
-
-        <button class="btn btn-primary">Add</button>
       </form>
     </section>
   </div>

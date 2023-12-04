@@ -78,6 +78,7 @@ func (rs Ressource) adminOneRecipe(c fuego.Ctx[any]) (fuego.HTML, error) {
 		"Ingredients":    ingredients,
 		"Instructions":   nil,
 		"AllIngredients": allIngredients,
+		"Units":          store.UnitValues,
 	})
 }
 

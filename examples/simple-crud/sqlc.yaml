@@ -11,3 +11,5 @@ sql:
         overrides:
           - column: "dosing.quantity"
             go_struct_tag: 'validate:"required,gt=0"'
+          - column: "dosing.unit"
+            go_struct_tag: 'validate:"required"'

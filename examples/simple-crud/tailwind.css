@@ -12,7 +12,7 @@
   }
 
   .form {
-    @apply flex max-w-md flex-col gap-1 md:gap-2;
+    @apply flex max-w-lg flex-col gap-1 md:gap-2;
   }
 
   .label {
@@ -50,6 +50,10 @@
   .markdown {
     ul {
       @apply list-inside list-disc;
+    }
+
+    ol {
+      @apply list-inside list-decimal;
     }
   }
 }

@@ -4,17 +4,17 @@ import (
 	"context"
 	"net/http/httptest"
 	"os"
+	"testing"
+	"time"
+
 	"simple-crud/server"
 	"simple-crud/store"
 	"simple-crud/views"
-	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestShowIndex(t *testing.T) {
-
 	// rs := views.Ressource{
 	// 	RecipesQueries:     nil,
 	// 	IngredientsQueries: nil,
@@ -24,7 +24,6 @@ func TestShowIndex(t *testing.T) {
 	// c := &fuego.Context[any]{}
 
 	// rs.showIndex(c)
-
 }
 
 type RecipeRepositoryMock struct {

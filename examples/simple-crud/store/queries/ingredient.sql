@@ -5,7 +5,7 @@ SELECT * FROM ingredient WHERE id = ?;
 SELECT * FROM ingredient;
 
 -- name: GetIngredientsOfRecipe :many
-SELECT quantity, sqlc.embed(ingredient) FROM ingredient
+SELECT quantity, unit, sqlc.embed(ingredient) FROM ingredient
 JOIN dosing ON ingredient.id = dosing.ingredient_id
 WHERE dosing.recipe_id = ?;
 
