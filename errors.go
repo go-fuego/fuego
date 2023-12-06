@@ -22,16 +22,24 @@ type ErrorWithInfo interface {
 
 // HTTPError is the error response used by the serialization part of the framework.
 type HTTPError struct {
+	Err        error          `json:",omitempty"`                          // backend developer readable error message
 	Message    string         `json:"error" xml:"Error"`                   // human readable error message
 	StatusCode int            `json:"-" xml:"-"`                           // http status code
 	MoreInfo   map[string]any `json:"info,omitempty" xml:"Info,omitempty"` // additional info
 }
 
+var (
+	_ ErrorWithInfo   = HTTPError{}
+	_ ErrorWithStatus = HTTPError{}
+)
+
 func (e HTTPError) Error() string {
 	return e.Message
 }
 
-var _ ErrorWithStatus = HTTPError{}
+func (e HTTPError) Info() map[string]any {
+	return e.MoreInfo
+}
 
 func (e HTTPError) Status() int {
 	if e.StatusCode == 0 {
@@ -40,19 +48,24 @@ func (e HTTPError) Status() int {
 	return e.StatusCode
 }
 
-var _ ErrorWithInfo = HTTPError{}
-
-func (e HTTPError) Info() map[string]any {
-	return e.MoreInfo
-}
-
 // BadRequestError is an error used to return a 400 status code.
 type BadRequestError struct {
-	Message string
+	Err      error          // developer readable error message
+	Message  string         `json:"error" xml:"Error"`                   // human readable error message
+	MoreInfo map[string]any `json:"info,omitempty" xml:"Info,omitempty"` // additional info
 }
+
+var (
+	_ ErrorWithInfo   = BadRequestError{}
+	_ ErrorWithStatus = BadRequestError{}
+)
 
 func (e BadRequestError) Error() string {
 	return e.Message
+}
+
+func (e BadRequestError) Info() map[string]any {
+	return e.MoreInfo
 }
 
 func (e BadRequestError) Status() int {
