@@ -1,15 +1,18 @@
 <div
-  class="flex h-full flex-col justify-between rounded-lg border border-gray-200 p-4 leading-normal"
+  class="h-full w-full rounded-lg border border-gray-200 p-4 leading-normal
+  transition hover:cursor-pointer hover:border-gray-300 hover:bg-gray-50 hover:shadow-md"
 >
-  <div class="flex justify-between">
-    <a
-      href="/recipes/one?id={{ .ID }}"
-      hx-boost="true"
-      hx-target="#page"
-      hx-select="#page"
-    >
-      <strong> {{ .Name }} </strong>
-    </a>
-  </div>
-  {{ .Description }}
+  <a
+    class="flex h-full w-full flex-col"
+    href="/recipes/one?id={{ .ID }}"
+    hx-boost="true"
+    hx-target="#page"
+    hx-select="#page"
+  >
+    <strong class="truncate"> {{ .Name }} </strong>
+
+    <div class="truncate">
+      {{ .Description }}
+    </div>
+  </a>
 </div>
