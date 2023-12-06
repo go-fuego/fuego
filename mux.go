@@ -25,6 +25,12 @@ import (
 //	})
 //	s.Run()
 func Group(s *Server, path string) *Server {
+	if path == "/" {
+		path = ""
+	} else if path != "" && path[len(path)-1] == '/' {
+		slog.Warn("Group path should not end with a slash.", "path", path+"/", "new", path)
+	}
+
 	ss := *s
 	newServer := &ss
 	newServer.basePath += path
