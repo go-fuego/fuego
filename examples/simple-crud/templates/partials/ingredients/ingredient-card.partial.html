@@ -1,0 +1,18 @@
+<div
+  class="h-full w-full rounded-lg border border-gray-200 p-4 leading-normal
+  transition hover:cursor-pointer hover:border-gray-300 hover:bg-gray-50 hover:shadow-md"
+>
+  <a
+    class="flex h-full w-full flex-col"
+    href="/ingredients/one?id={{ .ID }}"
+    hx-boost="true"
+    hx-target="#page"
+    hx-select="#page"
+  >
+    <strong class="truncate"> {{ .Name }} </strong>
+
+    <div class="truncate">
+      {{ .Description }}
+    </div>
+  </a>
+</div>

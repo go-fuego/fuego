@@ -14,6 +14,9 @@ INSERT INTO recipe (id, name, description, instructions) VALUES (?, ?, ?, ?) RET
 -- name: DeleteRecipe :exec
 DELETE FROM recipe WHERE id = ?;
 
+-- name: GetRandomRecipes :many
+SELECT * FROM recipe ORDER BY RANDOM() DESC LIMIT 10;
+
 -- name: UpdateRecipe :one
 UPDATE recipe SET 
   name=COALESCE(sqlc.arg(name), name),

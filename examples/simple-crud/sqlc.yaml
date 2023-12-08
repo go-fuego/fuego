@@ -13,3 +13,10 @@ sql:
             go_struct_tag: 'validate:"required,gt=0"'
           - column: "dosing.unit"
             go_struct_tag: 'validate:"required"'
+            go_type:
+              import: "simple-crud/store/types"
+              type: "Unit"
+          - column: "ingredient.category"
+            go_type:
+              import: "simple-crud/store/types"
+              type: "Category"
