@@ -1,0 +1,8 @@
+<!-- Slider -->
+<ul class="flex max-h-36 flex-row gap-4 overflow-x-auto py-2 md:gap-8">
+  {{ range . }}
+    <li class="w-48">
+      {{ template "ingredient-card.partial.html" . }}
+    </li>
+  {{ end }}
+</ul>

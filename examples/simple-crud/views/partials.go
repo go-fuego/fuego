@@ -1,7 +1,7 @@
 package views
 
 import (
-	"simple-crud/store"
+	"simple-crud/store/types"
 
 	"github.com/go-fuego/fuego"
 )
@@ -15,7 +15,7 @@ func (rs Ressource) unitPreselected(c fuego.Ctx[any]) (fuego.HTML, error) {
 	}
 
 	return c.Render("preselected-unit.partial.html", fuego.H{
-		"Units":        store.UnitValues,
+		"Units":        types.UnitValues,
 		"SelectedUnit": ingredient.DefaultUnit,
 	})
 }

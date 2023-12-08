@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"simple-crud/store"
+	"simple-crud/store/types"
 
 	"github.com/go-fuego/fuego"
 )
@@ -78,7 +79,7 @@ func (rs Ressource) adminOneRecipe(c fuego.Ctx[any]) (fuego.HTML, error) {
 		"Ingredients":    ingredients,
 		"Instructions":   nil,
 		"AllIngredients": allIngredients,
-		"Units":          store.UnitValues,
+		"Units":          types.UnitValues,
 	})
 }
 

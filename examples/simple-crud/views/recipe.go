@@ -57,14 +57,32 @@ func (rs Ressource) showIndex(c fuego.Ctx[any]) (fuego.HTML, error) {
 		return "", err
 	}
 
+	fastRecipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
+	if err != nil {
+		return "", err
+	}
+
+	healthyRecipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
+	if err != nil {
+		return "", err
+	}
+
+	popularRecipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
+	if err != nil {
+		return "", err
+	}
+
 	ingredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
 	if err != nil {
 		return "", err
 	}
 
 	return c.Render("pages/index.page.html", fuego.H{
-		"Recipes":     recipes,
-		"Ingredients": ingredients,
+		"Recipes":           recipes,
+		"PopularRecipes":    popularRecipes,
+		"FastRecipes":       fastRecipes,
+		"HealthyRecipes":    healthyRecipes,
+		"SeasonIngredients": ingredients,
 	})
 }
 
@@ -157,6 +175,7 @@ type RecipeRepository interface {
 	GetRecipe(ctx context.Context, id string) (store.Recipe, error)
 	UpdateRecipe(ctx context.Context, arg store.UpdateRecipeParams) (store.Recipe, error)
 	GetRecipes(ctx context.Context) ([]store.Recipe, error)
+	GetRandomRecipes(ctx context.Context) ([]store.Recipe, error)
 	SearchRecipes(ctx context.Context, name string) ([]store.Recipe, error)
 }
 
