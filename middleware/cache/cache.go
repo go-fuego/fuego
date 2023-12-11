@@ -2,7 +2,6 @@ package cache
 
 import (
 	"bytes"
-
 	"net/http"
 	"time"
 )
@@ -87,7 +86,6 @@ func New(config ...Config) func(http.Handler) http.Handler {
 
 			c.Storage.Set(key, multiWriter.cacheWriter.(*bytes.Buffer).String())
 			c.Storage.Set(key+"_response-content-type", multiWriter.Header().Get("Content-Type"))
-
 		})
 	}
 }
