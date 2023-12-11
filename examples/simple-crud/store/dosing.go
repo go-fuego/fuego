@@ -2,8 +2,9 @@ package store
 
 import (
 	"fmt"
-	"simple-crud/store/types"
 	"strings"
+
+	"simple-crud/store/types"
 
 	"github.com/go-fuego/fuego"
 )
