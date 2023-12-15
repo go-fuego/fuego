@@ -1,0 +1,37 @@
+package templa
+
+templ Footer() {
+	<footer class="">
+		<section
+ 			class="flex items-center justify-center gap-4 bg-gray-200 p-1 text-sm text-gray-600 md:p-4"
+ 			hx-boost="true"
+		>
+			<a href="/about">About</a>
+			<a href="/contact">Contact</a>
+			<a href="/terms">Terms</a>
+			<a href="/privacy">Privacy</a>
+			<a href="/cookies">Cookies</a>
+			<a href="/admin">Admin</a>
+		</section>
+		<section
+ 			class="flex items-center
+    justify-center gap-4 bg-gray-800 p-1
+    text-center text-sm text-white
+    md:p-4"
+		>
+			<span class="">
+				Powered by
+				<a
+ 					href="https://github.com/go-fuego/fuego"
+ 					class="
+        inline-block
+        bg-gradient-to-r from-orange-300 to-orange-500
+        bg-clip-text font-bold italic text-transparent"
+				>
+					Fuego
+				</a>
+			</span>
+			🔥
+		</section>
+	</footer>
+}

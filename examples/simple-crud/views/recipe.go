@@ -2,7 +2,6 @@ package views
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -14,16 +13,6 @@ import (
 	"github.com/go-fuego/fuego"
 	"github.com/google/uuid"
 )
-
-func NewRessource(db *sql.DB) Ressource {
-	store := store.New(db)
-
-	return Ressource{
-		RecipesQueries:     store,
-		IngredientsQueries: store,
-		DosingQueries:      store,
-	}
-}
 
 // Ressource is the struct that holds useful sources of informations available for the controllers.
 type Ressource struct {

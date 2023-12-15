@@ -56,4 +56,8 @@
       @apply list-inside list-decimal;
     }
   }
+
+  .card {
+    @apply divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow;
+  }
 }

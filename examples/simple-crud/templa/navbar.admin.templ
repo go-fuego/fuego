@@ -1,0 +1,40 @@
+package templa
+
+templ AdminNavbar() {
+	<nav
+ 		class="hidden w-64 space-y-6 bg-gray-800 px-4 py-8 text-gray-400 md:block"
+ 		hx-boost="true"
+ 		hx-target="#page"
+ 		hx-select="#page"
+	>
+		<h1 class="mb-4 text-center">
+			<a
+ 				class="inline-block bg-gradient-to-r 
+								from-orange-300
+								to-orange-500 bg-clip-text font-serif
+								text-2xl font-bold italic text-transparent"
+ 				href="/"
+ 				hx-boost="false"
+			>
+				Gourmet
+			</a>
+		</h1>
+		<ul>
+			<li
+ 				class="mb-4 text-xl text-white hover:text-gray-200 hover:underline"
+			>
+				<a href="/admin/recipes">Recipes</a>
+			</li>
+			<li
+ 				class="mb-4 text-xl text-white hover:text-gray-200 hover:underline"
+			>
+				<a href="/admin/ingredients">Ingredients</a>
+			</li>
+			<li
+ 				class="mb-4 text-xl text-white hover:text-gray-200 hover:underline"
+			>
+				<a href="/admin/users">Users</a>
+			</li>
+		</ul>
+	</nav>
+}
