@@ -1,25 +1,15 @@
 package views
 
 import (
-	"database/sql"
 	"slices"
 	"strings"
 
 	"simple-crud/store"
 	"simple-crud/store/types"
+	"simple-crud/templa"
 
 	"github.com/go-fuego/fuego"
 )
-
-func NewAdminRessource(db *sql.DB) AdminRessource {
-	store := store.New(db)
-
-	return AdminRessource{
-		RecipesQueries:     store,
-		IngredientsQueries: store,
-		DosingQueries:      store,
-	}
-}
 
 type AdminRessource struct {
 	DosingQueries      DosingRepository
@@ -83,6 +73,22 @@ func (rs Ressource) adminOneRecipe(c fuego.Ctx[any]) (fuego.HTML, error) {
 	})
 }
 
+func (rs Ressource) adminOneIngredient(c fuego.Ctx[any]) (any, error) {
+	id := c.QueryParam("id") // TODO use PathParam
+
+	ingredient, err := rs.IngredientsQueries.GetIngredient(c.Context(), id)
+	if err != nil {
+		return nil, err
+	}
+
+	err = templa.IngredientEdit(ingredient).Render(c.Context(), c.Response())
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
 func (rs Ressource) editRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (any, error) {
 	updateRecipeArgs, err := c.Body()
 	if err != nil {
@@ -127,15 +133,18 @@ func (rs Ressource) adminAddDosing(c fuego.Ctx[store.CreateDosingParams]) (any, 
 	return c.Redirect(301, "/admin/recipes/one?id="+body.RecipeID)
 }
 
-func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (fuego.HTML, error) {
+func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (any, error) {
 	ingredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
 	if err != nil {
 		return "", err
 	}
 
-	return c.Render("pages/admin/ingredients.page.html", fuego.H{
-		"Ingredients": ingredients,
-	})
+	err = templa.IngredientList(ingredients).Render(c.Context(), c.Response())
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }
 
 func (rs Ressource) adminAddIngredient(c fuego.Ctx[store.CreateIngredientParams]) (any, error) {

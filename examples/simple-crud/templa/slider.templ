@@ -1,0 +1,19 @@
+package templa
+
+templ Slider() {
+	<div id="wrapper bg-red-500 text-white">
+		{ children... }
+	</div>
+}
+
+templ SliderRecipes() {
+	@Slider() {
+		<div>Here are recipes</div>
+	}
+}
+
+templ SliderIngredients() {
+	@Slider() {
+		<div>Here are ingredients wow</div>
+	}
+}

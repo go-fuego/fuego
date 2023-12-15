@@ -1,0 +1,77 @@
+package templa
+
+import "simple-crud/store"
+
+templ editIngredientPage(ingredient store.Ingredient) {
+	<htmlPage title="Edit Ingredient">
+		<h1>Edit Ingredient</h1>
+		<form action="/ingredients/{ ingredient.ID }" method="POST">
+			<input type="hidden" name="_method" value="PUT"/>
+			<label for="name">Name</label>
+			<input type="text" name="name" value="{ ingredient.Name }"/>
+			<label for="quantity">Quantity</label>
+			<input type="text" name="quantity" value="{ ingredient.Quantity }"/>
+			<label for="unit">Unit</label>
+			<input type="text" name="unit" value="{ ingredient.Unit }"/>
+			<input type="submit" value="Save"/>
+		</form>
+	</htmlPage>
+}
+
+templ IngredientList(ingredients []store.Ingredient) {
+	@htmlPage("Ingredients") {
+		<h1>Ingredients</h1>
+		<div class="border rounded border-gray-200 shadow p-8">
+			<table class="table ">
+				<thead>
+					<tr>
+						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Name</th>
+						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Default Unit</th>
+						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Description</th>
+						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Available</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, ingredient := range ingredients {
+						<tr>
+							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">
+								<a
+ 									href={ templ.URL("/admin/ingredients/one?id=" + ingredient.ID) }
+ 									hx-boost="true"
+ 									hx-target="#page"
+ 									hx-select="#page"
+ 									class="hover:text-blue-500"
+								>
+									<strong class="font-semibold">{ ingredient.Name }</strong>
+								</a>
+							</td>
+							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">{ ingredient.DefaultUnit }</td>
+							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">{ ingredient.Description }</td>
+							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">
+								if ingredient.AvailableAllYear {
+									<span class="text-green-500">All year</span>
+								} else {
+									<span class="text-red-500">Not Available</span>
+								}
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}
+
+templ IngredientEdit(ingredient store.Ingredient) {
+	@htmlPage("Ingredient - "+ingredient.Name) {
+		<h1>Edit Ingredient</h1>
+		<form action="/ingredients/{ ingredient.ID }" method="POST">
+			<input type="hidden" name="_method" value="PUT"/>
+			<label for="name">Name</label>
+			<input type="text" name="name" value={ ingredient.Name }/>
+			<label for="unit">Unit</label>
+			<input type="text" name="unit" value={ ingredient.DefaultUnit }/>
+			<input type="submit" value="Save"/>
+		</form>
+	}
+}

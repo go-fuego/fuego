@@ -1,0 +1,16 @@
+package templa
+
+templ Hello(name string) {
+	if name == "" {
+		<div>Hello, World</div>
+	}
+	<div>Hello, { name }</div>
+}
+
+templ Greeting(person string) {
+	<div class="greeting">
+		<main id="page">
+			@Hello(person)
+		</main>
+	</div>
+}
