@@ -186,6 +186,9 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 		operation.AddParameter(parameter)
 	}
 
+	if method == MethodAll {
+		method = http.MethodGet
+	}
 	s.OpenApiSpec.AddOperation(path, method, operation)
 
 	return operation, nil
