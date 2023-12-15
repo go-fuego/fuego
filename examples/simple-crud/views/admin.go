@@ -105,6 +105,24 @@ func (rs Ressource) editRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (any, erro
 	return c.Redirect(301, "/admin/recipes/one?id="+recipe.ID)
 }
 
+func (rs Ressource) editIngredient(c fuego.Ctx[store.UpdateIngredientParams]) (any, error) {
+	updateIngredientArgs, err := c.Body()
+	if err != nil {
+		return "", err
+	}
+
+	updateIngredientArgs.ID = c.QueryParam("id") // TODO use PathParam
+
+	_, err = rs.IngredientsQueries.UpdateIngredient(c.Context(), updateIngredientArgs)
+	if err != nil {
+		return "", err
+	}
+
+	c.Response().Header().Set("HX-Trigger", "ingredient-updated")
+
+	return rs.adminOneIngredient(c.Pass())
+}
+
 func (rs Ressource) adminAddRecipes(c fuego.Ctx[store.CreateRecipeParams]) (any, error) {
 	body, err := c.Body()
 	if err != nil {
