@@ -20,3 +20,7 @@ sql:
             go_type:
               import: "simple-crud/store/types"
               type: "Category"
+          - column: "ingredient.default_unit"
+            go_type:
+              import: "simple-crud/store/types"
+              type: "Unit"

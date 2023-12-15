@@ -22,7 +22,7 @@ type Ingredient struct {
 	CreatedAt        time.Time      `json:"created_at"`
 	Name             string         `json:"name"`
 	Description      string         `json:"description"`
-	DefaultUnit      string         `json:"default_unit"`
+	DefaultUnit      types.Unit     `json:"default_unit"`
 	Category         types.Category `json:"category"`
 	AvailableAllYear bool           `json:"available_all_year"`
 	AvailableJan     bool           `json:"available_jan"`
