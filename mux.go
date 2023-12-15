@@ -42,6 +42,13 @@ type Route[ResponseBody any, RequestBody any] struct {
 	operation *openapi3.Operation
 }
 
+const MethodAll = "ALL"
+
+// Capture all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
+func All[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+	return Register[T](s, MethodAll, path, controller, middlewares...)
+}
+
 func Get[T any, B any](s *Server, path string, controller func(Ctx[B]) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register[T](s, http.MethodGet, path, controller, middlewares...)
 }
@@ -80,8 +87,8 @@ func Register[T any, B any](s *Server, method string, path string, controller fu
 
 func register[T any, B any](s *Server, method string, path string, controller http.Handler, middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	fullPath := s.basePath + path
-	if isGo1_22 {
-		fullPath = method + " " + path
+	if isGo1_22 && method != MethodAll {
+		fullPath = method + " " + fullPath
 	}
 
 	allMiddlewares := append(middlewares, s.middlewares...)
