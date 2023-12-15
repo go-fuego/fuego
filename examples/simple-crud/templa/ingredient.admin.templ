@@ -1,22 +1,9 @@
 package templa
 
-import "simple-crud/store"
-
-templ editIngredientPage(ingredient store.Ingredient) {
-	<htmlPage title="Edit Ingredient">
-		<h1>Edit Ingredient</h1>
-		<form action="/ingredients/{ ingredient.ID }" method="POST">
-			<input type="hidden" name="_method" value="PUT"/>
-			<label for="name">Name</label>
-			<input type="text" name="name" value="{ ingredient.Name }"/>
-			<label for="quantity">Quantity</label>
-			<input type="text" name="quantity" value="{ ingredient.Quantity }"/>
-			<label for="unit">Unit</label>
-			<input type="text" name="unit" value="{ ingredient.Unit }"/>
-			<input type="submit" value="Save"/>
-		</form>
-	</htmlPage>
-}
+import (
+	"simple-crud/store"
+	"simple-crud/templa/components"
+)
 
 templ IngredientList(ingredients []store.Ingredient) {
 	@htmlPage("Ingredients") {
@@ -26,8 +13,9 @@ templ IngredientList(ingredients []store.Ingredient) {
 				<thead>
 					<tr>
 						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Name</th>
-						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Default Unit</th>
+						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Category</th>
 						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Description</th>
+						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Default Unit</th>
 						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Available</th>
 					</tr>
 				</thead>
@@ -45,13 +33,14 @@ templ IngredientList(ingredients []store.Ingredient) {
 									<strong class="font-semibold">{ ingredient.Name }</strong>
 								</a>
 							</td>
-							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">{ ingredient.DefaultUnit }</td>
+							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">{ string(ingredient.Category) }</td>
 							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">{ ingredient.Description }</td>
+							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">{ string(ingredient.DefaultUnit) }</td>
 							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">
 								if ingredient.AvailableAllYear {
 									<span class="text-green-500">All year</span>
 								} else {
-									<span class="text-red-500">Not Available</span>
+									<span class="">{ ingredient.Months() }</span>
 								}
 							</td>
 						</tr>
@@ -65,13 +54,24 @@ templ IngredientList(ingredients []store.Ingredient) {
 templ IngredientEdit(ingredient store.Ingredient) {
 	@htmlPage("Ingredient - "+ingredient.Name) {
 		<h1>Edit Ingredient</h1>
-		<form action="/ingredients/{ ingredient.ID }" method="POST">
-			<input type="hidden" name="_method" value="PUT"/>
-			<label for="name">Name</label>
-			<input type="text" name="name" value={ ingredient.Name }/>
-			<label for="unit">Unit</label>
-			<input type="text" name="unit" value={ ingredient.DefaultUnit }/>
-			<input type="submit" value="Save"/>
+		<form
+ 			action={ templ.URL("/admin/ingredients/edit?id=" + ingredient.ID) }
+ 			method="PUT"
+ 			class="form"
+ 			hx-boost="true"
+ 			hx-trigger="change"
+ 			hx-target="#page"
+ 			hx-select="#page"
+		>
+			<label class="label" for="name">Name</label>
+			<input class="input" type="text" name="name" value={ ingredient.Name }/>
+			<label class="label" for="defaultUnit">Default Unit</label>
+			@components.UnitSelector(ingredient.DefaultUnit)
+			<label class="label" for="category">Category</label>
+			@components.CategorySelector(ingredient.Category)
+			// <label class="label" for="available_all_year">Available All Year</label>
+			// <input class="input" type="checkbox" name="available_all_year" value="true" checked={ strconv.FormatBool(ingredient.AvailableAllYear) }/>
+			<input class="input" type="submit" value="Save"/>
 		</form>
 	}
 }

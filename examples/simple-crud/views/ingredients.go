@@ -22,6 +22,7 @@ type IngredientRepository interface {
 	GetIngredient(ctx context.Context, id string) (store.Ingredient, error)
 	GetIngredients(ctx context.Context) ([]store.Ingredient, error)
 	GetIngredientsOfRecipe(ctx context.Context, recipeID string) ([]store.GetIngredientsOfRecipeRow, error)
+	UpdateIngredient(ctx context.Context, arg store.UpdateIngredientParams) (store.Ingredient, error)
 }
 
 var _ IngredientRepository = (*store.Queries)(nil)
