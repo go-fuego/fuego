@@ -91,9 +91,18 @@ func convertSQLNullString(value string) reflect.Value {
 	return reflect.ValueOf(v)
 }
 
+func convertSQLNullBool(value string) reflect.Value {
+	v := sql.NullBool{}
+	if err := v.Scan(value); err != nil {
+		return reflect.Value{}
+	}
+	return reflect.ValueOf(v)
+}
+
 func newDecoder() *schema.Decoder {
 	decoder := schema.NewDecoder()
 	decoder.RegisterConverter(sql.NullString{}, convertSQLNullString)
+	decoder.RegisterConverter(sql.NullBool{}, convertSQLNullBool)
 	return decoder
 }
 
