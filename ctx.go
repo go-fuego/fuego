@@ -70,24 +70,36 @@ type Ctx[B any] interface {
 	//   	return c.Redirect(301, "/recipes-list")
 	//   })
 	Redirect(code int, url string) (any, error)
+
+	Pass() ClassicContext
 }
 
 func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) *Context[B] {
 	c := &Context[B]{
-		response: w,
-		request:  r,
-		readOptions: readOptions{
-			DisallowUnknownFields: options.DisallowUnknownFields,
-			MaxBodySize:           options.MaxBodySize,
+		ClassicContext: ClassicContext{
+			response: w,
+			request:  r,
+			readOptions: readOptions{
+				DisallowUnknownFields: options.DisallowUnknownFields,
+				MaxBodySize:           options.MaxBodySize,
+			},
 		},
 	}
 
 	return c
 }
 
-// Context for the request. BodyType is the type of the request body. Please do not use a pointer type as parameter.
 type Context[BodyType any] struct {
-	body       *BodyType
+	body *BodyType
+	ClassicContext
+}
+
+func (c *Context[B]) Pass() ClassicContext {
+	return c.ClassicContext
+}
+
+// ClassicContext for the request. BodyType is the type of the request body. Please do not use a pointer type as parameter.
+type ClassicContext struct {
 	request    *http.Request
 	response   http.ResponseWriter
 	pathParams map[string]string
@@ -97,6 +109,17 @@ type Context[BodyType any] struct {
 	templatesParsed bool
 
 	readOptions readOptions
+}
+
+func (c ClassicContext) Body() (any, error) {
+	panic("this method should not be called. It probably happened because you passed the context to another controller with the Pass method.")
+}
+func (c ClassicContext) MustBody() any {
+	b, err := c.Body()
+	if err != nil {
+		panic(err)
+	}
+	return b
 }
 
 // SafeShallowCopy returns a safe shallow copy of the context.
@@ -118,18 +141,23 @@ type readOptions struct {
 	LogBody               bool
 }
 
-var _ Ctx[any] = &Context[any]{} // Check that Context implements Ctx.
+var _ Ctx[any] = &Context[any]{}   // Check that Context implements Ctx.
+var _ Ctx[any] = &ClassicContext{} // Check that Context implements Ctx.
 
 // Context returns the context of the request.
 // Same as c.Request().Context().
-func (c Context[B]) Context() context.Context {
+func (c ClassicContext) Context() context.Context {
 	return c.request.Context()
 }
 
-func (c Context[B]) Redirect(code int, url string) (any, error) {
+func (c ClassicContext) Redirect(code int, url string) (any, error) {
 	http.Redirect(c.response, c.request, url, code)
 
 	return nil, nil
+}
+
+func (c ClassicContext) Pass() ClassicContext {
+	return c
 }
 
 // Render renders the given templates with the given data.
@@ -140,7 +168,7 @@ func (c Context[B]) Redirect(code int, url string) (any, error) {
 // that the templates will be parsed only once, removing
 // the need to parse the templates on each request but also preventing
 // to dynamically use new templates.
-func (c *Context[B]) Render(templateToExecute string, data any, layoutsGlobs ...string) (HTML, error) {
+func (c ClassicContext) Render(templateToExecute string, data any, layoutsGlobs ...string) (HTML, error) {
 	if !c.templatesParsed &&
 		(strings.Contains(templateToExecute, "/") || strings.Contains(templateToExecute, "*")) {
 
@@ -182,7 +210,7 @@ func (c *Context[B]) Render(templateToExecute string, data any, layoutsGlobs ...
 }
 
 // PathParams returns the path parameters of the request.
-func (c Context[B]) PathParam(name string) string {
+func (c ClassicContext) PathParam(name string) string {
 	param := c.pathParams[name]
 	if param == "" {
 		slog.Error("Path parameter might be invalid", "name", name, "valid parameters", c.pathParams)
@@ -191,12 +219,12 @@ func (c Context[B]) PathParam(name string) string {
 }
 
 // PathParams returns the path parameters of the request.
-func (c Context[B]) PathParams() map[string]string {
+func (c ClassicContext) PathParams() map[string]string {
 	return nil
 }
 
 // QueryParams returns the query parameters of the request.
-func (c Context[B]) QueryParams() map[string]string {
+func (c ClassicContext) QueryParams() map[string]string {
 	queryParams := c.request.URL.Query()
 	params := make(map[string]string)
 	for k, v := range queryParams {
@@ -206,17 +234,17 @@ func (c Context[B]) QueryParams() map[string]string {
 }
 
 // QueryParam returns the query parameter with the given name.
-func (c Context[B]) QueryParam(name string) string {
+func (c ClassicContext) QueryParam(name string) string {
 	return c.request.URL.Query().Get(name)
 }
 
 // Request returns the http request.
-func (c Context[B]) Request() *http.Request {
+func (c ClassicContext) Request() *http.Request {
 	return c.request
 }
 
 // Response returns the http response writer.
-func (c Context[B]) Response() http.ResponseWriter {
+func (c ClassicContext) Response() http.ResponseWriter {
 	return c.response
 }
 
