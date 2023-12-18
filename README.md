@@ -11,6 +11,8 @@
 
 The only Go framework generating OpenAPI documentation from code. Inspired by Nest, built for Go developers.
 
+Also empowers `html/template`, `a-h/templ` and `maragudk/gomponents`: see [the example](./examples/simple-crud) - actually running [in prod](https://gourmet.quimerch.com)!
+
 ## Why Fuego?
 
 Chi, Gin, Fiber and Echo are great frameworks. But since they were designed a long time ago, they do not enjoy the possibilities that modern Go provides. Fuego offers a lot of helper functions and features that make it easy to develop APIs.
