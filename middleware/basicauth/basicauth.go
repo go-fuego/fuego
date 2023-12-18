@@ -29,7 +29,7 @@ func New(config Config) func(http.Handler) http.Handler {
 				return
 			}
 
-			err := fuego.ErrorResponse{
+			err := fuego.HTTPError{
 				Message:    "unauthorized",
 				StatusCode: http.StatusUnauthorized,
 			}

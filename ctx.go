@@ -17,6 +17,7 @@ const (
 
 // Ctx is the context of the request.
 // It contains the request body, the path parameters, the query parameters, and the http request.
+// Please do not use a pointer type as parameter.
 type Ctx[B any] interface {
 	// Body returns the body of the request.
 	// If (*B) implements [InTransformer], it will be transformed after deserialization.
@@ -79,6 +80,7 @@ type Ctx[B any] interface {
 	Pass() ClassicContext
 }
 
+// NewContext returns a new context. It is used internally by Fuego. You probably want to use Ctx[B] instead.
 func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) *Context[B] {
 	c := &Context[B]{
 		ClassicContext: ClassicContext{
@@ -94,6 +96,7 @@ func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptio
 	return c
 }
 
+// Context is used internally by Fuego. You probably want to use Ctx[B] instead. Please do not use a pointer type as parameter.
 type Context[BodyType any] struct {
 	body *BodyType
 	ClassicContext
@@ -103,15 +106,14 @@ func (c *Context[B]) Pass() ClassicContext {
 	return c.ClassicContext
 }
 
-// ClassicContext for the request. BodyType is the type of the request body. Please do not use a pointer type as parameter.
+// ClassicContext is used internally by Fuego. Please do not use a pointer type as parameter.
 type ClassicContext struct {
 	request    *http.Request
 	response   http.ResponseWriter
 	pathParams map[string]string
 
-	fs              fs.FS
-	templates       *template.Template
-	templatesParsed bool
+	fs        fs.FS
+	templates *template.Template
 
 	readOptions readOptions
 }
@@ -119,6 +121,7 @@ type ClassicContext struct {
 func (c ClassicContext) Body() (any, error) {
 	panic("this method should not be called. It probably happened because you passed the context to another controller with the Pass method.")
 }
+
 func (c ClassicContext) MustBody() any {
 	b, err := c.Body()
 	if err != nil {
@@ -146,8 +149,11 @@ type readOptions struct {
 	LogBody               bool
 }
 
-var _ Ctx[any] = &Context[any]{}   // Check that Context implements Ctx.
-var _ Ctx[any] = &ClassicContext{} // Check that Context implements Ctx.
+var (
+	_ Ctx[any]    = &Context[any]{}    // Check that Context implements Ctx.
+	_ Ctx[string] = &Context[string]{} // Check that Context implements Ctx.
+	_ Ctx[any]    = &ClassicContext{}  // Check that Context implements Ctx.
+)
 
 // Context returns the context of the request.
 // Same as c.Request().Context().
@@ -174,14 +180,13 @@ func (c ClassicContext) Pass() ClassicContext {
 // the need to parse the templates on each request but also preventing
 // to dynamically use new templates.
 func (c ClassicContext) Render(templateToExecute string, data any, layoutsGlobs ...string) (HTML, error) {
-	if !c.templatesParsed &&
-		(strings.Contains(templateToExecute, "/") || strings.Contains(templateToExecute, "*")) {
+	if strings.Contains(templateToExecute, "/") || strings.Contains(templateToExecute, "*") {
 
 		layoutsGlobs = append(layoutsGlobs, templateToExecute) // To override all blocks defined in the main template
 		cloned := template.Must(c.templates.Clone())
 		tmpl, err := cloned.ParseFS(c.fs, layoutsGlobs...)
 		if err != nil {
-			return "", ErrorResponse{
+			return "", HTTPError{
 				StatusCode: http.StatusInternalServerError,
 				Message:    fmt.Errorf("error parsing template '%s': %w", layoutsGlobs, err).Error(),
 				MoreInfo: map[string]any{
@@ -191,7 +196,6 @@ func (c ClassicContext) Render(templateToExecute string, data any, layoutsGlobs 
 			}
 		}
 		c.templates = template.Must(tmpl.Clone())
-		c.templatesParsed = true
 	}
 
 	// Get only last template name (for example, with partials/nav/main/nav.partial.html, get nav.partial.html)
@@ -201,7 +205,7 @@ func (c ClassicContext) Render(templateToExecute string, data any, layoutsGlobs 
 	c.response.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err := c.templates.ExecuteTemplate(c.response, templateToExecute, data)
 	if err != nil {
-		return "", ErrorResponse{
+		return "", HTTPError{
 			StatusCode: http.StatusInternalServerError,
 			Message:    fmt.Errorf("error executing template '%s': %w", templateToExecute, err).Error(),
 			MoreInfo: map[string]any{

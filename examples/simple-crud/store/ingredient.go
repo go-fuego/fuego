@@ -60,5 +60,4 @@ func (i Ingredient) Months() string {
 	}
 
 	return strings.Join(months, ", ")
-
 }
