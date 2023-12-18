@@ -2,10 +2,11 @@ package templa
 
 templ AdminNavbar() {
 	<nav
- 		class="hidden w-64 space-y-6 bg-gray-800 px-4 py-8 text-gray-400 md:block"
+ 		class="hidden w-64 space-y-6 bg-gray-800 px-4 py-8 text-gray-400 md:block shadow"
  		hx-boost="true"
  		hx-target="#page"
  		hx-select="#page"
+ 		hx-swap="outerHTML"
 	>
 		<h1 class="mb-4 text-center">
 			<a

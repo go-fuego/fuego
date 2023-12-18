@@ -1,5 +1,4 @@
 dev:
-	npx tailwindcss -i ./tailwind.css -o ./static/tailwind.min.css --watch &
 	air -- -debug
 
 prepare-db: backup

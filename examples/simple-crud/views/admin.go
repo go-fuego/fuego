@@ -1,12 +1,15 @@
 package views
 
 import (
+	"log/slog"
 	"slices"
+	"strconv"
 	"strings"
 
 	"simple-crud/store"
 	"simple-crud/store/types"
 	"simple-crud/templa"
+	"simple-crud/templa/components"
 
 	"github.com/go-fuego/fuego"
 )
@@ -73,13 +76,31 @@ func (rs Ressource) adminOneRecipe(c fuego.Ctx[any]) (fuego.HTML, error) {
 	})
 }
 
-func (rs Ressource) adminOneIngredient(c fuego.Ctx[any]) (any, error) {
+func (rs Ressource) adminOneIngredient(c fuego.Ctx[store.UpdateIngredientParams]) (any, error) {
 	id := c.QueryParam("id") // TODO use PathParam
+
+	if c.Request().Method == "PUT" {
+		updateIngredientArgs, err := c.Body()
+		if err != nil {
+			return "", err
+		}
+
+		updateIngredientArgs.ID = c.QueryParam("id") // TODO use PathParam
+
+		_, err = rs.IngredientsQueries.UpdateIngredient(c.Context(), updateIngredientArgs)
+		if err != nil {
+			return "", err
+		}
+
+		c.Response().Header().Set("HX-Trigger", "ingredient-updated")
+	}
 
 	ingredient, err := rs.IngredientsQueries.GetIngredient(c.Context(), id)
 	if err != nil {
 		return nil, err
 	}
+
+	slog.Debug("ingredient", "ingredient", ingredient, "strconv", strconv.FormatBool(ingredient.AvailableAllYear))
 
 	err = templa.IngredientEdit(ingredient).Render(c.Context(), c.Response())
 	if err != nil {
@@ -103,24 +124,6 @@ func (rs Ressource) editRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (any, erro
 	}
 
 	return c.Redirect(301, "/admin/recipes/one?id="+recipe.ID)
-}
-
-func (rs Ressource) editIngredient(c fuego.Ctx[store.UpdateIngredientParams]) (any, error) {
-	updateIngredientArgs, err := c.Body()
-	if err != nil {
-		return "", err
-	}
-
-	updateIngredientArgs.ID = c.QueryParam("id") // TODO use PathParam
-
-	_, err = rs.IngredientsQueries.UpdateIngredient(c.Context(), updateIngredientArgs)
-	if err != nil {
-		return "", err
-	}
-
-	c.Response().Header().Set("HX-Trigger", "ingredient-updated")
-
-	return rs.adminOneIngredient(c.Pass())
 }
 
 func (rs Ressource) adminAddRecipes(c fuego.Ctx[store.CreateRecipeParams]) (any, error) {
@@ -152,12 +155,25 @@ func (rs Ressource) adminAddDosing(c fuego.Ctx[store.CreateDosingParams]) (any, 
 }
 
 func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (any, error) {
-	ingredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
+
+	searchParams := components.SearchParams{
+		Name:    c.QueryParam("name"),
+		PerPage: c.QueryParamInt("perPage", 10),
+		Page:    c.QueryParamInt("page", 1),
+	}
+
+	slog.Debug("params", "params", searchParams)
+
+	ingredients, err := rs.IngredientsQueries.SearchIngredients(c.Context(), store.SearchIngredientsParams{
+		Name:   "%" + searchParams.Name + "%",
+		Limit:  int64(searchParams.PerPage),
+		Offset: int64(searchParams.Page-1) * int64(searchParams.PerPage),
+	})
 	if err != nil {
 		return "", err
 	}
 
-	err = templa.IngredientList(ingredients).Render(c.Context(), c.Response())
+	err = templa.IngredientList(ingredients, searchParams).Render(c.Context(), c.Response())
 	if err != nil {
 		return nil, err
 	}

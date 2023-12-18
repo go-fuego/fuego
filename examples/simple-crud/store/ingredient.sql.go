@@ -183,27 +183,126 @@ func (q *Queries) GetIngredientsOfRecipe(ctx context.Context, recipeID string) (
 	return items, nil
 }
 
+const searchIngredients = `-- name: SearchIngredients :many
+SELECT id, created_at, name, description, default_unit, category, available_all_year, available_jan, available_feb, available_mar, available_apr, available_may, available_jun, available_jul, available_aug, available_sep, available_oct, available_nov, available_dec FROM ingredient
+WHERE name LIKE ?
+ORDER BY name ASC
+LIMIT ?
+OFFSET ?
+`
+
+type SearchIngredientsParams struct {
+	Name   string `json:"name"`
+	Limit  int64  `json:"limit"`
+	Offset int64  `json:"offset"`
+}
+
+func (q *Queries) SearchIngredients(ctx context.Context, arg SearchIngredientsParams) ([]Ingredient, error) {
+	rows, err := q.db.QueryContext(ctx, searchIngredients, arg.Name, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Ingredient
+	for rows.Next() {
+		var i Ingredient
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.Name,
+			&i.Description,
+			&i.DefaultUnit,
+			&i.Category,
+			&i.AvailableAllYear,
+			&i.AvailableJan,
+			&i.AvailableFeb,
+			&i.AvailableMar,
+			&i.AvailableApr,
+			&i.AvailableMay,
+			&i.AvailableJun,
+			&i.AvailableJul,
+			&i.AvailableAug,
+			&i.AvailableSep,
+			&i.AvailableOct,
+			&i.AvailableNov,
+			&i.AvailableDec,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateIngredient = `-- name: UpdateIngredient :one
 UPDATE ingredient SET 
   name=COALESCE(?1, name),
-  category=COALESCE(?2, category),
-  default_unit=COALESCE(?3, default_unit)
-WHERE id = ?4
+  description=COALESCE(?2, description),
+  category=COALESCE(?3, category),
+  default_unit=COALESCE(?4, default_unit),
+  available_all_year=COALESCE(?5, available_all_year),
+  available_jan=COALESCE(?6, available_jan),
+  available_feb=COALESCE(?7, available_feb),
+  available_mar=COALESCE(?8, available_mar),
+  available_apr=COALESCE(?9, available_apr),
+  available_may=COALESCE(?10, available_may),
+  available_jun=COALESCE(?11, available_jun),
+  available_jul=COALESCE(?12, available_jul),
+  available_aug=COALESCE(?13, available_aug),
+  available_sep=COALESCE(?14, available_sep),
+  available_oct=COALESCE(?15, available_oct),
+  available_nov=COALESCE(?16, available_nov),
+  available_dec=COALESCE(?17, available_dec)
+WHERE id = ?18
 RETURNING id, created_at, name, description, default_unit, category, available_all_year, available_jan, available_feb, available_mar, available_apr, available_may, available_jun, available_jul, available_aug, available_sep, available_oct, available_nov, available_dec
 `
 
 type UpdateIngredientParams struct {
-	Name        string         `json:"name"`
-	Category    types.Category `json:"category"`
-	DefaultUnit types.Unit     `json:"default_unit"`
-	ID          string         `json:"id"`
+	Name             string         `json:"name"`
+	Description      string         `json:"description"`
+	Category         types.Category `json:"category"`
+	DefaultUnit      types.Unit     `json:"default_unit"`
+	AvailableAllYear bool           `json:"available_all_year"`
+	AvailableJan     bool           `json:"available_jan"`
+	AvailableFeb     bool           `json:"available_feb"`
+	AvailableMar     bool           `json:"available_mar"`
+	AvailableApr     bool           `json:"available_apr"`
+	AvailableMay     bool           `json:"available_may"`
+	AvailableJun     bool           `json:"available_jun"`
+	AvailableJul     bool           `json:"available_jul"`
+	AvailableAug     bool           `json:"available_aug"`
+	AvailableSep     bool           `json:"available_sep"`
+	AvailableOct     bool           `json:"available_oct"`
+	AvailableNov     bool           `json:"available_nov"`
+	AvailableDec     bool           `json:"available_dec"`
+	ID               string         `json:"id"`
 }
 
 func (q *Queries) UpdateIngredient(ctx context.Context, arg UpdateIngredientParams) (Ingredient, error) {
 	row := q.db.QueryRowContext(ctx, updateIngredient,
 		arg.Name,
+		arg.Description,
 		arg.Category,
 		arg.DefaultUnit,
+		arg.AvailableAllYear,
+		arg.AvailableJan,
+		arg.AvailableFeb,
+		arg.AvailableMar,
+		arg.AvailableApr,
+		arg.AvailableMay,
+		arg.AvailableJun,
+		arg.AvailableJul,
+		arg.AvailableAug,
+		arg.AvailableSep,
+		arg.AvailableOct,
+		arg.AvailableNov,
+		arg.AvailableDec,
 		arg.ID,
 	)
 	var i Ingredient
