@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -35,6 +36,10 @@ type Ctx[B any] interface {
 	PathParam(name string) string
 	PathParams() map[string]string
 	QueryParam(name string) string
+	QueryParamInt(name string, defaultValue int) int // If the query parameter does not exist or is not an int, it returns the default given value. Use [Ctx.QueryParamIntErr] if you want to know if the query parameter is erroneous.
+	QueryParamIntErr(name string) (int, error)
+	QueryParamBool(name string, defaultValue bool) bool // If the query parameter does not exist or is not a bool, it returns the default given value. Use [Ctx.QueryParamBoolErr] if you want to know if the query parameter is erroneous.
+	QueryParamBoolErr(name string) (bool, error)
 	QueryParams() map[string]string
 
 	// Render renders the given templates with the given data.
@@ -223,6 +228,25 @@ func (c ClassicContext) PathParams() map[string]string {
 	return nil
 }
 
+type QueryParamNotFoundError struct {
+	ParamName string
+}
+
+func (e QueryParamNotFoundError) Error() string {
+	return fmt.Errorf("param %s not found", e.ParamName).Error()
+}
+
+type QueryParamInvalidTypeError struct {
+	ParamName    string
+	ParamValue   string
+	ExpectedType string
+	Err          error
+}
+
+func (e QueryParamInvalidTypeError) Error() string {
+	return fmt.Errorf("param %s=%s is not of type %s: %w", e.ParamName, e.ParamValue, e.ExpectedType, e.Err).Error()
+}
+
 // QueryParams returns the query parameters of the request.
 func (c ClassicContext) QueryParams() map[string]string {
 	queryParams := c.request.URL.Query()
@@ -236,6 +260,64 @@ func (c ClassicContext) QueryParams() map[string]string {
 // QueryParam returns the query parameter with the given name.
 func (c ClassicContext) QueryParam(name string) string {
 	return c.request.URL.Query().Get(name)
+}
+
+func (c ClassicContext) QueryParamIntErr(name string) (int, error) {
+	param := c.QueryParam(name)
+	if param == "" {
+		return -1, QueryParamNotFoundError{ParamName: name}
+	}
+
+	i, err := strconv.Atoi(param)
+	if err != nil {
+		return -1, QueryParamInvalidTypeError{
+			ParamName:    name,
+			ParamValue:   param,
+			ExpectedType: "int",
+			Err:          err,
+		}
+	}
+
+	return i, nil
+}
+
+func (c ClassicContext) QueryParamInt(name string, defaultValue int) int {
+	param, err := c.QueryParamIntErr(name)
+	if err != nil {
+		return defaultValue
+	}
+
+	return param
+}
+
+// QueryParamBool returns the query parameter with the given name as a bool.
+// If the query parameter does not exist or is not a bool, it returns nil.
+// Accepted values are defined as [strconv.ParseBool]
+func (c ClassicContext) QueryParamBoolErr(name string) (bool, error) {
+	param := c.QueryParam(name)
+	if param == "" {
+		return false, QueryParamNotFoundError{ParamName: name}
+	}
+
+	b, err := strconv.ParseBool(param)
+	if err != nil {
+		return false, QueryParamInvalidTypeError{
+			ParamName:    name,
+			ParamValue:   param,
+			ExpectedType: "bool",
+			Err:          err,
+		}
+	}
+	return b, nil
+}
+
+func (c ClassicContext) QueryParamBool(name string, defaultValue bool) bool {
+	param, err := c.QueryParamBoolErr(name)
+	if err != nil {
+		return defaultValue
+	}
+
+	return param
 }
 
 // Request returns the http request.
