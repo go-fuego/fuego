@@ -1,0 +1,44 @@
+package components
+
+import "fmt"
+
+type SearchParams struct {
+	URL     string `json:"url"`
+	Name    string `json:"name"`
+	Page    int    `json:"page"`
+	PerPage int    `json:"per_page"`
+}
+
+templ SearchBox(parameters SearchParams) {
+	// method="GET"
+	// if (parameters.URL != "") {
+	// 	action={ templ.URL(parameters.URL) }
+	// }
+	<form
+ 		class="flex flex-row gap-4 items-center my-4 md:my-8"
+ 		method="GET"
+ 		action="/admin/ingredients"
+ 		hx-push-url="true"
+ 		hx-boost="true"
+ 		hx-trigger="input changed delay:100ms, search"
+ 		hx-target="#page"
+ 		hx-select="#page"
+ 		hx-swap="outerHTML"
+	>
+		<label class="label" for="name">
+			Search
+			<input class="input w-full" type="text" name="name" value={ parameters.Name }/>
+		</label>
+		<label class="label" for="page">
+			Page
+			<input class="w-20 input" type="number" name="page" value={ fmt.Sprintf("%d", parameters.Page) }/>
+		</label>
+		<label class="label" for="perPage">
+			Per Page
+			<input class="w-20 input" type="number" name="perPage" value={ fmt.Sprintf("%d", parameters.PerPage) }/>
+		</label>
+		<noscript>
+			<input class="input" type="submit" value="Save"/>
+		</noscript>
+	</form>
+}

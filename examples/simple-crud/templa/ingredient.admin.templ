@@ -5,18 +5,20 @@ import (
 	"simple-crud/templa/components"
 )
 
-templ IngredientList(ingredients []store.Ingredient) {
+templ IngredientList(ingredients []store.Ingredient, parameters components.SearchParams) {
 	@htmlPage("Ingredients") {
 		<h1>Ingredients</h1>
-		<div class="border rounded border-gray-200 shadow p-8">
+		<hr/>
+		@components.SearchBox(parameters)
+		<div class="border rounded border-gray-200 shadow p-4 md:p-8">
 			<table class="table ">
 				<thead>
 					<tr>
-						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Name</th>
-						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Category</th>
-						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Description</th>
-						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Default Unit</th>
-						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Available</th>
+						<th class="border-b border-slate-100 p-4 py-2 pr-8 text-slate-700">Name</th>
+						<th class="border-b border-slate-100 p-4 py-2 pr-8 text-slate-700">Category</th>
+						<th class="border-b border-slate-100 p-4 py-2 pr-8 text-slate-700">Description</th>
+						<th class="border-b border-slate-100 p-4 py-2 pr-8 text-slate-700">Default Unit</th>
+						<th class="border-b border-slate-100 p-4 py-2 pr-8 text-slate-700">Available</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -55,23 +57,35 @@ templ IngredientEdit(ingredient store.Ingredient) {
 	@htmlPage("Ingredient - "+ingredient.Name) {
 		<h1>Edit Ingredient</h1>
 		<form
- 			action={ templ.URL("/admin/ingredients/edit?id=" + ingredient.ID) }
+ 			action={ templ.URL("/admin/ingredients/one?id=" + ingredient.ID) }
  			method="PUT"
  			class="form"
  			hx-boost="true"
- 			hx-trigger="change"
+ 			hx-trigger="change delay:500ms"
  			hx-target="#page"
  			hx-select="#page"
 		>
 			<label class="label" for="name">Name</label>
 			<input class="input" type="text" name="name" value={ ingredient.Name }/>
-			<label class="label" for="defaultUnit">Default Unit</label>
-			@components.UnitSelector(ingredient.DefaultUnit)
+			<label class="label" for="description">Description</label>
+			<textarea class="input" name="description">{ ingredient.Description }</textarea>
 			<label class="label" for="category">Category</label>
 			@components.CategorySelector(ingredient.Category)
-			// <label class="label" for="available_all_year">Available All Year</label>
-			// <input class="input" type="checkbox" name="available_all_year" value="true" checked={ strconv.FormatBool(ingredient.AvailableAllYear) }/>
-			<input class="input" type="submit" value="Save"/>
+			<label class="label" for="defaultUnit">Default Unit</label>
+			@components.UnitSelector(ingredient.DefaultUnit)
+			<label class="label p-1 flex flex-row items-center gap-4">
+				<input
+ 					class="mr-2 md:mr-4 "
+ 					type="checkbox"
+ 					name="availableAllYear"
+ 					if ingredient.AvailableAllYear {
+						checked
+					}
+				/> Available All Year
+			</label>
+			<noscript>
+				<input class="input" type="submit" value="Save"/>
+			</noscript>
 		</form>
 	}
 }
