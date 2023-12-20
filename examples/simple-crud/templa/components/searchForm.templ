@@ -10,17 +10,15 @@ type SearchParams struct {
 }
 
 templ SearchBox(parameters SearchParams) {
-	// method="GET"
-	// if (parameters.URL != "") {
-	// 	action={ templ.URL(parameters.URL) }
-	// }
 	<form
  		class="flex flex-row gap-4 items-center my-4 md:my-8"
  		method="GET"
- 		action="/admin/ingredients"
+ 		if (parameters.URL != "") {
+			action={ templ.URL(parameters.URL) }
+		}
  		hx-push-url="true"
  		hx-boost="true"
- 		hx-trigger="input changed delay:100ms, search"
+ 		hx-trigger="change delay:100ms, search"
  		hx-target="#page"
  		hx-select="#page"
  		hx-swap="outerHTML"
@@ -29,16 +27,16 @@ templ SearchBox(parameters SearchParams) {
 			Search
 			<input class="input w-full" type="text" name="name" value={ parameters.Name }/>
 		</label>
-		<label class="label" for="page">
+		<label class="label w-20" for="page">
 			Page
-			<input class="w-20 input" type="number" name="page" value={ fmt.Sprintf("%d", parameters.Page) }/>
+			<input class="input" type="number" name="page" value={ fmt.Sprintf("%d", parameters.Page) }/>
 		</label>
-		<label class="label" for="perPage">
+		<label class="label w-20" for="perPage">
 			Per Page
-			<input class="w-20 input" type="number" name="perPage" value={ fmt.Sprintf("%d", parameters.PerPage) }/>
+			<input class="input" type="number" name="perPage" value={ fmt.Sprintf("%d", parameters.PerPage) }/>
 		</label>
-		<noscript>
-			<input class="input" type="submit" value="Save"/>
-		</noscript>
+		<button class="button hidden" type="submit">
+			Search
+		</button>
 	</form>
 }

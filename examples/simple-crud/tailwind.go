@@ -1,3 +1,3 @@
 package main
 
-//go:generate npx tailwindcss -i ./tailwind.css -o ./static/tailwind.min.css --minify
+//go:generate tailwindcss -i ./tailwind.css -o ./static/tailwind.min.css --minify

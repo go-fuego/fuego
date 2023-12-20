@@ -157,8 +157,9 @@ func (rs Ressource) adminAddDosing(c fuego.Ctx[store.CreateDosingParams]) (any, 
 func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (any, error) {
 	searchParams := components.SearchParams{
 		Name:    c.QueryParam("name"),
-		PerPage: c.QueryParamInt("perPage", 10),
+		PerPage: c.QueryParamInt("perPage", 20),
 		Page:    c.QueryParamInt("page", 1),
+		URL:     "/admin/ingredients",
 	}
 
 	slog.Debug("params", "params", searchParams)
