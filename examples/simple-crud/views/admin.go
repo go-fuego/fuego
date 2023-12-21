@@ -160,6 +160,7 @@ func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (any, error) {
 		PerPage: c.QueryParamInt("perPage", 20),
 		Page:    c.QueryParamInt("page", 1),
 		URL:     "/admin/ingredients",
+		Lang:    c.MainLang(),
 	}
 
 	slog.Debug("params", "params", searchParams)

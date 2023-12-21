@@ -18,7 +18,7 @@ templ CategorySelector(selectedCategory types.Category) {
 					selected
 				}
 			>
-				{ string(category) }
+				{ types.CategoriesTranslations[category][types.LocaleEmoji] +" "+ types.CategoriesTranslations[category][types.LocaleEn] }
 			</option>
 		}
 	</select>

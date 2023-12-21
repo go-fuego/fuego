@@ -2,6 +2,7 @@ package templa
 
 import (
 	"simple-crud/store"
+	"simple-crud/store/types"
 	"simple-crud/templa/components"
 )
 
@@ -14,11 +15,11 @@ templ IngredientList(ingredients []store.Ingredient, parameters components.Searc
 			<table class="table ">
 				<thead>
 					<tr>
-						<th class="border-b border-slate-100 p-4 py-2 pr-8 text-slate-700">Name</th>
-						<th class="border-b border-slate-100 p-4 py-2 pr-8 text-slate-700">Category</th>
-						<th class="border-b border-slate-100 p-4 py-2 pr-8 text-slate-700">Description</th>
-						<th class="border-b border-slate-100 p-4 py-2 pr-8 text-slate-700">Default Unit</th>
-						<th class="border-b border-slate-100 p-4 py-2 pr-8 text-slate-700">Available</th>
+						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Name</th>
+						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Category</th>
+						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Description</th>
+						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Default Unit</th>
+						<th class="border-b border-slate-100 p-4 pr-8 text-slate-700">Available</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -36,7 +37,7 @@ templ IngredientList(ingredients []store.Ingredient, parameters components.Searc
 									<strong class="font-semibold">{ ingredient.Name }</strong>
 								</a>
 							</td>
-							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">{ string(ingredient.Category) }</td>
+							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">{ types.CategoriesTranslations[ingredient.Category][types.LocaleEmoji] +" "+ types.CategoriesTranslations[ingredient.Category][types.Locale(parameters.Lang)] }</td>
 							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">{ ingredient.Description }</td>
 							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">{ string(ingredient.DefaultUnit) }</td>
 							<td class="border-b border-slate-100 p-4 pr-8 text-slate-700">
@@ -65,6 +66,7 @@ templ IngredientEdit(ingredient store.Ingredient) {
  			hx-trigger="change delay:500ms"
  			hx-target="#page"
  			hx-select="#page"
+ 			hx-swap="outerHTML"
 		>
 			<label class="label" for="name">Name</label>
 			<input class="input" type="text" name="name" value={ ingredient.Name }/>

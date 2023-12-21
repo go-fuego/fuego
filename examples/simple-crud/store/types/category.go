@@ -23,6 +23,22 @@ const (
 // CategoryValues is a slice of all valid categories
 var CategoryValues = []Category{CategoryOther, CategoryVegetable, CategoryFruit, CategoryMeat, CategoryDairy, CategoryGrain, CategorySpice, CategoryCondiment, CategorySweetener, CategoryOil, CategoryFat, CategoryLiquid, CategoryAlcohol}
 
+var CategoriesTranslations = map[Category]map[Locale]string{
+	CategoryOther:     {LocaleEn: "Other", LocaleFr: "Autre", LocaleEmoji: "🍽"},
+	CategoryVegetable: {LocaleEn: "Vegetable", LocaleFr: "Légume", LocaleEmoji: "🥕"},
+	CategoryFruit:     {LocaleEn: "Fruit", LocaleFr: "Fruit", LocaleEmoji: "🍎"},
+	CategoryMeat:      {LocaleEn: "Meat", LocaleFr: "Viande", LocaleEmoji: "🥩"},
+	CategoryDairy:     {LocaleEn: "Dairy", LocaleFr: "Produit laitier", LocaleEmoji: "🥛"},
+	CategoryGrain:     {LocaleEn: "Grain", LocaleFr: "Céréale", LocaleEmoji: "🌾"},
+	CategorySpice:     {LocaleEn: "Spice", LocaleFr: "Épice", LocaleEmoji: "🌶"},
+	CategoryCondiment: {LocaleEn: "Condiment", LocaleFr: "Condiment", LocaleEmoji: "🧂"},
+	CategorySweetener: {LocaleEn: "Sweetener", LocaleFr: "Édulcorant", LocaleEmoji: "🍬"},
+	CategoryOil:       {LocaleEn: "Oil", LocaleFr: "Huile", LocaleEmoji: "🥥"},
+	CategoryFat:       {LocaleEn: "Fat", LocaleFr: "Graisse", LocaleEmoji: "🥓"},
+	CategoryLiquid:    {LocaleEn: "Liquid", LocaleFr: "Liquide", LocaleEmoji: "💧"},
+	CategoryAlcohol:   {LocaleEn: "Alcohol", LocaleFr: "Alcool", LocaleEmoji: "🍺"},
+}
+
 type InvalidCategoryError struct {
 	Category Category
 }

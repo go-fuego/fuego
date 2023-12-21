@@ -7,6 +7,23 @@ type SearchParams struct {
 	Name    string `json:"name"`
 	Page    int    `json:"page"`
 	PerPage int    `json:"per_page"`
+	Lang    string `json:"lang"` // english by default
+}
+
+var searchBoxDefaultTranslations = map[string]string{
+	"Search":   "Search",
+	"Page":     "Page",
+	"Per Page": "Per Page",
+}
+
+var searchBoxTranslations = map[string]map[string]string{
+	"":   searchBoxDefaultTranslations,
+	"en": searchBoxDefaultTranslations,
+	"fr": {
+		"Search":   "Rechercher",
+		"Page":     "Page",
+		"Per Page": "Par Page",
+	},
 }
 
 templ SearchBox(parameters SearchParams) {
@@ -24,15 +41,15 @@ templ SearchBox(parameters SearchParams) {
  		hx-swap="outerHTML"
 	>
 		<label class="label" for="name">
-			Search
+			{ searchBoxTranslations[parameters.Lang]["Search"] }
 			<input class="input w-full" type="text" name="name" value={ parameters.Name }/>
 		</label>
 		<label class="label w-20" for="page">
-			Page
+			{ searchBoxTranslations[parameters.Lang]["Page"] }
 			<input class="input" type="number" name="page" value={ fmt.Sprintf("%d", parameters.Page) }/>
 		</label>
 		<label class="label w-20" for="perPage">
-			Per Page
+			{ searchBoxTranslations[parameters.Lang]["Per Page"] }
 			<input class="input" type="number" name="perPage" value={ fmt.Sprintf("%d", parameters.PerPage) }/>
 		</label>
 		<button class="button hidden" type="submit">
