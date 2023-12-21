@@ -43,6 +43,9 @@ type Ctx[B any] interface {
 	QueryParamBoolErr(name string) (bool, error)
 	QueryParams() map[string]string
 
+	MainLang() string   // ex: fr. MainLang returns the main language of the request. It is the first language of the Accept-Language header. To get the main locale (ex: fr-CA), use [Ctx.MainLocale].
+	MainLocale() string // ex: en-US. MainLocale returns the main locale of the request. It is the first locale of the Accept-Language header. To get the main language (ex: en), use [Ctx.MainLang].
+
 	// Render renders the given templates with the given data.
 	// Example:
 	//   fuego.Get(s, "/recipes", func(c fuego.Ctx[any]) (any, error) {
@@ -322,6 +325,14 @@ func (c ClassicContext) QueryParamBool(name string, defaultValue bool) bool {
 	}
 
 	return param
+}
+
+func (c ClassicContext) MainLang() string {
+	return strings.Split(c.MainLocale(), "-")[0]
+}
+
+func (c ClassicContext) MainLocale() string {
+	return strings.Split(c.request.Header.Get("Accept-Language"), ",")[0]
 }
 
 // Request returns the http request.
