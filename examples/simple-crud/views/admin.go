@@ -76,20 +76,20 @@ func (rs Ressource) adminOneRecipe(c fuego.Ctx[any]) (fuego.HTML, error) {
 	})
 }
 
-func (rs Ressource) adminOneIngredient(c fuego.Ctx[store.UpdateIngredientParams]) (any, error) {
+func (rs Ressource) adminOneIngredient(c fuego.Ctx[store.UpdateIngredientParams]) (fuego.CtxRenderer, error) {
 	id := c.QueryParam("id") // TODO use PathParam
 
 	if c.Request().Method == "PUT" {
 		updateIngredientArgs, err := c.Body()
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		updateIngredientArgs.ID = c.QueryParam("id") // TODO use PathParam
 
 		_, err = rs.IngredientsQueries.UpdateIngredient(c.Context(), updateIngredientArgs)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		c.Response().Header().Set("HX-Trigger", "ingredient-updated")
@@ -102,12 +102,7 @@ func (rs Ressource) adminOneIngredient(c fuego.Ctx[store.UpdateIngredientParams]
 
 	slog.Debug("ingredient", "ingredient", ingredient, "strconv", strconv.FormatBool(ingredient.AvailableAllYear))
 
-	err = templa.IngredientEdit(ingredient).Render(c.Context(), c.Response())
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
+	return templa.IngredientEdit(ingredient), nil
 }
 
 func (rs Ressource) editRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (any, error) {
@@ -154,7 +149,7 @@ func (rs Ressource) adminAddDosing(c fuego.Ctx[store.CreateDosingParams]) (any, 
 	return c.Redirect(301, "/admin/recipes/one?id="+body.RecipeID)
 }
 
-func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (any, error) {
+func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (fuego.Templ, error) {
 	searchParams := components.SearchParams{
 		Name:    c.QueryParam("name"),
 		PerPage: c.QueryParamInt("perPage", 20),
@@ -171,15 +166,10 @@ func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (any, error) {
 		Offset: int64(searchParams.Page-1) * int64(searchParams.PerPage),
 	})
 	if err != nil {
-		return "", err
-	}
-
-	err = templa.IngredientList(ingredients, searchParams).Render(c.Context(), c.Response())
-	if err != nil {
 		return nil, err
 	}
 
-	return nil, nil
+	return templa.IngredientList(ingredients, searchParams), nil
 }
 
 func (rs Ressource) adminAddIngredient(c fuego.Ctx[store.CreateIngredientParams]) (any, error) {
