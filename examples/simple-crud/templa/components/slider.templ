@@ -1,0 +1,24 @@
+package components
+
+import "simple-crud/store"
+
+templ Slider() {
+	<ul class="flex flex-row gap-4 overflow-x-auto py-2 md:gap-8">
+		{ children... }
+	</ul>
+}
+
+templ SliderRecipes(recipes []store.Recipe) {
+	@Slider() {
+		for _, recipe := range recipes {
+			<li class="w-48">
+				@Card(CardProps{
+					Title: recipe.Name,
+					Link: "/recipes/one?id=" + recipe.ID,
+					ImageURL: "",
+					Body: recipe.Description,
+				})
+			</li>
+		}
+	}
+}

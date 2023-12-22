@@ -1,0 +1,59 @@
+package templa
+
+import (
+	"simple-crud/store"
+	"simple-crud/templa/components"
+)
+
+type HomeProps struct {
+	Recipes        []store.Recipe
+	PopularRecipes []store.Recipe
+	FastRecipes    []store.Recipe
+	HealthyRecipes []store.Recipe
+}
+
+templ Home(props HomeProps) {
+	@page("Gourmet") {
+		<section
+ 			id="hero"
+ 			class="flex w-full flex-col items-center justify-center gap-4
+	  bg-gray-800 bg-opacity-50 bg-cover bg-top bg-no-repeat px-4 py-8 text-center
+	  text-white bg-blend-color-burn sm:px-6 md:gap-8 md:px-8
+	  md:py-16
+	  lg:px-10
+	  "
+ 			style="background-image: url('/static/hero.webp')"
+		>
+			<h1 class="font-serif text-4xl font-bold italic text-white">Gourmet</h1>
+			<p class="text-lg">Healthy recipes</p>
+		</section>
+		<section
+ 			id="recipes-section"
+ 			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
+		>
+			<h2>Today's recipes 📅</h2>
+			@components.SliderRecipes(props.Recipes)
+		</section>
+		<section
+ 			id="popular-recipes-section"
+ 			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
+		>
+			<h2>Popular recipes this week ⭐️</h2>
+			@components.SliderRecipes(props.PopularRecipes)
+		</section>
+		<section
+ 			id="fast-recipes-section"
+ 			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
+		>
+			<h2>Fast recipes ⚡️</h2>
+			@components.SliderRecipes(props.FastRecipes)
+		</section>
+		<section
+ 			id="healthy-recipes-section"
+ 			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
+		>
+			<h2>Healthy recipes 🥗</h2>
+			@components.SliderRecipes(props.HealthyRecipes)
+		</section>
+	}
+}

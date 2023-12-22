@@ -1,0 +1,96 @@
+package templa
+
+templ NavBar() {
+	<header class="sticky top-0 z-40 bg-white/70 dark:bg-zinc-800/70 backdrop-blur-md">
+		<div
+ 			class="flex flex-col items-center justify-center gap-1 bg-white/75 dark:bg-zinc-800/75 md:flex-row md:gap-4"
+		>
+			<a
+ 				class="mt-2 inline-block bg-gradient-to-r
+      from-orange-300
+        to-orange-500
+        bg-clip-text font-serif text-2xl
+        font-bold italic text-transparent md:mt-0"
+ 				href="/"
+ 				hx-boost="true"
+ 				hx-target="#page"
+ 				hx-select="#page"
+			>
+				Gourmet
+			</a>
+			<div class="relative m-1 md:m-3">
+				<input
+ 					class="h-full rounded-full border border-stone-200 dark:border-stone-800 p-2 px-4 text-stone-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-stone-700 dark:bg-zinc-600 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+ 					type="text"
+ 					id="searchInput"
+ 					name="q"
+ 					placeholder="orange, crème brulée..."
+ 					hx-get="/search"
+ 					hx-push-url="true"
+ 					hx-trigger="keyup changed delay:100ms, search"
+ 					hx-target="#page"
+ 					hx-select="#page"
+ 					hx-swap="outerHTML"
+ 					hx-indicator="#search-indicator"
+				/>
+				<span
+ 					class="absolute right-4 top-1/2 hidden flex-none -translate-y-1/2
+      transform pl-2 text-xs text-stone-500 dark:text-stone-300 md:inline"
+				>⌘K</span>
+			</div>
+			<span id="search-indicator" class="hidden">
+				<div class="spinner">coucou</div>
+			</span>
+		</div>
+		<nav
+ 			class="flex w-full items-center
+    justify-center overflow-x-auto border
+    border-b-stone-200 dark:border-stone-600
+	border-r-0 border-l-0
+    shadow-sm 
+    "
+ 			hx-boost="true"
+ 			hx-target="#page"
+ 			hx-select="#page"
+		>
+			<div
+ 				class="flex max-w-xl justify-center  gap-8
+   
+    px-8 py-2 md:py-3"
+			>
+				<a
+ 					class="h-full whitespace-nowrap text-stone-500 hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-200 hover:underline active:text-blue-800"
+ 					href="/planner"
+				>
+					Planner
+				</a>
+				<a
+ 					class="h-full whitespace-nowrap text-stone-500 hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-200 hover:underline active:text-blue-800"
+ 					href="/recipes"
+				>
+					Recipes
+				</a>
+				<a
+ 					class="h-full whitespace-nowrap text-stone-500 hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-200 hover:underline active:text-blue-800"
+ 					href="/ingredients"
+				>
+					Ingredients
+				</a>
+				<a
+ 					class="h-full whitespace-nowrap text-stone-500 hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-200 hover:underline active:text-blue-800"
+ 					href="/fast"
+				>
+					Quick
+				</a>
+			</div>
+		</nav>
+	</header>
+	<script>
+  document.addEventListener("keydown", function (e) {
+    if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "s")) {
+      e.preventDefault();
+      document.getElementById("searchInput").select();
+    }
+  });
+</script>
+}

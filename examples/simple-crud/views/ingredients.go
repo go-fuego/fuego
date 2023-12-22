@@ -4,17 +4,20 @@ import (
 	"context"
 
 	"simple-crud/store"
+	"simple-crud/templa"
 
 	"github.com/go-fuego/fuego"
 )
 
-func (rs Ressource) showIngredients(c fuego.Ctx[any]) (fuego.HTML, error) {
+func (rs Ressource) showIngredients(c fuego.Ctx[any]) (fuego.Templ, error) {
 	ingredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return c.Render("pages/ingredients.page.html", ingredients)
+	return templa.IngredientList(templa.IngredientListProps{
+		Ingredients: ingredients,
+	}), nil
 }
 
 type IngredientRepository interface {

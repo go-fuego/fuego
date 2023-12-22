@@ -8,7 +8,7 @@ import (
 
 	"simple-crud/store"
 	"simple-crud/store/types"
-	"simple-crud/templa"
+	"simple-crud/templa/admin"
 	"simple-crud/templa/components"
 
 	"github.com/go-fuego/fuego"
@@ -102,7 +102,7 @@ func (rs Ressource) adminOneIngredient(c fuego.Ctx[store.UpdateIngredientParams]
 
 	slog.Debug("ingredient", "ingredient", ingredient, "strconv", strconv.FormatBool(ingredient.AvailableAllYear))
 
-	return templa.IngredientEdit(ingredient), nil
+	return admin.IngredientEdit(ingredient), nil
 }
 
 func (rs Ressource) editRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (any, error) {
@@ -169,7 +169,7 @@ func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (fuego.Templ, error) {
 		return nil, err
 	}
 
-	return templa.IngredientList(ingredients, searchParams), nil
+	return admin.IngredientList(ingredients, searchParams), nil
 }
 
 func (rs Ressource) adminAddIngredient(c fuego.Ctx[store.CreateIngredientParams]) (any, error) {

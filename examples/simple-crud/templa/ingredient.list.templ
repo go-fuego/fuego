@@ -1,0 +1,25 @@
+package templa
+
+import (
+	"simple-crud/templa/components"
+	"simple-crud/store"
+)
+
+type IngredientListProps struct {
+	Ingredients []store.Ingredient
+}
+
+templ IngredientList(props IngredientListProps) {
+	@page("Ingredients") {
+		<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 my-2 md:my-6">
+			for _, ingredient := range props.Ingredients {
+				@components.Card(components.CardProps{
+					Title: ingredient.Name,
+					Link: "/ingredients/one?id=" + ingredient.ID,
+					ImageURL: "",
+					Body: ingredient.Description,
+				})
+			}
+		</div>
+	}
+}

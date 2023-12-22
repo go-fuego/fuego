@@ -1,0 +1,44 @@
+package components
+
+type CardProps struct {
+	ImageURL string
+	Link     string
+	Title    string
+	Body     string
+}
+
+templ Card(props CardProps) {
+	<div class="rounded-lg border dark:border-zinc-700 shadow-sm min-w-48">
+		<a
+ 			href={ templ.URL(props.Link) }
+ 			class="block p-4 h-full w-full rounded-lg leading-normal
+  transition hover:cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 hover:shadow-md"
+		>
+			<div>
+				<img
+ 					if props.ImageURL != "" {
+						src={ props.ImageURL }
+					} else {
+						src="https://www.totalchaletservices.com/media/s43joq31/dinner-placeholder.png"
+					}
+ 					alt={ props.Title }
+ 					class="w-full h-48 object-cover mb-5 rounded-lg shadow-md aspect-square"
+ 					width="200"
+ 					height="200"
+				/>
+				<div class="flex items-center justify-between">
+					<span class="text-sm text-gray-600 dark:text-gray-400 uppercase">Pasta</span>
+					<div class="inline-flex items-center rounded-full border px-2.5 py-0.5 w-fit text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80">
+						New
+					</div>
+				</div>
+				<h2 class="text-lg font-semibold text-gray-700 capitalize dark:text-white">
+					{ props.Title }
+				</h2>
+				<p class="text-sm text-gray-500 mt-2">
+					{ props.Body }
+				</p>
+			</div>
+		</a>
+	</div>
+}

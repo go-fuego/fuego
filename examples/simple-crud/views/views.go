@@ -13,7 +13,8 @@ func (rs Ressource) Routes(s *fuego.Server) {
 	fuego.GetStd(s, "/recipes-std", rs.showRecipesStd)
 	fuego.Get(s, "/", rs.showIndex, cache.New())
 	fuego.Get(s, "/recipes", rs.showRecipes)
-	fuego.Get(s, "/recipes/one", rs.recipePage)
+	fuego.Get(s, "/planner", rs.planner)
+	fuego.Get(s, "/recipes/one", rs.showSingleRecipes2)
 	fuego.Post(s, "/recipes-new", rs.addRecipe)
 	fuego.Get(s, "/ingredients", rs.showIngredients)
 

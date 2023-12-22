@@ -9,6 +9,7 @@ import (
 	"path"
 
 	"simple-crud/store"
+	"simple-crud/templa"
 
 	"github.com/go-fuego/fuego"
 	"github.com/google/uuid"
@@ -40,48 +41,73 @@ func (rs Ressource) showRecipesStd(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (rs Ressource) showIndex(c fuego.Ctx[any]) (fuego.HTML, error) {
+func (rs Ressource) showIndex(c fuego.Ctx[any]) (fuego.Templ, error) {
 	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	fastRecipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	healthyRecipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	popularRecipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	ingredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
-	if err != nil {
-		return "", err
-	}
-
-	return c.Render("pages/index.page.html", fuego.H{
-		"Recipes":           recipes,
-		"PopularRecipes":    popularRecipes,
-		"FastRecipes":       fastRecipes,
-		"HealthyRecipes":    healthyRecipes,
-		"SeasonIngredients": ingredients,
-	})
+	return templa.Home(templa.HomeProps{
+		Recipes:        recipes,
+		PopularRecipes: popularRecipes,
+		FastRecipes:    fastRecipes,
+		HealthyRecipes: healthyRecipes,
+	}), nil
 }
 
-func (rs Ressource) showRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
+func (rs Ressource) showRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return c.Render("pages/recipes.page.html", recipes)
+	return templa.RecipeList(templa.RecipeListProps{
+		Recipes: recipes,
+	}), nil
+}
+
+func (rs Ressource) showSingleRecipes2(c fuego.Ctx[any]) (fuego.Templ, error) {
+	id := c.QueryParam("id")
+
+	recipe, err := rs.RecipesQueries.GetRecipe(c.Context(), id)
+	if err != nil {
+		return nil, fmt.Errorf("error getting recipe %s: %w", id, err)
+	}
+
+	ingredients, err := rs.IngredientsQueries.GetIngredientsOfRecipe(c.Context(), id)
+	if err != nil {
+		slog.Error("Error getting ingredients of recipe", "error", err)
+	}
+
+	relatedRecipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
+	if err != nil {
+		return nil, err
+	}
+
+	adminCookie, _ := c.Request().Cookie("admin")
+
+	return templa.RecipePage(templa.RecipePageProps{
+		Recipe:         recipe,
+		Ingredients:    ingredients,
+		RelatedRecipes: relatedRecipes,
+	}, templa.GeneralProps{
+		IsAdmin: adminCookie != nil,
+	}), nil
 }
 
 func (rs Ressource) searchRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
