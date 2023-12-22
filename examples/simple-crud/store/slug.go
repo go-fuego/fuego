@@ -18,6 +18,7 @@ func slug(name string) string {
 
 	id := strings.ToLower(name)
 	id = strings.ReplaceAll(id, " ", "-")
+	id = strings.ReplaceAll(id, "/", "-")
 
 	var err error
 	id, _, err = transform.String(transformer, id)
