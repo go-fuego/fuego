@@ -1,0 +1,157 @@
+package admin
+
+import (
+	"strconv"
+	"simple-crud/store"
+)
+
+type RecipeFormProps struct {
+	Recipe         store.Recipe
+	Dosings        []store.GetIngredientsOfRecipeRow
+	AllIngredients []store.Ingredient
+	Units          []string
+	IsCreating     bool
+	FormAction     string
+	HXTrigger      string
+}
+
+templ RecipeForm(props RecipeFormProps) {
+	<form
+ 		action={ templ.URL(props.FormAction) }
+ 		if props.IsCreating {
+			method="POST"
+		} else {
+			method="PUT"
+		}
+ 		class="form"
+ 		hx-boost="true"
+ 		hx-trigger={ props.HXTrigger }
+ 		hx-target="#page"
+ 		hx-select="#page"
+ 		hx-swap="outerHTML"
+	>
+		<label class="label" for="name">Name</label>
+		<input class="input" type="text" name="name" value={ props.Recipe.Name }/>
+		<label class="label">
+			Description
+			<textarea class="input" name="description">{ props.Recipe.Description }</textarea>
+		</label>
+		<label class="label">
+			Instructions
+			<textarea class="input" name="instructions" rows="10">{ props.Recipe.Instructions }</textarea>
+		</label>
+		<fieldset class="flex gap-4 w-full justify-between">
+			<label class="label w-full">
+				Preparation Time
+				<input class="input" type="number" name="prepTime" value={ strconv.Itoa(int(props.Recipe.PrepTime)) }/>
+			</label>
+			<label class="label w-full">
+				Cooking Time
+				<input class="input" type="number" name="cookTime" value={ strconv.Itoa(int(props.Recipe.CookTime)) }/>
+			</label>
+		</fieldset>
+		<fieldset class="flex gap-4 w-full justify-between">
+			<label class="label w-full">
+				Category
+				<input class="input" name="category" value={ props.Recipe.Category }/>
+			</label>
+			<label class="label w-full">
+				Class
+				<input class="input" name="class" value={ props.Recipe.Class }/>
+			</label>
+		</fieldset>
+		<label class="label">
+			Image URL
+			<input
+ 				class="input"
+ 				name="imageURL"
+ 				value={ props.Recipe.ImageUrl }
+ 				placeholder="https://example.com/image.jpg"
+			/>
+		</label>
+		<label class="label p-1 flex flex-row items-center gap-4">
+			<input
+ 				class="mr-2 md:mr-4 "
+ 				type="checkbox"
+ 				name="published"
+ 				if props.Recipe.Published {
+					checked
+				}
+			/> Published
+		</label>
+		<button class="button" type="submit">Save</button>
+	</form>
+	<section id="ingredients-section">
+		<h2 class="mb-2 text-2xl font-bold">Ingredients</h2>
+		<ul class="list-disc pl-4">
+			for _, dosing := range props.Dosings {
+				<li class="mb-1">
+					<span>
+						{ dosing.Ingredient.Name }
+					</span>
+					if dosing.Unit != "unit" {
+						: <span class="font-semibold">{ strconv.Itoa(int(dosing.Quantity)) }</span>
+						: <span>{ string(dosing.Unit) }</span>
+					}
+				</li>
+			}
+		</ul>
+		<form
+ 			method="POST"
+ 			class="form"
+ 			action="/admin/dosings-new"
+ 			hx-boost="true"
+ 			hx-target="#ingredients-section"
+ 			hx-select="#ingredients-section"
+		>
+			<input type="hidden" name="RecipeID" value="{{ .Recipe.ID }}"/>
+			<div class="flex w-full items-end gap-2 md:gap-4">
+				<label class="label">
+					Name
+					<select
+ 						name="IngredientID"
+ 						class="input"
+ 						hx-get="/ingredients/preselect-unit"
+ 						hx-trigger="change"
+ 						hx-target="#unit"
+ 						hx-select="#unit"
+ 						hx-swap="outerHTML"
+					>
+						<option value="" selected>-</option>
+						for _, ingredient := range props.AllIngredients {
+							<option value={ ingredient.ID }>
+								{ ingredient.Name }
+							</option>
+						}
+					</select>
+				</label>
+				<label class="label">
+					Quantity
+					<input class="input" type="number" name="quantity"/>
+				</label>
+				<label class="label">
+					Unit
+					<select
+ 						id="unit"
+ 						name="unit"
+ 						class="input"
+ 						style="min-width: 5rem;"
+					>
+						for _, unit := range props.Units {
+							<option value={ unit }>
+								{ unit }
+							</option>
+						}
+					</select>
+				</label>
+				<label class="label">
+					Optional
+					<div class="flex items-center justify-center">
+						<input type="checkbox" name=""/>
+					</div>
+				</label>
+				<button class="btn btn-primary aspect-square">+</button>
+			</div>
+		</form>
+	</section>
+}

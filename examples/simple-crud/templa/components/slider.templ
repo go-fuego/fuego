@@ -15,7 +15,7 @@ templ SliderRecipes(recipes []store.Recipe) {
 				@Card(CardProps{
 					Title: recipe.Name,
 					Link: "/recipes/one?id=" + recipe.ID,
-					ImageURL: "",
+					ImageURL: recipe.ImageUrl,
 					Body: recipe.Description,
 				})
 			</li>

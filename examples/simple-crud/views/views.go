@@ -28,7 +28,7 @@ func (rs Ressource) Routes(s *fuego.Server) {
 	fuego.UseStd(adminRoutes, basicauth.New(basicauth.Config{Username: os.Getenv("ADMIN_USER"), Password: os.Getenv("ADMIN_PASSWORD")}))
 	fuego.Get(adminRoutes, "", rs.pageAdmin)
 	fuego.Get(adminRoutes, "/recipes", rs.adminRecipes)
-	fuego.Get(adminRoutes, "/recipes/one", rs.adminOneRecipe)
+	fuego.All(adminRoutes, "/recipes/one", rs.adminOneRecipe)
 	fuego.Put(adminRoutes, "/recipes/edit", rs.editRecipe)
 	fuego.Post(adminRoutes, "/recipes-new", rs.adminAddRecipes)
 	fuego.Post(adminRoutes, "/dosings-new", rs.adminAddDosing)

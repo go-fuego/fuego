@@ -1,0 +1,25 @@
+package admin
+
+import (
+	"simple-crud/store"
+)
+
+type RecipePageProps struct {
+	Recipe         store.Recipe
+	Dosings        []store.GetIngredientsOfRecipeRow
+	AllIngredients []store.Ingredient
+}
+
+templ RecipePage(props RecipePageProps) {
+	@htmlPage("Recipe - "+props.Recipe.Name, true) {
+		<h1>Edit Recipe</h1>
+		@RecipeForm(RecipeFormProps{
+			Recipe: props.Recipe,
+			Dosings: props.Dosings,
+			AllIngredients: props.AllIngredients,
+			FormAction:"/admin/recipes/one?id=" + props.Recipe.ID,
+			IsCreating: false,
+			HXTrigger: "change delay:500ms",
+		})
+	}
+}

@@ -32,8 +32,8 @@ templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
 				<div class="md:p-4 md:w-1/3">
 					<div>
 						<img
- 							if false {
-								src="imageURL"
+ 							if props.Recipe.ImageUrl != "" {
+								src={ props.Recipe.ImageUrl }
 							} else {
 								src="https://www.totalchaletservices.com/media/s43joq31/dinner-placeholder.png"
 							}
@@ -127,6 +127,7 @@ templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
 					for _, recipe:= range props.RelatedRecipes {
 						@components.Card(components.CardProps{
 							Title: recipe.Name,
+							ImageURL: recipe.ImageUrl,
 							Body: recipe.Description,
 							Link: "/recipes/one?id="+recipe.ID,
 						})

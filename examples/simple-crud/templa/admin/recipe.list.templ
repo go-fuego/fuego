@@ -1,0 +1,69 @@
+package admin
+
+import (
+	"strconv"
+	"simple-crud/store"
+	"simple-crud/templa/components"
+)
+
+templ RecipeList(recipes []store.Recipe, parameters components.SearchParams) {
+	@htmlPage("Recipes", true) {
+		<hgroup class="flex justify-between items-baseline">
+			<h1>Recipes</h1>
+			<a
+ 				href={ templ.URL("/admin/recipes/create") }
+ 				hx-boost="true"
+ 				hx-target="#page"
+ 				hx-select="#page"
+ 				hx-swap="outerHTML"
+ 				class="btn btn-primary"
+			>
+				New Recipe
+			</a>
+		</hgroup>
+		@components.SearchBox(parameters)
+		<div class="border rounded border-zinc-100 dark:border-zinc-700 shadow p-4 md:p-8">
+			<table class="table ">
+				<thead>
+					<tr>
+						<th class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">Name</th>
+						<th class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">Category</th>
+						<th class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">Description</th>
+						<th class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">Preparation</th>
+						<th class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">Cooking</th>
+						<th class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">Published</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, recipe := range recipes {
+						<tr>
+							<td class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">
+								<a
+ 									href={ templ.URL("/admin/recipes/one?id=" + recipe.ID) }
+ 									hx-boost="true"
+ 									hx-target="#page"
+ 									hx-select="#page"
+ 									hx-swap="outerHTML"
+ 									class="hover:text-blue-500"
+								>
+									<strong class="font-semibold">{ recipe.Name }</strong>
+								</a>
+							</td>
+							<td class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">{ recipe.Category }</td>
+							<td class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">{ recipe.Description }</td>
+							<td class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">{ strconv.Itoa(int(recipe.PrepTime)) }</td>
+							<td class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">{ strconv.Itoa(int(recipe.CookTime)) }</td>
+							<td class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">
+								if recipe.Published {
+									<span class="text-green-500">Published</span>
+								} else {
+									<span class="text-gray-500-500">Draft</span>
+								}
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}

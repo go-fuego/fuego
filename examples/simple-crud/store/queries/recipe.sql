@@ -21,7 +21,14 @@ SELECT * FROM recipe ORDER BY RANDOM() DESC LIMIT 10;
 UPDATE recipe SET 
   name=COALESCE(sqlc.arg(name), name),
   description=COALESCE(sqlc.narg(description), description),
-  instructions=COALESCE(sqlc.narg(instructions), instructions)
+  instructions=COALESCE(sqlc.narg(instructions), instructions),
+  category=COALESCE(sqlc.arg(category), category),
+  class=COALESCE(sqlc.arg(class), class),
+  image_url=COALESCE(sqlc.arg(image_url), image_url),
+  cook_time=COALESCE(sqlc.arg(cook_time), cook_time),
+  prep_time=COALESCE(sqlc.arg(prep_time), prep_time),
+  servings=COALESCE(sqlc.arg(servings), servings),
+  published=COALESCE(sqlc.arg(published), published)
 WHERE id = @id
 RETURNING *;
 

@@ -224,8 +224,15 @@ const updateRecipe = `-- name: UpdateRecipe :one
 UPDATE recipe SET 
   name=COALESCE(?1, name),
   description=COALESCE(?2, description),
-  instructions=COALESCE(?3, instructions)
-WHERE id = ?4
+  instructions=COALESCE(?3, instructions),
+  category=COALESCE(?4, category),
+  class=COALESCE(?5, class),
+  image_url=COALESCE(?6, image_url),
+  cook_time=COALESCE(?7, cook_time),
+  prep_time=COALESCE(?8, prep_time),
+  servings=COALESCE(?9, servings),
+  published=COALESCE(?10, published)
+WHERE id = ?11
 RETURNING id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer
 `
 
@@ -233,6 +240,13 @@ type UpdateRecipeParams struct {
 	Name         string         `json:"name"`
 	Description  sql.NullString `json:"description"`
 	Instructions sql.NullString `json:"instructions"`
+	Category     string         `json:"category"`
+	Class        string         `json:"class"`
+	ImageUrl     string         `json:"image_url"`
+	CookTime     int64          `json:"cook_time"`
+	PrepTime     int64          `json:"prep_time"`
+	Servings     int64          `json:"servings"`
+	Published    bool           `json:"published"`
 	ID           string         `json:"id"`
 }
 
@@ -241,6 +255,13 @@ func (q *Queries) UpdateRecipe(ctx context.Context, arg UpdateRecipeParams) (Rec
 		arg.Name,
 		arg.Description,
 		arg.Instructions,
+		arg.Category,
+		arg.Class,
+		arg.ImageUrl,
+		arg.CookTime,
+		arg.PrepTime,
+		arg.Servings,
+		arg.Published,
 		arg.ID,
 	)
 	var i Recipe

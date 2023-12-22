@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"simple-crud/store"
-	"simple-crud/store/types"
 	"simple-crud/templa/admin"
 	"simple-crud/templa/components"
 
@@ -34,46 +33,65 @@ func (rs Ressource) deleteRecipe(c fuego.Ctx[any]) (any, error) {
 	return c.Redirect(301, "/admin/recipes")
 }
 
-func (rs Ressource) adminRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
+func (rs Ressource) adminRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
+	searchParams := components.SearchParams{
+		Name:    c.QueryParam("name"),
+		PerPage: c.QueryParamInt("perPage", 20),
+		Page:    c.QueryParamInt("page", 1),
+		URL:     "/admin/ingredients",
+		Lang:    c.MainLang(),
+	}
 	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return c.Render("pages/admin/recipes.page.html", fuego.H{
-		"Recipes": recipes,
-	})
+	return admin.RecipeList(recipes, searchParams), nil
 }
 
-func (rs Ressource) adminOneRecipe(c fuego.Ctx[any]) (fuego.HTML, error) {
+func (rs Ressource) adminOneRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (fuego.Templ, error) {
 	id := c.QueryParam("id") // TODO use PathParam
+
+	if c.Request().Method == "PUT" {
+		updateRecipeBody, err := c.Body()
+		if err != nil {
+			return nil, err
+		}
+
+		updateRecipeBody.ID = id
+
+		_, err = rs.RecipesQueries.UpdateRecipe(c.Context(), updateRecipeBody)
+		if err != nil {
+			return nil, err
+		}
+
+		c.Response().Header().Set("HX-Trigger", "recipe-updated")
+	}
 
 	recipe, err := rs.RecipesQueries.GetRecipe(c.Context(), id)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	ingredients, err := rs.IngredientsQueries.GetIngredientsOfRecipe(c.Context(), id)
+	dosings, err := rs.IngredientsQueries.GetIngredientsOfRecipe(c.Context(), id)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	allIngredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	slices.SortFunc(allIngredients, func(a, b store.Ingredient) int {
 		return strings.Compare(a.Name, b.Name)
 	})
 
-	return c.Render("pages/admin/single-recipe.page.html", fuego.H{
-		"Recipe":         recipe,
-		"Ingredients":    ingredients,
-		"Instructions":   nil,
-		"AllIngredients": allIngredients,
-		"Units":          types.UnitValues,
-	})
+	return admin.RecipePage(admin.RecipePageProps{
+		Recipe:         recipe,
+		Dosings:        dosings,
+		AllIngredients: allIngredients,
+	}), nil
 }
 
 func (rs Ressource) adminOneIngredient(c fuego.Ctx[store.UpdateIngredientParams]) (fuego.CtxRenderer, error) {
@@ -190,18 +208,4 @@ func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (fuego.Templ, error) {
 	}
 
 	return admin.IngredientList(ingredients, searchParams), nil
-}
-
-func (rs Ressource) adminAddIngredient(c fuego.Ctx[store.CreateIngredientParams]) (any, error) {
-	body, err := c.Body()
-	if err != nil {
-		return "", err
-	}
-
-	_, err = rs.IngredientsQueries.CreateIngredient(c.Context(), body)
-	if err != nil {
-		return "", err
-	}
-
-	return c.Redirect(301, "/admin/ingredients")
 }

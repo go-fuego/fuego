@@ -89,6 +89,8 @@ func (rs Ressource) showSingleRecipes2(c fuego.Ctx[any]) (fuego.Templ, error) {
 		return nil, fmt.Errorf("error getting recipe %s: %w", id, err)
 	}
 
+	slog.Debug("recipe", "recipe", recipe)
+
 	ingredients, err := rs.IngredientsQueries.GetIngredientsOfRecipe(c.Context(), id)
 	if err != nil {
 		slog.Error("Error getting ingredients of recipe", "error", err)
@@ -164,7 +166,7 @@ func (rs Ressource) addRecipe(c fuego.Ctx[store.CreateRecipeParams]) (fuego.HTML
 	})
 }
 
-func (rs Ressource) recipePage(c fuego.Ctx[any]) (fuego.HTML, error) {
+func (rs Ressource) RecipePage(c fuego.Ctx[any]) (fuego.HTML, error) {
 	id := c.QueryParam("id")
 
 	recipe, err := rs.RecipesQueries.GetRecipe(c.Context(), id)
