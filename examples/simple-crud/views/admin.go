@@ -65,7 +65,7 @@ func (rs Ressource) adminOneRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (fuego
 			return nil, err
 		}
 
-		c.Response().Header().Set("HX-Trigger", "recipe-updated")
+		c.Response().Header().Set("HX-Trigger", "entity-updated")
 	}
 
 	recipe, err := rs.RecipesQueries.GetRecipe(c.Context(), id)
@@ -110,7 +110,7 @@ func (rs Ressource) adminOneIngredient(c fuego.Ctx[store.UpdateIngredientParams]
 			return nil, err
 		}
 
-		c.Response().Header().Set("HX-Trigger", "ingredient-updated")
+		c.Response().Header().Set("HX-Trigger", "entity-updated")
 	}
 
 	ingredient, err := rs.IngredientsQueries.GetIngredient(c.Context(), id)

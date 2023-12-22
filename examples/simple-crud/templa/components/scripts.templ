@@ -20,9 +20,9 @@ templ Scripts() {
     errDiv.classList.remove("flex");
   }
 
-  document.body.addEventListener("ingredient-updated", function(evt) {
+  document.body.addEventListener("entity-updated", function(evt) {
     Toastify({
-      text: "Ingredient Updated",
+      text: "Updated successfully",
       duration: 3000,
       close: true,
       stopOnFocus: true, // Prevents dismissing of toast on hover
