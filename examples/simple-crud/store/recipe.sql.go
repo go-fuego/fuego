@@ -11,7 +11,7 @@ import (
 )
 
 const createRecipe = `-- name: CreateRecipe :one
-INSERT INTO recipe (id, name, description, instructions) VALUES (?, ?, ?, ?) RETURNING id, created_at, name, description, instructions
+INSERT INTO recipe (id, name, description, instructions) VALUES (?, ?, ?, ?) RETURNING id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer
 `
 
 type CreateRecipeParams struct {
@@ -35,6 +35,17 @@ func (q *Queries) CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Rec
 		&i.Name,
 		&i.Description,
 		&i.Instructions,
+		&i.Category,
+		&i.Class,
+		&i.Published,
+		&i.CreatedBy,
+		&i.Calories,
+		&i.Cost,
+		&i.PrepTime,
+		&i.CookTime,
+		&i.Servings,
+		&i.ImageUrl,
+		&i.Disclaimer,
 	)
 	return i, err
 }
@@ -49,7 +60,7 @@ func (q *Queries) DeleteRecipe(ctx context.Context, id string) error {
 }
 
 const getRandomRecipes = `-- name: GetRandomRecipes :many
-SELECT id, created_at, name, description, instructions FROM recipe ORDER BY RANDOM() DESC LIMIT 10
+SELECT id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer FROM recipe ORDER BY RANDOM() DESC LIMIT 10
 `
 
 func (q *Queries) GetRandomRecipes(ctx context.Context) ([]Recipe, error) {
@@ -67,6 +78,17 @@ func (q *Queries) GetRandomRecipes(ctx context.Context) ([]Recipe, error) {
 			&i.Name,
 			&i.Description,
 			&i.Instructions,
+			&i.Category,
+			&i.Class,
+			&i.Published,
+			&i.CreatedBy,
+			&i.Calories,
+			&i.Cost,
+			&i.PrepTime,
+			&i.CookTime,
+			&i.Servings,
+			&i.ImageUrl,
+			&i.Disclaimer,
 		); err != nil {
 			return nil, err
 		}
@@ -82,7 +104,7 @@ func (q *Queries) GetRandomRecipes(ctx context.Context) ([]Recipe, error) {
 }
 
 const getRecipe = `-- name: GetRecipe :one
-SELECT id, created_at, name, description, instructions FROM recipe WHERE id = ?
+SELECT id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer FROM recipe WHERE id = ?
 `
 
 func (q *Queries) GetRecipe(ctx context.Context, id string) (Recipe, error) {
@@ -94,12 +116,23 @@ func (q *Queries) GetRecipe(ctx context.Context, id string) (Recipe, error) {
 		&i.Name,
 		&i.Description,
 		&i.Instructions,
+		&i.Category,
+		&i.Class,
+		&i.Published,
+		&i.CreatedBy,
+		&i.Calories,
+		&i.Cost,
+		&i.PrepTime,
+		&i.CookTime,
+		&i.Servings,
+		&i.ImageUrl,
+		&i.Disclaimer,
 	)
 	return i, err
 }
 
 const getRecipes = `-- name: GetRecipes :many
-SELECT id, created_at, name, description, instructions FROM recipe
+SELECT id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer FROM recipe
 `
 
 func (q *Queries) GetRecipes(ctx context.Context) ([]Recipe, error) {
@@ -117,6 +150,17 @@ func (q *Queries) GetRecipes(ctx context.Context) ([]Recipe, error) {
 			&i.Name,
 			&i.Description,
 			&i.Instructions,
+			&i.Category,
+			&i.Class,
+			&i.Published,
+			&i.CreatedBy,
+			&i.Calories,
+			&i.Cost,
+			&i.PrepTime,
+			&i.CookTime,
+			&i.Servings,
+			&i.ImageUrl,
+			&i.Disclaimer,
 		); err != nil {
 			return nil, err
 		}
@@ -132,7 +176,7 @@ func (q *Queries) GetRecipes(ctx context.Context) ([]Recipe, error) {
 }
 
 const searchRecipes = `-- name: SearchRecipes :many
-SELECT id, created_at, name, description, instructions FROM recipe WHERE name LIKE ?
+SELECT id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer FROM recipe WHERE name LIKE ?
 `
 
 // Saerch anything that contains the given string
@@ -151,6 +195,17 @@ func (q *Queries) SearchRecipes(ctx context.Context, name string) ([]Recipe, err
 			&i.Name,
 			&i.Description,
 			&i.Instructions,
+			&i.Category,
+			&i.Class,
+			&i.Published,
+			&i.CreatedBy,
+			&i.Calories,
+			&i.Cost,
+			&i.PrepTime,
+			&i.CookTime,
+			&i.Servings,
+			&i.ImageUrl,
+			&i.Disclaimer,
 		); err != nil {
 			return nil, err
 		}
@@ -171,7 +226,7 @@ UPDATE recipe SET
   description=COALESCE(?2, description),
   instructions=COALESCE(?3, instructions)
 WHERE id = ?4
-RETURNING id, created_at, name, description, instructions
+RETURNING id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer
 `
 
 type UpdateRecipeParams struct {
@@ -195,6 +250,17 @@ func (q *Queries) UpdateRecipe(ctx context.Context, arg UpdateRecipeParams) (Rec
 		&i.Name,
 		&i.Description,
 		&i.Instructions,
+		&i.Category,
+		&i.Class,
+		&i.Published,
+		&i.CreatedBy,
+		&i.Calories,
+		&i.Cost,
+		&i.PrepTime,
+		&i.CookTime,
+		&i.Servings,
+		&i.ImageUrl,
+		&i.Disclaimer,
 	)
 	return i, err
 }
