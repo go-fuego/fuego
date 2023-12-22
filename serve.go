@@ -59,6 +59,7 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 
 		ctxRenderer, ok := any(ans).(CtxRenderer)
 		if ok {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			err = ctxRenderer.Render(r.Context(), w)
 			if err != nil {
 				err = s.ErrorHandler(err)
@@ -69,6 +70,7 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 
 		renderer, ok := any(ans).(Renderer)
 		if ok {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			err = renderer.Render(w)
 			if err != nil {
 				err = s.ErrorHandler(err)

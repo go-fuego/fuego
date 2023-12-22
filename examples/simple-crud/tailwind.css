@@ -8,7 +8,7 @@
   }
 
   .input {
-    @apply block w-full rounded-md border border-gray-300 px-3 py-2 font-light placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm;
+    @apply block w-full rounded-md border border-gray-300 px-3 py-2 font-light placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-700 dark:bg-zinc-600 sm:text-sm;
   }
 
   .form {
@@ -36,15 +36,15 @@
   }
 
   h1 {
-    @apply mb-1 mt-2 text-3xl font-bold text-gray-900 md:mb-2 md:mt-4;
+    @apply mb-1 mt-2 text-3xl font-bold md:mb-2 md:mt-4;
   }
 
   h2 {
-    @apply mb-1 mt-2 text-2xl font-bold text-gray-900 md:mb-2 md:mt-4;
+    @apply mb-1 mt-2 text-2xl font-bold md:mb-2 md:mt-4;
   }
 
   h3 {
-    @apply mb-1 mt-2 text-xl font-bold text-gray-900 md:mb-2 md:mt-4;
+    @apply mb-1 mt-2 text-xl font-bold md:mb-2 md:mt-4;
   }
 
   .markdown {
