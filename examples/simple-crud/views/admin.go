@@ -102,7 +102,27 @@ func (rs Ressource) adminOneIngredient(c fuego.Ctx[store.UpdateIngredientParams]
 
 	slog.Debug("ingredient", "ingredient", ingredient, "strconv", strconv.FormatBool(ingredient.AvailableAllYear))
 
-	return admin.IngredientEdit(ingredient), nil
+	return admin.IngredientPage(ingredient), nil
+}
+
+func (rs Ressource) adminIngredientCreationPage(c fuego.Ctx[store.CreateIngredientParams]) (any, error) {
+	return admin.IngredientNew(), nil
+}
+
+func (rs Ressource) adminCreateIngredient(c fuego.Ctx[store.CreateIngredientParams]) (any, error) {
+	createIngredientArgs, err := c.Body()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = rs.IngredientsQueries.CreateIngredient(c.Context(), createIngredientArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	c.Response().Header().Set("HX-Trigger", "ingredient-created")
+
+	return c.Redirect(301, "/admin/ingredients")
 }
 
 func (rs Ressource) editRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (any, error) {

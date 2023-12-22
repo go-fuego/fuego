@@ -1,0 +1,17 @@
+package admin
+
+import (
+	"simple-crud/store"
+)
+
+templ IngredientPage(ingredient store.Ingredient) {
+	@htmlPage("Ingredient - "+ingredient.Name, true) {
+		<h1>Edit Ingredient</h1>
+		@IngredientForm(IngredientFormProps{
+			Ingredient: ingredient,
+			FormAction:"/admin/ingredients/one?id=" + ingredient.ID,
+			IsCreating: false,
+			HXTrigger: "change delay:500ms",
+		})
+	}
+}

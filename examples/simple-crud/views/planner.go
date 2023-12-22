@@ -7,7 +7,6 @@ import (
 )
 
 func (rs Ressource) planner(c fuego.Ctx[any]) (fuego.Templ, error) {
-
 	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
 	if err != nil {
 		return nil, err
@@ -34,5 +33,4 @@ func (rs Ressource) planner(c fuego.Ctx[any]) (fuego.Templ, error) {
 		FastRecipes:    fastRecipes,
 		HealthyRecipes: healthyRecipes,
 	}), nil
-
 }

@@ -22,10 +22,8 @@ templ Scripts() {
 
   document.body.addEventListener("ingredient-updated", function(evt) {
     Toastify({
-      text: "Updated Ingredient",
+      text: "Ingredient Updated",
       duration: 3000,
-      destination: "https://github.com/apvarun/toastify-js",
-      newWindow: true,
       close: true,
       stopOnFocus: true, // Prevents dismissing of toast on hover
       style: {

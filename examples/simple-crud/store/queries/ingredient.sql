@@ -17,7 +17,10 @@ JOIN dosing ON ingredient.id = dosing.ingredient_id
 WHERE dosing.recipe_id = ?;
 
 -- name: CreateIngredient :one
-INSERT INTO ingredient (id, name, description) VALUES (?, ?, ?) RETURNING *;
+INSERT INTO ingredient 
+(id, name, description, available_all_year, available_jan, available_feb, available_mar, available_apr, available_may, available_jun, available_jul, available_aug, available_sep, available_oct, available_nov, available_dec, category, default_unit)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+RETURNING *;
 
 -- name: UpdateIngredient :one
 UPDATE ingredient SET 

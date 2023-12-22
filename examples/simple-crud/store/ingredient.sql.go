@@ -12,17 +12,54 @@ import (
 )
 
 const createIngredient = `-- name: CreateIngredient :one
-INSERT INTO ingredient (id, name, description) VALUES (?, ?, ?) RETURNING id, created_at, name, description, default_unit, category, available_all_year, available_jan, available_feb, available_mar, available_apr, available_may, available_jun, available_jul, available_aug, available_sep, available_oct, available_nov, available_dec
+INSERT INTO ingredient 
+(id, name, description, available_all_year, available_jan, available_feb, available_mar, available_apr, available_may, available_jun, available_jul, available_aug, available_sep, available_oct, available_nov, available_dec, category, default_unit)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+RETURNING id, created_at, name, description, default_unit, category, available_all_year, available_jan, available_feb, available_mar, available_apr, available_may, available_jun, available_jul, available_aug, available_sep, available_oct, available_nov, available_dec
 `
 
 type CreateIngredientParams struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID               string         `json:"id"`
+	Name             string         `json:"name"`
+	Description      string         `json:"description"`
+	AvailableAllYear bool           `json:"available_all_year"`
+	AvailableJan     bool           `json:"available_jan"`
+	AvailableFeb     bool           `json:"available_feb"`
+	AvailableMar     bool           `json:"available_mar"`
+	AvailableApr     bool           `json:"available_apr"`
+	AvailableMay     bool           `json:"available_may"`
+	AvailableJun     bool           `json:"available_jun"`
+	AvailableJul     bool           `json:"available_jul"`
+	AvailableAug     bool           `json:"available_aug"`
+	AvailableSep     bool           `json:"available_sep"`
+	AvailableOct     bool           `json:"available_oct"`
+	AvailableNov     bool           `json:"available_nov"`
+	AvailableDec     bool           `json:"available_dec"`
+	Category         types.Category `json:"category"`
+	DefaultUnit      types.Unit     `json:"default_unit"`
 }
 
 func (q *Queries) CreateIngredient(ctx context.Context, arg CreateIngredientParams) (Ingredient, error) {
-	row := q.db.QueryRowContext(ctx, createIngredient, arg.ID, arg.Name, arg.Description)
+	row := q.db.QueryRowContext(ctx, createIngredient,
+		arg.ID,
+		arg.Name,
+		arg.Description,
+		arg.AvailableAllYear,
+		arg.AvailableJan,
+		arg.AvailableFeb,
+		arg.AvailableMar,
+		arg.AvailableApr,
+		arg.AvailableMay,
+		arg.AvailableJun,
+		arg.AvailableJul,
+		arg.AvailableAug,
+		arg.AvailableSep,
+		arg.AvailableOct,
+		arg.AvailableNov,
+		arg.AvailableDec,
+		arg.Category,
+		arg.DefaultUnit,
+	)
 	var i Ingredient
 	err := row.Scan(
 		&i.ID,

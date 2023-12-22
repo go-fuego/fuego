@@ -7,7 +7,7 @@ type Unit string
 const (
 	UnitNone       Unit = "-" // for ingredients that are not dosed, like salt, pepper, ...
 	UnitPiece      Unit = "piece"
-	UnitGramm      Unit = "g"
+	UnitGram       Unit = "g"
 	UnitMilliliter Unit = "ml"
 )
 
@@ -15,7 +15,7 @@ const (
 var UnitValues = []Unit{
 	UnitNone,
 	UnitPiece,
-	UnitGramm,
+	UnitGram,
 	UnitMilliliter,
 }
 

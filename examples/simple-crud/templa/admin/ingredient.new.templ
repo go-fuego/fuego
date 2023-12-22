@@ -1,0 +1,16 @@
+package admin
+
+import "simple-crud/store"
+
+templ IngredientNew() {
+	@htmlPage("Ingredient - Creation", true) {
+		<h1>Create Ingredient</h1>
+		@IngredientForm(IngredientFormProps{
+			FormAction: "/admin/ingredients/new",
+			IsCreating: true,
+			Ingredient: store.Ingredient{
+				AvailableAllYear: true,
+			},
+		})
+	}
+}

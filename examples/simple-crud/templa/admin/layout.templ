@@ -4,13 +4,13 @@ import (
 	"simple-crud/templa/components"
 )
 
-templ htmlPage(title string) {
+templ htmlPage(title string, admin bool) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
 			@components.Head(title)
 		</head>
-		<body class="m-0">
+		<body class="m-0 dark:bg-zinc-800 dark:text-white">
 			<div class="flex flex-col md:flex-row">
 				@AdminNavbar()
 				<main id="page" class="container mx-auto p-4">

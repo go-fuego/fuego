@@ -1,0 +1,50 @@
+package admin
+
+import (
+	"simple-crud/templa/components"
+	"simple-crud/store"
+)
+
+type IngredientFormProps struct {
+	Ingredient store.Ingredient
+	IsCreating bool
+	FormAction string
+	HXTrigger  string
+}
+
+templ IngredientForm(props IngredientFormProps) {
+	<form
+ 		action={ templ.URL(props.FormAction) }
+ 		if props.IsCreating {
+			method="POST"
+		} else {
+			method="PUT"
+		}
+ 		class="form"
+ 		hx-boost="true"
+ 		hx-trigger={ props.HXTrigger }
+ 		hx-target="#page"
+ 		hx-select="#page"
+ 		hx-swap="outerHTML"
+	>
+		<label class="label" for="name">Name</label>
+		<input class="input" type="text" name="name" value={ props.Ingredient.Name }/>
+		<label class="label" for="description">Description</label>
+		<textarea class="input" name="description">{ props.Ingredient.Description }</textarea>
+		<label class="label" for="category">Category</label>
+		@components.CategorySelector(props.Ingredient.Category)
+		<label class="label" for="defaultUnit">Default Unit</label>
+		@components.UnitSelector(props.Ingredient.DefaultUnit)
+		<label class="label p-1 flex flex-row items-center gap-4">
+			<input
+ 				class="mr-2 md:mr-4 "
+ 				type="checkbox"
+ 				name="availableAllYear"
+ 				if props.Ingredient.AvailableAllYear {
+					checked
+				}
+			/> Available All Year
+		</label>
+		<button class="button" type="submit">Save</button>
+	</form>
+}
