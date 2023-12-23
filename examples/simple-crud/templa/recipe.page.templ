@@ -44,7 +44,12 @@ templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
  							style="aspect-ratio: 400 / 300; object-fit: cover;"
 						/>
 					</div>
-					<h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200  mt-4">Ingredients</h2>
+					<hgroup class="">
+						<h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200  mt-4">Ingredients</h2>
+						if props.Recipe.Servings != 0 {
+							<span class="text-sm italic">{ "for" } { strconv.Itoa(int(props.Recipe.Servings)) }</span>
+						}
+					</hgroup>
 					<ul class="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 my-2">
 						for _, dosing := range props.Ingredients {
 							<li>{ dosing.Ingredient.Name } - { strconv.Itoa(int(dosing.Quantity)) } { string(dosing.Unit) }</li>

@@ -79,6 +79,16 @@ templ RecipeForm(props RecipeFormProps) {
 				}
 			/> Published
 		</label>
+		<label class="label">
+			Servings
+			<input
+ 				class="input"
+ 				type="number"
+ 				name="servings"
+ 				value={ strconv.Itoa(int(props.Recipe.Servings)) }
+ 				placeholder="https://example.com/image.jpg"
+			/>
+		</label>
 		<button class="button" type="submit">Save</button>
 	</form>
 	<section id="ingredients-section">
