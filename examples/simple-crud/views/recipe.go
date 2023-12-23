@@ -82,6 +82,15 @@ func (rs Ressource) showRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 	}), nil
 }
 
+func (rs Ressource) relatedRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
+	recipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
+	if err != nil {
+		return nil, err
+	}
+
+	return templa.RelatedRecipes(recipes), nil
+}
+
 func (rs Ressource) showSingleRecipes2(c fuego.Ctx[any]) (fuego.Templ, error) {
 	id := c.QueryParam("id")
 
@@ -90,24 +99,16 @@ func (rs Ressource) showSingleRecipes2(c fuego.Ctx[any]) (fuego.Templ, error) {
 		return nil, fmt.Errorf("error getting recipe %s: %w", id, err)
 	}
 
-	slog.Debug("recipe", "recipe", recipe)
-
 	ingredients, err := rs.IngredientsQueries.GetIngredientsOfRecipe(c.Context(), id)
 	if err != nil {
 		slog.Error("Error getting ingredients of recipe", "error", err)
 	}
 
-	relatedRecipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
-	if err != nil {
-		return nil, err
-	}
-
 	adminCookie, _ := c.Request().Cookie("admin")
 
 	return templa.RecipePage(templa.RecipePageProps{
-		Recipe:         recipe,
-		Ingredients:    ingredients,
-		RelatedRecipes: relatedRecipes,
+		Recipe:      recipe,
+		Ingredients: ingredients,
 	}, templa.GeneralProps{
 		IsAdmin: adminCookie != nil,
 	}), nil

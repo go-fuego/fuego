@@ -127,18 +127,31 @@ templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
 				</div>
 			</div>
 			<aside class="md:pt-4 min-w-48">
-				<h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4 mt-0">Related Recipes</h2>
-				<div class="flex flex-col gap-6">
-					for _, recipe:= range props.RelatedRecipes {
-						@components.Card(components.CardProps{
-							Title: recipe.Name,
-							ImageURL: recipe.ImageUrl,
-							Body: recipe.Description,
-							Link: "/recipes/one?id="+recipe.ID,
-						})
-					}
+				<h2
+ 					class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4 mt-0"
+ 					hx-get={ "/recipes/related?id=" + props.Recipe.ID }
+ 					hx-trigger="revealed"
+ 					hx-target="#related-recipes"
+				>
+					Related Recipes
+				</h2>
+				<div id="related-recipes" class="flex flex-col gap-6">
+					@RelatedRecipes(props.RelatedRecipes)
 				</div>
 			</aside>
 		</div>
 	}
+}
+
+templ RelatedRecipes(recipes []store.Recipe) {
+	<div class="flex flex-col gap-6">
+		for _, recipe:= range recipes {
+			@components.Card(components.CardProps{
+				Title: recipe.Name,
+				ImageURL: recipe.ImageUrl,
+				Body: recipe.Description,
+				Link: "/recipes/related?id="+recipe.ID,
+			})
+		}
+	</div>
 }
