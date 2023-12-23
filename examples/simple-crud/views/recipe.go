@@ -2,6 +2,7 @@ package views
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -115,12 +116,17 @@ func (rs Ressource) showSingleRecipes2(c fuego.Ctx[any]) (fuego.Templ, error) {
 func (rs Ressource) searchRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 	search := c.QueryParam("q")
 
-	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), "%"+search+"%")
+	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), store.SearchRecipesParams{
+		Search: sql.NullString{
+			String: search,
+			Valid:  true,
+		},
+		MaxTime:     99999,
+		MaxCalories: 99999,
+	})
 	if err != nil {
 		return nil, err
 	}
-
-	slog.Debug("recipes", "recipes", recipes, "search", search)
 
 	return templa.SearchPage(templa.SearchProps{
 		Recipes: recipes,
@@ -128,8 +134,59 @@ func (rs Ressource) searchRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 	}), nil
 }
 
+func (rs Ressource) fastRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
+	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), store.SearchRecipesParams{
+		Search: sql.NullString{
+			Valid: true,
+		},
+		MaxTime:     15,
+		MaxCalories: 99999,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	slog.Debug("recipes", "recipes", recipes, "search", c.QueryParam("search"))
+
+	return templa.SearchPage(templa.SearchProps{
+		Recipes: recipes,
+		Filters: templa.SearchFilters{
+			MaxTime: 15,
+		},
+	}), nil
+}
+
+func (rs Ressource) healthyRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
+	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), store.SearchRecipesParams{
+		Search: sql.NullString{
+			String: "",
+			Valid:  true,
+		},
+		MaxTime:     99999,
+		MaxCalories: 500,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	slog.Debug("recipes", "recipes", recipes, "search", c.QueryParam("search"))
+
+	return templa.SearchPage(templa.SearchProps{
+		Recipes: recipes,
+		Filters: templa.SearchFilters{
+			MaxCalories: 500,
+		},
+	}), nil
+}
+
 func (rs Ressource) showRecipesList(c fuego.Ctx[any]) (fuego.HTML, error) {
-	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), "%"+c.QueryParam("search")+"%")
+	search := c.QueryParam("search")
+	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), store.SearchRecipesParams{
+		Search: sql.NullString{
+			String: search,
+			Valid:  true,
+		},
+	})
 	if err != nil {
 		return "", err
 	}
@@ -189,7 +246,7 @@ type RecipeRepository interface {
 	UpdateRecipe(ctx context.Context, arg store.UpdateRecipeParams) (store.Recipe, error)
 	GetRecipes(ctx context.Context) ([]store.Recipe, error)
 	GetRandomRecipes(ctx context.Context) ([]store.Recipe, error)
-	SearchRecipes(ctx context.Context, name string) ([]store.Recipe, error)
+	SearchRecipes(ctx context.Context, params store.SearchRecipesParams) ([]store.Recipe, error)
 }
 
 var _ RecipeRepository = (*store.Queries)(nil)

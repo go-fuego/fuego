@@ -1,16 +1,21 @@
 package templa
 
 import (
+	"strconv"
 	"simple-crud/store"
 	"simple-crud/templa/components"
 )
 
+type SearchFilters struct {
+	MaxTime     int
+	MaxCalories int
+	Categories  []string
+	Ingredients []string
+}
+
 type SearchProps struct {
 	Search  string
-	Filters struct {
-		Categories  []string
-		Ingredients []string
-	}
+	Filters SearchFilters
 	Recipes []store.Recipe
 }
 
@@ -23,9 +28,15 @@ templ Search(props SearchProps) {
 				All recipes
 			}
 		</h1>
-		<div class="flex flex-col gap-2 mb-8">
-			<div class="flex items-center w-full gap-2 rounded-md border border-zinc-200 dark:border-zinc-700 p-4">
+		<div class="flex flex-col gap-6 mb-8">
+			<div class="flex items-center w-full gap-6 rounded-md border border-zinc-200 dark:border-zinc-700 p-4">
 				<strong>Filters</strong>
+				if props.Filters.MaxTime > 0 {
+					<span class="whitespace-nowrap text-sm p-1 px-2 bg-zinc-200 dark:bg-zinc-900 shadow rounded">Max: { strconv.Itoa(props.Filters.MaxTime) }min</span>
+				}
+				if props.Filters.MaxCalories > 0 {
+					<span class="whitespace-nowrap text-sm p-1 px-2 bg-zinc-200 dark:bg-zinc-900 shadow rounded">Max: { strconv.Itoa(props.Filters.MaxCalories) }cal</span>
+				}
 				<select class="input w-full rounded-md border border-zinc-200 dark:border-zinc-700 p-2">
 					<option value="">All categories</option>
 					for _, category := range props.Filters.Categories {

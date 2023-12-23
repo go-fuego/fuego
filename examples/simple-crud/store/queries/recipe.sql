@@ -6,7 +6,13 @@ SELECT * FROM recipe;
 
 -- name: SearchRecipes :many
 -- Saerch anything that contains the given string
-SELECT * FROM recipe WHERE name LIKE ?;
+SELECT * FROM recipe WHERE
+  (name LIKE '%' || @search || '%')
+  AND published = true
+  AND calories <= @max_calories
+  AND prep_time + cook_time <= @max_time
+ORDER BY name ASC
+LIMIT 30;
 
 -- name: CreateRecipe :one
 INSERT INTO recipe (id, name, description, instructions) VALUES (?, ?, ?, ?) RETURNING *;

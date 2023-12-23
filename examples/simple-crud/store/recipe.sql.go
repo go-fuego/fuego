@@ -176,12 +176,24 @@ func (q *Queries) GetRecipes(ctx context.Context) ([]Recipe, error) {
 }
 
 const searchRecipes = `-- name: SearchRecipes :many
-SELECT id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer FROM recipe WHERE name LIKE ?
+SELECT id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer FROM recipe WHERE
+  (name LIKE '%' || ?1 || '%')
+  AND published = true
+  AND calories <= ?2
+  AND prep_time + cook_time <= ?3
+ORDER BY name ASC
+LIMIT 30
 `
 
+type SearchRecipesParams struct {
+	Search      sql.NullString `json:"search"`
+	MaxCalories int64          `json:"max_calories"`
+	MaxTime     int64          `json:"max_time"`
+}
+
 // Saerch anything that contains the given string
-func (q *Queries) SearchRecipes(ctx context.Context, name string) ([]Recipe, error) {
-	rows, err := q.db.QueryContext(ctx, searchRecipes, name)
+func (q *Queries) SearchRecipes(ctx context.Context, arg SearchRecipesParams) ([]Recipe, error) {
+	rows, err := q.db.QueryContext(ctx, searchRecipes, arg.Search, arg.MaxCalories, arg.MaxTime)
 	if err != nil {
 		return nil, err
 	}

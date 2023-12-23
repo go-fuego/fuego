@@ -74,7 +74,7 @@ type RecipeRepository interface {
 	DeleteRecipe(ctx context.Context, id string) error
 	GetRecipe(ctx context.Context, id string) (store.Recipe, error)
 	GetRecipes(ctx context.Context) ([]store.Recipe, error)
-	SearchRecipes(ctx context.Context, name string) ([]store.Recipe, error)
+	SearchRecipes(ctx context.Context, args store.SearchRecipesParams) ([]store.Recipe, error)
 }
 
 var _ RecipeRepository = (*store.Queries)(nil)
