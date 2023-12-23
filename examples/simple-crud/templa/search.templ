@@ -1,0 +1,54 @@
+package templa
+
+import (
+	"simple-crud/store"
+	"simple-crud/templa/components"
+)
+
+type SearchProps struct {
+	Search  string
+	Filters struct {
+		Categories  []string
+		Ingredients []string
+	}
+	Recipes []store.Recipe
+}
+
+templ Search(props SearchProps) {
+	<div class="flex flex-col gap-4">
+		<h1 class="text-center">
+			if props.Search != "" {
+				Search results for <strong>{ props.Search }</strong>
+			} else {
+				All recipes
+			}
+		</h1>
+		<div class="flex flex-col gap-2 mb-8">
+			<div class="flex items-center w-full gap-2 rounded-md border border-zinc-200 dark:border-zinc-700 p-4">
+				<strong>Filters</strong>
+				<select class="input w-full rounded-md border border-zinc-200 dark:border-zinc-700 p-2">
+					<option value="">All categories</option>
+					for _, category := range props.Filters.Categories {
+						<option value="{ category }">{ category }</option>
+					}
+				</select>
+				<select class="input w-full rounded-md border border-zinc-200 dark:border-zinc-700 p-2">
+					<option value="">All categories</option>
+					for _, category := range props.Filters.Categories {
+						<option value="{ category }">{ category }</option>
+					}
+				</select>
+			</div>
+			<div id="search-results" class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+				for _, recipe := range props.Recipes {
+					@components.Card(components.CardProps{
+						Title: recipe.Name,
+						Link: "/recipes/one?id=" + recipe.ID,
+						ImageURL: recipe.ImageUrl,
+						Body: recipe.Description,
+					})
+				}
+			</div>
+		</div>
+	</div>
+}

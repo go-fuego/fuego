@@ -76,7 +76,7 @@ func (rs Ressource) showRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 		return nil, err
 	}
 
-	return templa.RecipeList(templa.RecipeListProps{
+	return templa.SearchPage(templa.SearchProps{
 		Recipes: recipes,
 	}), nil
 }
@@ -112,24 +112,20 @@ func (rs Ressource) showSingleRecipes2(c fuego.Ctx[any]) (fuego.Templ, error) {
 	}), nil
 }
 
-func (rs Ressource) searchRecipes(c fuego.Ctx[any]) (fuego.HTML, error) {
+func (rs Ressource) searchRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 	search := c.QueryParam("q")
 
 	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), "%"+search+"%")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	slog.Debug("recipes", "recipes", recipes, "search", search)
 
-	return c.Render("pages/search.page.html", fuego.H{
-		"Recipes": recipes,
-		"Search":  search,
-		"Filters": fuego.H{
-			"Types":       []any{"Entrée", "Plat", "Dessert", "Apéritif"},
-			"Ingredients": []any{"Poivron", "Tomate", "Oignon", "Ail", "Piment"},
-		},
-	})
+	return templa.SearchPage(templa.SearchProps{
+		Recipes: recipes,
+		Search:  search,
+	}), nil
 }
 
 func (rs Ressource) showRecipesList(c fuego.Ctx[any]) (fuego.HTML, error) {
