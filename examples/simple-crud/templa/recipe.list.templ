@@ -9,9 +9,11 @@ type RecipeListProps struct {
 	Recipes []store.Recipe
 }
 
+// RecipeList is unused
+
 templ RecipeList(props RecipeListProps) {
 	@page("Recipes") {
-		<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 my-2 md:my-6">
+		<div class="grid gap-4 md:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 m-2 md:my-6">
 			for _, recipe := range props.Recipes {
 				@components.Card(components.CardProps{
 					Title: recipe.Name,

@@ -28,7 +28,7 @@ templ Search(props SearchProps) {
 				All recipes
 			}
 		</h1>
-		<div class="flex flex-col gap-6 mb-8">
+		<div class="flex flex-col gap-2 md:gap-6 m-4 mb-8">
 			<div class="flex items-center w-full gap-6 rounded-md border border-zinc-200 dark:border-zinc-700 p-4">
 				<strong>Filters</strong>
 				if props.Filters.MaxTime > 0 {
@@ -50,7 +50,7 @@ templ Search(props SearchProps) {
 					}
 				</select>
 			</div>
-			<div id="search-results" class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+			<div id="search-results" class="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 my-2 md:my-6">
 				for _, recipe := range props.Recipes {
 					@components.Card(components.CardProps{
 						Title: recipe.Name,

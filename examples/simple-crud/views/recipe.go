@@ -146,8 +146,6 @@ func (rs Ressource) fastRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 		return nil, err
 	}
 
-	slog.Debug("recipes", "recipes", recipes, "search", c.QueryParam("search"))
-
 	return templa.SearchPage(templa.SearchProps{
 		Recipes: recipes,
 		Filters: templa.SearchFilters{
@@ -169,8 +167,6 @@ func (rs Ressource) healthyRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 		return nil, err
 	}
 
-	slog.Debug("recipes", "recipes", recipes, "search", c.QueryParam("search"))
-
 	return templa.SearchPage(templa.SearchProps{
 		Recipes: recipes,
 		Filters: templa.SearchFilters{
@@ -190,8 +186,6 @@ func (rs Ressource) showRecipesList(c fuego.Ctx[any]) (fuego.HTML, error) {
 	if err != nil {
 		return "", err
 	}
-
-	slog.Debug("recipes", "recipes", recipes, "search", c.QueryParam("search"))
 
 	return c.Render("partials/recipes-list.partial.html", recipes)
 }
