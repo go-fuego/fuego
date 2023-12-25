@@ -27,25 +27,96 @@ type RecipePageProps struct {
 
 templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
 	@page("Recipe") {
-		<div class="container mx-auto p-4 md:p-8 flex flex-col md:flex-row md:justify-between gap-6">
-			<div class="rounded-lg shadow-sm md:flex md:flex-row">
-				<div class="md:p-4 md:w-1/3">
-					<div>
-						<img
- 							if props.Recipe.ImageUrl != "" {
-								src={ props.Recipe.ImageUrl }
-							} else {
-								src="/static/dinner-placeholder.webp"
-							}
- 							alt="Recipe image"
- 							class="w-full h-auto object-cover mb-5 rounded-lg shadow-md"
- 							width="400"
- 							height="300"
- 							style="aspect-ratio: 400 / 300; object-fit: cover;"
-						/>
+		<div class="p-4 md:p-8 flex flex-col items-center md:items-start md:flex-row md:justify-between gap-6">
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-4">
+				<div id="img">
+					<img
+ 						if props.Recipe.ImageUrl != "" {
+							src={ props.Recipe.ImageUrl }
+						} else {
+							src="/static/dinner-placeholder.webp"
+						}
+ 						alt="Recipe image"
+ 						class="w-full h-auto object-cover rounded-lg shadow-md"
+ 						width="400"
+ 						height="300"
+ 						style="aspect-ratio: 400 / 300; object-fit: cover;"
+					/>
+				</div>
+				<div id="meta" class="md:col-span-2">
+					<hgroup class="flex items-center justify-between">
+						<h1 class="text-4xl font-bold text-gray-800 dark:text-gray-200 md:mt-0">
+							{ props.Recipe.Name }
+						</h1>
+						if generalProps.IsAdmin {
+							<a className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Edit</a>
+						}
+					</hgroup>
+					<div class="flex items-center justify-between my-4">
+						<span class="text-sm text-gray-600 dark:text-gray-400 uppercase">Pasta</span>
+						<div class="inline-flex items-center rounded-full border px-2.5 py-0.5 w-fit text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-primary/80 bg-gray-500 text-white">New</div>
 					</div>
-					<hgroup class="">
-						<h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200  mt-4">Ingredients</h2>
+					<div class="flex justify-between items-center mb-4">
+						<p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2">
+								<circle cx="12" cy="12" r="10"></circle>
+								<polyline points="12 6 12 12 16 14"></polyline>
+							</svg>
+							<span>Preparation: </span>
+							<span class="font-semibold ml-1">
+								{ strconv.Itoa(int(props.Recipe.PrepTime)) }
+								mins
+							</span>
+						</p>
+						<p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2">
+								<path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"></path>
+								<line x1="6" x2="18" y1="17" y2="17"></line>
+							</svg>
+							<span>Cooking: </span>
+							<span class="font-semibold ml-1">
+								if props.Recipe.CookTime == 0 {
+									-
+								} else {
+									{ strconv.Itoa(int(props.Recipe.CookTime)) } mins
+								}
+							</span>
+						</p>
+					</div>
+					<div class="flex justify-between items-center mb-4">
+						<p class="text-sm text-gray-600 dark:text-gray-400">
+							Calories: 
+							if props.Recipe.Calories == 0 {
+								? 
+							} else {
+								{ strconv.Itoa(int(props.Recipe.Calories)) }
+							}
+							kcal
+						</p>
+						<p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+							Difficulty: Medium
+						</p>
+					</div>
+					<div class="flex justify-between items-center mb-4">
+						<p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2">
+								<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+							</svg>
+							Popularity:
+							<span class="font-semibold ml-1">4.5/5</span>
+						</p>
+						<p class="text-sm text-gray-600 dark:text-gray-400">
+							Author: 
+							{ props.Recipe.CreatedBy }
+						</p>
+					</div>
+					<p class="text-sm text-gray-700 dark:text-gray-300 my-2 italic">
+						{ props.Recipe.Description }
+					</p>
+				</div>
+				<div>
+					<hgroup>
+						<h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mt-0">Ingredients</h2>
 						if props.Recipe.Servings != 0 {
 							<span class="text-sm italic">{ "for" } { strconv.Itoa(int(props.Recipe.Servings)) }</span>
 						}
@@ -56,77 +127,14 @@ templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
 						}
 					</ul>
 				</div>
-				<div class="md:p-4 md:w-2/3">
-					<div>
-						<hgroup class="flex items-center justify-between">
-							<h1 class="text-4xl font-bold text-gray-800 dark:text-gray-200 md:mt-0">
-								{ props.Recipe.Name }
-							</h1>
-							if generalProps.IsAdmin {
-								<a className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Edit</a>
-							}
-						</hgroup>
-						<div class="flex items-center justify-between my-4">
-							<span class="text-sm text-gray-600 dark:text-gray-400 uppercase">Pasta</span>
-							<div class="inline-flex items-center rounded-full border px-2.5 py-0.5 w-fit text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-primary/80 bg-gray-500 text-white">New</div>
-						</div>
-						<div class="flex justify-between items-center mb-4">
-							<p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2">
-									<circle cx="12" cy="12" r="10"></circle>
-									<polyline points="12 6 12 12 16 14"></polyline>
-								</svg>
-								Prep Time: 
-								<span class="font-semibold ml-1">
-									{ strconv.Itoa(int(props.Recipe.PrepTime)) }
-									mins
-								</span>
-							</p>
-							<p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2">
-									<path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"></path>
-									<line x1="6" x2="18" y1="17" y2="17"></line>
-								</svg>
-								Cooking Time: 
-								<span class="font-semibold ml-1">
-									{ strconv.Itoa(int(props.Recipe.CookTime)) } mins
-								</span>
-							</p>
-						</div>
-						<div class="flex justify-between items-center mb-4">
-							<p class="text-sm text-gray-600 dark:text-gray-400">
-								Calories: 
-								{ strconv.Itoa(int(props.Recipe.Calories)) }
-								kcal
-							</p>
-							<p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-								Difficulty: Medium
-							</p>
-						</div>
-						<div class="flex justify-between items-center mb-4">
-							<p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2">
-									<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-								</svg>
-								Popularity:
-								<span class="font-semibold ml-1">4.5/5</span>
-							</p>
-							<p class="text-sm text-gray-600 dark:text-gray-400">
-								Author: 
-								{ props.Recipe.CreatedBy }
-							</p>
-						</div>
-						<p class="text-sm text-gray-700 dark:text-gray-300 my-2 italic">
-							{ props.Recipe.Description }
-						</p>
-						<h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mt-4">Instructions</h2>
-						<p class="dark:text-gray-100">
-							@Unsafe(string(fuego.Markdown(props.Recipe.Instructions)))
-						</p>
-					</div>
+				<div class="md:col-span-2">
+					<h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mt-0">Instructions</h2>
+					<p class="dark:text-gray-100">
+						@Unsafe(string(fuego.Markdown(props.Recipe.Instructions)))
+					</p>
 				</div>
 			</div>
-			<aside class="md:pt-4 min-w-48">
+			<aside class="w-full md:w-56">
 				<h2
  					class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4 mt-0"
  					hx-get={ "/recipes/related?id=" + props.Recipe.ID }

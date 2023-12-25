@@ -107,8 +107,9 @@ func (rs Ressource) showSingleRecipes2(c fuego.Ctx[any]) (fuego.Templ, error) {
 	adminCookie, _ := c.Request().Cookie("admin")
 
 	return templa.RecipePage(templa.RecipePageProps{
-		Recipe:      recipe,
-		Ingredients: ingredients,
+		Recipe:         recipe,
+		Ingredients:    ingredients,
+		RelatedRecipes: []store.Recipe{{}, {}, {}, {}, {}},
 	}, templa.GeneralProps{
 		IsAdmin: adminCookie != nil,
 	}), nil

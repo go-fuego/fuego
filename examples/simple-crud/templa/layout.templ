@@ -20,7 +20,7 @@ templ page(title string) {
 				<button class="btn btn-red-bg" onclick="errormessage_off()">Close</button>
 			</div>
 			@NavBar()
-			<main id="page" class="container md:mx-auto md:max-w-6xl">
+			<main id="page" class="container mx-auto">
 				{ children... }
 			</main>
 			@components.Footer()
