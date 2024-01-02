@@ -14,18 +14,18 @@ type IngredientFormProps struct {
 
 templ IngredientForm(props IngredientFormProps) {
 	<form
- 		action={ templ.URL(props.FormAction) }
- 		if props.IsCreating {
+		action={ templ.URL(props.FormAction) }
+		if props.IsCreating {
 			method="POST"
 		} else {
 			method="PUT"
 		}
- 		class="form"
- 		hx-boost="true"
- 		hx-trigger={ props.HXTrigger }
- 		hx-target="#page"
- 		hx-select="#page"
- 		hx-swap="outerHTML"
+		class="form"
+		hx-boost="true"
+		hx-trigger={ props.HXTrigger }
+		hx-target="#page"
+		hx-select="#page"
+		hx-swap="outerHTML"
 	>
 		<label class="label" for="name">Name</label>
 		<input class="input" type="text" name="name" value={ props.Ingredient.Name }/>
@@ -37,10 +37,10 @@ templ IngredientForm(props IngredientFormProps) {
 		@components.UnitSelector(props.Ingredient.DefaultUnit)
 		<label class="label p-1 flex flex-row items-center gap-4">
 			<input
- 				class="mr-2 md:mr-4 "
- 				type="checkbox"
- 				name="availableAllYear"
- 				if props.Ingredient.AvailableAllYear {
+				class="mr-2 md:mr-4 "
+				type="checkbox"
+				name="availableAllYear"
+				if props.Ingredient.AvailableAllYear {
 					checked
 				}
 			/> Available All Year

@@ -15,9 +15,9 @@ type PlannerProps struct {
 templ Planner(props PlannerProps) {
 	@page("Gourmet Planner") {
 		<section
- 			id="hero"
- 			class="flex w-full flex-col items-center justify-center gap-4 bg-gray-800 bg-opacity-50 bg-cover bg-top bg-no-repeat px-4 py-8 text-center  text-white bg-blend-color-burn sm:px-6 md:gap-8 md:px-8 md:py-16 lg:px-10 md:my-8 md:rounded-xl"
- 			style="background-image: url('/static/plan.webp'); background-position: center;"
+			id="hero"
+			class="flex w-full flex-col items-center justify-center gap-4 bg-gray-800 bg-opacity-50 bg-cover bg-top bg-no-repeat px-4 py-8 text-center  text-white bg-blend-color-burn sm:px-6 md:gap-8 md:px-8 md:py-16 lg:px-10 md:my-8 md:rounded-xl"
+			style="background-image: url('/static/plan.webp'); background-position: center;"
 		>
 			<div class="backdrop-blur bg-white/10 p-4 px-8 rounded-lg">
 				<h1 class="font-serif text-4xl font-bold italic text-white">Planner</h1>
@@ -25,29 +25,29 @@ templ Planner(props PlannerProps) {
 			</div>
 		</section>
 		<section
- 			id="recipes-section"
- 			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
+			id="recipes-section"
+			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
 		>
 			<h2>Monday</h2>
 			@components.SliderRecipes(props.Recipes)
 		</section>
 		<section
- 			id="popular-recipes-section"
- 			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
+			id="popular-recipes-section"
+			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
 		>
 			<h2>Tuesday</h2>
 			@components.SliderRecipes(props.PopularRecipes)
 		</section>
 		<section
- 			id="fast-recipes-section"
- 			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
+			id="fast-recipes-section"
+			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
 		>
 			<h2>Wednesday</h2>
 			@components.SliderRecipes(props.FastRecipes)
 		</section>
 		<section
- 			id="healthy-recipes-section"
- 			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
+			id="healthy-recipes-section"
+			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
 		>
 			<h2>Thursday</h2>
 			@components.SliderRecipes(props.HealthyRecipes)

@@ -28,17 +28,17 @@ var searchBoxTranslations = map[string]map[string]string{
 
 templ SearchBox(parameters SearchParams) {
 	<form
- 		class="flex flex-row gap-4 items-center my-4 md:my-8"
- 		method="GET"
- 		if (parameters.URL != "") {
+		class="flex flex-row gap-4 items-center my-4 md:my-8"
+		method="GET"
+		if (parameters.URL != "") {
 			action={ templ.URL(parameters.URL) }
 		}
- 		hx-push-url="true"
- 		hx-boost="true"
- 		hx-trigger="change delay:100ms, search"
- 		hx-target="#page"
- 		hx-select="#page"
- 		hx-swap="outerHTML"
+		hx-push-url="true"
+		hx-boost="true"
+		hx-trigger="change delay:100ms, search"
+		hx-target="#page"
+		hx-select="#page"
+		hx-swap="outerHTML"
 	>
 		<label class="label" for="name">
 			{ searchBoxTranslations[parameters.Lang]["Search"] }

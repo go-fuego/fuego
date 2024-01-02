@@ -8,8 +8,8 @@ templ UnitSelector(selectedUnit types.Unit) {
 	<select id="unit" name="defaultUnit" class="input" style="min-width: 5rem;">
 		for _, unit := range types.UnitValues {
 			<option
- 				value={ string(unit) }
- 				if unit == selectedUnit {
+				value={ string(unit) }
+				if unit == selectedUnit {
 					selected
 				}
 			>

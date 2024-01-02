@@ -31,16 +31,16 @@ templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-4">
 				<div id="img">
 					<img
- 						if props.Recipe.ImageUrl != "" {
+						if props.Recipe.ImageUrl != "" {
 							src={ props.Recipe.ImageUrl }
 						} else {
 							src="/static/dinner-placeholder.webp"
 						}
- 						alt="Recipe image"
- 						class="w-full h-auto object-cover rounded-lg shadow-md"
- 						width="400"
- 						height="300"
- 						style="aspect-ratio: 400 / 300; object-fit: cover;"
+						alt="Recipe image"
+						class="w-full h-auto object-cover rounded-lg shadow-md"
+						width="400"
+						height="300"
+						style="aspect-ratio: 400 / 300; object-fit: cover;"
 					/>
 				</div>
 				<div id="meta" class="md:col-span-2">
@@ -136,10 +136,10 @@ templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
 			</div>
 			<aside class="w-full md:w-56">
 				<h2
- 					class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4 mt-0"
- 					hx-get={ "/recipes/related?id=" + props.Recipe.ID }
- 					hx-trigger="revealed"
- 					hx-target="#related-recipes"
+					class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4 mt-0"
+					hx-get={ "/recipes/related?id=" + props.Recipe.ID }
+					hx-trigger="revealed"
+					hx-target="#related-recipes"
 				>
 					Related Recipes
 				</h2>

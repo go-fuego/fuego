@@ -11,12 +11,12 @@ templ RecipeList(recipes []store.Recipe, parameters components.SearchParams) {
 		<hgroup class="flex justify-between items-baseline">
 			<h1>Recipes</h1>
 			<a
- 				href={ templ.URL("/admin/recipes/create") }
- 				hx-boost="true"
- 				hx-target="#page"
- 				hx-select="#page"
- 				hx-swap="outerHTML"
- 				class="btn btn-primary"
+				href={ templ.URL("/admin/recipes/create") }
+				hx-boost="true"
+				hx-target="#page"
+				hx-select="#page"
+				hx-swap="outerHTML"
+				class="btn btn-primary"
 			>
 				New Recipe
 			</a>
@@ -39,12 +39,12 @@ templ RecipeList(recipes []store.Recipe, parameters components.SearchParams) {
 						<tr>
 							<td class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">
 								<a
- 									href={ templ.URL("/admin/recipes/one?id=" + recipe.ID) }
- 									hx-boost="true"
- 									hx-target="#page"
- 									hx-select="#page"
- 									hx-swap="outerHTML"
- 									class="hover:text-blue-500"
+									href={ templ.URL("/admin/recipes/one?id=" + recipe.ID) }
+									hx-boost="true"
+									hx-target="#page"
+									hx-select="#page"
+									hx-swap="outerHTML"
+									class="hover:text-blue-500"
 								>
 									<strong class="font-semibold">{ recipe.Name }</strong>
 								</a>
