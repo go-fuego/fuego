@@ -13,8 +13,15 @@ preview: build
 prettier:
 	npx prettier --write .
 
-build: 
-	npx tailwindcss -i ./tailwind.css -o ./static/tailwind.min.css --minify
+css:
+	tailwindcss -i ./tailwind.css -o ./static/tailwind.min.css --minify
+
+css-watch:
+	tailwindcss -i ./tailwind.css -o ./static/tailwind.min.css --minify --watch 
+
+
+build: css
+	go generate ./...
 	go build -v -ldflags="-s -w" -o gourmet-app
 
 deploy:
