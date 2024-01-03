@@ -48,12 +48,24 @@ func (rs Ressource) showIndex(c fuego.Ctx[any]) (fuego.Templ, error) {
 		return nil, err
 	}
 
-	fastRecipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
+	fastRecipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), store.SearchRecipesParams{
+		Search: sql.NullString{
+			Valid: true,
+		},
+		MaxTime:     15,
+		MaxCalories: 99999,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	healthyRecipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
+	healthyRecipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), store.SearchRecipesParams{
+		Search: sql.NullString{
+			Valid: true,
+		},
+		MaxTime:     99999,
+		MaxCalories: 500,
+	})
 	if err != nil {
 		return nil, err
 	}
