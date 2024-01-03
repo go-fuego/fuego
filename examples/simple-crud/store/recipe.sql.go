@@ -11,7 +11,7 @@ import (
 )
 
 const createRecipe = `-- name: CreateRecipe :one
-INSERT INTO recipe (id, name, description, instructions) VALUES (?, ?, ?, ?) RETURNING id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer
+INSERT INTO recipe (id, name, description, instructions) VALUES (?, ?, ?, ?) RETURNING id, created_at, name, description, instructions, category, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer, when_to_eat
 `
 
 type CreateRecipeParams struct {
@@ -36,7 +36,6 @@ func (q *Queries) CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Rec
 		&i.Description,
 		&i.Instructions,
 		&i.Category,
-		&i.Class,
 		&i.Published,
 		&i.CreatedBy,
 		&i.Calories,
@@ -46,6 +45,7 @@ func (q *Queries) CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Rec
 		&i.Servings,
 		&i.ImageUrl,
 		&i.Disclaimer,
+		&i.WhenToEat,
 	)
 	return i, err
 }
@@ -60,7 +60,7 @@ func (q *Queries) DeleteRecipe(ctx context.Context, id string) error {
 }
 
 const getRandomRecipes = `-- name: GetRandomRecipes :many
-SELECT id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer FROM recipe ORDER BY RANDOM() DESC LIMIT 10
+SELECT id, created_at, name, description, instructions, category, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer, when_to_eat FROM recipe ORDER BY RANDOM() DESC LIMIT 10
 `
 
 func (q *Queries) GetRandomRecipes(ctx context.Context) ([]Recipe, error) {
@@ -79,7 +79,6 @@ func (q *Queries) GetRandomRecipes(ctx context.Context) ([]Recipe, error) {
 			&i.Description,
 			&i.Instructions,
 			&i.Category,
-			&i.Class,
 			&i.Published,
 			&i.CreatedBy,
 			&i.Calories,
@@ -89,6 +88,7 @@ func (q *Queries) GetRandomRecipes(ctx context.Context) ([]Recipe, error) {
 			&i.Servings,
 			&i.ImageUrl,
 			&i.Disclaimer,
+			&i.WhenToEat,
 		); err != nil {
 			return nil, err
 		}
@@ -104,7 +104,7 @@ func (q *Queries) GetRandomRecipes(ctx context.Context) ([]Recipe, error) {
 }
 
 const getRecipe = `-- name: GetRecipe :one
-SELECT id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer FROM recipe WHERE id = ?
+SELECT id, created_at, name, description, instructions, category, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer, when_to_eat FROM recipe WHERE id = ?
 `
 
 func (q *Queries) GetRecipe(ctx context.Context, id string) (Recipe, error) {
@@ -117,7 +117,6 @@ func (q *Queries) GetRecipe(ctx context.Context, id string) (Recipe, error) {
 		&i.Description,
 		&i.Instructions,
 		&i.Category,
-		&i.Class,
 		&i.Published,
 		&i.CreatedBy,
 		&i.Calories,
@@ -127,12 +126,13 @@ func (q *Queries) GetRecipe(ctx context.Context, id string) (Recipe, error) {
 		&i.Servings,
 		&i.ImageUrl,
 		&i.Disclaimer,
+		&i.WhenToEat,
 	)
 	return i, err
 }
 
 const getRecipes = `-- name: GetRecipes :many
-SELECT id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer FROM recipe
+SELECT id, created_at, name, description, instructions, category, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer, when_to_eat FROM recipe
 `
 
 func (q *Queries) GetRecipes(ctx context.Context) ([]Recipe, error) {
@@ -151,7 +151,6 @@ func (q *Queries) GetRecipes(ctx context.Context) ([]Recipe, error) {
 			&i.Description,
 			&i.Instructions,
 			&i.Category,
-			&i.Class,
 			&i.Published,
 			&i.CreatedBy,
 			&i.Calories,
@@ -161,6 +160,7 @@ func (q *Queries) GetRecipes(ctx context.Context) ([]Recipe, error) {
 			&i.Servings,
 			&i.ImageUrl,
 			&i.Disclaimer,
+			&i.WhenToEat,
 		); err != nil {
 			return nil, err
 		}
@@ -176,7 +176,7 @@ func (q *Queries) GetRecipes(ctx context.Context) ([]Recipe, error) {
 }
 
 const searchRecipes = `-- name: SearchRecipes :many
-SELECT id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer FROM recipe WHERE
+SELECT id, created_at, name, description, instructions, category, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer, when_to_eat FROM recipe WHERE
   (name LIKE '%' || ?1 || '%')
   AND published = true
   AND calories <= ?2
@@ -208,7 +208,6 @@ func (q *Queries) SearchRecipes(ctx context.Context, arg SearchRecipesParams) ([
 			&i.Description,
 			&i.Instructions,
 			&i.Category,
-			&i.Class,
 			&i.Published,
 			&i.CreatedBy,
 			&i.Calories,
@@ -218,6 +217,7 @@ func (q *Queries) SearchRecipes(ctx context.Context, arg SearchRecipesParams) ([
 			&i.Servings,
 			&i.ImageUrl,
 			&i.Disclaimer,
+			&i.WhenToEat,
 		); err != nil {
 			return nil, err
 		}
@@ -238,14 +238,14 @@ UPDATE recipe SET
   description=COALESCE(?2, description),
   instructions=COALESCE(?3, instructions),
   category=COALESCE(?4, category),
-  class=COALESCE(?5, class),
+  when_to_eat=COALESCE(?5, when_to_eat),
   image_url=COALESCE(?6, image_url),
   cook_time=COALESCE(?7, cook_time),
   prep_time=COALESCE(?8, prep_time),
   servings=COALESCE(?9, servings),
   published=COALESCE(?10, published)
 WHERE id = ?11
-RETURNING id, created_at, name, description, instructions, category, class, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer
+RETURNING id, created_at, name, description, instructions, category, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer, when_to_eat
 `
 
 type UpdateRecipeParams struct {
@@ -253,7 +253,7 @@ type UpdateRecipeParams struct {
 	Description  sql.NullString `json:"description"`
 	Instructions sql.NullString `json:"instructions"`
 	Category     string         `json:"category"`
-	Class        string         `json:"class"`
+	WhenToEat    string         `json:"when_to_eat"`
 	ImageUrl     string         `json:"image_url"`
 	CookTime     int64          `json:"cook_time"`
 	PrepTime     int64          `json:"prep_time"`
@@ -268,7 +268,7 @@ func (q *Queries) UpdateRecipe(ctx context.Context, arg UpdateRecipeParams) (Rec
 		arg.Description,
 		arg.Instructions,
 		arg.Category,
-		arg.Class,
+		arg.WhenToEat,
 		arg.ImageUrl,
 		arg.CookTime,
 		arg.PrepTime,
@@ -284,7 +284,6 @@ func (q *Queries) UpdateRecipe(ctx context.Context, arg UpdateRecipeParams) (Rec
 		&i.Description,
 		&i.Instructions,
 		&i.Category,
-		&i.Class,
 		&i.Published,
 		&i.CreatedBy,
 		&i.Calories,
@@ -294,6 +293,7 @@ func (q *Queries) UpdateRecipe(ctx context.Context, arg UpdateRecipeParams) (Rec
 		&i.Servings,
 		&i.ImageUrl,
 		&i.Disclaimer,
+		&i.WhenToEat,
 	)
 	return i, err
 }

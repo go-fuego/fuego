@@ -29,7 +29,7 @@ UPDATE recipe SET
   description=COALESCE(sqlc.narg(description), description),
   instructions=COALESCE(sqlc.narg(instructions), instructions),
   category=COALESCE(sqlc.arg(category), category),
-  class=COALESCE(sqlc.arg(class), class),
+  when_to_eat=COALESCE(sqlc.arg(when_to_eat), when_to_eat),
   image_url=COALESCE(sqlc.arg(image_url), image_url),
   cook_time=COALESCE(sqlc.arg(cook_time), cook_time),
   prep_time=COALESCE(sqlc.arg(prep_time), prep_time),

@@ -6,15 +6,15 @@ import (
 
 templ CategorySelector(selectedCategory types.Category) {
 	<select
- 		id="category"
- 		name="category"
- 		class="input"
- 		style="min-width: 5rem;"
+		id="category"
+		name="category"
+		class="input"
+		style="min-width: 5rem;"
 	>
 		for _, category := range types.CategoryValues {
 			<option
- 				value={ string(category) }
- 				if category == selectedCategory {
+				value={ string(category) }
+				if category == selectedCategory {
 					selected
 				}
 			>

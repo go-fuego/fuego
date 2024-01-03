@@ -54,6 +54,7 @@ templ Search(props SearchProps) {
 				for _, recipe := range props.Recipes {
 					@components.Card(components.CardProps{
 						Title: recipe.Name,
+						WhenToEat: recipe.WhenToEat,
 						Link: "/recipes/one?id=" + recipe.ID,
 						ImageURL: recipe.ImageUrl,
 						Body: recipe.Description,

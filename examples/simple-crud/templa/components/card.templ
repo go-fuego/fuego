@@ -1,10 +1,11 @@
 package components
 
 type CardProps struct {
-	ImageURL string
-	Link     string
-	Title    string
-	Body     string
+	ImageURL  string
+	Link      string
+	Title     string
+	Body      string
+	WhenToEat string
 }
 
 templ Card(props CardProps) {
@@ -27,7 +28,9 @@ templ Card(props CardProps) {
 					height="200"
 				/>
 				<div class="flex items-center justify-between">
-					<span class="text-sm text-gray-600 dark:text-gray-400 uppercase">Pasta</span>
+					<span class="text-sm text-gray-600 dark:text-gray-400 uppercase">
+						{ props.WhenToEat }
+					</span>
 					<div class="inline-flex items-center rounded-full border px-2.5 py-0.5 w-fit text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80">
 						New
 					</div>

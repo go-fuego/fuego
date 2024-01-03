@@ -27,6 +27,7 @@ templ RecipeList(recipes []store.Recipe, parameters components.SearchParams) {
 				<thead>
 					<tr>
 						<th class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">Name</th>
+						<th class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">When?</th>
 						<th class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">Category</th>
 						<th class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">Description</th>
 						<th class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">Preparation</th>
@@ -49,6 +50,7 @@ templ RecipeList(recipes []store.Recipe, parameters components.SearchParams) {
 									<strong class="font-semibold">{ recipe.Name }</strong>
 								</a>
 							</td>
+							<td class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">{ recipe.WhenToEat }</td>
 							<td class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">{ recipe.Category }</td>
 							<td class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">{ recipe.Description }</td>
 							<td class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">{ strconv.Itoa(int(recipe.PrepTime)) }</td>

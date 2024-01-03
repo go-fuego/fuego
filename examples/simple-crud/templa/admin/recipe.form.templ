@@ -3,6 +3,8 @@ package admin
 import (
 	"strconv"
 	"simple-crud/store"
+	"simple-crud/templa/components"
+	"simple-crud/store/types"
 )
 
 type RecipeFormProps struct {
@@ -17,18 +19,18 @@ type RecipeFormProps struct {
 
 templ RecipeForm(props RecipeFormProps) {
 	<form
- 		action={ templ.URL(props.FormAction) }
- 		if props.IsCreating {
+		action={ templ.URL(props.FormAction) }
+		if props.IsCreating {
 			method="POST"
 		} else {
 			method="PUT"
 		}
- 		class="form"
- 		hx-boost="true"
- 		hx-trigger={ props.HXTrigger }
- 		hx-target="#page"
- 		hx-select="#page"
- 		hx-swap="outerHTML"
+		class="form"
+		hx-boost="true"
+		hx-trigger={ props.HXTrigger }
+		hx-target="#page"
+		hx-select="#page"
+		hx-swap="outerHTML"
 	>
 		<label class="label" for="name">Name</label>
 		<input class="input" type="text" name="name" value={ props.Recipe.Name }/>
@@ -53,28 +55,40 @@ templ RecipeForm(props RecipeFormProps) {
 		<fieldset class="flex gap-4 w-full justify-between">
 			<label class="label w-full">
 				Category
-				<input class="input" name="category" value={ props.Recipe.Category }/>
+				@components.Select(components.SelectProps{
+					Name: "category",
+					SelectedValue: props.Recipe.Category,
+					Items: []components.SelectItem{},
+				})
 			</label>
 			<label class="label w-full">
 				Class
-				<input class="input" name="class" value={ props.Recipe.Class }/>
+				@components.Select(components.SelectProps{
+					Name: "whenToEat",
+					SelectedValue: props.Recipe.WhenToEat,
+					Items: []components.SelectItem{
+						{ Value: string(types.WhenToEatStarter),	Label: "Starter"},
+						{ Value: string(types.WhenToEatDish),		Label: "Meal"},
+						{ Value: string(types.WhenToEatDessert),	Label: "Desert"},
+					},
+				})
 			</label>
 		</fieldset>
 		<label class="label">
 			Image URL
 			<input
- 				class="input"
- 				name="imageURL"
- 				value={ props.Recipe.ImageUrl }
- 				placeholder="https://example.com/image.jpg"
+				class="input"
+				name="imageURL"
+				value={ props.Recipe.ImageUrl }
+				placeholder="https://example.com/image.jpg"
 			/>
 		</label>
 		<label class="label p-1 flex flex-row items-center gap-4">
 			<input
- 				class="mr-2 md:mr-4 "
- 				type="checkbox"
- 				name="published"
- 				if props.Recipe.Published {
+				class="mr-2 md:mr-4 "
+				type="checkbox"
+				name="published"
+				if props.Recipe.Published {
 					checked
 				}
 			/> Published
@@ -82,11 +96,11 @@ templ RecipeForm(props RecipeFormProps) {
 		<label class="label">
 			Servings
 			<input
- 				class="input"
- 				type="number"
- 				name="servings"
- 				value={ strconv.Itoa(int(props.Recipe.Servings)) }
- 				placeholder="https://example.com/image.jpg"
+				class="input"
+				type="number"
+				name="servings"
+				value={ strconv.Itoa(int(props.Recipe.Servings)) }
+				placeholder="https://example.com/image.jpg"
 			/>
 		</label>
 		<button class="button" type="submit">Save</button>
@@ -107,25 +121,25 @@ templ RecipeForm(props RecipeFormProps) {
 			}
 		</ul>
 		<form
- 			method="POST"
- 			class="form"
- 			action="/admin/dosings-new"
- 			hx-boost="true"
- 			hx-target="#ingredients-section"
- 			hx-select="#ingredients-section"
+			method="POST"
+			class="form"
+			action="/admin/dosings-new"
+			hx-boost="true"
+			hx-target="#ingredients-section"
+			hx-select="#ingredients-section"
 		>
-			<input type="hidden" name="RecipeID" value="{{ .Recipe.ID }}"/>
+			<input type="hidden" name="RecipeID" value={ props.Recipe.ID }/>
 			<div class="flex w-full items-end gap-2 md:gap-4">
 				<label class="label">
 					Name
 					<select
- 						name="IngredientID"
- 						class="input"
- 						hx-get="/ingredients/preselect-unit"
- 						hx-trigger="change"
- 						hx-target="#unit"
- 						hx-select="#unit"
- 						hx-swap="outerHTML"
+						name="IngredientID"
+						class="input"
+						hx-get="/ingredients/preselect-unit"
+						hx-trigger="change"
+						hx-target="#unit"
+						hx-select="#unit"
+						hx-swap="outerHTML"
 					>
 						<option value="" selected>-</option>
 						for _, ingredient := range props.AllIngredients {
@@ -142,10 +156,10 @@ templ RecipeForm(props RecipeFormProps) {
 				<label class="label">
 					Unit
 					<select
- 						id="unit"
- 						name="unit"
- 						class="input"
- 						style="min-width: 5rem;"
+						id="unit"
+						name="unit"
+						class="input"
+						style="min-width: 5rem;"
 					>
 						for _, unit := range props.Units {
 							<option value={ unit }>

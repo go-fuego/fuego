@@ -16,6 +16,7 @@ templ RecipeList(props RecipeListProps) {
 			for _, recipe := range props.Recipes {
 				@components.Card(components.CardProps{
 					Title: recipe.Name,
+					WhenToEat: recipe.WhenToEat,
 					Link: "/recipes/one?id=" + recipe.ID,
 					ImageURL: "",
 					Body: recipe.Description,

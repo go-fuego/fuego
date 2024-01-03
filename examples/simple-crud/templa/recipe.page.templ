@@ -53,7 +53,9 @@ templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
 						}
 					</hgroup>
 					<div class="flex items-center justify-between my-4">
-						<span class="text-sm text-gray-600 dark:text-gray-400 uppercase">Pasta</span>
+						<span class="text-sm text-gray-600 dark:text-gray-400 uppercase">
+							{ props.Recipe.WhenToEat }
+						</span>
 						<div class="inline-flex items-center rounded-full border px-2.5 py-0.5 w-fit text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-primary/80 bg-gray-500 text-white">New</div>
 					</div>
 					<div class="flex justify-between items-center mb-4">
@@ -156,6 +158,7 @@ templ RelatedRecipes(recipes []store.Recipe) {
 		for _, recipe:= range recipes {
 			@components.Card(components.CardProps{
 				Title: recipe.Name,
+				WhenToEat: recipe.WhenToEat,
 				ImageURL: recipe.ImageUrl,
 				Body: recipe.Description,
 				Link: "/recipes/related?id="+recipe.ID,

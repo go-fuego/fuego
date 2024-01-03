@@ -46,7 +46,6 @@ type Recipe struct {
 	Description  string    `json:"description"`
 	Instructions string    `json:"instructions"`
 	Category     string    `json:"category"`
-	Class        string    `json:"class"`
 	Published    bool      `json:"published"`
 	CreatedBy    string    `json:"created_by"`
 	Calories     int64     `json:"calories"`
@@ -56,4 +55,5 @@ type Recipe struct {
 	Servings     int64     `json:"servings"`
 	ImageUrl     string    `json:"image_url"`
 	Disclaimer   string    `json:"disclaimer"`
+	WhenToEat    string    `json:"when_to_eat"`
 }

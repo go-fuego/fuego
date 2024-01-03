@@ -1,0 +1,32 @@
+package components
+
+type SelectItem struct {
+	Value string
+	Label string
+}
+
+type SelectProps struct {
+	Items         []SelectItem
+	SelectedValue string
+	Name          string // used in the name attribute of the Select
+}
+
+templ Select(props SelectProps) {
+	<select
+		id={ "select-" + props.Name }
+		name={ props.Name }
+		class="input"
+		style="min-width: 5rem;"
+	>
+		for _, item := range props.Items {
+			<option
+				value={ item.Value }
+				if item.Value == props.SelectedValue {
+					selected
+				}
+			>
+				{ item.Label }
+			</option>
+		}
+	</select>
+}
