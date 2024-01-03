@@ -11,15 +11,13 @@ templ Slider() {
 templ SliderRecipes(recipes []store.Recipe) {
 	@Slider() {
 		for _, recipe := range recipes {
-			<li class="w-48">
-				@Card(CardProps{
+			@Card(CardProps{
 					Title: recipe.Name,
 					WhenToEat: recipe.WhenToEat,
 					Link: "/recipes/one?id=" + recipe.ID,
 					ImageURL: recipe.ImageUrl,
 					Body: recipe.Description,
 				})
-			</li>
 		}
 	}
 }

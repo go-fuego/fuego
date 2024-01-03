@@ -115,7 +115,7 @@ templ RecipeForm(props RecipeFormProps) {
 					</span>
 					if dosing.Unit != "unit" {
 						: <span class="font-semibold">{ strconv.Itoa(int(dosing.Quantity)) }</span>
-						: <span>{ string(dosing.Unit) }</span>
+						<span>{ string(dosing.Unit) }</span>
 					}
 				</li>
 			}

@@ -26,28 +26,28 @@ templ Home(props HomeProps) {
 		</section>
 		<section
 			id="recipes-section"
-			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
+			class="flex w-full flex-col gap-4 p-2 md:gap-8 md:p-4"
 		>
 			<h2>Today's recipes 📅</h2>
 			@components.SliderRecipes(props.Recipes)
 		</section>
 		<section
 			id="popular-recipes-section"
-			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
+			class="flex w-full flex-col gap-4 p-2 md:gap-8 md:p-4"
 		>
 			<h2>Popular recipes this week ⭐️</h2>
 			@components.SliderRecipes(props.PopularRecipes)
 		</section>
 		<section
 			id="fast-recipes-section"
-			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
+			class="flex w-full flex-col gap-4 p-2 md:gap-8 md:p-4"
 		>
 			<h2>Fast recipes ⚡️</h2>
 			@components.SliderRecipes(props.FastRecipes)
 		</section>
 		<section
 			id="healthy-recipes-section"
-			class="flex w-full flex-col gap-4 border-b border-stone-200 dark:border-b-stone-700 p-2 md:gap-8 md:p-4"
+			class="flex w-full flex-col gap-4 p-2 md:gap-8 md:p-4"
 		>
 			<h2>Healthy recipes 🥗</h2>
 			@components.SliderRecipes(props.HealthyRecipes)
