@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"path"
+	"time"
 
 	"simple-crud/store"
 	"simple-crud/templa"
@@ -43,6 +44,8 @@ func (rs Ressource) showRecipesStd(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs Ressource) showIndex(c fuego.Ctx[any]) (fuego.Templ, error) {
+	timeDBRequest := time.Now()
+
 	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
 	if err != nil {
 		return nil, err
@@ -59,6 +62,7 @@ func (rs Ressource) showIndex(c fuego.Ctx[any]) (fuego.Templ, error) {
 		return nil, err
 	}
 
+	timeHealthyRecipes := time.Now()
 	healthyRecipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), store.SearchRecipesParams{
 		Search: sql.NullString{
 			Valid: true,
@@ -70,10 +74,22 @@ func (rs Ressource) showIndex(c fuego.Ctx[any]) (fuego.Templ, error) {
 		return nil, err
 	}
 
+	c.Response().Header().Add("Server-Timing", fuego.Timing{
+		Name: "dbHealthyRecipes",
+		Dur:  time.Since(timeHealthyRecipes),
+		Desc: "controller > db > healthy recipes",
+	}.String())
+
 	popularRecipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
 	if err != nil {
 		return nil, err
 	}
+
+	c.Response().Header().Add("Server-Timing", fuego.Timing{
+		Name: "dbRequest",
+		Dur:  time.Since(timeDBRequest),
+		Desc: "controller > db",
+	}.String())
 
 	return templa.Home(templa.HomeProps{
 		Recipes:        recipes,

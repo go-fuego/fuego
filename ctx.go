@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -376,6 +377,8 @@ func body[B any](c ClassicContext) (B, error) {
 		c.request.Body = http.MaxBytesReader(nil, c.request.Body, c.readOptions.MaxBodySize)
 	}
 
+	timeDeserialize := time.Now()
+
 	var body B
 	var err error
 	switch c.request.Header.Get("Content-Type") {
@@ -390,6 +393,8 @@ func body[B any](c ClassicContext) (B, error) {
 	default:
 		body, err = readJSON[B](c.request.Body, c.readOptions)
 	}
+
+	c.response.Header().Add("Server-Timing", Timing{"deserialize", time.Since(timeDeserialize), "controller > deserialize"}.String())
 
 	return body, err
 }

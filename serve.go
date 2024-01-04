@@ -38,6 +38,9 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Trailer", "Server-Timing")
+		timeCtxInit := time.Now()
+
 		ctx := baseCtx.SafeShallowCopy()
 		ctx.response = w
 		ctx.request = r
@@ -46,12 +49,17 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 			ctx.pathParams[param] = "coming in go1.22"
 		}
 
+		timeController := time.Now()
+		w.Header().Set("Server-Timing", Timing{"fuegoReqInit", timeController.Sub(timeCtxInit), ""}.String())
+
 		ans, err := controller(ctx)
 		if err != nil {
 			err = s.ErrorHandler(err)
 			s.SerializeError(w, err)
 			return
 		}
+		timeAfterController := time.Now()
+		w.Header().Add("Server-Timing", Timing{"controller", timeAfterController.Sub(timeController), ""}.String())
 
 		if reflect.TypeOf(ans) == nil {
 			return
@@ -65,6 +73,7 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 				err = s.ErrorHandler(err)
 				s.SerializeError(w, err)
 			}
+			w.Header().Set("Server-Timing", Timing{"render", time.Since(timeAfterController), ""}.String())
 			return
 		}
 
@@ -76,6 +85,7 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 				err = s.ErrorHandler(err)
 				s.SerializeError(w, err)
 			}
+			w.Header().Add("Server-Timing", Timing{"render", time.Since(timeAfterController), ""}.String())
 			return
 		}
 
@@ -85,16 +95,21 @@ func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body
 			if err != nil {
 				s.SerializeError(w, err)
 			}
+			w.Header().Add("Server-Timing", Timing{"render", time.Since(timeAfterController), ""}.String())
 			return
 		}
 
+		timeTransformOut := time.Now()
 		ans, err = transformOut(r.Context(), ans)
 		if err != nil {
 			err = s.ErrorHandler(err)
 			s.SerializeError(w, err)
 			return
 		}
+		timeAfterTransformOut := time.Now()
+		w.Header().Add("Server-Timing", Timing{"transformOut", timeAfterTransformOut.Sub(timeTransformOut), "transformOut"}.String())
 
 		s.Serialize(w, ans)
+		w.Header().Add("Server-Timing", Timing{"serialize", time.Since(timeAfterTransformOut), ""}.String())
 	}
 }
