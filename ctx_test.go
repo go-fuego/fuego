@@ -28,21 +28,73 @@ func TestContext_PathParam(t *testing.T) {
 }
 
 func TestContext_QueryParam(t *testing.T) {
-	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello", nil)
+	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello&boo=true", nil)
 	w := httptest.NewRecorder()
 
 	c := NewContext[any](w, r, readOptions{})
 
-	param := c.QueryParam("id")
-	require.NotEmpty(t, param)
-	require.Equal(t, param, "456")
+	t.Run("string", func(t *testing.T) {
+		param := c.QueryParam("other")
+		require.NotEmpty(t, param)
+		require.Equal(t, param, "hello")
 
-	param = c.QueryParam("other")
-	require.NotEmpty(t, param)
-	require.Equal(t, param, "hello")
+		param = c.QueryParam("notfound")
+		require.Empty(t, param)
+	})
 
-	param = c.QueryParam("notfound")
-	require.Empty(t, param)
+	t.Run("int", func(t *testing.T) {
+		param := c.QueryParam("id")
+		require.NotEmpty(t, param)
+		require.Equal(t, param, "456")
+
+		paramInt := c.QueryParamInt("id", 0)
+		require.Equal(t, paramInt, 456)
+
+		paramInt = c.QueryParamInt("notfound", 42)
+		require.Equal(t, paramInt, 42)
+
+		paramInt = c.QueryParamInt("other", 42)
+		require.Equal(t, paramInt, 42)
+
+		paramInt, err := c.QueryParamIntErr("id")
+		require.NoError(t, err)
+		require.Equal(t, paramInt, 456)
+
+		paramInt, err = c.QueryParamIntErr("notfound")
+		require.Error(t, err)
+		require.Equal(t, paramInt, 0)
+
+		paramInt, err = c.QueryParamIntErr("other")
+		require.Error(t, err)
+		require.Equal(t, paramInt, 0)
+	})
+
+	t.Run("bool", func(t *testing.T) {
+		param := c.QueryParam("boo")
+		require.NotEmpty(t, param)
+		require.Equal(t, param, "true")
+
+		paramBool := c.QueryParamBool("boo", false)
+		require.Equal(t, paramBool, true)
+
+		paramBool = c.QueryParamBool("notfound", true)
+		require.Equal(t, paramBool, true)
+
+		paramBool = c.QueryParamBool("other", true)
+		require.Equal(t, paramBool, true)
+
+		paramBool, err := c.QueryParamBoolErr("boo")
+		require.NoError(t, err)
+		require.Equal(t, paramBool, true)
+
+		paramBool, err = c.QueryParamBoolErr("notfound")
+		require.Error(t, err)
+		require.Equal(t, paramBool, false)
+
+		paramBool, err = c.QueryParamBoolErr("other")
+		require.Error(t, err)
+		require.Equal(t, paramBool, false)
+	})
 }
 
 func TestContext_QueryParams(t *testing.T) {
@@ -181,6 +233,21 @@ func TestContext_Body(t *testing.T) {
 		require.Equal(t, body.Age, 30)
 	})
 
+	t.Run("unparsable because restricted to 1 byte", func(t *testing.T) {
+		reqBody := strings.NewReader(`{"name":"John","age":30}`)
+		c := NewContext[testStructInTransformerWithError](
+			httptest.NewRecorder(),
+			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
+			readOptions{
+				MaxBodySize: 1,
+			})
+
+		body, err := c.Body()
+		require.Error(t, err)
+		require.Equal(t, "", body.Name)
+		require.Equal(t, 0, body.Age)
+	})
+
 	t.Run("can read string body", func(t *testing.T) {
 		// Create new Reader
 		a := strings.NewReader("Hello World")
@@ -309,4 +376,13 @@ func TestContext_MustBody(t *testing.T) {
 			c.MustBody()
 		})
 	})
+}
+
+func TestMainLang(t *testing.T) {
+	r := httptest.NewRequest("GET", "/", nil)
+	r.Header.Set("Accept-Language", "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5")
+
+	c := NewContext[any](httptest.NewRecorder(), r, readOptions{})
+	require.Equal(t, c.MainLang(), "fr")
+	require.Equal(t, c.MainLocale(), "fr-CH")
 }

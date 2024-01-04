@@ -208,3 +208,10 @@ func TestJSONError(t *testing.T) {
 		}
 	 }`, w.Body.String())
 }
+
+func TestSend(t *testing.T) {
+	w := httptest.NewRecorder()
+	Send(w, "Hello World")
+
+	require.Equal(t, "Hello World", w.Body.String())
+}

@@ -40,6 +40,33 @@ func TestUseStd(t *testing.T) {
 	require.Equal(t, w.Body.String(), "test successful")
 }
 
+func TestAll(t *testing.T) {
+	s := NewServer()
+	All(s, "/test", func(ctx Ctx[string]) (string, error) {
+		return "test", nil
+	})
+
+	t.Run("get", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, w.Code, http.StatusOK)
+		require.Equal(t, w.Body.String(), "\"test\"\n")
+	})
+
+	t.Run("post", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodPost, "/test", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, w.Code, http.StatusOK)
+		require.Equal(t, w.Body.String(), "\"test\"\n")
+	})
+}
+
 func TestGet(t *testing.T) {
 	s := NewServer()
 	Get(s, "/test", func(ctx Ctx[string]) (string, error) {
@@ -214,6 +241,16 @@ func TestSetTags(t *testing.T) {
 	require.Equal(t, route.operation.Description, "my description")
 	require.Equal(t, route.operation.Summary, "my summary")
 	require.Equal(t, route.operation.Deprecated, true)
+}
+
+func TestWithQueryParams(t *testing.T) {
+	s := NewServer()
+	route := Get(s, "/test", func(ctx Ctx[string]) (string, error) {
+		return "test", nil
+	}).
+		WithQueryParam("my-param", "my description")
+
+	require.Equal(t, "my description", route.operation.Parameters.GetByInAndName("query", "my-param").Description)
 }
 
 func BenchmarkRequest(b *testing.B) {

@@ -101,7 +101,7 @@ func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptio
 
 // Context is used internally by Fuego. You probably want to use Ctx[B] instead. Please do not use a pointer type as parameter.
 type Context[BodyType any] struct {
-	body *BodyType
+	body *BodyType // Cache the body in request context, because it is not possible to read an http request body multiple times.
 	ClassicContext
 }
 
@@ -122,7 +122,8 @@ type ClassicContext struct {
 }
 
 func (c ClassicContext) Body() (any, error) {
-	panic("this method should not be called. It probably happened because you passed the context to another controller with the Pass method.")
+	slog.Warn("this method should not be called. It probably happened because you passed the context to another controller with the Pass method.")
+	return body[any](c)
 }
 
 func (c ClassicContext) MustBody() any {
@@ -272,12 +273,12 @@ func (c ClassicContext) QueryParam(name string) string {
 func (c ClassicContext) QueryParamIntErr(name string) (int, error) {
 	param := c.QueryParam(name)
 	if param == "" {
-		return -1, QueryParamNotFoundError{ParamName: name}
+		return 0, QueryParamNotFoundError{ParamName: name}
 	}
 
 	i, err := strconv.Atoi(param)
 	if err != nil {
-		return -1, QueryParamInvalidTypeError{
+		return 0, QueryParamInvalidTypeError{
 			ParamName:    name,
 			ParamValue:   param,
 			ExpectedType: "int",
@@ -364,6 +365,12 @@ func (c *Context[B]) Body() (B, error) {
 		return *c.body, nil
 	}
 
+	body, err := body[B](c.ClassicContext)
+	c.body = &body
+	return body, err
+}
+
+func body[B any](c ClassicContext) (B, error) {
 	// Limit the size of the request body.
 	if c.readOptions.MaxBodySize != 0 {
 		c.request.Body = http.MaxBytesReader(nil, c.request.Body, c.readOptions.MaxBodySize)
@@ -383,8 +390,6 @@ func (c *Context[B]) Body() (B, error) {
 	default:
 		body, err = readJSON[B](c.request.Body, c.readOptions)
 	}
-
-	c.body = &body
 
 	return body, err
 }

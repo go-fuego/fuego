@@ -230,8 +230,8 @@ func (security Security) TokenToContext(searchFunc ...func(*http.Request) string
 	}
 }
 
-func checkRolesOr(acceptedRoles []string) func(userRoles []string) bool {
-	return func(userRoles []string) bool {
+func checkRolesOr(acceptedRoles ...string) func(userRoles ...string) bool {
+	return func(userRoles ...string) bool {
 		if len(acceptedRoles) == 0 {
 			slog.Warn("You are using AuthWall with no accepted roles. This means that no users can be accepted.")
 		}
@@ -246,8 +246,8 @@ func checkRolesOr(acceptedRoles []string) func(userRoles []string) bool {
 	}
 }
 
-func checkRolesRegex(acceptedRolesRegex *regexp.Regexp) func(userRoles []string) bool {
-	return func(userRoles []string) bool {
+func checkRolesRegex(acceptedRolesRegex *regexp.Regexp) func(userRoles ...string) bool {
+	return func(userRoles ...string) bool {
 		for _, role := range userRoles {
 			if acceptedRolesRegex.MatchString(role) {
 				return true
@@ -269,7 +269,7 @@ func checkRolesRegex(acceptedRolesRegex *regexp.Regexp) func(userRoles []string)
 //
 // See the tests for more examples.
 func AuthWall(authorizedRoles ...string) func(next http.Handler) http.Handler {
-	return authWall(checkRolesOr(authorizedRoles))
+	return authWall(checkRolesOr(authorizedRoles...))
 }
 
 // AuthWallRegexp is a middleware that checks if the user is authorized.
@@ -300,7 +300,7 @@ func AuthWallRegex(acceptedRolesRegex string) func(next http.Handler) http.Handl
 
 // AuthWall is a middleware that checks if the user is authorized.
 // It takes a function that checks if the user is authorized.
-func authWall(authorizeFunc func(userRoles []string) bool) func(next http.Handler) http.Handler {
+func authWall(authorizeFunc func(userRoles ...string) bool) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Get the authorizationHeader from the context (set by TokenToContext)
@@ -318,7 +318,7 @@ func authWall(authorizeFunc func(userRoles []string) bool) func(next http.Handle
 			}
 
 			// Check if the user is authorized
-			if !authorizeFunc(userRoles) {
+			if !authorizeFunc(userRoles...) {
 				SendJSONError(w, ErrUnauthorized)
 				return
 			}

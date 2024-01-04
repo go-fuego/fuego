@@ -60,3 +60,29 @@ func TestWithXML(t *testing.T) {
 		require.Equal(t, "<HTTPError><Error>error</Error></HTTPError>", recorder.Body.String())
 	})
 }
+
+func TestWithOpenAPIConfig(t *testing.T) {
+	s := NewServer(
+		WithOpenapiConfig(OpenapiConfig{}),
+	)
+
+	require.Equal(t, "/swagger", s.OpenapiConfig.SwaggerUrl)
+	require.Equal(t, "/swagger/openapi.json", s.OpenapiConfig.JsonSpecUrl)
+	require.Equal(t, "doc/openapi.json", s.OpenapiConfig.JsonSpecLocalPath)
+}
+
+func TestWithBasePath(t *testing.T) {
+	s := NewServer(
+		WithBasePath("/api"),
+	)
+
+	require.Equal(t, "/api", s.basePath)
+}
+
+func TestWithMaxBodySize(t *testing.T) {
+	s := NewServer(
+		WithMaxBodySize(1024),
+	)
+
+	require.Equal(t, int64(1024), s.maxBodySize)
+}

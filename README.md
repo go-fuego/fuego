@@ -6,6 +6,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/go-fuego/fuego.svg)](https://pkg.go.dev/github.com/go-fuego/fuego)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-fuego/fuego)](https://goreportcard.com/report/github.com/go-fuego/fuego)
+[![Coverage Status](https://coveralls.io/repos/github/go-fuego/fuego/badge.svg?branch=main)](https://coveralls.io/github/go-fuego/fuego?branch=main)
 
 > The Go framework for busy API developers
 
