@@ -25,7 +25,7 @@ func NewOpenApiSpec() openapi3.T {
 	spec := openapi3.T{
 		OpenAPI: "3.0.3",
 		Info:    info,
-		Paths:   openapi3.Paths{},
+		Paths:   &openapi3.Paths{},
 		Components: &openapi3.Components{
 			Schemas:       make(map[string]*openapi3.SchemaRef),
 			RequestBodies: make(map[string]*openapi3.RequestBodyRef),
