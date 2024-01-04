@@ -1,4 +1,4 @@
-*.js
+
 .vscode
 coverage.out
 .DS_Store
