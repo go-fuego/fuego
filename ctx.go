@@ -68,6 +68,10 @@ type Ctx[B any] interface {
 	Request() *http.Request        // Request returns the underlying http request.
 	Response() http.ResponseWriter // Response returns the underlying http response writer.
 
+	// SetStatus sets the status code of the response.
+	// Alias to http.ResponseWriter.WriteHeader.
+	SetStatus(code int)
+
 	// Context returns the context of the request.
 	// Same as c.Request().Context().
 	// This is the context related to the request, not the context of the server.
@@ -145,6 +149,12 @@ func (c *Context[B]) SafeShallowCopy() *Context[B] {
 	c.response = nil
 
 	return c
+}
+
+// SetStatus sets the status code of the response.
+// Alias to http.ResponseWriter.WriteHeader.
+func (c ClassicContext) SetStatus(code int) {
+	c.response.WriteHeader(code)
 }
 
 // readOptions are options for reading the request body.

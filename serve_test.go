@@ -156,3 +156,39 @@ func TestServer_Run(t *testing.T) {
 		}, 5*time.Millisecond, 500*time.Microsecond)
 	})
 }
+
+func TestSetStatusBeforeSend(t *testing.T) {
+	s := NewServer()
+
+	t.Run("can set status before sending", func(t *testing.T) {
+		handler := httpHandler(s, func(c Ctx[any]) (ans, error) {
+			c.Response().WriteHeader(201)
+			return ans{Ans: "Hello World"}, nil
+		})
+
+		req := httptest.NewRequest("GET", "/testing", nil)
+		w := httptest.NewRecorder()
+		handler(w, req)
+
+		require.Equal(t, 201, w.Code)
+
+		body := w.Body.String()
+		require.Equal(t, crlf(`{"ans":"Hello World"}`), body)
+	})
+
+	t.Run("can set status with the shortcut before sending", func(t *testing.T) {
+		handler := httpHandler(s, func(c Ctx[any]) (ans, error) {
+			c.SetStatus(202)
+			return ans{Ans: "Hello World"}, nil
+		})
+
+		req := httptest.NewRequest("GET", "/testing", nil)
+		w := httptest.NewRecorder()
+		handler(w, req)
+
+		require.Equal(t, 202, w.Code)
+
+		body := w.Body.String()
+		require.Equal(t, crlf(`{"ans":"Hello World"}`), body)
+	})
+}
