@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -107,12 +108,53 @@ func TestCheckRolesRegex(t *testing.T) {
 	})
 }
 
-func TestTokenFromHeader(t *testing.T) {
-	r := httptest.NewRequest("GET", "/", nil)
-	r.Header.Set("Authorization", "Bearer 123")
+func TestTokenFromQueryParam(t *testing.T) {
+	t.Run("no token", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
 
-	token := TokenFromHeader(r)
-	require.Equal(t, "123", token)
+		token := TokenFromQueryParam(r)
+		require.Equal(t, "", token)
+	})
+
+	t.Run("with token", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/?jwt=123", nil)
+
+		token := TokenFromQueryParam(r)
+		require.Equal(t, "123", token)
+	})
+}
+
+func TestTokenFromHeader(t *testing.T) {
+	t.Run("no token", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
+
+		token := TokenFromHeader(r)
+		require.Equal(t, "", token)
+	})
+
+	t.Run("with invalid token", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
+		r.Header.Set("Authorization", "Bla")
+
+		token := TokenFromHeader(r)
+		require.Equal(t, "", token)
+	})
+
+	t.Run("with invalid token", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
+		r.Header.Set("Authorization", "Blabla 123")
+
+		token := TokenFromHeader(r)
+		require.Equal(t, "", token)
+	})
+
+	t.Run("with valid token", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
+		r.Header.Set("Authorization", "Bearer 123")
+
+		token := TokenFromHeader(r)
+		require.Equal(t, "123", token)
+	})
 }
 
 func TestTokenFromCookie(t *testing.T) {
@@ -121,4 +163,207 @@ func TestTokenFromCookie(t *testing.T) {
 
 	token := TokenFromCookie(r)
 	require.Equal(t, "456", token)
+}
+
+func TestAuthWall(t *testing.T) {
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	t.Run("list", func(t *testing.T) {
+		authWall := AuthWall("a", "b")
+		require.NotNil(t, authWall)
+		t.Run("no token", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "/", nil)
+			ctx := context.WithValue(r.Context(), contextKeyJWT, jwt.MapClaims{
+				"sub":   "123",
+				"roles": []string{"c", "d"},
+			})
+			r = r.WithContext(ctx)
+			w := httptest.NewRecorder()
+
+			authWall(h).ServeHTTP(w, r)
+			require.Equal(t, http.StatusInternalServerError, w.Code)
+		})
+
+		t.Run("with token", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "/", nil)
+			ctx := context.WithValue(r.Context(), contextKeyJWT, jwt.MapClaims{
+				"sub":   "123",
+				"roles": []string{"a", "d"},
+			})
+			r = r.WithContext(ctx)
+			w := httptest.NewRecorder()
+
+			authWall(h).ServeHTTP(w, r)
+			require.Equal(t, http.StatusOK, w.Code)
+		})
+	})
+
+	t.Run("regex", func(t *testing.T) {
+		authWall := AuthWallRegex(`^a.*`)
+		require.NotNil(t, authWall)
+		t.Run("no token", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "/", nil)
+			ctx := context.WithValue(r.Context(), contextKeyJWT, jwt.MapClaims{
+				"sub":   "123",
+				"roles": []string{"c", "d"},
+			})
+			r = r.WithContext(ctx)
+			w := httptest.NewRecorder()
+
+			authWall(h).ServeHTTP(w, r)
+			require.Equal(t, http.StatusInternalServerError, w.Code)
+		})
+
+		t.Run("with token", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "/", nil)
+			ctx := context.WithValue(r.Context(), contextKeyJWT, jwt.MapClaims{
+				"sub":   "123",
+				"roles": []string{"a", "d"},
+			})
+			r = r.WithContext(ctx)
+			w := httptest.NewRecorder()
+
+			authWall(h).ServeHTTP(w, r)
+			require.Equal(t, http.StatusOK, w.Code)
+		})
+	})
+}
+
+func TestTokenFromContext(t *testing.T) {
+	t.Run("no token", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
+		token, err := TokenFromContext(r.Context())
+		require.Error(t, err)
+		require.Empty(t, token)
+	})
+
+	t.Run("with invalid token type", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
+		ctx := context.WithValue(r.Context(), contextKeyJWT, "123")
+		token, err := TokenFromContext(ctx)
+		require.Error(t, err)
+		require.Empty(t, token)
+	})
+
+	t.Run("with token", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
+		ctx := context.WithValue(r.Context(), contextKeyJWT, jwt.MapClaims{"sub": "123"})
+		token, err := TokenFromContext(ctx)
+		require.NoError(t, err)
+		sub, err := token.GetSubject()
+		require.NoError(t, err)
+		require.Equal(t, "123", sub)
+	})
+}
+
+func TestGenerateTokenToCookies(t *testing.T) {
+	security := NewSecurity()
+	claims := jwt.MapClaims{
+		"aud": "test",
+		"exp": jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
+		"iat": jwt.NewNumericDate(time.Now()),
+		"iss": "test",
+		"nbf": jwt.NewNumericDate(time.Now()),
+		"sub": "123",
+	}
+
+	w := httptest.NewRecorder()
+	security.GenerateTokenToCookies(claims, w)
+
+	authCookie := w.Result().Cookies()[0]
+	require.NotEmpty(t, authCookie)
+	require.Equal(t, JWTCookieName, authCookie.Name)
+}
+
+func TestTokenToContext(t *testing.T) {
+	security := NewSecurity()
+
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	t.Run("from header", func(t *testing.T) {
+		tokenToContext := security.TokenToContext(
+			TokenFromHeader,
+		)
+
+		t.Run("no token", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "/", nil)
+			w := httptest.NewRecorder()
+			tokenToContext(h).ServeHTTP(w, r)
+			require.Equal(t, http.StatusOK, w.Code)
+		})
+		t.Run("wrong token", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "/", nil)
+			r.Header.Set("Authorization", "Bearer 123")
+			w := httptest.NewRecorder()
+			tokenToContext(h).ServeHTTP(w, r)
+			require.Equal(t, http.StatusInternalServerError, w.Code)
+		})
+
+		t.Run("correct token", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "/", nil)
+			token, err := security.GenerateToken(jwt.MapClaims{"sub": "123"})
+			require.NoError(t, err)
+
+			r.Header.Set("Authorization", "Bearer "+token)
+			w := httptest.NewRecorder()
+			tokenToContext(h).ServeHTTP(w, r)
+			require.Equal(t, http.StatusOK, w.Code)
+		})
+	})
+}
+
+func TestSecurity_CookieLogoutHandler(t *testing.T) {
+	security := NewSecurity()
+
+	r := httptest.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+	security.CookieLogoutHandler(w, r)
+
+	cookies := w.Result().Cookies()
+	require.Len(t, cookies, 1)
+	authCookie := cookies[0]
+	require.NotEmpty(t, authCookie)
+	require.Equal(t, JWTCookieName, authCookie.Name)
+}
+
+func TestSecurity_RefreshHandler(t *testing.T) {
+	security := NewSecurity()
+
+	t.Run("no token", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
+		w := httptest.NewRecorder()
+		security.RefreshHandler(w, r)
+
+		cookies := w.Result().Cookies()
+		require.Len(t, cookies, 0)
+	})
+
+	t.Run("with token", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
+		w := httptest.NewRecorder()
+
+		ctx := WithValue(r.Context(), jwt.MapClaims{
+			"aud": "test",
+			"exp": jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
+			"iat": jwt.NewNumericDate(time.Now()),
+			"iss": "test",
+			"nbf": jwt.NewNumericDate(time.Now()),
+			"sub": "123",
+		})
+		r = r.WithContext(ctx)
+
+		security.RefreshHandler(w, r)
+
+		body := w.Body.String()
+		t.Log(body)
+		require.Equal(t, http.StatusOK, w.Code)
+		cookies := w.Result().Cookies()
+		require.Len(t, cookies, 1)
+		authCookie := cookies[0]
+		require.Equal(t, JWTCookieName, authCookie.Name)
+	})
 }

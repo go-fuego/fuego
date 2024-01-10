@@ -53,9 +53,9 @@ func (security Security) GenerateToken(claims jwt.Claims) (token string, err err
 		claims.(jwt.MapClaims)["iat"] = security.Now().Unix()
 	}
 
-	t := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	tok := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
 
-	return t.SignedString(security.key)
+	return tok.SignedString(security.key)
 }
 
 // GenerateTokenToCookies generates a JWT token with the given claims and writes it to the cookies.
@@ -99,21 +99,20 @@ func (security Security) ValidateToken(token string) (*jwt.Token, error) {
 	return t, nil
 }
 
-// Get the token info from the token string
-func (security Security) GetTokenInfo(token string) (jwt.Claims, error) {
-	return nil, nil
-}
-
 type AutoAuthConfig struct {
 	Enabled        bool
 	VerifyUserInfo func(user, password string) (jwt.Claims, error) // Must check the username and password, and return the claims
 }
 
-type ctxKey string
+type contextKey string
 
 const (
-	JWTInfoCtxKey ctxKey = "jwtInfo"
+	contextKeyJWT contextKey = "jwtInfo"
 )
+
+func WithValue(ctx context.Context, val any) context.Context {
+	return context.WithValue(ctx, contextKeyJWT, val)
+}
 
 // TokenFromContext returns the validated token from the context, if found.
 // To check if the user is authorized, use the [AuthWall] middleware, or create your own middleware.
@@ -122,10 +121,11 @@ const (
 //
 //	token, err := fuego.TokenFromContext[MyCustomTokenType](ctx.Context())
 func TokenFromContext(ctx context.Context) (jwt.Claims, error) {
-	claims, ok := ctx.Value(JWTInfoCtxKey).(jwt.MapClaims)
-	if claims == nil {
+	value := ctx.Value(contextKeyJWT)
+	if value == nil {
 		return nil, ErrTokenNotFound
 	}
+	claims, ok := value.(jwt.MapClaims)
 	if !ok {
 		return nil, ErrInvalidTokenType
 	}
@@ -221,7 +221,7 @@ func (security Security) TokenToContext(searchFunc ...func(*http.Request) string
 
 			// Set the subject and roles in the context
 			ctx := r.Context()
-			ctx = context.WithValue(ctx, JWTInfoCtxKey, claims)
+			ctx = context.WithValue(ctx, contextKeyJWT, claims)
 			r = r.WithContext(ctx)
 
 			// Call the next handler
