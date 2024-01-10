@@ -53,13 +53,13 @@ func TestServer_generateOpenAPI(t *testing.T) {
 	})
 	document := s.generateOpenAPI()
 	require.NotNil(t, document)
-	require.NotNil(t, document.Paths["/"])
+	require.NotNil(t, document.Paths.Find("/"))
 	require.Nil(t, document.Paths.Find("/unknown"))
 	require.NotNil(t, document.Paths.Find("/post"))
-	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses["200"])
-	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses["200"].Value.Content["application/json"])
-	require.Nil(t, document.Paths.Find("/post/{id}").Get.Responses["200"].Value.Content["application/json"].Schema.Value.Properties["unknown"])
-	require.Equal(t, document.Paths.Find("/post/{id}").Get.Responses["200"].Value.Content["application/json"].Schema.Value.Properties["quantity"].Value.Type, "integer")
+	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200"))
+	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"])
+	require.Nil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["unknown"])
+	require.Equal(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["quantity"].Value.Type, "integer")
 }
 
 func BenchmarkRoutesRegistration(b *testing.B) {
