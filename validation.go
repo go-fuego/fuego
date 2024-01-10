@@ -62,6 +62,11 @@ func (e structValidationError) Info() map[string]any {
 var v = validator.New()
 
 func validate(a any) error {
+	_, ok := a.(map[string]any)
+	if ok {
+		return nil
+	}
+
 	err := v.Struct(a)
 	if err != nil {
 		// this check is only needed when your code could produce an

@@ -2,6 +2,9 @@ package fuego
 
 import (
 	"errors"
+	"html/template"
+	"io"
+	"log/slog"
 	"net/http/httptest"
 	"testing"
 
@@ -96,4 +99,32 @@ func TestWithAutoAuth(t *testing.T) {
 	require.True(t, s.autoAuth.Enabled)
 	// The authoauth is tested in security_test.go,
 	// this is just an option to enable it.
+}
+
+func TestWithTemplates(t *testing.T) {
+	t.Run("with template FS", func(t *testing.T) {
+		template := template.New("test")
+		s := NewServer(
+			WithTemplateFS(testdata),
+			WithTemplates(template),
+		)
+
+		require.NotNil(t, s.template)
+	})
+
+	t.Run("without template FS", func(t *testing.T) {
+		template := template.New("test")
+		s := NewServer(
+			WithTemplates(template),
+		)
+
+		require.NotNil(t, s.template)
+	})
+}
+
+func TestWithLogHandler(t *testing.T) {
+	handler := slog.NewTextHandler(io.Discard, nil)
+	NewServer(
+		WithLogHandler(handler),
+	)
 }

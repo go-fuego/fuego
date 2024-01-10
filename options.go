@@ -212,7 +212,8 @@ func WithXML() func(*Server) {
 	}
 }
 
-func WithHandler(handler slog.Handler) func(*Server) {
+// WithLogHandler sets the log handler of the server.
+func WithLogHandler(handler slog.Handler) func(*Server) {
 	return func(c *Server) {
 		if handler != nil {
 			slog.SetDefault(slog.New(handler))

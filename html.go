@@ -2,12 +2,9 @@ package fuego
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"html/template"
 	"io"
-	"io/fs"
-	"os"
 )
 
 // CtxRenderer can be used with [github.com/a-h/templ]
@@ -57,13 +54,7 @@ type H map[string]any
 func (s *Server) loadTemplates(patterns ...string) error {
 	tmpl, err := template.ParseFS(s.fs, patterns...)
 	if err != nil {
-		var pathError *fs.PathError
-		if errors.As(err, &pathError) {
-			wd, _ := os.Getwd()
-			return fmt.Errorf("template '%s' does not exist in directory '%s': %w", pathError.Path, wd, err)
-		}
-
-		return fmt.Errorf("%w %s", err, "failed to parse templates")
+		return fmt.Errorf("failed to parse templates: %w", err)
 	}
 
 	s.template = tmpl

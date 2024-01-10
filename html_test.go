@@ -96,3 +96,27 @@ func BenchmarkRender(b *testing.B) {
 		}
 	}
 }
+
+func TestServer_loadTemplates(t *testing.T) {
+	s := NewServer(
+		WithTemplateFS(testdata),
+	)
+
+	t.Run("no template", func(t *testing.T) {
+		err := s.loadTemplates()
+		require.Error(t, err)
+	})
+
+	t.Run("template not found", func(t *testing.T) {
+		err := s.loadTemplates("testdata/not-found.html")
+		require.Error(t, err)
+
+		err = s.loadTemplates("notfound")
+		require.Error(t, err)
+	})
+
+	t.Run("template found", func(t *testing.T) {
+		err := s.loadTemplates("testdata/test.html")
+		require.NoError(t, err)
+	})
+}

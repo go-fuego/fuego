@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type TestBody struct {
+type BodyTest struct {
 	A string
 	B int
 	C bool
@@ -19,13 +19,13 @@ func TestReadJSON(t *testing.T) {
 	input := strings.NewReader(`{"A":"a","B":1,"C":true}`)
 
 	t.Run("ReadJSON", func(t *testing.T) {
-		body, err := ReadJSON[TestBody](input)
+		body, err := ReadJSON[BodyTest](input)
 		require.NoError(t, err)
-		require.Equal(t, TestBody{"a", 1, true}, body)
+		require.Equal(t, BodyTest{"a", 1, true}, body)
 	})
 
 	t.Run("cannot read invalid JSON", func(t *testing.T) {
-		_, err := ReadJSON[TestBody](input)
+		_, err := ReadJSON[BodyTest](input)
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 	})
 
@@ -58,7 +58,7 @@ func TestReadString(t *testing.T) {
 func BenchmarkReadJSON(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		input := strings.NewReader(`{"A":"a","B":1,"C":true}`)
-		_, err := ReadJSON[TestBody](input)
+		_, err := ReadJSON[BodyTest](input)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -75,24 +75,24 @@ func BenchmarkReadString(b *testing.B) {
 	}
 }
 
-type TestBodyWithInTransformer struct {
+type BodyTestWithInTransformer struct {
 	A string
 	B int
 }
 
-func (t *TestBodyWithInTransformer) InTransform() error {
+func (t *BodyTestWithInTransformer) InTransform() error {
 	t.A = "transformed " + t.A
 	return nil
 }
 
-var _ InTransformer = &TestBodyWithInTransformer{}
+var _ InTransformer = &BodyTestWithInTransformer{}
 
 func TestInTransform(t *testing.T) {
 	t.Run("ReadJSON", func(t *testing.T) {
 		input := strings.NewReader(`{"A":"a", "B":1}`)
-		body, err := ReadJSON[TestBodyWithInTransformer](input)
+		body, err := ReadJSON[BodyTestWithInTransformer](input)
 		require.NoError(t, err)
-		require.Equal(t, TestBodyWithInTransformer{"transformed a", 1}, body)
+		require.Equal(t, BodyTestWithInTransformer{"transformed a", 1}, body)
 	})
 }
 
@@ -137,17 +137,17 @@ func TestReadURLEncoded(t *testing.T) {
 		input := strings.NewReader(`A=a&B=1&C=true`)
 		r := httptest.NewRequest("POST", "/", input)
 		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-		res, err := ReadURLEncoded[TestBody](r)
+		res, err := ReadURLEncoded[BodyTest](r)
 		require.NoError(t, err)
-		require.Equal(t, TestBody{"a", 1, true}, res)
+		require.Equal(t, BodyTest{"a", 1, true}, res)
 	})
 
 	t.Run("read urlencoded with type error", func(t *testing.T) {
 		input := strings.NewReader(`A=a&B=wrongtype&C=true`)
 		r := httptest.NewRequest("POST", "/", input)
 		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-		res, err := ReadURLEncoded[TestBody](r)
+		res, err := ReadURLEncoded[BodyTest](r)
 		require.Error(t, err)
-		require.Equal(t, TestBody{"a", 0, true}, res)
+		require.Equal(t, BodyTest{"a", 0, true}, res)
 	})
 }

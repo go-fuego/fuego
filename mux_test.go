@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// dummyMiddleware sets the X-Test header on the request and the X-Test-Response header on the response.
 func dummyMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.Header.Set("X-Test", "test")
@@ -142,6 +143,23 @@ func TestDelete(t *testing.T) {
 	require.Equal(t, w.Body.String(), "\"test\"\n")
 }
 
+func TestHandle(t *testing.T) {
+	s := NewServer()
+	Handle(s, "/test", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("test successful"))
+	}))
+
+	r := httptest.NewRequest(http.MethodGet, "/test", nil)
+
+	w := httptest.NewRecorder()
+
+	s.Mux.ServeHTTP(w, r)
+
+	require.Equal(t, w.Code, http.StatusOK)
+	require.Equal(t, w.Body.String(), "test successful")
+}
+
 func TestGetStd(t *testing.T) {
 	s := NewServer()
 	GetStd(s, "/test", func(w http.ResponseWriter, r *http.Request) {
@@ -241,6 +259,29 @@ func TestSetTags(t *testing.T) {
 	require.Equal(t, route.operation.Description, "my description")
 	require.Equal(t, route.operation.Summary, "my summary")
 	require.Equal(t, route.operation.Deprecated, true)
+}
+
+func TestAddTags(t *testing.T) {
+	s := NewServer()
+	route := Get(s, "/test", func(ctx Ctx[string]) (string, error) {
+		return "test", nil
+	}).
+		AddTags("my-tag").
+		AddTags("my-other-tag")
+
+	require.Equal(t, route.operation.Tags, []string{"string", "my-tag", "my-other-tag"})
+}
+
+func TestRemoveTags(t *testing.T) {
+	s := NewServer()
+	route := Get(s, "/test", func(ctx Ctx[string]) (string, error) {
+		return "test", nil
+	}).
+		AddTags("my-tag").
+		RemoveTags("my-tag", "string").
+		AddTags("my-other-tag")
+
+	require.Equal(t, route.operation.Tags, []string{"my-other-tag"})
 }
 
 func TestWithQueryParams(t *testing.T) {
@@ -375,5 +416,56 @@ func TestPerRouteMiddleware(t *testing.T) {
 
 		require.Equal(t, w.Body.String(), "\"withoutmiddleware\"\n")
 		require.Equal(t, "", w.Header().Get("X-Test-Response"))
+	})
+}
+
+func TestGroup(t *testing.T) {
+	s := NewServer()
+
+	group1 := Group(s, "/group")
+	Get(group1, "/route1", func(ctx Ctx[string]) (string, error) {
+		return "route1", nil
+	})
+
+	group2 := Group(s, "/group2")
+	Use(group2, dummyMiddleware) // middleware is scoped to the group
+	Get(group2, "/route2", func(ctx Ctx[string]) (string, error) {
+		return "route2", nil
+	})
+
+	subGroup := Group(group1, "/sub")
+
+	Get(subGroup, "/route3", func(ctx Ctx[string]) (string, error) {
+		return "route3", nil
+	})
+
+	t.Run("route1", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/group/route1", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, w.Body.String(), "\"route1\"\n")
+		require.Equal(t, "", w.Header().Get("X-Test-Response"), "middleware is not set to this group")
+	})
+
+	t.Run("route2", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/group2/route2", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, w.Body.String(), "\"route2\"\n")
+		require.Equal(t, "response", w.Header().Get("X-Test-Response"))
+	})
+
+	t.Run("route3", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/group/sub/route3", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, w.Body.String(), "\"route3\"\n")
+		require.Equal(t, "", w.Header().Get("X-Test-Response"), "middleware is not inherited")
 	})
 }

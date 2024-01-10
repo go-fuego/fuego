@@ -386,3 +386,46 @@ func TestMainLang(t *testing.T) {
 	require.Equal(t, c.MainLang(), "fr")
 	require.Equal(t, c.MainLocale(), "fr-CH")
 }
+
+func TestClassicContext_Body(t *testing.T) {
+	body := `{"name":"John","age":30}`
+	r := httptest.NewRequest("GET", "/", strings.NewReader(body))
+	ctx := ClassicContext{
+		request:  r,
+		response: httptest.NewRecorder(),
+	}
+	res, err := ctx.Body()
+	require.NoError(t, err)
+	require.Equal(t, any(map[string]any{
+		"name": "John",
+		"age":  30.0, // JSON numbers are float64
+	}), res)
+}
+
+func TestClassicContext_MustBody(t *testing.T) {
+	t.Run("can read JSON body", func(t *testing.T) {
+		body := `{"name":"John","age":30}`
+		r := httptest.NewRequest("GET", "/", strings.NewReader(body))
+		ctx := ClassicContext{
+			request:  r,
+			response: httptest.NewRecorder(),
+		}
+		res := ctx.MustBody()
+		require.Equal(t, any(map[string]any{
+			"name": "John",
+			"age":  30.0, // JSON numbers are float64
+		}), res)
+	})
+
+	t.Run("cannot read invalid JSON body", func(t *testing.T) {
+		body := `{"name":"John","age":30`
+		r := httptest.NewRequest("GET", "/", strings.NewReader(body))
+		ctx := ClassicContext{
+			request:  r,
+			response: httptest.NewRecorder(),
+		}
+		require.Panics(t, func() {
+			ctx.MustBody()
+		})
+	})
+}

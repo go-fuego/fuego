@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"context"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -72,11 +71,6 @@ type Ctx[B any] interface {
 	// Alias to http.ResponseWriter.WriteHeader.
 	SetStatus(code int)
 
-	// Context returns the context of the request.
-	// Same as c.Request().Context().
-	// This is the context related to the request, not the context of the server.
-	Context() context.Context
-
 	// Redirect redirects to the given url with the given status code.
 	// Example:
 	//   fuego.Get(s, "/recipes", func(c fuego.Ctx[any]) (any, error) {
@@ -128,7 +122,7 @@ type ClassicContext struct {
 
 func (c ClassicContext) Body() (any, error) {
 	slog.Warn("this method should not be called. It probably happened because you passed the context to another controller with the Pass method.")
-	return body[any](c)
+	return body[map[string]any](c)
 }
 
 func (c ClassicContext) MustBody() any {
@@ -169,12 +163,6 @@ var (
 	_ Ctx[string] = &Context[string]{} // Check that Context implements Ctx.
 	_ Ctx[any]    = &ClassicContext{}  // Check that Context implements Ctx.
 )
-
-// Context returns the context of the request.
-// Same as c.Request().Context().
-func (c ClassicContext) Context() context.Context {
-	return c.request.Context()
-}
 
 func (c ClassicContext) Redirect(code int, url string) (any, error) {
 	http.Redirect(c.response, c.request, url, code)

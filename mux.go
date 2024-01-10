@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"reflect"
 	"runtime"
+	"slices"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -121,6 +122,18 @@ func (r Route[ResponseBody, RequestBody]) SetTags(tags ...string) Route[Response
 
 func (r Route[ResponseBody, RequestBody]) AddTags(tags ...string) Route[ResponseBody, RequestBody] {
 	r.operation.Tags = append(r.operation.Tags, tags...)
+	return r
+}
+
+func (r Route[ResponseBody, RequestBody]) RemoveTags(tags ...string) Route[ResponseBody, RequestBody] {
+	for _, tag := range tags {
+		for i, t := range r.operation.Tags {
+			if t == tag {
+				r.operation.Tags = slices.Delete(r.operation.Tags, i, i+1)
+				break
+			}
+		}
+	}
 	return r
 }
 
