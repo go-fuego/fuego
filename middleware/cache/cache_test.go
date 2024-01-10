@@ -30,6 +30,7 @@ func TestCache(t *testing.T) {
 	fuego.Use(s, New(Config{}))
 
 	fuego.Get(s, "/with-cache", baseController)
+	fuego.Post(s, "/cant-be-cached-because-not-get", baseController)
 
 	t.Run("Answer once", func(t *testing.T) {
 		r := httptest.NewRequest("GET", "/without-cache", nil)
@@ -62,7 +63,7 @@ func TestCache(t *testing.T) {
 		require.Equal(t, w.Body.String(), `{"Name":"test","Age":10}`+"\n")
 	})
 
-	t.Run("Answer twice with cache", func(t *testing.T) {
+	t.Run("Answer twice the same result with cache", func(t *testing.T) {
 		r := httptest.NewRequest("GET", "/with-cache", nil)
 		w := httptest.NewRecorder()
 
@@ -78,6 +79,27 @@ func TestCache(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 		elapsed := time.Since(start)
 		require.True(t, elapsed < waitTime)
+
+		require.Equal(t, http.StatusOK, w.Code)
+		require.Equal(t, w.Body.String(), `{"Name":"test","Age":10}`+"\n")
+	})
+
+	t.Run("Cannot cache non GET requests", func(t *testing.T) {
+		r := httptest.NewRequest("POST", "/cant-be-cached-because-not-get", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, http.StatusOK, w.Code)
+		require.Equal(t, w.Body.String(), `{"Name":"test","Age":10}`+"\n")
+
+		r = httptest.NewRequest("POST", "/cant-be-cached-because-not-get", nil)
+		w = httptest.NewRecorder()
+
+		start := time.Now()
+		s.Mux.ServeHTTP(w, r)
+		elapsed := time.Since(start)
+		require.True(t, elapsed >= waitTime)
 
 		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, w.Body.String(), `{"Name":"test","Age":10}`+"\n")

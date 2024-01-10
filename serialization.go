@@ -110,7 +110,8 @@ func SendXML(w http.ResponseWriter, ans any) {
 	err := xml.NewEncoder(w).Encode(ans)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = w.Write([]byte(`{"error":"Internal Server Error"}`))
+		slog.Error("Cannot serialize XML", "error", err)
+		_, _ = w.Write([]byte(`{"error":"Cannot serialize XML"}`))
 		return
 	}
 }

@@ -73,5 +73,8 @@ func main() {
 	app := rs.Setup(fuego.WithPort(*port))
 
 	// Run the server!
-	app.Run()
+	err = app.Run()
+	if err != nil {
+		slog.Error("Error running server: %s", err)
+	}
 }

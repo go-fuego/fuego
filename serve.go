@@ -9,22 +9,22 @@ import (
 )
 
 // Run starts the server.
-func (s *Server) Run() {
+// It is blocking.
+// It returns an error if the server could not start (it could not bind to the port).
+func (s *Server) Run() error {
 	go s.generateOpenAPI()
 	elapsed := time.Since(s.startTime)
 	slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
 	slog.Info("Server running ✅ on http://localhost"+s.Server.Addr, "started in", elapsed.String())
 
 	s.Server.Handler = s.Mux
-	err := s.Server.ListenAndServe()
-	if err != nil {
-		slog.Error("Error running server", "error", err)
-	}
+
+	return s.Server.ListenAndServe()
 }
 
 type Controller[ReturnType any, Body any] func(c Context[Body]) (ReturnType, error)
 
-// httpHandler converts a framework controller into a http.HandlerFunc.
+// httpHandler converts a Fuego controller into a http.HandlerFunc.
 func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body]) (ReturnType, error)) http.HandlerFunc {
 	returnsHTML := reflect.TypeOf(controller).Out(0).Name() == "HTML"
 

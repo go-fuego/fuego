@@ -86,3 +86,14 @@ func TestWithMaxBodySize(t *testing.T) {
 
 	require.Equal(t, int64(1024), s.maxBodySize)
 }
+
+func TestWithAutoAuth(t *testing.T) {
+	s := NewServer(
+		WithAutoAuth(nil),
+	)
+
+	require.NotNil(t, s.autoAuth)
+	require.True(t, s.autoAuth.Enabled)
+	// The authoauth is tested in security_test.go,
+	// this is just an option to enable it.
+}

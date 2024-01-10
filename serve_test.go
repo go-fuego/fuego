@@ -3,6 +3,8 @@ package fuego
 import (
 	"context"
 	"errors"
+	"io"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -190,5 +192,116 @@ func TestSetStatusBeforeSend(t *testing.T) {
 
 		body := w.Body.String()
 		require.Equal(t, crlf(`{"ans":"Hello World"}`), body)
+	})
+}
+
+type testRenderer struct{}
+
+func (t testRenderer) Render(w io.Writer) error {
+	w.Write([]byte("hello"))
+	return nil
+}
+
+type testCtxRenderer struct{}
+
+func (t testCtxRenderer) Render(ctx context.Context, w io.Writer) error {
+	w.Write([]byte("world"))
+	return nil
+}
+
+type testErrorRenderer struct{}
+
+func (t testErrorRenderer) Render(w io.Writer) error { return errors.New("cannot render") }
+
+type testCtxErrorRenderer struct{}
+
+func (t testCtxErrorRenderer) Render(ctx context.Context, w io.Writer) error {
+	return errors.New("cannot render")
+}
+
+func TestServeRenderer(t *testing.T) {
+	s := NewServer(
+		WithErrorSerializer(func(w http.ResponseWriter, err error) {
+			w.WriteHeader(500)
+			w.Write([]byte("<body><h1>error</h1></body>"))
+		}),
+	)
+
+	t.Run("can serve renderer", func(t *testing.T) {
+		Get(s, "/", func(c Ctx[any]) (Renderer, error) {
+			return testRenderer{}, nil
+		})
+		Get(s, "/error-in-controller", func(c Ctx[any]) (Renderer, error) {
+			return nil, errors.New("error")
+		})
+		Get(s, "/error-in-rendering", func(c Ctx[any]) (Renderer, error) {
+			return testErrorRenderer{}, nil
+		})
+
+		t.Run("normal return", func(t *testing.T) {
+			req := httptest.NewRequest("GET", "/", nil)
+			w := httptest.NewRecorder()
+			s.Mux.ServeHTTP(w, req)
+
+			require.Equal(t, 200, w.Code)
+			require.Equal(t, "hello", w.Body.String())
+		})
+
+		t.Run("error return", func(t *testing.T) {
+			req := httptest.NewRequest("GET", "/error-in-controller", nil)
+			w := httptest.NewRecorder()
+			s.Mux.ServeHTTP(w, req)
+
+			require.Equal(t, 500, w.Code)
+			require.Equal(t, "<body><h1>error</h1></body>", w.Body.String())
+		})
+
+		t.Run("error in rendering", func(t *testing.T) {
+			req := httptest.NewRequest("GET", "/error-in-rendering", nil)
+			w := httptest.NewRecorder()
+			s.Mux.ServeHTTP(w, req)
+
+			require.Equal(t, 500, w.Code)
+			require.Equal(t, "<body><h1>error</h1></body>", w.Body.String())
+		})
+	})
+
+	t.Run("can serve ctx renderer", func(t *testing.T) {
+		Get(s, "/ctx", func(c Ctx[any]) (CtxRenderer, error) {
+			return testCtxRenderer{}, nil
+		})
+		Get(s, "/ctx/error-in-controller", func(c Ctx[any]) (CtxRenderer, error) {
+			return nil, errors.New("error")
+		})
+		Get(s, "/ctx/error-in-rendering", func(c Ctx[any]) (CtxRenderer, error) {
+			return testCtxErrorRenderer{}, nil
+		})
+
+		t.Run("normal return", func(t *testing.T) {
+			req := httptest.NewRequest("GET", "/ctx", nil)
+			w := httptest.NewRecorder()
+			s.Mux.ServeHTTP(w, req)
+
+			require.Equal(t, 200, w.Code)
+			require.Equal(t, "world", w.Body.String())
+		})
+
+		t.Run("error return", func(t *testing.T) {
+			req := httptest.NewRequest("GET", "/ctx/error-in-controller", nil)
+			w := httptest.NewRecorder()
+			s.Mux.ServeHTTP(w, req)
+
+			require.Equal(t, 500, w.Code)
+			require.Equal(t, "<body><h1>error</h1></body>", w.Body.String())
+		})
+
+		t.Run("error in rendering", func(t *testing.T) {
+			req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
+			w := httptest.NewRecorder()
+			s.Mux.ServeHTTP(w, req)
+
+			require.Equal(t, 500, w.Code)
+			require.Equal(t, "<body><h1>error</h1></body>", w.Body.String())
+		})
 	})
 }

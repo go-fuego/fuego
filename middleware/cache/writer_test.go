@@ -28,3 +28,28 @@ func TestWriter(t *testing.T) {
 		t.Errorf("Expected %s, got %s", written, m.cacheWriter.(*bytes.Buffer).Bytes())
 	}
 }
+
+func TestWriter_Unwrap(t *testing.T) {
+	w := httptest.NewRecorder()
+	bytesBuffer := &bytes.Buffer{}
+	m := &MultiHTTPWriter{
+		ResponseWriter: w,
+		cacheWriter:    bytesBuffer,
+	}
+	if m.Unwrap() != w {
+		t.Errorf("Expected %T, got %T", w, m.Unwrap())
+	}
+}
+
+func TestWriter_WriteHeader(t *testing.T) {
+	w := httptest.NewRecorder()
+	bytesBuffer := &bytes.Buffer{}
+	m := &MultiHTTPWriter{
+		ResponseWriter: w,
+		cacheWriter:    bytesBuffer,
+	}
+	m.WriteHeader(204)
+	if m.status != 204 {
+		t.Errorf("Expected %d, got %d", 204, m.status)
+	}
+}
