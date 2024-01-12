@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -16,7 +17,7 @@ import (
 // Useful for example for trimming strings, changing case, etc.
 // Can also raise an error if the entity is not valid.
 type InTransformer interface {
-	InTransform() error // InTransforms the entity.
+	InTransform(context.Context) error // InTransforms the entity.
 }
 
 var ReadOptions = readOptions{
@@ -27,15 +28,15 @@ var ReadOptions = readOptions{
 // ReadJSON reads the request body as JSON.
 // Can be used independantly from Fuego framework.
 // Customisable by modifying ReadOptions.
-func ReadJSON[B any](input io.Reader) (B, error) {
-	return readJSON[B](input, ReadOptions)
+func ReadJSON[B any](context context.Context, input io.Reader) (B, error) {
+	return readJSON[B](context, input, ReadOptions)
 }
 
 // readJSON reads the request body as JSON.
 // Can be used independantly from framework using ReadJSON,
 // or as a method of Context.
 // It will also read strings.
-func readJSON[B any](input io.Reader, options readOptions) (B, error) {
+func readJSON[B any](context context.Context, input io.Reader, options readOptions) (B, error) {
 	var body B
 
 	// Deserialize the request body.
@@ -49,7 +50,7 @@ func readJSON[B any](input io.Reader, options readOptions) (B, error) {
 	}
 	slog.Debug("Decoded body", "body", body)
 
-	body, err = transform(body)
+	body, err = transform(context, body)
 	if err != nil {
 		return body, BadRequestError{Message: "cannot transform request body: " + err.Error()}
 	}
@@ -65,11 +66,11 @@ func readJSON[B any](input io.Reader, options readOptions) (B, error) {
 // ReadString reads the request body as string.
 // Can be used independantly from Fuego framework.
 // Customisable by modifying ReadOptions.
-func ReadString[B ~string](input io.Reader) (B, error) {
-	return readString[B](input, ReadOptions)
+func ReadString[B ~string](context context.Context, input io.Reader) (B, error) {
+	return readString[B](context, input, ReadOptions)
 }
 
-func readString[B ~string](input io.Reader, options readOptions) (B, error) {
+func readString[B ~string](context context.Context, input io.Reader, options readOptions) (B, error) {
 	// Read the request body.
 	readBody, err := io.ReadAll(input)
 	if err != nil {
@@ -79,7 +80,7 @@ func readString[B ~string](input io.Reader, options readOptions) (B, error) {
 	body := B(readBody)
 	slog.Debug("Read body", "body", body)
 
-	return transform(body)
+	return transform(context, body)
 }
 
 func convertSQLNullString(value string) reflect.Value {
@@ -140,7 +141,7 @@ func readURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
 	}
 	slog.Debug("Decoded body", "body", body)
 
-	body, err = transform(body)
+	body, err = transform(r.Context(), body)
 	if err != nil {
 		return body, BadRequestError{
 			Message: "cannot transform x-www-form-urlencoded request body: " + err.Error(),
@@ -161,9 +162,9 @@ func readURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
 }
 
 // transforms the input if possible.
-func transform[B any](body B) (B, error) {
+func transform[B any](ctx context.Context, body B) (B, error) {
 	if inTransformerBody, ok := any(&body).(InTransformer); ok {
-		err := inTransformerBody.InTransform()
+		err := inTransformerBody.InTransform(ctx)
 		if err != nil {
 			return body, BadRequestError{Message: "cannot transform request body: " + err.Error()}
 		}

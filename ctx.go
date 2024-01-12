@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -63,6 +64,8 @@ type Ctx[B any] interface {
 	//   c.Render("admin.page.html", recipes, "partials/aaa/nav.partial.html")
 	// By default, [templateToExecute] is added to the list of templates to override.
 	Render(templateToExecute string, data any, templateGlobsToOverride ...string) (HTML, error)
+
+	Context() context.Context
 
 	Request() *http.Request        // Request returns the underlying http request.
 	Response() http.ResponseWriter // Response returns the underlying http response writer.
@@ -172,6 +175,10 @@ func (c ClassicContext) Redirect(code int, url string) (any, error) {
 
 func (c ClassicContext) Pass() ClassicContext {
 	return c
+}
+
+func (c ClassicContext) Context() context.Context {
+	return c.request.Context()
 }
 
 // Render renders the given templates with the given data.
@@ -381,7 +388,7 @@ func body[B any](c ClassicContext) (B, error) {
 	var err error
 	switch c.request.Header.Get("Content-Type") {
 	case "text/plain":
-		s, errReadingString := readString[string](c.request.Body, c.readOptions)
+		s, errReadingString := readString[string](c.request.Context(), c.request.Body, c.readOptions)
 		body = any(s).(B)
 		err = errReadingString
 	case "application/x-www-form-urlencoded", "multipart/form-data":
@@ -389,7 +396,7 @@ func body[B any](c ClassicContext) (B, error) {
 	case "application/json":
 		fallthrough
 	default:
-		body, err = readJSON[B](c.request.Body, c.readOptions)
+		body, err = readJSON[B](c.request.Context(), c.request.Body, c.readOptions)
 	}
 
 	c.response.Header().Add("Server-Timing", Timing{"deserialize", time.Since(timeDeserialize), "controller > deserialize"}.String())
