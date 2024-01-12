@@ -128,13 +128,28 @@ func readURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
 
 	err = decoder.Decode(&body, r.PostForm)
 	if err != nil {
-		return body, fmt.Errorf("cannot decode request body: %w", err)
+		return body, BadRequestError{
+			Message: "cannot decode x-www-form-urlencoded request body: " + err.Error(),
+			Err:     err,
+			MoreInfo: map[string]any{
+				"form": r.PostForm,
+				"help": "check that the form is valid, and that the content-type is correct",
+			},
+		}
+
 	}
 	slog.Debug("Decoded body", "body", body)
 
 	body, err = transform(body)
 	if err != nil {
-		return body, fmt.Errorf("cannot transform request body: %w", err)
+		return body, BadRequestError{
+			Message: "cannot transform x-www-form-urlencoded request body: " + err.Error(),
+			Err:     err,
+			MoreInfo: map[string]any{
+				"body": body,
+				"help": "transformation failed",
+			},
+		}
 	}
 
 	err = validate(body)
