@@ -27,7 +27,7 @@ Chi, Gin, Fiber and Echo are great frameworks. But since they were designed a lo
 - **Validation**: Fuego provides a simple and fast validator based on `go-playground/validator`
 - **Transformation**: easily transform your data by implementing the `fuego.InTransform` and `fuego.OutTransform` interfaces - also useful for **validation**
 - **Middlewares**: easily add a custom `net/http` middleware or use the provided middlewares.
-- **Error handling**: Fuego provides centralized error handling with the standard[RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) incoming.
+- **Error handling**: Fuego provides centralized error handling with the standard [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) incoming.
 - **Rendering**: Fuego provides a simple and fast rendering system based on `html/template` - you can still also use your own template system like `templ` or `gomponents`
 
 ## Examples
