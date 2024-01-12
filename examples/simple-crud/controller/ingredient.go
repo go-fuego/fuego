@@ -32,7 +32,7 @@ type CreateIngredient struct {
 	Description string `json:"description"`
 }
 
-func (ci *CreateIngredient) InTransform() error {
+func (ci *CreateIngredient) InTransform(context.Context) error {
 	if ci.Description == "" {
 		ci.Description = "No description"
 	}

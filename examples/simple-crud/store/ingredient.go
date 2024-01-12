@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"strings"
 
 	"github.com/go-fuego/fuego"
@@ -8,7 +9,7 @@ import (
 
 var _ fuego.InTransformer = (*CreateIngredientParams)(nil)
 
-func (c *CreateIngredientParams) InTransform() error {
+func (c *CreateIngredientParams) InTransform(context.Context) error {
 	c.Name = strings.TrimSpace(c.Name)
 
 	c.ID = slug(c.Name)

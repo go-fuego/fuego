@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -11,7 +12,7 @@ import (
 
 var _ fuego.InTransformer = (*CreateDosingParams)(nil)
 
-func (d *CreateDosingParams) InTransform() error {
+func (d *CreateDosingParams) InTransform(context.Context) error {
 	d.Unit = types.Unit(strings.ToLower(string(d.Unit)))
 
 	if !d.Unit.Valid() {

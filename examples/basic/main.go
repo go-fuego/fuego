@@ -53,7 +53,7 @@ func main() {
 
 // InTransform will be called when using c.Body().
 // It can be used to transform the entity and raise custom errors
-func (r *Received) InTransform() error {
+func (r *Received) InTransform(context.Context) error {
 	r.Name = strings.ToLower(r.Name)
 	if r.Name == "fuego" {
 		return errors.New("fuego is not a name")

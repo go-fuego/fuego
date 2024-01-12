@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"context"
 	"errors"
 	"net/http/httptest"
 	"strings"
@@ -19,13 +20,13 @@ func TestReadJSON(t *testing.T) {
 	input := strings.NewReader(`{"A":"a","B":1,"C":true}`)
 
 	t.Run("ReadJSON", func(t *testing.T) {
-		body, err := ReadJSON[BodyTest](input)
+		body, err := ReadJSON[BodyTest](context.Background(), input)
 		require.NoError(t, err)
 		require.Equal(t, BodyTest{"a", 1, true}, body)
 	})
 
 	t.Run("cannot read invalid JSON", func(t *testing.T) {
-		_, err := ReadJSON[BodyTest](input)
+		_, err := ReadJSON[BodyTest](context.Background(), input)
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 	})
 
@@ -35,7 +36,7 @@ func TestReadJSON(t *testing.T) {
 			B int
 			// Missing C bool
 		}
-		_, err := ReadJSON[WrongBody](input)
+		_, err := ReadJSON[WrongBody](context.Background(), input)
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 	})
 }
@@ -43,14 +44,14 @@ func TestReadJSON(t *testing.T) {
 func TestReadString(t *testing.T) {
 	t.Run("read string", func(t *testing.T) {
 		input := strings.NewReader(`string decoded as is`)
-		_, err := ReadString[string](input)
+		_, err := ReadString[string](context.Background(), input)
 		require.NoError(t, err)
 	})
 
 	t.Run("read string alias", func(t *testing.T) {
 		type StringAlias string
 		input := strings.NewReader(`string decoded as is`)
-		_, err := ReadString[StringAlias](input)
+		_, err := ReadString[StringAlias](context.Background(), input)
 		require.NoError(t, err)
 	})
 }
@@ -58,7 +59,7 @@ func TestReadString(t *testing.T) {
 func BenchmarkReadJSON(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		input := strings.NewReader(`{"A":"a","B":1,"C":true}`)
-		_, err := ReadJSON[BodyTest](input)
+		_, err := ReadJSON[BodyTest](context.Background(), input)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -68,7 +69,7 @@ func BenchmarkReadJSON(b *testing.B) {
 func BenchmarkReadString(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		input := strings.NewReader(`string decoded as is`)
-		_, err := ReadString[string](input)
+		_, err := ReadString[string](context.Background(), input)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -80,7 +81,7 @@ type BodyTestWithInTransformer struct {
 	B int
 }
 
-func (t *BodyTestWithInTransformer) InTransform() error {
+func (t *BodyTestWithInTransformer) InTransform(context.Context) error {
 	t.A = "transformed " + t.A
 	return nil
 }
@@ -90,7 +91,7 @@ var _ InTransformer = &BodyTestWithInTransformer{}
 func TestInTransform(t *testing.T) {
 	t.Run("ReadJSON", func(t *testing.T) {
 		input := strings.NewReader(`{"A":"a", "B":1}`)
-		body, err := ReadJSON[BodyTestWithInTransformer](input)
+		body, err := ReadJSON[BodyTestWithInTransformer](context.Background(), input)
 		require.NoError(t, err)
 		require.Equal(t, BodyTestWithInTransformer{"transformed a", 1}, body)
 	})
@@ -98,7 +99,7 @@ func TestInTransform(t *testing.T) {
 
 type transformableString string
 
-func (t *transformableString) InTransform() error {
+func (t *transformableString) InTransform(context.Context) error {
 	*t = "transformed " + *t
 	return nil
 }
@@ -108,7 +109,7 @@ var _ InTransformer = new(transformableString)
 func TestInTransformString(t *testing.T) {
 	t.Run("ReadString", func(t *testing.T) {
 		input := strings.NewReader(`coucou`)
-		body, err := ReadString[transformableString](input)
+		body, err := ReadString[transformableString](context.Background(), input)
 		require.NoError(t, err)
 		require.Equal(t, transformableString("transformed coucou"), body)
 	})
@@ -116,7 +117,7 @@ func TestInTransformString(t *testing.T) {
 
 type transformableStringWithError string
 
-func (t *transformableStringWithError) InTransform() error {
+func (t *transformableStringWithError) InTransform(context.Context) error {
 	*t = "transformed " + *t
 	return errors.New("error happened!")
 }
@@ -126,7 +127,7 @@ var _ InTransformer = new(transformableStringWithError)
 func TestInTransformStringWithError(t *testing.T) {
 	t.Run("ReadString", func(t *testing.T) {
 		input := strings.NewReader(`coucou`)
-		body, err := ReadString[transformableStringWithError](input)
+		body, err := ReadString[transformableStringWithError](context.Background(), input)
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 		require.Equal(t, transformableStringWithError("transformed coucou"), body)
 	})
