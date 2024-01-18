@@ -137,7 +137,6 @@ func readURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
 				"help": "check that the form is valid, and that the content-type is correct",
 			},
 		}
-
 	}
 	slog.Debug("Decoded body", "body", body)
 

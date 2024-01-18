@@ -65,13 +65,64 @@ func TestWithXML(t *testing.T) {
 }
 
 func TestWithOpenAPIConfig(t *testing.T) {
-	s := NewServer(
-		WithOpenapiConfig(OpenapiConfig{}),
-	)
+	t.Run("with default values", func(t *testing.T) {
+		s := NewServer(
+			WithOpenapiConfig(OpenapiConfig{}),
+		)
 
-	require.Equal(t, "/swagger", s.OpenapiConfig.SwaggerUrl)
-	require.Equal(t, "/swagger/openapi.json", s.OpenapiConfig.JsonSpecUrl)
-	require.Equal(t, "doc/openapi.json", s.OpenapiConfig.JsonSpecLocalPath)
+		require.Equal(t, "/swagger", s.OpenapiConfig.SwaggerUrl)
+		require.Equal(t, "/swagger/openapi.json", s.OpenapiConfig.JsonSpecUrl)
+		require.Equal(t, "doc/openapi.json", s.OpenapiConfig.JsonSpecLocalPath)
+	})
+
+	t.Run("with custom values", func(t *testing.T) {
+		s := NewServer(
+			WithOpenapiConfig(OpenapiConfig{
+				SwaggerUrl:        "/api",
+				JsonSpecUrl:       "/api/openapi.json",
+				JsonSpecLocalPath: "openapi.json",
+				DisableSwagger:    true,
+				DisableLocalSave:  true,
+			}),
+		)
+
+		require.Equal(t, "/api", s.OpenapiConfig.SwaggerUrl)
+		require.Equal(t, "/api/openapi.json", s.OpenapiConfig.JsonSpecUrl)
+		require.Equal(t, "openapi.json", s.OpenapiConfig.JsonSpecLocalPath)
+		require.True(t, s.OpenapiConfig.DisableSwagger)
+		require.True(t, s.OpenapiConfig.DisableLocalSave)
+	})
+
+	t.Run("with invalid local path values", func(t *testing.T) {
+		t.Run("with invalid path", func(t *testing.T) {
+			NewServer(
+				WithOpenapiConfig(OpenapiConfig{
+					JsonSpecLocalPath: "path/to/jsonSpec",
+					SwaggerUrl:        "p   i",
+					JsonSpecUrl:       "pi/op  enapi.json",
+				}),
+			)
+		})
+		t.Run("with invalid url", func(t *testing.T) {
+			NewServer(
+				WithOpenapiConfig(OpenapiConfig{
+					JsonSpecLocalPath: "path/to/jsonSpec.json",
+					JsonSpecUrl:       "pi/op  enapi.json",
+					SwaggerUrl:        "p   i",
+				}),
+			)
+		})
+
+		t.Run("with invalid url", func(t *testing.T) {
+			NewServer(
+				WithOpenapiConfig(OpenapiConfig{
+					JsonSpecLocalPath: "path/to/jsonSpec.json",
+					JsonSpecUrl:       "/api/openapi.json",
+					SwaggerUrl:        "invalid path",
+				}),
+			)
+		})
+	})
 }
 
 func TestWithBasePath(t *testing.T) {

@@ -2,6 +2,8 @@ package fuego
 
 import (
 	"fmt"
+	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -60,6 +62,14 @@ func TestServer_generateOpenAPI(t *testing.T) {
 	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"])
 	require.Nil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["unknown"])
 	require.Equal(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["quantity"].Value.Type, "integer")
+
+	t.Run("openapi doc is available through a route", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/swagger/openapi.json", nil)
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+	})
 }
 
 func BenchmarkRoutesRegistration(b *testing.B) {
@@ -136,4 +146,19 @@ func TestValidateSwaggerUrl(t *testing.T) {
 	require.Equal(t, false, validateSwaggerUrl("/path_/swagger.json"))
 	require.Equal(t, false, validateSwaggerUrl("path/to/jsonSpec."))
 	require.Equal(t, false, validateSwaggerUrl("path/to/jsonSpec%"))
+}
+
+func TestLocalSave(t *testing.T) {
+	t.Run("with valid path", func(t *testing.T) {
+		err := localSave("/tmp/jsonSpec.json", []byte("test"))
+		require.NoError(t, err)
+
+		// cleanup
+		os.Remove("/tmp/jsonSpec.json")
+	})
+
+	t.Run("with invalid path", func(t *testing.T) {
+		err := localSave("///jsonSpec.json", []byte("test"))
+		require.Error(t, err)
+	})
 }

@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"context"
 	"errors"
 	"net/http/httptest"
 	"strings"
@@ -120,7 +121,7 @@ type testStructInTransformer struct {
 	Age  int    `json:"age" validate:"min=18"`
 }
 
-func (b *testStructInTransformer) InTransform() error {
+func (b *testStructInTransformer) InTransform(context.Context) error {
 	b.Name = "transformed " + b.Name
 	b.Age *= 2
 	return nil
@@ -131,7 +132,7 @@ type testStructInTransformerWithError struct {
 	Age  int    `json:"age" validate:"min=18"`
 }
 
-func (b *testStructInTransformerWithError) InTransform() error {
+func (b *testStructInTransformerWithError) InTransform(context.Context) error {
 	return errors.New("error")
 }
 

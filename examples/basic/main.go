@@ -67,5 +67,7 @@ func (r *MyResponse) OutTransform(context.Context) error {
 	return nil
 }
 
-var _ fuego.InTransformer = &Received{}    // Ensure that *Received implements fuego.InTransformer
-var _ fuego.OutTransformer = &MyResponse{} // Ensure that *MyResponse implements fuego.OutTransformer
+var (
+	_ fuego.InTransformer  = &Received{}   // Ensure that *Received implements fuego.InTransformer
+	_ fuego.OutTransformer = &MyResponse{} // Ensure that *MyResponse implements fuego.OutTransformer
+)

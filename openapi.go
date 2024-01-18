@@ -3,6 +3,7 @@ package fuego
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -53,31 +54,36 @@ func (s *Server) generateOpenAPI() openapi3.T {
 	}
 
 	if !s.OpenapiConfig.DisableLocalSave {
-		localSave(s.OpenapiConfig.JsonSpecLocalPath, jsonSpec)
+		err := localSave(s.OpenapiConfig.JsonSpecLocalPath, jsonSpec)
+		if err != nil {
+			slog.Error("Error saving spec to local path", "error", err, "path", s.OpenapiConfig.JsonSpecLocalPath)
+		}
 	}
 
 	return s.OpenApiSpec
 }
 
-func localSave(jsonSpecLocalPath string, jsonSpec []byte) {
+func localSave(jsonSpecLocalPath string, jsonSpec []byte) error {
 	jsonFolder := filepath.Dir(jsonSpecLocalPath)
 
 	err := os.MkdirAll(jsonFolder, 0o750)
 	if err != nil {
-		slog.Error("Error creating docs directory", "error", err)
+		return errors.New("error creating docs directory")
 	}
 
 	f, err := os.Create(jsonSpecLocalPath) // #nosec G304 (file path provided by developer, not by user)
 	if err != nil {
-		slog.Error("Error creating "+jsonSpecLocalPath, "error", err)
+		return errors.New("error creating file")
 	}
 	defer f.Close()
+
 	_, err = f.Write(jsonSpec)
 	if err != nil {
-		slog.Error("Error writing file", "error", err)
+		return errors.New("error writing file ")
 	}
 
 	slog.Info("Updated " + jsonSpecLocalPath)
+	return nil
 }
 
 // Registers the routes to serve the OpenAPI spec and Swagger UI.
