@@ -8,14 +8,14 @@ const config: Config = {
   favicon: "img/fuego.ico",
 
   // Set the production url of your site here
-  url: "https://fuego-go.github.io", //TODO
+  url: "https://go-fuego.github.io", //TODO
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: "/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "fuego-go", // Usually your GitHub org/user name.
+  organizationName: "go-fuego", // Usually your GitHub org/user name.
   projectName: "fuego", // Usually your repo name.
 
   onBrokenLinks: "throw",
