@@ -3,7 +3,7 @@ sidebar_position: 1
 ---
 
 # 🔥 Fuego
-
+[Go Reference](https://pkg.go.dev/badge/github.com/go-fuego/fuego.svg)
 
 Let's discover **Fuego in less than 5 minutes**.
 

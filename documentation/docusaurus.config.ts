@@ -4,19 +4,19 @@ import type * as Preset from "@docusaurus/preset-classic";
 
 const config: Config = {
   title: "Fuego",
-  tagline: "Dinosaurs are cool", // TODO: Change tagline -> la trouver
-  favicon: "img/favicon.ico", // TODO: Add favicon
+  tagline: "The blazing fast Go framework",
+  favicon: "img/fuego.ico",
 
   // Set the production url of your site here
-  url: "https://your-docusaurus-site.example.com", //TODO
+  url: "https://fuego-go.github.io", //TODO
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: "/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "facebook", // Usually your GitHub org/user name.
-  projectName: "docusaurus", // Usually your repo name.
+  organizationName: "fuego-go", // Usually your GitHub org/user name.
+  projectName: "fuego", // Usually your repo name.
 
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -37,15 +37,13 @@ const config: Config = {
           sidebarPath: "./sidebars.ts",
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
+          editUrl: "https://github.com/go-fuego/fuego",
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
+          editUrl: "https://github.com/go-fuego/fuego/documentation",
         },
         theme: {
           customCss: "./src/css/custom.css",
@@ -58,9 +56,9 @@ const config: Config = {
     // Replace with your project's social card
     image: "img/docusaurus-social-card.jpg",
     navbar: {
-      title: "My Site",
+      title: "Fuego",
       logo: {
-        alt: "My Site Logo",
+        alt: "Fuego Logo",
         src: "img/logo.svg",
       },
       items: [
@@ -71,7 +69,7 @@ const config: Config = {
           label: "Tutorial",
         },
         {
-          href: "https://github.com/facebook/docusaurus",
+          href: "https://github.com/go-fuego/fuego",
           label: "GitHub",
           position: "right",
         },
@@ -111,12 +109,12 @@ const config: Config = {
           items: [
             {
               label: "GitHub",
-              href: "https://github.com/facebook/docusaurus",
+              href: "https://github.com/go-fuego/fuego",
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Fuego, Inc. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,

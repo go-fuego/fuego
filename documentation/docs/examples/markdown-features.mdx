@@ -43,18 +43,18 @@ Let's see how to [Create a page](./create-a-page.md).
 
 Regular Markdown images are supported.
 
-You can use absolute paths to reference images in the static directory (`static/img/docusaurus.png`):
+You can use absolute paths to reference images in the static directory (`static/img/fuego.png`):
 
 ```md
-![Docusaurus logo](/img/docusaurus.png)
+![Docusaurus logo](/img/fuego.png)
 ```
 
-![Docusaurus logo](/img/docusaurus.png)
+![Docusaurus logo](/img/fuego.png)
 
 You can reference images relative to the current file as well. This is particularly useful to colocate images close to the Markdown files using them:
 
 ```md
-![Docusaurus logo](./img/docusaurus.png)
+![Docusaurus logo](./img/fuego.png)
 ```
 
 ## Code Blocks
@@ -131,18 +131,19 @@ This is <Highlight color="#25c2a0">Docusaurus green</Highlight> !
 This is <Highlight color="#1877F2">Facebook blue</Highlight> !
 ```
 
-export const Highlight = ({children, color}) => (
+export const Highlight = ({ children, color }) => (
   <span
     style={{
       backgroundColor: color,
-      borderRadius: '20px',
-      color: '#fff',
-      padding: '10px',
-      cursor: 'pointer',
+      borderRadius: "20px",
+      color: "#fff",
+      padding: "10px",
+      cursor: "pointer",
     }}
     onClick={() => {
       alert(`You clicked the color ${color} with label ${children}`);
-    }}>
+    }}
+  >
     {children}
   </span>
 );
