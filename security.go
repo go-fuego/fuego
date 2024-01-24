@@ -424,8 +424,8 @@ type LoginPayload struct {
 //			},
 //			Username: "myUsername",
 //		}, nil
-func (security Security) LoginHandler(verifyUserInfo func(user, password string) (jwt.Claims, error)) func(Ctx[LoginPayload]) (tokenResponse, error) {
-	return func(c Ctx[LoginPayload]) (tokenResponse, error) {
+func (security Security) LoginHandler(verifyUserInfo func(user, password string) (jwt.Claims, error)) func(*ContextWithBody[LoginPayload]) (tokenResponse, error) {
+	return func(c *ContextWithBody[LoginPayload]) (tokenResponse, error) {
 		body, err := c.Body()
 		if err != nil {
 			return tokenResponse{}, err

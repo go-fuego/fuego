@@ -44,13 +44,13 @@ func TestTagFromType(t *testing.T) {
 
 func TestServer_generateOpenAPI(t *testing.T) {
 	s := NewServer()
-	Get(s, "/", func(Ctx[any]) (MyStruct, error) {
+	Get(s, "/", func(*ContextNoBody) (MyStruct, error) {
 		return MyStruct{}, nil
 	})
-	Post(s, "/post", func(Ctx[MyStruct]) ([]MyStruct, error) {
+	Post(s, "/post", func(*ContextWithBody[MyStruct]) ([]MyStruct, error) {
 		return nil, nil
 	})
-	Get(s, "/post/{id}", func(Ctx[any]) (MyOutputStruct, error) {
+	Get(s, "/post/{id}", func(*ContextNoBody) (MyOutputStruct, error) {
 		return MyOutputStruct{}, nil
 	})
 	document := s.generateOpenAPI()
