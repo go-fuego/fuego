@@ -11,11 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func controller(c Ctx[any]) (testStruct, error) {
+func controller(c *ContextNoBody) (testStruct, error) {
 	return testStruct{"Ewen", 23}, nil
 }
 
-func controllerWithError(c Ctx[any]) (testStruct, error) {
+func controllerWithError(c *ContextNoBody) (testStruct, error) {
 	return testStruct{}, errors.New("error")
 }
 

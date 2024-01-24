@@ -1,7 +1,7 @@
 package fuego
 
 import (
-	"html/template"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"reflect"
@@ -22,32 +22,60 @@ func (s *Server) Run() error {
 	return s.Server.ListenAndServe()
 }
 
-type Controller[ReturnType any, Body any] func(c Context[Body]) (ReturnType, error)
+type Controller[ReturnType any, Body any] func(c ContextWithBody[Body]) (ReturnType, error)
+
+// initializes a Context with the provided type
+//
+//	var ctx ContextWithBody[any] // does not work because it will create a ContextWithBody[any] with a nil value
+func ini[Contextable Ctx[Body], Body any](w http.ResponseWriter, r *http.Request) Contextable {
+	var c Contextable
+
+	baseContext := ContextNoBody{
+		request:  r,
+		response: w,
+	}
+
+	switch any(c).(type) {
+	case ContextNoBody:
+		return any(baseContext).(Contextable)
+	case *ContextNoBody:
+		return any(&baseContext).(Contextable)
+	case *ContextWithBody[Body]:
+		return any(&ContextWithBody[Body]{
+			ContextNoBody: baseContext,
+		}).(Contextable)
+	default:
+		panic("unknown type")
+	}
+}
 
 // httpHandler converts a Fuego controller into a http.HandlerFunc.
-func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body]) (ReturnType, error)) http.HandlerFunc {
+func httpHandler[ReturnType any, Body any, Contextable Ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error), ctxInit func(w http.ResponseWriter, r *http.Request) Contextable) http.HandlerFunc {
 	returnsHTML := reflect.TypeOf(controller).Out(0).Name() == "HTML"
 
-	baseCtx := NewContext[Body](nil, nil, readOptions{
-		DisallowUnknownFields: s.DisallowUnknownFields,
-		MaxBodySize:           s.maxBodySize,
-	})
-	baseCtx.fs = s.fs
-	if s.template != nil {
-		baseCtx.templates = template.Must(s.template.Clone())
+	// baseCtx := NewContext[Body](nil, nil, readOptions{
+	// 	DisallowUnknownFields: s.DisallowUnknownFields,
+	// 	MaxBodySize:           s.maxBodySize,
+	// })
+	// baseCtx.fs = s.fs
+	// if s.template != nil {
+	// 	baseCtx.templates = template.Must(s.template.Clone())
+	// }
+	baseContext := *new(Contextable)
+	if reflect.TypeOf(baseContext) == nil {
+		slog.Info(fmt.Sprintf("context is nil: %v %T", baseContext, baseContext))
+		panic("ctx must be provided as concrete type (not interface). ContextNoBody, ContextWithBody[any], ContextFull[any, any], ContextWithQueryParams[any] are supported")
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Trailer", "Server-Timing")
 		timeCtxInit := time.Now()
 
-		ctx := baseCtx.SafeShallowCopy()
-		ctx.response = w
-		ctx.request = r
+		ctx := ctxInit(w, r)
 
-		for _, param := range parsePathParams(r.URL.Path) {
-			ctx.pathParams[param] = "coming in go1.22"
-		}
+		// for _, param := range parsePathParams(r.URL.Path) {
+		// 	ctx.pathParams[param] = "coming in go1.22"
+		// }
 
 		timeController := time.Now()
 		w.Header().Set("Server-Timing", Timing{"fuegoReqInit", timeController.Sub(timeCtxInit), ""}.String())

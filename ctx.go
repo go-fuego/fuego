@@ -82,13 +82,13 @@ type Ctx[B any] interface {
 	//   })
 	Redirect(code int, url string) (any, error)
 
-	Pass() ClassicContext
+	Pass() ContextNoBody
 }
 
 // NewContext returns a new context. It is used internally by Fuego. You probably want to use Ctx[B] instead.
-func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) *Context[B] {
-	c := &Context[B]{
-		ClassicContext: ClassicContext{
+func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) *ContextWithBody[B] {
+	c := &ContextWithBody[B]{
+		ContextNoBody: ContextNoBody{
 			response: w,
 			request:  r,
 			readOptions: readOptions{
@@ -101,18 +101,19 @@ func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptio
 	return c
 }
 
-// Context is used internally by Fuego. You probably want to use Ctx[B] instead. Please do not use a pointer type as parameter.
-type Context[BodyType any] struct {
-	body *BodyType // Cache the body in request context, because it is not possible to read an http request body multiple times.
-	ClassicContext
+// ContextWithBody is used internally by Fuego. You probably want to use Ctx[B] instead. Please do not use a pointer type as parameter.
+type ContextWithBody[Body any] struct {
+	body *Body // Cache the body in request context, because it is not possible to read an http request body multiple times.
+	ContextNoBody
 }
 
-func (c *Context[B]) Pass() ClassicContext {
-	return c.ClassicContext
+func (c *ContextWithBody[B]) Pass() ContextNoBody {
+	return c.ContextNoBody
 }
 
-// ClassicContext is used internally by Fuego. Please do not use a pointer type as parameter.
-type ClassicContext struct {
+// ContextNoBody is used when the controller does not have a body.
+// It used as a base context for other Context types.
+type ContextNoBody struct {
 	request    *http.Request
 	response   http.ResponseWriter
 	pathParams map[string]string
@@ -123,12 +124,12 @@ type ClassicContext struct {
 	readOptions readOptions
 }
 
-func (c ClassicContext) Body() (any, error) {
+func (c ContextNoBody) Body() (any, error) {
 	slog.Warn("this method should not be called. It probably happened because you passed the context to another controller with the Pass method.")
 	return body[map[string]any](c)
 }
 
-func (c ClassicContext) MustBody() any {
+func (c ContextNoBody) MustBody() any {
 	b, err := c.Body()
 	if err != nil {
 		panic(err)
@@ -139,7 +140,7 @@ func (c ClassicContext) MustBody() any {
 // SafeShallowCopy returns a safe shallow copy of the context.
 // It allows to modify the base context while modifying the request context.
 // It is data-safe, meaning that any sensitive data will not be shared between the original context and the copy.
-func (c *Context[B]) SafeShallowCopy() *Context[B] {
+func (c *ContextWithBody[B]) SafeShallowCopy() *ContextWithBody[B] {
 	c.pathParams = nil
 	c.body = nil
 	c.request = nil
@@ -150,7 +151,7 @@ func (c *Context[B]) SafeShallowCopy() *Context[B] {
 
 // SetStatus sets the status code of the response.
 // Alias to http.ResponseWriter.WriteHeader.
-func (c ClassicContext) SetStatus(code int) {
+func (c ContextNoBody) SetStatus(code int) {
 	c.response.WriteHeader(code)
 }
 
@@ -162,22 +163,22 @@ type readOptions struct {
 }
 
 var (
-	_ Ctx[any]    = &Context[any]{}    // Check that Context implements Ctx.
-	_ Ctx[string] = &Context[string]{} // Check that Context implements Ctx.
-	_ Ctx[any]    = &ClassicContext{}  // Check that Context implements Ctx.
+	_ Ctx[any]    = &ContextWithBody[any]{}    // Check that Context implements Ctx.
+	_ Ctx[string] = &ContextWithBody[string]{} // Check that Context implements Ctx.
+	_ Ctx[any]    = &ContextNoBody{}           // Check that Context implements Ctx.
 )
 
-func (c ClassicContext) Redirect(code int, url string) (any, error) {
+func (c ContextNoBody) Redirect(code int, url string) (any, error) {
 	http.Redirect(c.response, c.request, url, code)
 
 	return nil, nil
 }
 
-func (c ClassicContext) Pass() ClassicContext {
+func (c ContextNoBody) Pass() ContextNoBody {
 	return c
 }
 
-func (c ClassicContext) Context() context.Context {
+func (c ContextNoBody) Context() context.Context {
 	return c.request.Context()
 }
 
@@ -189,7 +190,7 @@ func (c ClassicContext) Context() context.Context {
 // that the templates will be parsed only once, removing
 // the need to parse the templates on each request but also preventing
 // to dynamically use new templates.
-func (c ClassicContext) Render(templateToExecute string, data any, layoutsGlobs ...string) (HTML, error) {
+func (c ContextNoBody) Render(templateToExecute string, data any, layoutsGlobs ...string) (HTML, error) {
 	if strings.Contains(templateToExecute, "/") || strings.Contains(templateToExecute, "*") {
 
 		layoutsGlobs = append(layoutsGlobs, templateToExecute) // To override all blocks defined in the main template
@@ -229,7 +230,7 @@ func (c ClassicContext) Render(templateToExecute string, data any, layoutsGlobs 
 }
 
 // PathParams returns the path parameters of the request.
-func (c ClassicContext) PathParam(name string) string {
+func (c ContextNoBody) PathParam(name string) string {
 	param := c.pathParams[name]
 	if param == "" {
 		slog.Error("Path parameter might be invalid", "name", name, "valid parameters", c.pathParams)
@@ -238,7 +239,7 @@ func (c ClassicContext) PathParam(name string) string {
 }
 
 // PathParams returns the path parameters of the request.
-func (c ClassicContext) PathParams() map[string]string {
+func (c ContextNoBody) PathParams() map[string]string {
 	return nil
 }
 
@@ -262,7 +263,7 @@ func (e QueryParamInvalidTypeError) Error() string {
 }
 
 // QueryParams returns the query parameters of the request.
-func (c ClassicContext) QueryParams() map[string]string {
+func (c ContextNoBody) QueryParams() map[string]string {
 	queryParams := c.request.URL.Query()
 	params := make(map[string]string)
 	for k, v := range queryParams {
@@ -272,11 +273,11 @@ func (c ClassicContext) QueryParams() map[string]string {
 }
 
 // QueryParam returns the query parameter with the given name.
-func (c ClassicContext) QueryParam(name string) string {
+func (c ContextNoBody) QueryParam(name string) string {
 	return c.request.URL.Query().Get(name)
 }
 
-func (c ClassicContext) QueryParamIntErr(name string) (int, error) {
+func (c ContextNoBody) QueryParamIntErr(name string) (int, error) {
 	param := c.QueryParam(name)
 	if param == "" {
 		return 0, QueryParamNotFoundError{ParamName: name}
@@ -295,7 +296,7 @@ func (c ClassicContext) QueryParamIntErr(name string) (int, error) {
 	return i, nil
 }
 
-func (c ClassicContext) QueryParamInt(name string, defaultValue int) int {
+func (c ContextNoBody) QueryParamInt(name string, defaultValue int) int {
 	param, err := c.QueryParamIntErr(name)
 	if err != nil {
 		return defaultValue
@@ -307,7 +308,7 @@ func (c ClassicContext) QueryParamInt(name string, defaultValue int) int {
 // QueryParamBool returns the query parameter with the given name as a bool.
 // If the query parameter does not exist or is not a bool, it returns nil.
 // Accepted values are defined as [strconv.ParseBool]
-func (c ClassicContext) QueryParamBoolErr(name string) (bool, error) {
+func (c ContextNoBody) QueryParamBoolErr(name string) (bool, error) {
 	param := c.QueryParam(name)
 	if param == "" {
 		return false, QueryParamNotFoundError{ParamName: name}
@@ -325,7 +326,7 @@ func (c ClassicContext) QueryParamBoolErr(name string) (bool, error) {
 	return b, nil
 }
 
-func (c ClassicContext) QueryParamBool(name string, defaultValue bool) bool {
+func (c ContextNoBody) QueryParamBool(name string, defaultValue bool) bool {
 	param, err := c.QueryParamBoolErr(name)
 	if err != nil {
 		return defaultValue
@@ -334,26 +335,26 @@ func (c ClassicContext) QueryParamBool(name string, defaultValue bool) bool {
 	return param
 }
 
-func (c ClassicContext) MainLang() string {
+func (c ContextNoBody) MainLang() string {
 	return strings.Split(c.MainLocale(), "-")[0]
 }
 
-func (c ClassicContext) MainLocale() string {
+func (c ContextNoBody) MainLocale() string {
 	return strings.Split(c.request.Header.Get("Accept-Language"), ",")[0]
 }
 
 // Request returns the http request.
-func (c ClassicContext) Request() *http.Request {
+func (c ContextNoBody) Request() *http.Request {
 	return c.request
 }
 
 // Response returns the http response writer.
-func (c ClassicContext) Response() http.ResponseWriter {
+func (c ContextNoBody) Response() http.ResponseWriter {
 	return c.response
 }
 
 // MustBody works like Body, but panics if there is an error.
-func (c *Context[B]) MustBody() B {
+func (c *ContextWithBody[B]) MustBody() B {
 	b, err := c.Body()
 	if err != nil {
 		panic(err)
@@ -366,17 +367,17 @@ func (c *Context[B]) MustBody() B {
 // It caches the result, so it can be called multiple times.
 // The reason why the body is cached is because it is not possible to read an http request body multiple times, not because of performance.
 // For decoding, it uses the Content-Type header. If it is not set, defaults to application/json.
-func (c *Context[B]) Body() (B, error) {
+func (c *ContextWithBody[B]) Body() (B, error) {
 	if c.body != nil {
 		return *c.body, nil
 	}
 
-	body, err := body[B](c.ClassicContext)
+	body, err := body[B](c.ContextNoBody)
 	c.body = &body
 	return body, err
 }
 
-func body[B any](c ClassicContext) (B, error) {
+func body[B any](c ContextNoBody) (B, error) {
 	// Limit the size of the request body.
 	if c.readOptions.MaxBodySize != 0 {
 		c.request.Body = http.MaxBytesReader(nil, c.request.Body, c.readOptions.MaxBodySize)

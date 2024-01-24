@@ -12,7 +12,7 @@ func main() {
 
 	s := fuego.NewServer()
 
-	fuego.Get(s, "/", func(c fuego.Ctx[any]) (string, error) {
+	fuego.Get(s, "/", func(c *fuego.ContextNoBody) (string, error) {
 		return "Hello, World!", nil
 	})
 
