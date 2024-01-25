@@ -4,7 +4,7 @@ import type * as Preset from "@docusaurus/preset-classic";
 
 const config: Config = {
   title: "Fuego",
-  tagline: "The blazing fast Go framework",
+  tagline: "The framework for busy Go developers",
   favicon: "img/fuego.ico",
 
   // Set the production url of your site here
@@ -54,7 +54,7 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: "img/docusaurus-social-card.jpg",
+    image: "img/fuego.png",
     navbar: {
       title: "Fuego",
       logo: {
@@ -119,6 +119,7 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
+      defaultLanguage: "go",
     },
   } satisfies Preset.ThemeConfig,
 };
