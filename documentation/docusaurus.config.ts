@@ -67,12 +67,17 @@ const config: Config = {
           type: "docSidebar",
           sidebarId: "tutorialSidebar",
           position: "left",
-          label: "Docs",
+          label: "📖 Docs",
         },
         {
           href: "https://pkg.go.dev/github.com/go-fuego/fuego",
           position: "left",
-          label: "Reference",
+          label: "📚 Reference",
+        },
+        {
+          href: "https://github.com/go-fuego/fuego/tree/main/examples/",
+          position: "left",
+          label: "👀 Examples",
         },
         {
           href: "https://github.com/go-fuego/fuego",
