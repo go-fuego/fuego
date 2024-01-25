@@ -38,6 +38,7 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl: "https://github.com/go-fuego/fuego",
+          sidebarCollapsed: false,
         },
         blog: {
           showReadingTime: true,
@@ -66,7 +67,12 @@ const config: Config = {
           type: "docSidebar",
           sidebarId: "tutorialSidebar",
           position: "left",
-          label: "Tutorial",
+          label: "Docs",
+        },
+        {
+          href: "https://pkg.go.dev/github.com/go-fuego/fuego",
+          position: "left",
+          label: "Reference",
         },
         {
           href: "https://github.com/go-fuego/fuego",
@@ -82,8 +88,8 @@ const config: Config = {
           title: "Docs",
           items: [
             {
-              label: "Tutorial",
-              to: "/docs/intro",
+              label: "Docs",
+              to: "/docs/",
             },
           ],
         },

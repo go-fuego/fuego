@@ -30,3 +30,5 @@ func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (fuego.Templ, error) {
 	return admin.IngredientList(ingredients, searchParams), nil
 }
 ```
+
+Note that the `fuego.Templ` type is a simple alias for `fuego.CtxRenderer` : any type that implements the `Render(context.Context, io.Writer) error` method can be used as a return type for a handler.
