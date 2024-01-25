@@ -35,6 +35,25 @@ Chi, Gin, Fiber and Echo are great frameworks. But since they were designed a lo
 ```go
 package main
 
+import "github.com/go-fuego/fuego"
+
+func main() {
+	s := fuego.NewServer()
+
+	fuego.Get(s, "/", func(c fuego.Ctx[any]) (string, error) {
+		return "Hello, World!", nil
+	})
+
+	s.Run()
+}
+```
+
+<details>
+<summary>All features</summary>
+
+```go
+package main
+
 import (
 	"context"
 	"errors"
@@ -111,6 +130,8 @@ curl http://localhost:8088 -X POST -d '{"name": "Your Name"}' -H 'Content-Type: 
 curl http://localhost:8088 -X POST -d '{"name": "Fuego"}' -H 'Content-Type: application/json'
 # {"error":"cannot transform request body: cannot transform request body: fuego is not a name"}
 ```
+
+</details>
 
 ## Contributing
 
