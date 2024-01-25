@@ -3,9 +3,11 @@ name: Deploy Docusaurus site to Pages
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ["main"]
+    branches: ["main", "ci/**"]
     paths:
       - "documentation/**"
+  pull_request:
+    branches: ["main", "ci/**"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -33,17 +35,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "18"
-          cache: "pnpm"
-
-      - name: Install pnpm
-        run: npm install -g pnpm
+          
 
       - name: Install dependencies
-        run: pnpm install
+        run: npm install
         working-directory: ./documentation
 
       - name: Build Docusaurus site
-        run: pnpm run build
+        run: npm run build
         working-directory: ./documentation
 
       - name: Upload artifact for deployment
