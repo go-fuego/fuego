@@ -1,8 +1,23 @@
 .features {
   display: flex;
-  align-items: center;
-  padding: 2rem 0;
+  flex-direction: row;
+  flex-wrap: wrap;
   width: 100%;
+}
+
+.block {
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  width: 100%;
+}
+
+.block_odd {
+  background-color: #953a09;
+  color: #fff;
 }
 
 .featureSvg {
