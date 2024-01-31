@@ -11,7 +11,7 @@ import (
 	"github.com/go-fuego/fuego"
 )
 
-func (rs Ressource) adminOneIngredient(c fuego.Ctx[store.UpdateIngredientParams]) (fuego.CtxRenderer, error) {
+func (rs Ressource) adminOneIngredient(c *fuego.ContextWithBody[store.UpdateIngredientParams]) (fuego.CtxRenderer, error) {
 	id := c.QueryParam("id") // TODO use PathParam
 
 	if c.Request().Method == "PUT" {
@@ -40,11 +40,11 @@ func (rs Ressource) adminOneIngredient(c fuego.Ctx[store.UpdateIngredientParams]
 	return admin.IngredientPage(ingredient), nil
 }
 
-func (rs Ressource) adminIngredientCreationPage(c fuego.Ctx[store.CreateIngredientParams]) (any, error) {
+func (rs Ressource) adminIngredientCreationPage(c *fuego.ContextWithBody[store.CreateIngredientParams]) (any, error) {
 	return admin.IngredientNew(), nil
 }
 
-func (rs Ressource) adminCreateIngredient(c fuego.Ctx[store.CreateIngredientParams]) (any, error) {
+func (rs Ressource) adminCreateIngredient(c *fuego.ContextWithBody[store.CreateIngredientParams]) (any, error) {
 	createIngredientArgs, err := c.Body()
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (rs Ressource) adminCreateIngredient(c fuego.Ctx[store.CreateIngredientPara
 	return c.Redirect(301, "/admin/ingredients")
 }
 
-func (rs Ressource) adminIngredients(c fuego.Ctx[any]) (fuego.Templ, error) {
+func (rs Ressource) adminIngredients(c fuego.ContextNoBody) (fuego.Templ, error) {
 	searchParams := components.SearchParams{
 		Name:    c.QueryParam("name"),
 		PerPage: c.QueryParamInt("perPage", 20),

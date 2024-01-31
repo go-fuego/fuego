@@ -37,7 +37,7 @@ func (rs Ressource) MountRoutes(s *fuego.Server) {
 	}.MountRoutes(s)
 
 	// Me ! Get the current user information
-	fuego.Get(s, "/users/me", func(c fuego.Ctx[any]) (string, error) {
+	fuego.Get(s, "/users/me", func(c fuego.ContextNoBody) (string, error) {
 		claims, err := fuego.GetToken[MyCustomToken](c.Context())
 		if err != nil {
 			return "", err

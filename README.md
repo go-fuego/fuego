@@ -40,7 +40,7 @@ import "github.com/go-fuego/fuego"
 func main() {
 	s := fuego.NewServer()
 
-	fuego.Get(s, "/", func(c fuego.Ctx[any]) (string, error) {
+	fuego.Get(s, "/", func(c fuego.ContextNoBody) (string, error) {
 		return "Hello, World!", nil
 	})
 
@@ -83,7 +83,7 @@ func main() {
 	fuego.Use(s, chiMiddleware.Compress(5, "text/html", "text/css"))
 
 	// Fuego 🔥 handler with automatic OpenAPI generation, validation, (de)serialization and error handling
-	fuego.Post(s, "/", func(c fuego.Ctx[Received]) (MyResponse, error) {
+	fuego.Post(s, "/", func(c *fuego.ContextWithBody[Received]) (MyResponse, error) {
 		data, err := c.Body()
 		if err != nil {
 			return MyResponse{}, err

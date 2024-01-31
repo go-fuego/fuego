@@ -43,7 +43,7 @@ func (rs Ressource) showRecipesStd(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (rs Ressource) showIndex(c fuego.Ctx[any]) (fuego.Templ, error) {
+func (rs Ressource) showIndex(c fuego.ContextNoBody) (fuego.Templ, error) {
 	timeDBRequest := time.Now()
 
 	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
@@ -99,7 +99,7 @@ func (rs Ressource) showIndex(c fuego.Ctx[any]) (fuego.Templ, error) {
 	}), nil
 }
 
-func (rs Ressource) showRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
+func (rs Ressource) showRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (rs Ressource) showRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 	}), nil
 }
 
-func (rs Ressource) relatedRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
+func (rs Ressource) relatedRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 	recipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
 	if err != nil {
 		return nil, err
@@ -119,7 +119,7 @@ func (rs Ressource) relatedRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 	return templa.RelatedRecipes(recipes), nil
 }
 
-func (rs Ressource) showSingleRecipes2(c fuego.Ctx[any]) (fuego.Templ, error) {
+func (rs Ressource) showSingleRecipes2(c fuego.ContextNoBody) (fuego.Templ, error) {
 	id := c.QueryParam("id")
 
 	recipe, err := rs.RecipesQueries.GetRecipe(c.Context(), id)
@@ -143,7 +143,7 @@ func (rs Ressource) showSingleRecipes2(c fuego.Ctx[any]) (fuego.Templ, error) {
 	}), nil
 }
 
-func (rs Ressource) searchRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
+func (rs Ressource) searchRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 	search := c.QueryParam("q")
 
 	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), store.SearchRecipesParams{
@@ -164,7 +164,7 @@ func (rs Ressource) searchRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 	}), nil
 }
 
-func (rs Ressource) fastRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
+func (rs Ressource) fastRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), store.SearchRecipesParams{
 		Search: sql.NullString{
 			Valid: true,
@@ -184,7 +184,7 @@ func (rs Ressource) fastRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 	}), nil
 }
 
-func (rs Ressource) healthyRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
+func (rs Ressource) healthyRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), store.SearchRecipesParams{
 		Search: sql.NullString{
 			String: "",
@@ -205,7 +205,7 @@ func (rs Ressource) healthyRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 	}), nil
 }
 
-func (rs Ressource) showRecipesList(c fuego.Ctx[any]) (fuego.HTML, error) {
+func (rs Ressource) showRecipesList(c fuego.ContextNoBody) (fuego.HTML, error) {
 	search := c.QueryParam("search")
 	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), store.SearchRecipesParams{
 		Search: sql.NullString{
@@ -220,7 +220,7 @@ func (rs Ressource) showRecipesList(c fuego.Ctx[any]) (fuego.HTML, error) {
 	return c.Render("partials/recipes-list.partial.html", recipes)
 }
 
-func (rs Ressource) addRecipe(c fuego.Ctx[store.CreateRecipeParams]) (fuego.HTML, error) {
+func (rs Ressource) addRecipe(c *fuego.ContextWithBody[store.CreateRecipeParams]) (fuego.HTML, error) {
 	body, err := c.Body()
 	if err != nil {
 		return "", err
@@ -243,7 +243,7 @@ func (rs Ressource) addRecipe(c fuego.Ctx[store.CreateRecipeParams]) (fuego.HTML
 	})
 }
 
-func (rs Ressource) RecipePage(c fuego.Ctx[any]) (fuego.HTML, error) {
+func (rs Ressource) RecipePage(c fuego.ContextNoBody) (fuego.HTML, error) {
 	id := c.QueryParam("id")
 
 	recipe, err := rs.RecipesQueries.GetRecipe(c.Context(), id)
