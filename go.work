@@ -2,6 +2,7 @@ go 1.22.0
 
 use (
 	.
+	./cmd/fuego
 	./examples/basic
 	./examples/full-app-gourmet
 	./examples/hello-world

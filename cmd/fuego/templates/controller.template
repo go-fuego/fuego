@@ -1,0 +1,45 @@
+package controllers
+
+import (
+	"github.com/go-fuego/fuego"
+)
+
+type NewControllerEntityRepository interface {
+	// TODO add queries interfaces
+}
+
+type NewControllerService interface {
+	// TODO add service functions interfaces
+}
+
+type newControllerRessources struct {
+	// TODO add ressourses
+	NewControllerEntityRepository NewControllerEntityRepository
+	NewControllerService          NewControllerService
+}
+
+func (rs newControllerRessources) Routes(s *fuego.Server) {
+	newControllerRoutesGroupe := fuego.Group(s, "/newController")
+	fuego.Post(newControllerRoutesGroupe, "/", rs.postNewControllerFunction)
+	fuego.Get(newControllerRoutesGroupe, "/{id}", rs.getNewControllerFunction)
+	fuego.Patch(newControllerRoutesGroupe, "/{id}", rs.patchNewControllerFunction)
+	fuego.Put(newControllerRoutesGroupe, "/{id}", rs.putNewControllerFunction)
+	fuego.Delete(newControllerRoutesGroupe, "/{id}", rs.deleteNewControllerFunction)
+}
+
+// TODO replace the following with your own functions
+func (rs newControllerRessources) postNewControllerRessources(c fuego.Ctx[any]) (string, error) {
+	return "🔥", nil
+}
+func (rs newControllerRessources) getNewControllerRessources(c fuego.Ctx[any]) (string, error) {
+	return "🔥", nil
+}
+func (rs newControllerRessources) patchNewControllerRessources(c fuego.Ctx[any]) (string, error) {
+	return "🔥", nil
+}
+func (rs newControllerRessources) putNewControllerRessources(c fuego.Ctx[any]) (string, error) {
+	return "🔥", nil
+}
+func (rs newControllerRessources) deleteNewControllerRessources(c fuego.Ctx[any]) (string, error) {
+	return "🔥", nil
+}
