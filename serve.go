@@ -52,6 +52,11 @@ func ini[Contextable Ctx[Body], Body any](w http.ResponseWriter, r *http.Request
 // httpHandler converts a Fuego controller into a http.HandlerFunc.
 func httpHandler[ReturnType any, Body any, Contextable Ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error), ctxInit func(w http.ResponseWriter, r *http.Request) Contextable) http.HandlerFunc {
 	returnsHTML := reflect.TypeOf(controller).Out(0).Name() == "HTML"
+	var r ReturnType
+	_, returnsString := any(r).(*string)
+	if !returnsString {
+		_, returnsString = any(r).(string)
+	}
 
 	// baseCtx := NewContext[Body](nil, nil, readOptions{
 	// 	DisallowUnknownFields: s.DisallowUnknownFields,
@@ -134,6 +139,21 @@ func httpHandler[ReturnType any, Body any, Contextable Ctx[Body]](s *Server, con
 			s.SerializeError(w, err)
 			return
 		}
+
+		if returnsString {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			stringToWrite, ok := any(ans).(string)
+			if !ok {
+				stringToWrite = *any(ans).(*string)
+			}
+			_, err = w.Write([]byte(stringToWrite))
+			if err != nil {
+				s.SerializeError(w, err)
+			}
+			w.Header().Add("Server-Timing", Timing{"write", time.Since(timeTransformOut), "transformOut"}.String())
+			return
+		}
+
 		timeAfterTransformOut := time.Now()
 		w.Header().Add("Server-Timing", Timing{"transformOut", timeAfterTransformOut.Sub(timeTransformOut), "transformOut"}.String())
 

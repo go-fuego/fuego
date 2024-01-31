@@ -54,7 +54,7 @@ func TestAll(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, w.Code, http.StatusOK)
-		require.Equal(t, w.Body.String(), "\"test\"\n")
+		require.Equal(t, "test", w.Body.String())
 	})
 
 	t.Run("post", func(t *testing.T) {
@@ -64,7 +64,7 @@ func TestAll(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, w.Code, http.StatusOK)
-		require.Equal(t, w.Body.String(), "\"test\"\n")
+		require.Equal(t, "test", w.Body.String())
 	})
 }
 
@@ -80,7 +80,7 @@ func TestGet(t *testing.T) {
 	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, w.Body.String(), "\"test\"\n")
+	require.Equal(t, "test", w.Body.String())
 }
 
 func TestPost(t *testing.T) {
@@ -95,7 +95,7 @@ func TestPost(t *testing.T) {
 	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, w.Body.String(), "\"test\"\n")
+	require.Equal(t, "test", w.Body.String())
 }
 
 func TestPut(t *testing.T) {
@@ -110,7 +110,7 @@ func TestPut(t *testing.T) {
 	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, w.Body.String(), "\"test\"\n")
+	require.Equal(t, "test", w.Body.String())
 }
 
 func TestPatch(t *testing.T) {
@@ -125,7 +125,7 @@ func TestPatch(t *testing.T) {
 	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, w.Body.String(), "\"test\"\n")
+	require.Equal(t, "test", w.Body.String())
 }
 
 func TestDelete(t *testing.T) {
@@ -140,7 +140,7 @@ func TestDelete(t *testing.T) {
 	s.Mux.ServeHTTP(w, r)
 
 	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, w.Body.String(), "\"test\"\n")
+	require.Equal(t, "test", "test", w.Body.String())
 }
 
 func TestHandle(t *testing.T) {
@@ -403,7 +403,7 @@ func TestPerRouteMiddleware(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, w.Body.String(), "\"withmiddleware\"\n")
+		require.Equal(t, "withmiddleware", w.Body.String())
 		require.Equal(t, "response", w.Header().Get("X-Test-Response"))
 	})
 
@@ -414,7 +414,7 @@ func TestPerRouteMiddleware(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, w.Body.String(), "\"withoutmiddleware\"\n")
+		require.Equal(t, "withoutmiddleware", w.Body.String())
 		require.Equal(t, "", w.Header().Get("X-Test-Response"))
 	})
 }
@@ -445,7 +445,7 @@ func TestGroup(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, w.Body.String(), "\"route1\"\n")
+		require.Equal(t, "route1", w.Body.String())
 		require.Equal(t, "", w.Header().Get("X-Test-Response"), "middleware is not set to this group")
 	})
 
@@ -455,7 +455,7 @@ func TestGroup(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, w.Body.String(), "\"route2\"\n")
+		require.Equal(t, "route2", w.Body.String())
 		require.Equal(t, "response", w.Header().Get("X-Test-Response"))
 	})
 
@@ -465,7 +465,7 @@ func TestGroup(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, w.Body.String(), "\"route3\"\n")
+		require.Equal(t, "route3", w.Body.String())
 		require.Equal(t, "", w.Header().Get("X-Test-Response"), "middleware is not inherited")
 	})
 }
