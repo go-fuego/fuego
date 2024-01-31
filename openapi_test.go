@@ -40,6 +40,13 @@ func TestTagFromType(t *testing.T) {
 		require.Equal(t, "default", tagFromType(new(MoreDeeplyNested)), "behind 6 pointers")
 		require.Equal(t, "default", tagFromType([]*MoreDeeplyNested{}), "behind 7 pointers")
 	})
+
+	t.Run("detecting string", func(t *testing.T) {
+		require.Equal(t, "string", tagFromType("string"))
+		require.Equal(t, "string", tagFromType(new(string)))
+		require.Equal(t, "string", tagFromType([]string{}))
+		require.Equal(t, "string", tagFromType(&[]string{}))
+	})
 }
 
 func TestServer_generateOpenAPI(t *testing.T) {

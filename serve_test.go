@@ -53,6 +53,15 @@ func testControllerWithOutTransformerStarNil(c *ContextNoBody) (*testOutTransfor
 	return nil, nil
 }
 
+func testControllerReturningString(c *ContextNoBody) (string, error) {
+	return "hello world", nil
+}
+
+func testControllerReturningPtrToString(c *ContextNoBody) (*string, error) {
+	s := "hello world"
+	return &s, nil
+}
+
 func TestHttpHandler(t *testing.T) {
 	s := NewServer()
 
@@ -131,6 +140,26 @@ func TestHttpHandler(t *testing.T) {
 		body := w.Body.String()
 		require.Equal(t, "null\n", body)
 	})
+
+	t.Run("returns correct content-type when returning string", func(t *testing.T) {
+		handler := httpHandler(s, testControllerReturningString, ini)
+
+		req := httptest.NewRequest("GET", "/testing", nil)
+		w := httptest.NewRecorder()
+		handler(w, req)
+
+		require.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
+	})
+
+	t.Run("returns correct content-type when returning ptr to string", func(t *testing.T) {
+		handler := httpHandler(s, testControllerReturningPtrToString, ini)
+
+		req := httptest.NewRequest("GET", "/testing", nil)
+		w := httptest.NewRecorder()
+		handler(w, req)
+
+		require.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
+	})
 }
 
 func TestServer_Run(t *testing.T) {
@@ -154,7 +183,7 @@ func TestServer_Run(t *testing.T) {
 			w := httptest.NewRecorder()
 			s.Mux.ServeHTTP(w, req)
 
-			return w.Body.String() == crlf(`"OK"`)
+			return w.Body.String() == `OK`
 		}, 5*time.Millisecond, 500*time.Microsecond)
 	})
 }
