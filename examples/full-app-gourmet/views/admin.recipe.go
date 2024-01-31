@@ -11,7 +11,7 @@ import (
 	"github.com/go-fuego/fuego"
 )
 
-func (rs Ressource) deleteRecipe(c fuego.Ctx[any]) (any, error) {
+func (rs Ressource) deleteRecipe(c fuego.ContextNoBody) (any, error) {
 	id := c.QueryParam("id") // TODO use PathParam
 	err := rs.RecipesQueries.DeleteRecipe(c.Context(), id)
 	if err != nil {
@@ -21,7 +21,7 @@ func (rs Ressource) deleteRecipe(c fuego.Ctx[any]) (any, error) {
 	return c.Redirect(301, "/admin/recipes")
 }
 
-func (rs Ressource) adminRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
+func (rs Ressource) adminRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 	searchParams := components.SearchParams{
 		Name:    c.QueryParam("name"),
 		PerPage: c.QueryParamInt("perPage", 20),
@@ -37,7 +37,7 @@ func (rs Ressource) adminRecipes(c fuego.Ctx[any]) (fuego.Templ, error) {
 	return admin.RecipeList(recipes, searchParams), nil
 }
 
-func (rs Ressource) adminOneRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (fuego.Templ, error) {
+func (rs Ressource) adminOneRecipe(c *fuego.ContextWithBody[store.UpdateRecipeParams]) (fuego.Templ, error) {
 	id := c.QueryParam("id") // TODO use PathParam
 
 	if c.Request().Method == "PUT" {
@@ -82,7 +82,7 @@ func (rs Ressource) adminOneRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (fuego
 	}), nil
 }
 
-func (rs Ressource) editRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (any, error) {
+func (rs Ressource) editRecipe(c *fuego.ContextWithBody[store.UpdateRecipeParams]) (any, error) {
 	updateRecipeArgs, err := c.Body()
 	if err != nil {
 		return "", err
@@ -98,7 +98,7 @@ func (rs Ressource) editRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (any, erro
 	return c.Redirect(301, "/admin/recipes/one?id="+recipe.ID)
 }
 
-func (rs Ressource) adminAddRecipes(c fuego.Ctx[store.CreateRecipeParams]) (any, error) {
+func (rs Ressource) adminAddRecipes(c *fuego.ContextWithBody[store.CreateRecipeParams]) (any, error) {
 	body, err := c.Body()
 	if err != nil {
 		return "", err
@@ -112,7 +112,7 @@ func (rs Ressource) adminAddRecipes(c fuego.Ctx[store.CreateRecipeParams]) (any,
 	return c.Redirect(301, "/admin/recipes")
 }
 
-func (rs Ressource) adminAddDosing(c fuego.Ctx[store.CreateDosingParams]) (any, error) {
+func (rs Ressource) adminAddDosing(c *fuego.ContextWithBody[store.CreateDosingParams]) (any, error) {
 	body, err := c.Body()
 	if err != nil {
 		return "", err

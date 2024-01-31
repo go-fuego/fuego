@@ -6,7 +6,7 @@ import (
 	"github.com/go-fuego/fuego"
 )
 
-func (rs Ressource) planner(c fuego.Ctx[any]) (fuego.Templ, error) {
+func (rs Ressource) planner(c fuego.ContextNoBody) (fuego.Templ, error) {
 	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
 	if err != nil {
 		return nil, err

@@ -10,11 +10,11 @@ type test struct {
 	Name string `json:"name"`
 }
 
-func slow(c fuego.Ctx[any]) (test, error) {
+func slow(c fuego.ContextNoBody) (test, error) {
 	time.Sleep(2 * time.Second)
 	return test{Name: "hello"}, nil
 }
 
-func placeholderController(c fuego.Ctx[any]) (string, error) {
+func placeholderController(c fuego.ContextNoBody) (string, error) {
 	return "hello", nil
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/go-fuego/fuego"
 )
 
-func (rs Ressource) unitPreselected(c fuego.Ctx[any]) (fuego.HTML, error) {
+func (rs Ressource) unitPreselected(c fuego.ContextNoBody) (fuego.HTML, error) {
 	id := c.QueryParam("IngredientID")
 
 	ingredient, err := rs.IngredientsQueries.GetIngredient(c.Context(), id)

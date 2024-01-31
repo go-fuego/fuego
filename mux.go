@@ -21,7 +21,7 @@ import (
 //	// Registering a middlewares scoped to /api only
 //	fuego.Use(apiRoutes, myMiddleware)
 //	// Registering a route under /api/users
-//	fuego.Get(apiRoutes, "/users", func(c fuego.Ctx[any]) (ans, error) {
+//	fuego.Get(apiRoutes, "/users", func(c fuego.ContextNoBody) (ans, error) {
 //		return ans{Ans: "users"}, nil
 //	})
 //	s.Run()

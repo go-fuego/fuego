@@ -9,7 +9,7 @@ import (
 	"github.com/go-fuego/fuego"
 )
 
-func (rs Ressource) showIngredients(c fuego.Ctx[any]) (fuego.Templ, error) {
+func (rs Ressource) showIngredients(c fuego.ContextNoBody) (fuego.Templ, error) {
 	ingredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
 	if err != nil {
 		return nil, err

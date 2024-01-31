@@ -10,7 +10,7 @@ import (
 // CtxRenderer can be used with [github.com/a-h/templ]
 // Example:
 //
-//	func getRecipes(ctx fuego.Ctx[any]) (fuego.CtxRenderer, error) {
+//	func getRecipes(ctx fuego.ContextNoBody) (fuego.CtxRenderer, error) {
 //		recipes, err := ctx.store.GetRecipes(ctx.Context())
 //		if err != nil {
 //			return nil, err
@@ -28,7 +28,7 @@ type Templ = CtxRenderer
 // Renderer can be used with [github.com/maragudk/gomponents]
 // Example:
 //
-//	func getRecipes(ctx fuego.Ctx[any]) (fuego.CtxRenderer, error) {
+//	func getRecipes(ctx fuego.ContextNoBody) (fuego.CtxRenderer, error) {
 //		recipes, err := ctx.store.GetRecipes(ctx.Context())
 //		if err != nil {
 //			return nil, err

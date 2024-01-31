@@ -10,6 +10,6 @@ type AdminRessource struct {
 	IngredientsQueries IngredientRepository
 }
 
-func (rs Ressource) pageAdmin(c fuego.Ctx[any]) (any, error) {
-	return c.Redirect(301, "/admin/recipes")
+func (rs Ressource) pageAdmin(c fuego.ContextNoBody) (fuego.Templ, error) {
+	return rs.adminRecipes(c)
 }
