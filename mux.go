@@ -78,7 +78,7 @@ func Register[T any, B any, Contexted Ctx[B]](s *Server, method string, path str
 	}
 	slog.Debug("registering openapi controller " + fullPath)
 
-	route := register[T, B](s, method, path, httpHandler[T, B](s, controller, ini), middlewares...)
+	route := register[T, B](s, method, path, httpHandler[T, B](s, controller), middlewares...)
 
 	name, nameWithPath := funcName(controller)
 	route.operation.Summary = name

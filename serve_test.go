@@ -66,14 +66,14 @@ func TestHttpHandler(t *testing.T) {
 	s := NewServer()
 
 	t.Run("can create std http handler from fuego controller", func(t *testing.T) {
-		handler := httpHandler[ans, any](s, testController, ini)
+		handler := httpHandler[ans, any](s, testController)
 		if handler == nil {
 			t.Error("handler is nil")
 		}
 	})
 
 	t.Run("can run http handler from fuego controller", func(t *testing.T) {
-		handler := httpHandler(s, testController, ini)
+		handler := httpHandler(s, testController)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -84,7 +84,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can handle errors in http handler from fuego controller", func(t *testing.T) {
-		handler := httpHandler(s, testControllerWithError, ini)
+		handler := httpHandler(s, testControllerWithError)
 		if handler == nil {
 			t.Error("handler is nil")
 		}
@@ -98,7 +98,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can outTransform before serializing a value", func(t *testing.T) {
-		handler := httpHandler(s, testControllerWithOutTransformer, ini)
+		handler := httpHandler(s, testControllerWithOutTransformer)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -109,7 +109,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can outTransform before serializing a pointer value", func(t *testing.T) {
-		handler := httpHandler(s, testControllerWithOutTransformerStar, ini)
+		handler := httpHandler(s, testControllerWithOutTransformerStar)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -120,7 +120,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can handle errors in outTransform", func(t *testing.T) {
-		handler := httpHandler(s, testControllerWithOutTransformerStarError, ini)
+		handler := httpHandler(s, testControllerWithOutTransformerStarError)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -131,7 +131,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can handle nil in outTransform", func(t *testing.T) {
-		handler := httpHandler(s, testControllerWithOutTransformerStarNil, ini)
+		handler := httpHandler(s, testControllerWithOutTransformerStarNil)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -142,7 +142,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("returns correct content-type when returning string", func(t *testing.T) {
-		handler := httpHandler(s, testControllerReturningString, ini)
+		handler := httpHandler(s, testControllerReturningString)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -152,7 +152,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("returns correct content-type when returning ptr to string", func(t *testing.T) {
-		handler := httpHandler(s, testControllerReturningPtrToString, ini)
+		handler := httpHandler(s, testControllerReturningPtrToString)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -195,7 +195,7 @@ func TestSetStatusBeforeSend(t *testing.T) {
 		handler := httpHandler(s, func(c *ContextNoBody) (ans, error) {
 			c.Response().WriteHeader(201)
 			return ans{Ans: "Hello World"}, nil
-		}, ini)
+		})
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -211,7 +211,7 @@ func TestSetStatusBeforeSend(t *testing.T) {
 		handler := httpHandler(s, func(c *ContextNoBody) (ans, error) {
 			c.SetStatus(202)
 			return ans{Ans: "Hello World"}, nil
-		}, ini)
+		})
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -339,7 +339,10 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextNoBody", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := ini[ContextNoBody](w, req)
+		ctx := initContext[ContextNoBody](ContextNoBody{
+			request:  req,
+			response: w,
+		})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -349,7 +352,10 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextNoBody", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := ini[*ContextNoBody](w, req)
+		ctx := initContext[*ContextNoBody](ContextNoBody{
+			request:  req,
+			response: w,
+		})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -359,7 +365,10 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextWithBody[string]", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := ini[*ContextWithBody[string]](w, req)
+		ctx := initContext[*ContextWithBody[string]](ContextNoBody{
+			request:  req,
+			response: w,
+		})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -369,7 +378,10 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextWithBody[struct]", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := ini[*ContextWithBody[ans]](w, req)
+		ctx := initContext[*ContextWithBody[ans]](ContextNoBody{
+			request:  req,
+			response: w,
+		})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -381,7 +393,10 @@ func TestIni(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		require.Panics(t, func() {
-			ini[Ctx[any]](w, req)
+			initContext[Ctx[any]](ContextNoBody{
+				request:  req,
+				response: w,
+			})
 		})
 	})
 }

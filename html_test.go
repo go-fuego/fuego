@@ -13,7 +13,6 @@ import (
 var testdata embed.FS
 
 func TestRender(t *testing.T) {
-	t.Skip("TODO: fix this test")
 	s := NewServer(
 		WithTemplateFS(testdata),
 		WithTemplateGlobs("testdata/*.html"),
@@ -44,7 +43,7 @@ func TestRender(t *testing.T) {
 	})
 
 	t.Run("cannot parse unexisting file", func(t *testing.T) {
-		Get(s, "/file-not-found", func(ctx Ctx[any]) (HTML, error) {
+		Get(s, "/file-not-found", func(ctx ContextNoBody) (HTML, error) {
 			return ctx.Render("testdata/not-found.html", H{"Name": "test"})
 		})
 
@@ -57,7 +56,7 @@ func TestRender(t *testing.T) {
 	})
 
 	t.Run("can execute template with missing variable", func(t *testing.T) {
-		Get(s, "/impossible", func(ctx Ctx[any]) (HTML, error) {
+		Get(s, "/impossible", func(ctx ContextNoBody) (HTML, error) {
 			return ctx.Render("testdata/test.html", H{"NotName": "test"})
 		})
 
@@ -78,7 +77,7 @@ func BenchmarkRender(b *testing.B) {
 		WithTemplateGlobs("testdata/*.html"),
 	)
 
-	Get(s, "/test", func(ctx Ctx[any]) (HTML, error) {
+	Get(s, "/test", func(ctx ContextNoBody) (HTML, error) {
 		return ctx.Render("testdata/test.html", H{"Name": "test"})
 	})
 
