@@ -388,7 +388,7 @@ func TestMainLang(t *testing.T) {
 	require.Equal(t, c.MainLocale(), "fr-CH")
 }
 
-func TestClassicContext_Body(t *testing.T) {
+func TestContextNoBody_Body(t *testing.T) {
 	body := `{"name":"John","age":30}`
 	r := httptest.NewRequest("GET", "/", strings.NewReader(body))
 	ctx := ContextNoBody{
@@ -403,7 +403,7 @@ func TestClassicContext_Body(t *testing.T) {
 	}), res)
 }
 
-func TestClassicContext_MustBody(t *testing.T) {
+func TestContextNoBody_MustBody(t *testing.T) {
 	t.Run("can read JSON body", func(t *testing.T) {
 		body := `{"name":"John","age":30}`
 		r := httptest.NewRequest("GET", "/", strings.NewReader(body))
@@ -428,5 +428,28 @@ func TestClassicContext_MustBody(t *testing.T) {
 		require.Panics(t, func() {
 			ctx.MustBody()
 		})
+	})
+}
+
+func TestContextNoBody_Redirect(t *testing.T) {
+	s := NewServer()
+
+	Get(s, "/", func(c ContextNoBody) (any, error) {
+		return c.Redirect(301, "/foo")
+	})
+
+	Get(s, "/foo", func(c ContextNoBody) (ans, error) {
+		return ans{Ans: "foo"}, nil
+	})
+
+	t.Run("can redirect", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 301, w.Code)
+		require.Equal(t, "/foo", w.Header().Get("Location"))
+		require.Equal(t, "<a href=\"/foo\">Moved Permanently</a>.\n\n", w.Body.String())
 	})
 }
