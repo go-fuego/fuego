@@ -2,6 +2,7 @@ package fuego
 
 import (
 	"fmt"
+	"html/template"
 	"log/slog"
 	"net/http"
 	"reflect"
@@ -22,18 +23,11 @@ func (s *Server) Run() error {
 	return s.Server.ListenAndServe()
 }
 
-type Controller[ReturnType any, Body any] func(c ContextWithBody[Body]) (ReturnType, error)
-
-// initializes a Context with the provided type
+// initializes any Context type with the base ContextNoBody context.
 //
 //	var ctx ContextWithBody[any] // does not work because it will create a ContextWithBody[any] with a nil value
-func ini[Contextable Ctx[Body], Body any](w http.ResponseWriter, r *http.Request) Contextable {
+func initContext[Contextable Ctx[Body], Body any](baseContext ContextNoBody) Contextable {
 	var c Contextable
-
-	baseContext := ContextNoBody{
-		request:  r,
-		response: w,
-	}
 
 	switch any(c).(type) {
 	case ContextNoBody:
@@ -50,7 +44,7 @@ func ini[Contextable Ctx[Body], Body any](w http.ResponseWriter, r *http.Request
 }
 
 // httpHandler converts a Fuego controller into a http.HandlerFunc.
-func httpHandler[ReturnType any, Body any, Contextable Ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error), ctxInit func(w http.ResponseWriter, r *http.Request) Contextable) http.HandlerFunc {
+func httpHandler[ReturnType any, Body any, Contextable Ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error)) http.HandlerFunc {
 	returnsHTML := reflect.TypeOf(controller).Out(0).Name() == "HTML"
 	var r ReturnType
 	_, returnsString := any(r).(*string)
@@ -58,14 +52,6 @@ func httpHandler[ReturnType any, Body any, Contextable Ctx[Body]](s *Server, con
 		_, returnsString = any(r).(string)
 	}
 
-	// baseCtx := NewContext[Body](nil, nil, readOptions{
-	// 	DisallowUnknownFields: s.DisallowUnknownFields,
-	// 	MaxBodySize:           s.maxBodySize,
-	// })
-	// baseCtx.fs = s.fs
-	// if s.template != nil {
-	// 	baseCtx.templates = template.Must(s.template.Clone())
-	// }
 	baseContext := *new(Contextable)
 	if reflect.TypeOf(baseContext) == nil {
 		slog.Info(fmt.Sprintf("context is nil: %v %T", baseContext, baseContext))
@@ -76,7 +62,20 @@ func httpHandler[ReturnType any, Body any, Contextable Ctx[Body]](s *Server, con
 		w.Header().Set("Trailer", "Server-Timing")
 		timeCtxInit := time.Now()
 
-		ctx := ctxInit(w, r)
+		var templates *template.Template
+		if s.template != nil {
+			templates = template.Must(s.template.Clone())
+		}
+		ctx := initContext[Contextable](ContextNoBody{
+			request:  r,
+			response: w,
+			readOptions: readOptions{
+				DisallowUnknownFields: s.DisallowUnknownFields,
+				MaxBodySize:           s.maxBodySize,
+			},
+			fs:        s.fs,
+			templates: templates,
+		})
 
 		// for _, param := range parsePathParams(r.URL.Path) {
 		// 	ctx.pathParams[param] = "coming in go1.22"

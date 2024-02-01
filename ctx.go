@@ -163,9 +163,10 @@ type readOptions struct {
 }
 
 var (
-	_ Ctx[any]    = &ContextWithBody[any]{}    // Check that Context implements Ctx.
-	_ Ctx[string] = &ContextWithBody[string]{} // Check that Context implements Ctx.
-	_ Ctx[any]    = &ContextNoBody{}           // Check that Context implements Ctx.
+	_ Ctx[any]    = &ContextWithBody[any]{}    // Check that ContextWithBody[any] implements Ctx.
+	_ Ctx[string] = &ContextWithBody[string]{} // Check that ContextWithBody[string] implements Ctx.
+	_ Ctx[any]    = &ContextNoBody{}           // Check that ContextNoBody implements Ctx.
+	_ Ctx[any]    = ContextNoBody{}            // Check that ContextNoBody implements Ctx.
 )
 
 func (c ContextNoBody) Redirect(code int, url string) (any, error) {
