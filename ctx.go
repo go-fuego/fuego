@@ -16,10 +16,10 @@ const (
 	maxBodySize = 1048576
 )
 
-// Ctx is the context of the request.
+// ctx is the context of the request.
 // It contains the request body, the path parameters, the query parameters, and the http request.
 // Please do not use a pointer type as parameter.
-type Ctx[B any] interface {
+type ctx[B any] interface {
 	// Body returns the body of the request.
 	// If (*B) implements [InTransformer], it will be transformed after deserialization.
 	// It caches the result, so it can be called multiple times.
@@ -163,10 +163,10 @@ type readOptions struct {
 }
 
 var (
-	_ Ctx[any]    = &ContextWithBody[any]{}    // Check that ContextWithBody[any] implements Ctx.
-	_ Ctx[string] = &ContextWithBody[string]{} // Check that ContextWithBody[string] implements Ctx.
-	_ Ctx[any]    = &ContextNoBody{}           // Check that ContextNoBody implements Ctx.
-	_ Ctx[any]    = ContextNoBody{}            // Check that ContextNoBody implements Ctx.
+	_ ctx[any]    = &ContextWithBody[any]{}    // Check that ContextWithBody[any] implements Ctx.
+	_ ctx[string] = &ContextWithBody[string]{} // Check that ContextWithBody[string] implements Ctx.
+	_ ctx[any]    = &ContextNoBody{}           // Check that ContextNoBody implements Ctx.
+	_ ctx[any]    = ContextNoBody{}            // Check that ContextNoBody implements Ctx.
 )
 
 func (c ContextNoBody) Redirect(code int, url string) (any, error) {
