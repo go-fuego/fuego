@@ -55,7 +55,7 @@ func TestRender(t *testing.T) {
 		require.Equal(t, http.StatusInternalServerError, w.Code)
 	})
 
-	t.Run("can execute template with missing variable", func(t *testing.T) {
+	t.Run("can execute template with missing variable in map", func(t *testing.T) {
 		Get(s, "/impossible", func(ctx ContextNoBody) (HTML, error) {
 			return ctx.Render("testdata/test.html", H{"NotName": "test"})
 		})
@@ -68,6 +68,22 @@ func TestRender(t *testing.T) {
 		t.Log(w.Body.String())
 
 		require.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("cannot execute template with missing variable in struct", func(t *testing.T) {
+		Get(s, "/impossible-struct", func(ctx ContextNoBody) (HTML, error) {
+			return ctx.Render("testdata/test.html", struct{}{})
+		})
+
+		r := httptest.NewRequest(http.MethodGet, "/impossible-struct", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		t.Log(w.Body.String())
+
+		require.Equal(t, http.StatusOK, w.Code)
+		require.Contains(t, w.Body.String(), "error executing template")
 	})
 }
 

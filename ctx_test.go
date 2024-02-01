@@ -63,10 +63,12 @@ func TestContext_QueryParam(t *testing.T) {
 
 		paramInt, err = c.QueryParamIntErr("notfound")
 		require.Error(t, err)
-		require.Equal(t, paramInt, 0)
+		require.Equal(t, "param notfound not found", err.Error())
+		require.Equal(t, 0, paramInt)
 
 		paramInt, err = c.QueryParamIntErr("other")
 		require.Error(t, err)
+		require.Contains(t, err.Error(), "param other=hello is not of type int")
 		require.Equal(t, paramInt, 0)
 	})
 
