@@ -11,6 +11,9 @@ type CardProps struct {
 templ Card(props CardProps) {
 	<div class="rounded-lg border dark:border-zinc-700 shadow-sm min-w-48">
 		<a
+			hx-boost="true"
+			hx-target="#page"
+			hx-select="#page"
 			href={ templ.URL(props.Link) }
 			class="block p-4 h-full w-full rounded-lg leading-normal
   transition hover:cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 hover:shadow-md"
