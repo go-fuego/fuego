@@ -81,8 +81,6 @@ type ctx[B any] interface {
 	//   	return c.Redirect(301, "/recipes-list")
 	//   })
 	Redirect(code int, url string) (any, error)
-
-	Pass() ContextNoBody
 }
 
 // NewContext returns a new context. It is used internally by Fuego. You probably want to use Ctx[B] instead.
@@ -105,10 +103,6 @@ func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptio
 type ContextWithBody[Body any] struct {
 	body *Body // Cache the body in request context, because it is not possible to read an http request body multiple times.
 	ContextNoBody
-}
-
-func (c *ContextWithBody[B]) Pass() ContextNoBody {
-	return c.ContextNoBody
 }
 
 // ContextNoBody is used when the controller does not have a body.
@@ -173,10 +167,6 @@ func (c ContextNoBody) Redirect(code int, url string) (any, error) {
 	http.Redirect(c.response, c.request, url, code)
 
 	return nil, nil
-}
-
-func (c ContextNoBody) Pass() ContextNoBody {
-	return c
 }
 
 func (c ContextNoBody) Context() context.Context {
