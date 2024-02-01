@@ -119,7 +119,7 @@ type ContextNoBody struct {
 }
 
 func (c ContextNoBody) Body() (any, error) {
-	slog.Warn("this method should not be called. It probably happened because you passed the context to another controller with the Pass method.")
+	slog.Warn("this method should not be called. It probably happened because you passed the context to another controller.")
 	return body[map[string]any](c)
 }
 
@@ -129,18 +129,6 @@ func (c ContextNoBody) MustBody() any {
 		panic(err)
 	}
 	return b
-}
-
-// SafeShallowCopy returns a safe shallow copy of the context.
-// It allows to modify the base context while modifying the request context.
-// It is data-safe, meaning that any sensitive data will not be shared between the original context and the copy.
-func (c *ContextWithBody[B]) SafeShallowCopy() *ContextWithBody[B] {
-	c.pathParams = nil
-	c.body = nil
-	c.request = nil
-	c.response = nil
-
-	return c
 }
 
 // SetStatus sets the status code of the response.
