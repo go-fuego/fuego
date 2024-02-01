@@ -393,7 +393,7 @@ func TestIni(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		require.Panics(t, func() {
-			initContext[Ctx[any]](ContextNoBody{
+			initContext[ctx[any]](ContextNoBody{
 				request:  req,
 				response: w,
 			})

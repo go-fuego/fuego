@@ -46,32 +46,32 @@ type Route[ResponseBody any, RequestBody any] struct {
 const MethodAll = "ALL"
 
 // Capture all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
-func All[T any, B any, Contexted Ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func All[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register[T](s, MethodAll, path, controller, middlewares...)
 }
 
-func Get[T any, B any, Contexted Ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func Get[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register[T](s, http.MethodGet, path, controller, middlewares...)
 }
 
-func Post[T any, B any, Contexted Ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func Post[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register[T](s, http.MethodPost, path, controller, middlewares...)
 }
 
-func Delete[T any, B any, Contexted Ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func Delete[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register[T](s, http.MethodDelete, path, controller, middlewares...)
 }
 
-func Put[T any, B any, Contexted Ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func Put[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register[T](s, http.MethodPut, path, controller, middlewares...)
 }
 
-func Patch[T any, B any, Contexted Ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func Patch[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register[T](s, http.MethodPatch, path, controller, middlewares...)
 }
 
 // Registers route into the default mux.
-func Register[T any, B any, Contexted Ctx[B]](s *Server, method string, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func Register[T any, B any, Contexted ctx[B]](s *Server, method string, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	fullPath := s.basePath + path
 	if isGo1_22 {
 		fullPath = method + " " + path

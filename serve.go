@@ -26,7 +26,7 @@ func (s *Server) Run() error {
 // initializes any Context type with the base ContextNoBody context.
 //
 //	var ctx ContextWithBody[any] // does not work because it will create a ContextWithBody[any] with a nil value
-func initContext[Contextable Ctx[Body], Body any](baseContext ContextNoBody) Contextable {
+func initContext[Contextable ctx[Body], Body any](baseContext ContextNoBody) Contextable {
 	var c Contextable
 
 	switch any(c).(type) {
@@ -44,7 +44,7 @@ func initContext[Contextable Ctx[Body], Body any](baseContext ContextNoBody) Con
 }
 
 // httpHandler converts a Fuego controller into a http.HandlerFunc.
-func httpHandler[ReturnType any, Body any, Contextable Ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error)) http.HandlerFunc {
+func httpHandler[ReturnType any, Body any, Contextable ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error)) http.HandlerFunc {
 	returnsHTML := reflect.TypeOf(controller).Out(0).Name() == "HTML"
 	var r ReturnType
 	_, returnsString := any(r).(*string)
