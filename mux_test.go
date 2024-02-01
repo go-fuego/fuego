@@ -301,7 +301,7 @@ func BenchmarkRequest(b *testing.B) {
 
 	b.Run("fuego server and fuego post", func(b *testing.B) {
 		s := NewServer()
-		Post(s, "/test", func(c Ctx[MyStruct]) (Resp, error) {
+		Post(s, "/test", func(c *ContextWithBody[MyStruct]) (Resp, error) {
 			body, err := c.Body()
 			if err != nil {
 				return Resp{}, err
