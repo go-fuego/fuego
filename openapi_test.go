@@ -84,16 +84,16 @@ func BenchmarkRoutesRegistration(b *testing.B) {
 		s := NewServer(
 			WithoutLogger(),
 		)
-		Get(s, "/", func(Ctx[any]) (MyStruct, error) {
+		Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 			return MyStruct{}, nil
 		})
 		for j := 0; j < 100; j++ {
-			Post(s, fmt.Sprintf("/post/%d", j), func(Ctx[MyStruct]) ([]MyStruct, error) {
+			Post(s, fmt.Sprintf("/post/%d", j), func(*ContextWithBody[MyStruct]) ([]MyStruct, error) {
 				return nil, nil
 			})
 		}
 		for j := 0; j < 100; j++ {
-			Get(s, fmt.Sprintf("/post/{id}/%d", j), func(Ctx[any]) (MyStruct, error) {
+			Get(s, fmt.Sprintf("/post/{id}/%d", j), func(ContextNoBody) (MyStruct, error) {
 				return MyStruct{}, nil
 			})
 		}
@@ -105,16 +105,16 @@ func BenchmarkServer_generateOpenAPI(b *testing.B) {
 		s := NewServer(
 			WithoutLogger(),
 		)
-		Get(s, "/", func(Ctx[any]) (MyStruct, error) {
+		Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 			return MyStruct{}, nil
 		})
 		for j := 0; j < 100; j++ {
-			Post(s, fmt.Sprintf("/post/%d", j), func(Ctx[MyStruct]) ([]MyStruct, error) {
+			Post(s, fmt.Sprintf("/post/%d", j), func(*ContextWithBody[MyStruct]) ([]MyStruct, error) {
 				return nil, nil
 			})
 		}
 		for j := 0; j < 100; j++ {
-			Get(s, fmt.Sprintf("/post/{id}/%d", j), func(Ctx[any]) (MyStruct, error) {
+			Get(s, fmt.Sprintf("/post/{id}/%d", j), func(ContextNoBody) (MyStruct, error) {
 				return MyStruct{}, nil
 			})
 		}

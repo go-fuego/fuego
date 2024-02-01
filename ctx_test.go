@@ -15,7 +15,7 @@ func TestContext_PathParam(t *testing.T) {
 		t.Skip("TODO: coming in go1.22")
 
 		s := NewServer()
-		Get(s, "/foo/{id}", func(c Ctx[any]) (ans, error) {
+		Get(s, "/foo/{id}", func(c ContextNoBody) (ans, error) {
 			return ans{Ans: c.PathParam("id")}, nil
 		})
 
