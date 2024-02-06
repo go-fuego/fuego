@@ -88,6 +88,17 @@ func (t *BodyTestWithInTransformer) InTransform(context.Context) error {
 
 var _ InTransformer = &BodyTestWithInTransformer{}
 
+type BodyTestWithInTransformerError struct {
+	A string
+	B int
+}
+
+func (t *BodyTestWithInTransformerError) InTransform(context.Context) error {
+	return errors.New("error happened!")
+}
+
+var _ InTransformer = &BodyTestWithInTransformerError{}
+
 func TestInTransform(t *testing.T) {
 	t.Run("ReadJSON", func(t *testing.T) {
 		input := strings.NewReader(`{"A":"a", "B":1}`)
@@ -150,5 +161,15 @@ func TestReadURLEncoded(t *testing.T) {
 		res, err := ReadURLEncoded[BodyTest](r)
 		require.Error(t, err)
 		require.Equal(t, BodyTest{"a", 0, true}, res)
+	})
+
+	t.Run("read urlencoded with transform error", func(t *testing.T) {
+		input := strings.NewReader(`A=a&B=9`)
+		r := httptest.NewRequest("POST", "/", input)
+		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		res, err := ReadURLEncoded[BodyTestWithInTransformerError](r)
+		require.Error(t, err)
+		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
+		require.Equal(t, BodyTestWithInTransformerError{"a", 9}, res)
 	})
 }
