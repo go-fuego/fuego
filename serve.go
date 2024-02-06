@@ -59,6 +59,8 @@ func httpHandler[ReturnType any, Body any, Contextable ctx[Body]](s *Server, con
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Powered-By", "Fuego")
+
 		w.Header().Set("Trailer", "Server-Timing")
 		timeCtxInit := time.Now()
 
