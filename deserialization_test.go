@@ -181,7 +181,6 @@ func TestConvertSQLNullString(t *testing.T) {
 		v := convertSQLNullString("test")
 		require.Equal(t, "test", v.Interface().(sql.NullString).String)
 	})
-
 }
 
 func TestConvertSQLNullBool(t *testing.T) {
