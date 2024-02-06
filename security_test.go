@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -365,5 +366,122 @@ func TestSecurity_RefreshHandler(t *testing.T) {
 		require.Len(t, cookies, 1)
 		authCookie := cookies[0]
 		require.Equal(t, JWTCookieName, authCookie.Name)
+	})
+}
+
+func TestSecurity_StdLoginHandler(t *testing.T) {
+	security := NewSecurity()
+	v := func(r *http.Request) (jwt.Claims, error) {
+		if r.FormValue("user") != "test" || r.FormValue("password") != "test" {
+			return nil, ErrUnauthorized
+		}
+		return jwt.MapClaims{"sub": "123"}, nil
+	}
+	loginHandler := security.StdLoginHandler(v)
+
+	t.Run("with incorrect ids", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
+		w := httptest.NewRecorder()
+		loginHandler(w, r)
+
+		cookies := w.Result().Cookies()
+		require.Len(t, cookies, 0)
+	})
+
+	t.Run("with correct ids", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/?user=test&password=test", nil)
+		w := httptest.NewRecorder()
+		loginHandler(w, r)
+
+		cookies := w.Result().Cookies()
+		require.Len(t, cookies, 1)
+		authCookie := cookies[0]
+		require.NotEmpty(t, authCookie)
+		require.Equal(t, JWTCookieName, authCookie.Name)
+	})
+}
+
+func TestSecurity_LoginHandler(t *testing.T) {
+	security := NewSecurity()
+	v := func(user string, password string) (jwt.Claims, error) {
+		if user != "test" || password != "test" {
+			return nil, ErrUnauthorized
+		}
+		return jwt.MapClaims{"sub": "123"}, nil
+	}
+	loginHandler := security.LoginHandler(v)
+
+	t.Run("without ids", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
+		w := httptest.NewRecorder()
+
+		s := NewServer()
+		truc := httpHandler(s, loginHandler)
+		truc.ServeHTTP(w, r)
+
+		cookies := w.Result().Cookies()
+		require.Len(t, cookies, 0)
+	})
+
+	t.Run("with incorrect ids", func(t *testing.T) {
+		loginBody := `{"user": "hacker", "password": "hacker"}`
+		r := httptest.NewRequest("GET", "/", strings.NewReader(loginBody))
+		w := httptest.NewRecorder()
+
+		s := NewServer()
+		truc := httpHandler(s, loginHandler)
+		truc.ServeHTTP(w, r)
+
+		cookies := w.Result().Cookies()
+		require.Len(t, cookies, 0)
+	})
+
+	t.Run("with correct ids", func(t *testing.T) {
+		loginBody := `{"user": "test", "password": "test"}`
+		r := httptest.NewRequest("GET", "/", strings.NewReader(loginBody))
+		w := httptest.NewRecorder()
+
+		s := NewServer()
+		truc := httpHandler(s, loginHandler)
+		truc.ServeHTTP(w, r)
+
+		cookies := w.Result().Cookies()
+		require.Len(t, cookies, 1)
+		authCookie := cookies[0]
+		require.NotEmpty(t, authCookie)
+		require.Equal(t, JWTCookieName, authCookie.Name)
+	})
+}
+
+func TestGetToken(t *testing.T) {
+	t.Run("no token", func(t *testing.T) {
+		ctx := context.Background()
+		token, err := GetToken[any](ctx)
+		require.Error(t, err)
+		require.Empty(t, token)
+	})
+
+	t.Run("with valid token", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/", nil)
+		ctx := context.WithValue(r.Context(), contextKeyJWT, jwt.MapClaims{"sub": "123"})
+
+		token, err := GetToken[jwt.MapClaims](ctx)
+		require.NoError(t, err)
+		sub, err := token.GetSubject()
+		require.NoError(t, err)
+		require.Equal(t, "123", sub)
+	})
+
+	t.Run("with token of custom type", func(t *testing.T) {
+		type MyToken struct {
+			jwt.MapClaims
+			Username string
+			UserID   string
+		}
+		r := httptest.NewRequest("GET", "/", nil)
+		ctx := context.WithValue(r.Context(), contextKeyJWT, MyToken{MapClaims: jwt.MapClaims{"sub": "123"}})
+
+		_, err := GetToken[MyToken](ctx)
+		require.Error(t, err)
 	})
 }

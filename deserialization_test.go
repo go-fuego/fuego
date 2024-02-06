@@ -2,8 +2,10 @@ package fuego
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -171,5 +173,25 @@ func TestReadURLEncoded(t *testing.T) {
 		require.Error(t, err)
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 		require.Equal(t, BodyTestWithInTransformerError{"a", 9}, res)
+	})
+}
+
+func TestConvertSQLNullString(t *testing.T) {
+	t.Run("can convert sql.NullString", func(t *testing.T) {
+		v := convertSQLNullString("test")
+		require.Equal(t, "test", v.Interface().(sql.NullString).String)
+	})
+
+}
+
+func TestConvertSQLNullBool(t *testing.T) {
+	t.Run("convert sql.NullBool", func(t *testing.T) {
+		v := convertSQLNullBool("false")
+		require.Equal(t, false, v.Interface().(sql.NullBool).Bool)
+	})
+
+	t.Run("cannot convert sql.NullBool", func(t *testing.T) {
+		v := convertSQLNullBool("hello")
+		require.Equal(t, v, reflect.Value{})
 	})
 }
