@@ -1,0 +1,51 @@
+# Transformation
+
+With Fuego, you can transform data coming in and out of your application. This is useful for a variety of reasons, such as:
+
+- Converting data from one format to another
+- Normalizing data
+- Sanitizing data
+- Masking sensitive data
+- And more...
+
+## Input Transformation
+
+Input transformation is the process of transforming the data coming **into** your application.
+
+```go
+package main
+
+import (
+	"context"
+	"strings"
+	"github.com/go-fuego/fuego"
+)
+
+type User struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+}
+
+func (u *User) InTransform(ctx context.Context) error {
+	u.FirstName = strings.ToUpper(u.FirstName)
+	u.LastName = strings.TrimSpace(u.LastName)
+	return nil
+}
+```
+
+In the example above, we have a `User` struct with two fields: `FirstName` and `LastName`. We also have a method called `InTransform` that takes a `context.Context` and returns an `error`. This method is called before the data is unmarshaled into the `User` struct. In this method, we are transforming the `FirstName` to uppercase and trimming any whitespace from the `LastName`.
+
+When using the following controller, the data will be transformed before it is unmarshaled into the `User` struct.
+
+```go
+func myController(c fuego.ContextWithBody[User]) (User, error) {
+	user, err := c.Body()
+	if err != nil {
+		return User{}, err
+	}
+
+	// user.FirstName is in uppercase
+
+	return u, nil
+}
+```
