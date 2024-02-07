@@ -1,5 +1,7 @@
 ---
 title: Hello World
+position: 1
+order: 1
 ---
 
 # Hello world
