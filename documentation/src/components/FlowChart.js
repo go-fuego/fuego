@@ -15,7 +15,7 @@ subgraph fuego
 
  subgraph output
 	 direction TB
-	 OutTransformation -- struct{'b':'My Response!'} --> resp(Response)
+	 OutTransformation -- struct{B:'My Response!'} --> resp(Response)
  end
 
  Controller{{Controller}}
