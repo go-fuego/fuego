@@ -1,10 +1,10 @@
 module github.com/go-fuego/fuego/examples/basic
 
-go 1.21.5
+go 1.22.0
 
 require (
 	github.com/go-chi/chi/v5 v5.0.11
-	github.com/go-fuego/fuego v0.9.0
+	github.com/go-fuego/fuego v0.10.2
 	github.com/rs/cors v1.10.1
 )
 

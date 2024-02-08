@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/a-h/templ v0.2.513
 	github.com/go-chi/chi/v5 v5.0.11
-	github.com/go-fuego/fuego v0.9.0
+	github.com/go-fuego/fuego v0.10.2
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/golang-migrate/migrate/v4 v4.17.0
 	github.com/google/uuid v1.5.0
