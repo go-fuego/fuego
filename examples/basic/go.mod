@@ -1,4 +1,4 @@
-module basic
+module github.com/go-fuego/fuego/examples/basic
 
 go 1.21.5
 

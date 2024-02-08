@@ -1,6 +1,6 @@
-module simple-crud
+module github.com/go-fuego/fuego/examples/hello-world/full-app-gourmet
 
-go 1.21.3
+go 1.22.0
 
 require (
 	github.com/a-h/templ v0.2.513
