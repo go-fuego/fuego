@@ -10,6 +10,8 @@
 
 > The framework for busy Go developers
 
+**Build your API or web application in minutes!**
+
 The only Go framework generating OpenAPI documentation from code. Inspired by Nest, built for Go developers.
 
 Also empowers `html/template`, `a-h/templ` and `maragudk/gomponents`: see [the example](./examples/full-app-gourmet) - actually running [in prod](https://gourmet.quimerch.com)!
