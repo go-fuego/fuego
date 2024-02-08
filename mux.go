@@ -43,11 +43,12 @@ type Route[ResponseBody any, RequestBody any] struct {
 	operation *openapi3.Operation
 }
 
-const MethodAll = "ALL"
-
 // Capture all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
 func All[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
-	return Register[T](s, MethodAll, path, controller, middlewares...)
+	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete} {
+		Register[T](s, method, path, controller, middlewares...)
+	}
+	return Register[T](s, http.MethodGet, path, controller, middlewares...)
 }
 
 func Get[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
@@ -72,10 +73,8 @@ func Patch[T any, B any, Contexted ctx[B]](s *Server, path string, controller fu
 
 // Registers route into the default mux.
 func Register[T any, B any, Contexted ctx[B]](s *Server, method string, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
-	fullPath := s.basePath + path
-	if isGo1_22 {
-		fullPath = method + " " + path
-	}
+	fullPath := method + " " + s.basePath + path
+
 	slog.Debug("registering openapi controller " + fullPath)
 
 	route := register[T, B](s, method, path, httpHandler[T, B](s, controller), middlewares...)
@@ -88,10 +87,7 @@ func Register[T any, B any, Contexted ctx[B]](s *Server, method string, path str
 }
 
 func register[T any, B any](s *Server, method string, path string, controller http.Handler, middlewares ...func(http.Handler) http.Handler) Route[T, B] {
-	fullPath := s.basePath + path
-	if isGo1_22 && method != MethodAll {
-		fullPath = method + " " + fullPath
-	}
+	fullPath := method + " " + s.basePath + path
 
 	allMiddlewares := append(middlewares, s.middlewares...)
 	s.Mux.Handle(fullPath, withMiddlewares(controller, allMiddlewares...))
@@ -187,10 +183,8 @@ func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http
 
 // RegisterStd registers a standard http handler into the default mux.
 func RegisterStd(s *Server, method string, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
-	fullPath := s.basePath + path
-	if isGo1_22 {
-		fullPath = method + " " + path
-	}
+	fullPath := method + " " + s.basePath + path
+
 	slog.Debug("registering standard controller " + fullPath)
 	route := register[any, any](s, method, path, http.HandlerFunc(controller), middlewares...)
 

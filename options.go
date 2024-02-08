@@ -7,15 +7,11 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"runtime"
-	"strings"
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/golang-jwt/jwt/v5"
 )
-
-var isGo1_22 = strings.TrimPrefix(runtime.Version(), "devel ") >= "go1.22"
 
 type OpenapiConfig struct {
 	DisableSwagger    bool
@@ -98,13 +94,6 @@ func NewServer(options ...func(*Server)) *Server {
 
 	for _, option := range append(defaultOptions[:], options...) {
 		option(s)
-	}
-
-	if !isGo1_22 {
-		slog.Warn(
-			"Please upgrade to Go >= 1.22. " +
-				"You are running " + runtime.Version() + ": " +
-				"you cannot use path params nor register routes with the same path but different methods. ")
 	}
 
 	s.startTime = time.Now()

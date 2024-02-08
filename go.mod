@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego
 
-go 1.21.3
+go 1.22.0
 
 require (
 	github.com/getkin/kin-openapi v0.122.0

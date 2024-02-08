@@ -1,7 +1,7 @@
-go 1.21.5
+go 1.22.0
 
 use (
 	.
-	./examples/full-app-gourmet
 	./examples/basic
+	./examples/full-app-gourmet
 )
