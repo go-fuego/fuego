@@ -36,7 +36,7 @@ type ctx[B any] interface {
 	//   	...
 	//   })
 	PathParam(name string) string
-	PathParams() map[string]string
+
 	QueryParam(name string) string
 	QueryParamInt(name string, defaultValue int) int // If the query parameter does not exist or is not an int, it returns the default given value. Use [Ctx.QueryParamIntErr] if you want to know if the query parameter is erroneous.
 	QueryParamIntErr(name string) (int, error)
@@ -108,9 +108,8 @@ type ContextWithBody[Body any] struct {
 // ContextNoBody is used when the controller does not have a body.
 // It used as a base context for other Context types.
 type ContextNoBody struct {
-	request    *http.Request
-	response   http.ResponseWriter
-	pathParams map[string]string
+	request  *http.Request
+	response http.ResponseWriter
 
 	fs        fs.FS
 	templates *template.Template
@@ -210,16 +209,7 @@ func (c ContextNoBody) Render(templateToExecute string, data any, layoutsGlobs .
 
 // PathParams returns the path parameters of the request.
 func (c ContextNoBody) PathParam(name string) string {
-	param := c.pathParams[name]
-	if param == "" {
-		slog.Error("Path parameter might be invalid", "name", name, "valid parameters", c.pathParams)
-	}
-	return param // TODO go1.22: get (*http.Request) PathValue(name)
-}
-
-// PathParams returns the path parameters of the request.
-func (c ContextNoBody) PathParams() map[string]string {
-	return nil
+	return c.request.PathValue(name)
 }
 
 type QueryParamNotFoundError struct {

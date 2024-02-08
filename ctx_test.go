@@ -11,9 +11,7 @@ import (
 )
 
 func TestContext_PathParam(t *testing.T) {
-	t.Run("can read path param", func(t *testing.T) {
-		t.Skip("TODO: coming in go1.22")
-
+	t.Run("can read one path param", func(t *testing.T) {
 		s := NewServer()
 		Get(s, "/foo/{id}", func(c ContextNoBody) (ans, error) {
 			return ans{Ans: c.PathParam("id")}, nil
@@ -24,7 +22,21 @@ func TestContext_PathParam(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, w.Body.String(), `{"ans":"123"}`)
+		require.Equal(t, crlf(`{"ans":"123"}`), w.Body.String())
+	})
+
+	t.Run("path param invalid", func(t *testing.T) {
+		s := NewServer()
+		Get(s, "/foo/", func(c ContextNoBody) (ans, error) {
+			return ans{Ans: c.PathParam("id")}, nil
+		})
+
+		r := httptest.NewRequest("GET", "/foo/", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, crlf(`{"ans":""}`), w.Body.String())
 	})
 }
 

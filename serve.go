@@ -79,10 +79,6 @@ func httpHandler[ReturnType any, Body any, Contextable ctx[Body]](s *Server, con
 			templates: templates,
 		})
 
-		// for _, param := range parsePathParams(r.URL.Path) {
-		// 	ctx.pathParams[param] = "coming in go1.22"
-		// }
-
 		timeController := time.Now()
 		w.Header().Set("Server-Timing", Timing{"fuegoReqInit", timeController.Sub(timeCtxInit), ""}.String())
 
