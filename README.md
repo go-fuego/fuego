@@ -12,7 +12,7 @@
 
 The only Go framework generating OpenAPI documentation from code. Inspired by Nest, built for Go developers.
 
-Also empowers `html/template`, `a-h/templ` and `maragudk/gomponents`: see [the example](./examples/simple-crud) - actually running [in prod](https://gourmet.quimerch.com)!
+Also empowers `html/template`, `a-h/templ` and `maragudk/gomponents`: see [the example](./examples/full-app-gourmet) - actually running [in prod](https://gourmet.quimerch.com)!
 
 ## Why Fuego?
 

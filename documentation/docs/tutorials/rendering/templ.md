@@ -4,7 +4,7 @@ Fuego supports templating with [Templ](https://github.com/a-h/templ).
 
 Simply return a Templ component from your handler, with the `fuego.Templ` return type.
 
-Example from [a recipe app](https://github.com/go-fuego/fuego/tree/main/examples/simple-crud):
+Example from [a recipe app](https://github.com/go-fuego/fuego/tree/main/examples/full-app-gourmet):
 
 ```go
 // highlight-next-line
