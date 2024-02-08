@@ -14,6 +14,10 @@ Let's discover **Fuego in less than 5 minutes**.
 
 Try our [Hello World](./tutorials/01-hello-world.md)!
 
+```bash
+go run github.com/go-fuego/fuego/examples/hello-world@latest
+```
+
 Or **try Fuego immediately** by cloning **[one of our exemples](https://github.com/go-fuego/fuego/tree/main/examples)**.
 
 ### What you'll need
