@@ -12,7 +12,7 @@ import (
 )
 
 func (rs Ressource) adminOneIngredient(c *fuego.ContextWithBody[store.UpdateIngredientParams]) (fuego.CtxRenderer, error) {
-	id := c.QueryParam("id") // TODO use PathParam
+	id := c.PathParam("id")
 
 	if c.Request().Method == "PUT" {
 		updateIngredientArgs, err := c.Body()
@@ -20,7 +20,7 @@ func (rs Ressource) adminOneIngredient(c *fuego.ContextWithBody[store.UpdateIngr
 			return nil, err
 		}
 
-		updateIngredientArgs.ID = c.QueryParam("id") // TODO use PathParam
+		updateIngredientArgs.ID = c.PathParam("id")
 
 		_, err = rs.IngredientsQueries.UpdateIngredient(c.Context(), updateIngredientArgs)
 		if err != nil {

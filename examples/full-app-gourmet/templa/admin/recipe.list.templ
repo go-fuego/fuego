@@ -40,7 +40,7 @@ templ RecipeList(recipes []store.Recipe, parameters components.SearchParams) {
 						<tr>
 							<td class="border-b border-zinc-100 dark:border-zinc-700 p-4 pr-8 text-zinc-700 dark:text-zinc-300">
 								<a
-									href={ templ.URL("/admin/recipes/one?id=" + recipe.ID) }
+									href={ templ.URL("/admin/recipes/" + recipe.ID) }
 									hx-boost="true"
 									hx-target="#page"
 									hx-select="#page"

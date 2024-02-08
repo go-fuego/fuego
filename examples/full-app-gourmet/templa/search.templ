@@ -55,7 +55,7 @@ templ Search(props SearchProps) {
 					@components.Card(components.CardProps{
 						Title: recipe.Name,
 						WhenToEat: recipe.WhenToEat,
-						Link: "/recipes/one?id=" + recipe.ID,
+						Link: "/recipes/" + recipe.ID,
 						ImageURL: recipe.ImageUrl,
 						Body: recipe.Description,
 					})

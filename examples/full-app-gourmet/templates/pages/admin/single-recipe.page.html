@@ -12,7 +12,7 @@
     >
       <h2 class="mb-4 text-3xl font-bold">{{ .Recipe.Name }}</h2>
       <div class="flex justify-between gap-2 md:gap-4">
-        <a class="btn btn-secondary" href="/recipes/one?id={{ .Recipe.ID }}">
+        <a class="btn btn-secondary" href="/recipes/{{ .Recipe.ID }}">
           See
         </a>
         <button class="btn btn-primary" form="myform">Save</button>

@@ -120,7 +120,7 @@ func (rs Ressource) relatedRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 }
 
 func (rs Ressource) showSingleRecipes2(c fuego.ContextNoBody) (fuego.Templ, error) {
-	id := c.QueryParam("id")
+	id := c.PathParam("id")
 
 	recipe, err := rs.RecipesQueries.GetRecipe(c.Context(), id)
 	if err != nil {
@@ -244,7 +244,7 @@ func (rs Ressource) addRecipe(c *fuego.ContextWithBody[store.CreateRecipeParams]
 }
 
 func (rs Ressource) RecipePage(c fuego.ContextNoBody) (fuego.HTML, error) {
-	id := c.QueryParam("id")
+	id := c.PathParam("id")
 
 	recipe, err := rs.RecipesQueries.GetRecipe(c.Context(), id)
 	if err != nil {

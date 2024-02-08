@@ -61,7 +61,7 @@ templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
 								by { props.Recipe.CreatedBy }
 								if generalProps.IsAdmin {
 									- 
-									<a href={ templ.URL("/admin/recipes/one?id=" + props.Recipe.ID) }>
+									<a href={ templ.URL("/admin/recipes/" + props.Recipe.ID) }>
 										edit
 									</a>
 								}
@@ -171,7 +171,7 @@ templ RelatedRecipes(recipes []store.Recipe) {
 				WhenToEat: recipe.WhenToEat,
 				ImageURL: recipe.ImageUrl,
 				Body: recipe.Description,
-				Link: "/recipes/one?id="+recipe.ID,
+				Link: "/recipes/"+recipe.ID,
 			})
 		}
 	</div>

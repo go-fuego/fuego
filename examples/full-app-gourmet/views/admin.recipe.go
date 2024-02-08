@@ -12,7 +12,7 @@ import (
 )
 
 func (rs Ressource) deleteRecipe(c fuego.ContextNoBody) (any, error) {
-	id := c.QueryParam("id") // TODO use PathParam
+	id := c.PathParam("id")
 	err := rs.RecipesQueries.DeleteRecipe(c.Context(), id)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (rs Ressource) adminRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 }
 
 func (rs Ressource) adminOneRecipe(c *fuego.ContextWithBody[store.UpdateRecipeParams]) (fuego.Templ, error) {
-	id := c.QueryParam("id") // TODO use PathParam
+	id := c.Request().PathValue("id")
 
 	if c.Request().Method == "PUT" {
 		updateRecipeBody, err := c.Body()
@@ -88,14 +88,14 @@ func (rs Ressource) editRecipe(c *fuego.ContextWithBody[store.UpdateRecipeParams
 		return "", err
 	}
 
-	updateRecipeArgs.ID = c.QueryParam("id") // TODO use PathParam
+	updateRecipeArgs.ID = c.PathParam("id")
 
 	recipe, err := rs.RecipesQueries.UpdateRecipe(c.Context(), updateRecipeArgs)
 	if err != nil {
 		return "", err
 	}
 
-	return c.Redirect(301, "/admin/recipes/one?id="+recipe.ID)
+	return c.Redirect(301, "/admin/recipes/"+recipe.ID)
 }
 
 func (rs Ressource) adminAddRecipes(c *fuego.ContextWithBody[store.CreateRecipeParams]) (any, error) {
@@ -112,6 +112,23 @@ func (rs Ressource) adminAddRecipes(c *fuego.ContextWithBody[store.CreateRecipeP
 	return c.Redirect(301, "/admin/recipes")
 }
 
+func (rs Ressource) adminCreateRecipePage(c *fuego.ContextNoBody) (fuego.Templ, error) {
+	allIngredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
+	if err != nil {
+		return nil, err
+	}
+
+	slices.SortFunc(allIngredients, func(a, b store.Ingredient) int {
+		return strings.Compare(a.Name, b.Name)
+	})
+
+	return admin.RecipePage(admin.RecipePageProps{
+		Recipe: store.Recipe{},
+
+		AllIngredients: allIngredients,
+	}), nil
+}
+
 func (rs Ressource) adminAddDosing(c *fuego.ContextWithBody[store.CreateDosingParams]) (any, error) {
 	body, err := c.Body()
 	if err != nil {
@@ -123,5 +140,5 @@ func (rs Ressource) adminAddDosing(c *fuego.ContextWithBody[store.CreateDosingPa
 		return "", err
 	}
 
-	return c.Redirect(301, "/admin/recipes/one?id="+body.RecipeID)
+	return c.Redirect(301, "/admin/recipes/"+body.RecipeID)
 }

@@ -17,7 +17,7 @@ templ RecipeList(props RecipeListProps) {
 				@components.Card(components.CardProps{
 					Title: recipe.Name,
 					WhenToEat: recipe.WhenToEat,
-					Link: "/recipes/one?id=" + recipe.ID,
+					Link: "/recipes/" + recipe.ID,
 					ImageURL: "",
 					Body: recipe.Description,
 				})
