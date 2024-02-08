@@ -4,4 +4,5 @@ use (
 	.
 	./examples/basic
 	./examples/full-app-gourmet
+	./examples/hello-world
 )
