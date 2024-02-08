@@ -1,9 +1,8 @@
 package views
 
 import (
-	"simple-crud/store/types"
-
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/store/types"
 )
 
 func (rs Ressource) unitPreselected(c fuego.ContextNoBody) (fuego.HTML, error) {

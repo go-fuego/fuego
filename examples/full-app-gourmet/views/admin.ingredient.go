@@ -4,9 +4,9 @@ import (
 	"log/slog"
 	"strconv"
 
-	"simple-crud/store"
-	"simple-crud/templa/admin"
-	"simple-crud/templa/components"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa/admin"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa/components"
 
 	"github.com/go-fuego/fuego"
 )

@@ -3,13 +3,12 @@ package server
 import (
 	"net/http"
 
-	"simple-crud/controller"
-	"simple-crud/static"
-	"simple-crud/templates"
-	"simple-crud/views"
-
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/controller"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/static"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/templates"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/views"
 )
 
 type Ressources struct {

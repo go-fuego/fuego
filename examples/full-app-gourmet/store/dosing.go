@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"simple-crud/store/types"
-
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/store/types"
 )
 
 var _ fuego.InTransformer = (*CreateDosingParams)(nil)

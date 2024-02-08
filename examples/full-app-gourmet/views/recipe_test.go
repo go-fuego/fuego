@@ -4,13 +4,13 @@ import (
 	"context"
 	"net/http/httptest"
 	"os"
+
 	"testing"
 	"time"
 
-	"simple-crud/server"
-	"simple-crud/store"
-	"simple-crud/views"
-
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/server"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/views"
 	"github.com/stretchr/testify/require"
 )
 

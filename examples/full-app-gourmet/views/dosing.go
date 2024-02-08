@@ -3,7 +3,7 @@ package views
 import (
 	"context"
 
-	"simple-crud/store"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 )
 
 type DosingRepository interface {

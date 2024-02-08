@@ -1,4 +1,4 @@
-module github.com/go-fuego/fuego/examples/hello-world/full-app-gourmet
+module github.com/go-fuego/fuego/examples/full-app-gourmet
 
 go 1.22.0
 

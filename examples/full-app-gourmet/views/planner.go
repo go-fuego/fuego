@@ -1,7 +1,7 @@
 package views
 
 import (
-	"simple-crud/templa"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa"
 
 	"github.com/go-fuego/fuego"
 )

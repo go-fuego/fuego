@@ -4,9 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"simple-crud/store"
-
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 )
 
 type recipeRessource struct {

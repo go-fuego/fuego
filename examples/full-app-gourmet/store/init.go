@@ -6,12 +6,11 @@ import (
 	"log"
 	"log/slog"
 
-	"simple-crud/store/migrations"
-
 	_ "embed"
 
 	_ "modernc.org/sqlite"
 
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/store/migrations"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite" // SQLite driver for migration
 	_ "github.com/golang-migrate/migrate/v4/source/file"     // Migration files

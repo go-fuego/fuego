@@ -3,8 +3,8 @@ package views
 import (
 	"context"
 
-	"simple-crud/store"
-	"simple-crud/templa"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa"
 
 	"github.com/go-fuego/fuego"
 )

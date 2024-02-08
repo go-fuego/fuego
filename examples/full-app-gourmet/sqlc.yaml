@@ -14,13 +14,13 @@ sql:
           - column: "dosing.unit"
             go_struct_tag: 'validate:"required"'
             go_type:
-              import: "simple-crud/store/types"
+              import: "github.com/go-fuego/fuego/examples/full-app-gourmet/store/types"
               type: "Unit"
           - column: "ingredient.category"
             go_type:
-              import: "simple-crud/store/types"
+              import: "github.com/go-fuego/fuego/examples/full-app-gourmet/store/types"
               type: "Category"
           - column: "ingredient.default_unit"
             go_type:
-              import: "simple-crud/store/types"
+              import: "github.com/go-fuego/fuego/examples/full-app-gourmet/store/types"
               type: "Unit"
