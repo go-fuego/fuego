@@ -12,13 +12,13 @@ import (
 func main() {
 	app := &cli.App{
 		Name:  "fuego",
-		Usage: "Fire like fuego!",
-		Action: func(*cli.Context) error {
+		Usage: "The framework for busy Go developers",
+		Action: func(c *cli.Context) error {
 			fmt.Println("The 🔥 CLI!")
 			return nil
 		},
 		Commands: []*cli.Command{
-			commands.ControllerCommand(),
+			commands.Controller(),
 		},
 	}
 
