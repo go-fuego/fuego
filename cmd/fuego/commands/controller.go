@@ -16,15 +16,22 @@ func Controller() *cli.Command {
 		Name:    "controller",
 		Usage:   "creates a new controller file",
 		Aliases: []string{"c"},
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "output",
+				Usage:   "output file",
+				Aliases: []string{"o"},
+			},
+		},
 		Action: func(cCtx *cli.Context) error {
-			controllerName := "newController"
-			if cCtx.NArg() > 0 {
-				controllerName = cCtx.Args().First()
-			} else {
+			controllerName := cCtx.Args().First()
+
+			if controllerName == "" {
+				controllerName = "newController"
 				fmt.Println("Note: You can add a controller name as an argument. Example: `fuego controller books`")
 			}
 
-			err := createController(controllerName)
+			_, err := createController(controllerName, cCtx.String("output"))
 			if err != nil {
 				return err
 			}
@@ -36,18 +43,18 @@ func Controller() *cli.Command {
 }
 
 // createController creates a new controller file
-func createController(controllerName string) error {
+func createController(controllerName, outputFile string) (string, error) {
 	controllerDir := "./controllers/"
 	if _, err := os.Stat(controllerDir); os.IsNotExist(err) {
 		err = os.Mkdir(controllerDir, 0o755)
 		if err != nil {
-			return err
+			return "", err
 		}
 	}
 
 	templateContent, err := templates.FS.ReadFile("controller/controller.go")
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	t := language.English
@@ -56,11 +63,15 @@ func createController(controllerName string) error {
 	newContent := strings.ReplaceAll(string(templateContent), "newController", controllerName)
 	newContent = strings.ReplaceAll(newContent, "NewController", titler.String(controllerName))
 
-	controllerPath := fmt.Sprintf("%s%s.go", controllerDir, controllerName)
-	err = os.WriteFile(controllerPath, []byte(newContent), 0o644)
-	if err != nil {
-		return err
+	controllerPath := outputFile
+	if controllerPath == "" {
+		controllerPath = fmt.Sprintf("%s%s.go", outputFile, controllerName)
 	}
 
-	return nil
+	err = os.WriteFile(controllerPath, []byte(newContent), 0o644)
+	if err != nil {
+		return "", err
+	}
+
+	return newContent, nil
 }
