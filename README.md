@@ -135,6 +135,34 @@ curl http://localhost:8088 -X POST -d '{"name": "Fuego"}' -H 'Content-Type: appl
 
 </details>
 
+## From net/http to Fuego in 10s
+
+https://github.com/go-fuego/fuego/assets/46993939/7438a71c-75a4-4e88-a584-71da6362c575
+
+<details>
+<summary>Views</summary>
+
+#### Before
+
+<img width="946" alt="image" src="https://github.com/go-fuego/fuego/assets/46993939/394fed17-a1e2-4b67-89b2-8e6c9eeb771b">
+
+#### After
+
+<img width="1010" alt="image" src="https://github.com/go-fuego/fuego/assets/46993939/321088d7-bec4-46cc-a7ee-9a0fa45d7711">
+
+#### Diff
+
+<img width="1413" alt="image" src="https://github.com/go-fuego/fuego/assets/46993939/18796a59-b2e4-4e01-81d1-88c581de3466">
+
+#### Benefits of using Fuego views (controllers returning HTML)
+
+- Never forget to return after an error
+- OpenAPI schema generated, listing all the routes
+- Deserialization and validation are more easy
+- Transition to Fuego is easy and fast
+
+</details>
+
 ## Contributing
 
 See the [contributing guide](CONTRIBUTING.md)
