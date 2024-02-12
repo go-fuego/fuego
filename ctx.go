@@ -87,8 +87,8 @@ type ctx[B any] interface {
 func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) *ContextWithBody[B] {
 	c := &ContextWithBody[B]{
 		ContextNoBody: ContextNoBody{
-			response: w,
-			request:  r,
+			Res: w,
+			Req: r,
 			readOptions: readOptions{
 				DisallowUnknownFields: options.DisallowUnknownFields,
 				MaxBodySize:           options.MaxBodySize,
@@ -108,8 +108,8 @@ type ContextWithBody[Body any] struct {
 // ContextNoBody is used when the controller does not have a body.
 // It used as a base context for other Context types.
 type ContextNoBody struct {
-	request  *http.Request
-	response http.ResponseWriter
+	Req *http.Request
+	Res http.ResponseWriter
 
 	fs        fs.FS
 	templates *template.Template
@@ -133,7 +133,7 @@ func (c ContextNoBody) MustBody() any {
 // SetStatus sets the status code of the response.
 // Alias to http.ResponseWriter.WriteHeader.
 func (c ContextNoBody) SetStatus(code int) {
-	c.response.WriteHeader(code)
+	c.Res.WriteHeader(code)
 }
 
 // readOptions are options for reading the request body.
@@ -151,13 +151,13 @@ var (
 )
 
 func (c ContextNoBody) Redirect(code int, url string) (any, error) {
-	http.Redirect(c.response, c.request, url, code)
+	http.Redirect(c.Res, c.Req, url, code)
 
 	return nil, nil
 }
 
 func (c ContextNoBody) Context() context.Context {
-	return c.request.Context()
+	return c.Req.Context()
 }
 
 // Render renders the given templates with the given data.
@@ -191,8 +191,8 @@ func (c ContextNoBody) Render(templateToExecute string, data any, layoutsGlobs .
 	myTemplate := strings.Split(templateToExecute, "/")
 	templateToExecute = myTemplate[len(myTemplate)-1]
 
-	c.response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err := c.templates.ExecuteTemplate(c.response, templateToExecute, data)
+	c.Res.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err := c.templates.ExecuteTemplate(c.Res, templateToExecute, data)
 	if err != nil {
 		return "", HTTPError{
 			StatusCode: http.StatusInternalServerError,
@@ -209,7 +209,7 @@ func (c ContextNoBody) Render(templateToExecute string, data any, layoutsGlobs .
 
 // PathParams returns the path parameters of the request.
 func (c ContextNoBody) PathParam(name string) string {
-	return c.request.PathValue(name)
+	return c.Req.PathValue(name)
 }
 
 type QueryParamNotFoundError struct {
@@ -233,7 +233,7 @@ func (e QueryParamInvalidTypeError) Error() string {
 
 // QueryParams returns the query parameters of the request.
 func (c ContextNoBody) QueryParams() map[string]string {
-	queryParams := c.request.URL.Query()
+	queryParams := c.Req.URL.Query()
 	params := make(map[string]string)
 	for k, v := range queryParams {
 		params[k] = v[0]
@@ -243,7 +243,7 @@ func (c ContextNoBody) QueryParams() map[string]string {
 
 // QueryParam returns the query parameter with the given name.
 func (c ContextNoBody) QueryParam(name string) string {
-	return c.request.URL.Query().Get(name)
+	return c.Req.URL.Query().Get(name)
 }
 
 func (c ContextNoBody) QueryParamIntErr(name string) (int, error) {
@@ -309,17 +309,17 @@ func (c ContextNoBody) MainLang() string {
 }
 
 func (c ContextNoBody) MainLocale() string {
-	return strings.Split(c.request.Header.Get("Accept-Language"), ",")[0]
+	return strings.Split(c.Req.Header.Get("Accept-Language"), ",")[0]
 }
 
 // Request returns the http request.
 func (c ContextNoBody) Request() *http.Request {
-	return c.request
+	return c.Req
 }
 
 // Response returns the http response writer.
 func (c ContextNoBody) Response() http.ResponseWriter {
-	return c.response
+	return c.Res
 }
 
 // MustBody works like Body, but panics if there is an error.
@@ -349,27 +349,27 @@ func (c *ContextWithBody[B]) Body() (B, error) {
 func body[B any](c ContextNoBody) (B, error) {
 	// Limit the size of the request body.
 	if c.readOptions.MaxBodySize != 0 {
-		c.request.Body = http.MaxBytesReader(nil, c.request.Body, c.readOptions.MaxBodySize)
+		c.Req.Body = http.MaxBytesReader(nil, c.Req.Body, c.readOptions.MaxBodySize)
 	}
 
 	timeDeserialize := time.Now()
 
 	var body B
 	var err error
-	switch c.request.Header.Get("Content-Type") {
+	switch c.Req.Header.Get("Content-Type") {
 	case "text/plain":
-		s, errReadingString := readString[string](c.request.Context(), c.request.Body, c.readOptions)
+		s, errReadingString := readString[string](c.Req.Context(), c.Req.Body, c.readOptions)
 		body = any(s).(B)
 		err = errReadingString
 	case "application/x-www-form-urlencoded", "multipart/form-data":
-		body, err = readURLEncoded[B](c.request, c.readOptions)
+		body, err = readURLEncoded[B](c.Req, c.readOptions)
 	case "application/json":
 		fallthrough
 	default:
-		body, err = readJSON[B](c.request.Context(), c.request.Body, c.readOptions)
+		body, err = readJSON[B](c.Req.Context(), c.Req.Body, c.readOptions)
 	}
 
-	c.response.Header().Add("Server-Timing", Timing{"deserialize", time.Since(timeDeserialize), "controller > deserialize"}.String())
+	c.Res.Header().Add("Server-Timing", Timing{"deserialize", time.Since(timeDeserialize), "controller > deserialize"}.String())
 
 	return body, err
 }

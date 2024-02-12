@@ -406,8 +406,8 @@ func TestContextNoBody_Body(t *testing.T) {
 	body := `{"name":"John","age":30}`
 	r := httptest.NewRequest("GET", "/", strings.NewReader(body))
 	ctx := ContextNoBody{
-		request:  r,
-		response: httptest.NewRecorder(),
+		Req: r,
+		Res: httptest.NewRecorder(),
 	}
 	res, err := ctx.Body()
 	require.NoError(t, err)
@@ -422,8 +422,8 @@ func TestContextNoBody_MustBody(t *testing.T) {
 		body := `{"name":"John","age":30}`
 		r := httptest.NewRequest("GET", "/", strings.NewReader(body))
 		ctx := ContextNoBody{
-			request:  r,
-			response: httptest.NewRecorder(),
+			Req: r,
+			Res: httptest.NewRecorder(),
 		}
 		res := ctx.MustBody()
 		require.Equal(t, any(map[string]any{
@@ -436,8 +436,8 @@ func TestContextNoBody_MustBody(t *testing.T) {
 		body := `{"name":"John","age":30`
 		r := httptest.NewRequest("GET", "/", strings.NewReader(body))
 		ctx := ContextNoBody{
-			request:  r,
-			response: httptest.NewRecorder(),
+			Req: r,
+			Res: httptest.NewRecorder(),
 		}
 		require.Panics(t, func() {
 			ctx.MustBody()

@@ -340,8 +340,8 @@ func TestIni(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
 		ctx := initContext[ContextNoBody](ContextNoBody{
-			request:  req,
-			response: w,
+			Req: req,
+			Res: w,
 		})
 
 		require.NotNil(t, ctx)
@@ -353,8 +353,8 @@ func TestIni(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
 		ctx := initContext[*ContextNoBody](ContextNoBody{
-			request:  req,
-			response: w,
+			Req: req,
+			Res: w,
 		})
 
 		require.NotNil(t, ctx)
@@ -366,8 +366,8 @@ func TestIni(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
 		ctx := initContext[*ContextWithBody[string]](ContextNoBody{
-			request:  req,
-			response: w,
+			Req: req,
+			Res: w,
 		})
 
 		require.NotNil(t, ctx)
@@ -379,8 +379,8 @@ func TestIni(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
 		ctx := initContext[*ContextWithBody[ans]](ContextNoBody{
-			request:  req,
-			response: w,
+			Req: req,
+			Res: w,
 		})
 
 		require.NotNil(t, ctx)
@@ -394,8 +394,8 @@ func TestIni(t *testing.T) {
 
 		require.Panics(t, func() {
 			initContext[ctx[any]](ContextNoBody{
-				request:  req,
-				response: w,
+				Req: req,
+				Res: w,
 			})
 		})
 	})

@@ -69,8 +69,8 @@ func httpHandler[ReturnType any, Body any, Contextable ctx[Body]](s *Server, con
 			templates = template.Must(s.template.Clone())
 		}
 		ctx := initContext[Contextable](ContextNoBody{
-			request:  r,
-			response: w,
+			Req: r,
+			Res: w,
 			readOptions: readOptions{
 				DisallowUnknownFields: s.DisallowUnknownFields,
 				MaxBodySize:           s.maxBodySize,

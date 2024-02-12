@@ -52,16 +52,20 @@ func (rs NewControllerRessources) postNewController(c *fuego.ContextWithBody[New
 }
 
 func (rs NewControllerRessources) getNewController(c fuego.ContextNoBody) (NewController, error) {
-	return rs.NewControllerService.GetNewController(c.PathParam("id"))
+	id := c.PathParam("id")
+
+	return rs.NewControllerService.GetNewController(id)
 }
 
 func (rs NewControllerRessources) putNewController(c *fuego.ContextWithBody[NewControllerUpdate]) (NewController, error) {
+	id := c.PathParam("id")
+
 	body, err := c.Body()
 	if err != nil {
 		return NewController{}, err
 	}
 
-	new, err := rs.NewControllerService.UpdateNewController(c.PathParam("id"), body)
+	new, err := rs.NewControllerService.UpdateNewController(id, body)
 	if err != nil {
 		return NewController{}, err
 	}
