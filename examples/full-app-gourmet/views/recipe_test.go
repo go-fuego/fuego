@@ -81,7 +81,7 @@ func BenchmarkShowIndexExt(b *testing.B) {
 
 	app := serverRessources.Setup()
 
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/", nil)
 

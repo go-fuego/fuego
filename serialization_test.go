@@ -115,7 +115,7 @@ func TestOutTranform(t *testing.T) {
 func BenchmarkOutTransform(b *testing.B) {
 	b.Run("value", func(b *testing.B) {
 		value := tbt{Name: "John"}
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			value, err := transformOut(context.Background(), value)
 			if err != nil {
 				b.Fatal(err)
@@ -128,7 +128,7 @@ func BenchmarkOutTransform(b *testing.B) {
 
 	b.Run("pointer to value", func(b *testing.B) {
 		baseValue := tbt{Name: "Jack"}
-		for i := 0; i < b.N; i++ {
+		for i := range b.N {
 			// Copy baseValue to value to avoid mutating the baseValue again and again.
 			value := baseValue
 			v, err := transformOut(context.Background(), &value)
@@ -142,7 +142,7 @@ func BenchmarkOutTransform(b *testing.B) {
 	})
 
 	b.Run("pointer to nil", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			value, err := transformOut[*tbt](context.Background(), nil)
 			if err != nil {
 				b.Fatal(err)

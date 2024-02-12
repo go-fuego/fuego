@@ -300,7 +300,7 @@ func FuzzContext_Body(f *testing.F) {
 
 func BenchmarkContext_Body(b *testing.B) {
 	b.Run("valid JSON body", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for i := range b.N {
 			reqBody := strings.NewReader(`{"name":"John","age":30}`)
 			c := NewContext[testStruct](
 				httptest.NewRecorder(),
@@ -322,7 +322,7 @@ func BenchmarkContext_Body(b *testing.B) {
 			httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 			readOptions{})
-		for i := 0; i < b.N; i++ {
+		for i := range b.N {
 			_, err := c.Body()
 			if err != nil {
 				b.Fatal(err, "iteration", i)
@@ -331,7 +331,7 @@ func BenchmarkContext_Body(b *testing.B) {
 	})
 
 	b.Run("invalid JSON body", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			reqBody := strings.NewReader(`{"name":"John","age":30}`)
 			c := NewContext[testStruct](
 				httptest.NewRecorder(),
@@ -345,7 +345,7 @@ func BenchmarkContext_Body(b *testing.B) {
 	})
 
 	b.Run("string body", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			reqBody := strings.NewReader(`{"name":"John","age":30}`)
 			c := NewContext[testStruct](
 				httptest.NewRecorder(),

@@ -209,7 +209,7 @@ func BenchmarkCache(b *testing.B) {
 	fuego.Get(s, "/with-cache", baseController)
 
 	b.Run("without cache", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			r := httptest.NewRequest("GET", "/without-cache", nil)
 			w := httptest.NewRecorder()
 
@@ -223,7 +223,7 @@ func BenchmarkCache(b *testing.B) {
 	})
 
 	b.Run("with cache", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			r := httptest.NewRequest("GET", "/with-cache", nil)
 			w := httptest.NewRecorder()
 

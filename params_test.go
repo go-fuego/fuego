@@ -18,13 +18,13 @@ func TestParsePathParams(t *testing.T) {
 
 func BenchmarkParsePathParams(b *testing.B) {
 	b.Run("empty", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			parsePathParams("/")
 		}
 	})
 
 	b.Run("several path params", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			parsePathParams("/item/{user}/{id}")
 		}
 	})

@@ -80,7 +80,7 @@ func TestServer_generateOpenAPI(t *testing.T) {
 }
 
 func BenchmarkRoutesRegistration(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		s := NewServer(
 			WithoutLogger(),
 		)
@@ -101,7 +101,7 @@ func BenchmarkRoutesRegistration(b *testing.B) {
 }
 
 func BenchmarkServer_generateOpenAPI(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		s := NewServer(
 			WithoutLogger(),
 		)

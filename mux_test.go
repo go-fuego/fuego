@@ -310,7 +310,7 @@ func BenchmarkRequest(b *testing.B) {
 			return Resp{Name: body.B}, nil
 		})
 
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			r := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(`{"b":"M. John","c":3}`))
 			w := httptest.NewRecorder()
 
@@ -341,7 +341,7 @@ func BenchmarkRequest(b *testing.B) {
 			}
 		})
 
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			r := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(`{"b":"M. John","c":3}`))
 			w := httptest.NewRecorder()
 
@@ -372,7 +372,7 @@ func BenchmarkRequest(b *testing.B) {
 			}
 		})
 
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			r := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(`{"b":"M. John","c":3}`))
 			w := httptest.NewRecorder()
 

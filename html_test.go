@@ -99,7 +99,7 @@ func BenchmarkRender(b *testing.B) {
 
 	expected := "<main>\n  <h1>Test</h1>\n  <p>Your name is: test</p>\n</main>\n"
 
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		r := httptest.NewRequest(http.MethodGet, "/test", nil)
 		w := httptest.NewRecorder()
 
