@@ -10,6 +10,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/static"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa"
 
@@ -41,6 +42,10 @@ func (rs Ressource) showRecipesStd(w http.ResponseWriter, r *http.Request) {
 	if err := tmpl.Execute(w, recipes); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func (rs Ressource) robots(w http.ResponseWriter, r *http.Request) {
+	http.ServeFileFS(w, r, static.StaticFiles, "robots.txt")
 }
 
 func (rs Ressource) showIndex(c fuego.ContextNoBody) (fuego.Templ, error) {

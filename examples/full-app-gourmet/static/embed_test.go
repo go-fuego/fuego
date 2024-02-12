@@ -42,6 +42,5 @@ func TestHandler(t *testing.T) {
 		}
 
 		t.Log(w.Body.String())
-		t.Fail()
 	})
 }
