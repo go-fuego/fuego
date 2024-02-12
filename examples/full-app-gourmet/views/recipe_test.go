@@ -34,6 +34,14 @@ func (r RecipeRepositoryMock) GetRecipes(ctx context.Context) ([]store.Recipe, e
 	return []store.Recipe{}, nil
 }
 
+func (r RecipeRepositoryMock) SearchRecipes(ctx context.Context, params store.SearchRecipesParams) ([]store.Recipe, error) {
+	return []store.Recipe{}, nil
+}
+
+func (r RecipeRepositoryMock) GetRandomRecipes(ctx context.Context) ([]store.Recipe, error) {
+	return []store.Recipe{}, nil
+}
+
 type IngredientRepositoryMock struct {
 	views.IngredientRepository
 }
