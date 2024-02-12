@@ -4,4 +4,36 @@ import FlowChart from '@site/src/components/FlowChart';
 
 Controllers are the main way to interact with the application. They are responsible for handling the requests and responses.
 
+
+
 <FlowChart selected="Controller" />
+
+## Controller types
+
+### Returning JSON
+
+```go
+func (c *fuego.ContextNoBody) (MyResponse, error)
+```
+
+Used when the request does not have a body. The response will be automatically serialized to JSON.
+
+```go
+func (c *fuego.ContextWithBody[MyInput]) (MyResponse, error)
+```
+
+Used when the request has a body.
+Fuego will automatically parse the body and validate it using the input struct.
+
+### Returning HTML
+
+```go
+func (c *fuego.ContextNoBody) (fuego.HTML, error)
+```
+
+Some special interface return types are used by Fuego to return special responses.
+
+- `fuego.HTML` is used to return HTML responses from `html/template`.
+- `fuego.Templ` is used to return HTML responses from `a-h/templ`.
+- `fuego.Gomponent` is used to return HTML responses from `maragudk/gomponent`.
+
