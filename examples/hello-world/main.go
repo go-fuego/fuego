@@ -7,9 +7,11 @@ import (
 func main() {
 	s := fuego.NewServer()
 
-	fuego.Get(s, "/", func(c fuego.ContextNoBody) (string, error) {
-		return "Hello, World!", nil
-	})
+	fuego.Get(s, "/", helloWorld)
 
 	s.Run()
+}
+
+func helloWorld(c fuego.ContextNoBody) (string, error) {
+	return "Hello, World!", nil
 }

@@ -16,7 +16,7 @@ If you don't want to copy/paste the code on your local setup, you can run the fo
 go run github.com/go-fuego/fuego/examples/hello-world@latest
 ```
 
-Useful URLs are given in the terminal, you'll be able to see the result in your browser.
+Useful URLs (including OpenAPI spec & Swagger UI) are given in the terminal: you'll be able to see the result in your browser.
 
 ## Code
 
