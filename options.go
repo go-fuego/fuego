@@ -14,17 +14,17 @@ import (
 )
 
 type OpenapiConfig struct {
-	DisableSwagger    bool
-	DisableLocalSave  bool
-	SwaggerUrl        string
-	JsonSpecUrl       string
-	JsonSpecLocalPath string
+	DisableSwagger   bool   // If true, the server will not serve the swagger ui nor the openapi json spec
+	DisableLocalSave bool   // If true, the server will not save the openapi json spec locally
+	SwaggerUrl       string // URL to serve the swagger ui
+	JsonUrl          string // URL to serve the openapi json spec
+	JsonFilePath     string // Local path to save the openapi json spec
 }
 
 var defaultOpenapiConfig = OpenapiConfig{
-	SwaggerUrl:        "/swagger",
-	JsonSpecUrl:       "/swagger/openapi.json",
-	JsonSpecLocalPath: "doc/openapi.json",
+	SwaggerUrl:   "/swagger",
+	JsonUrl:      "/swagger/openapi.json",
+	JsonFilePath: "doc/openapi.json",
 }
 
 type Server struct {
@@ -233,25 +233,25 @@ func WithOpenapiConfig(openapiConfig OpenapiConfig) func(*Server) {
 	return func(s *Server) {
 		s.OpenapiConfig = openapiConfig
 
-		if s.OpenapiConfig.JsonSpecUrl == "" {
-			s.OpenapiConfig.JsonSpecUrl = defaultOpenapiConfig.JsonSpecUrl
+		if s.OpenapiConfig.JsonUrl == "" {
+			s.OpenapiConfig.JsonUrl = defaultOpenapiConfig.JsonUrl
 		}
 
 		if s.OpenapiConfig.SwaggerUrl == "" {
 			s.OpenapiConfig.SwaggerUrl = defaultOpenapiConfig.SwaggerUrl
 		}
 
-		if s.OpenapiConfig.JsonSpecLocalPath == "" {
-			s.OpenapiConfig.JsonSpecLocalPath = defaultOpenapiConfig.JsonSpecLocalPath
+		if s.OpenapiConfig.JsonFilePath == "" {
+			s.OpenapiConfig.JsonFilePath = defaultOpenapiConfig.JsonFilePath
 		}
 
-		if !validateJsonSpecLocalPath(s.OpenapiConfig.JsonSpecLocalPath) {
-			slog.Error("Error writing json spec. Value of 'jsonSpecLocalPath' option is not valid", "file", s.OpenapiConfig.JsonSpecLocalPath)
+		if !validateJsonSpecLocalPath(s.OpenapiConfig.JsonFilePath) {
+			slog.Error("Error writing json spec. Value of 'jsonSpecLocalPath' option is not valid", "file", s.OpenapiConfig.JsonFilePath)
 			return
 		}
 
-		if !validateJsonSpecUrl(s.OpenapiConfig.JsonSpecUrl) {
-			slog.Error("Error serving openapi json spec. Value of 's.OpenapiConfig.JsonSpecUrl' option is not valid", "url", s.OpenapiConfig.JsonSpecUrl)
+		if !validateJsonSpecUrl(s.OpenapiConfig.JsonUrl) {
+			slog.Error("Error serving openapi json spec. Value of 's.OpenapiConfig.JsonSpecUrl' option is not valid", "url", s.OpenapiConfig.JsonUrl)
 			return
 		}
 

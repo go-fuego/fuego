@@ -37,3 +37,26 @@ Some special interface return types are used by Fuego to return special response
 - `fuego.Templ` is used to return HTML responses from `a-h/templ`.
 - `fuego.Gomponent` is used to return HTML responses from `maragudk/gomponent`.
 
+### Example of a JSON controller
+
+```go
+type MyInput struct {
+	Name string `json:"name"`
+}
+
+type MyResponse struct {
+	Message string `json:"message"`
+}
+
+func MyController(ctx *fuego.ContextWithBody[MyInput]) (MyResponse, error) {
+	body, err := c.Body()
+	if err != nil {
+		return MyResponse{}, err
+	}
+
+	return MyResponse{
+		Message: "Hello " + body.Name,
+	}, nil
+}
+```
+

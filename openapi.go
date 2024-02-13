@@ -54,9 +54,9 @@ func (s *Server) generateOpenAPI() openapi3.T {
 	}
 
 	if !s.OpenapiConfig.DisableLocalSave {
-		err := localSave(s.OpenapiConfig.JsonSpecLocalPath, jsonSpec)
+		err := localSave(s.OpenapiConfig.JsonFilePath, jsonSpec)
 		if err != nil {
-			slog.Error("Error saving spec to local path", "error", err, "path", s.OpenapiConfig.JsonSpecLocalPath)
+			slog.Error("Error saving spec to local path", "error", err, "path", s.OpenapiConfig.JsonFilePath)
 		}
 	}
 
@@ -88,7 +88,7 @@ func localSave(jsonSpecLocalPath string, jsonSpec []byte) error {
 
 // Registers the routes to serve the OpenAPI spec and Swagger UI.
 func generateSwagger(s *Server, jsonSpec []byte) {
-	GetStd(s, s.OpenapiConfig.JsonSpecUrl, func(w http.ResponseWriter, r *http.Request) {
+	GetStd(s, s.OpenapiConfig.JsonUrl, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write(jsonSpec)
 	})
@@ -96,10 +96,10 @@ func generateSwagger(s *Server, jsonSpec []byte) {
 	GetStd(s, s.OpenapiConfig.SwaggerUrl+"/", httpSwagger.Handler(
 		httpSwagger.Layout(httpSwagger.BaseLayout),
 		httpSwagger.PersistAuthorization(true),
-		httpSwagger.URL(s.OpenapiConfig.JsonSpecUrl), // The url pointing to API definition
+		httpSwagger.URL(s.OpenapiConfig.JsonUrl), // The url pointing to API definition
 	))
 
-	slog.Info(fmt.Sprintf("Raw json spec available at http://localhost%s%s", s.Server.Addr, s.OpenapiConfig.JsonSpecUrl))
+	slog.Info(fmt.Sprintf("Raw json spec available at http://localhost%s%s", s.Server.Addr, s.OpenapiConfig.JsonUrl))
 	slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s%s/index.html", s.Server.Addr, s.OpenapiConfig.SwaggerUrl))
 }
 
