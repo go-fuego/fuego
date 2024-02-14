@@ -23,6 +23,16 @@ function HomepageHeader() {
             Tutorial - 5 min ⏱️
           </Link>
         </div>
+        <iframe
+          style={{ marginTop: "80px" }}
+          width="640"
+          height="360"
+          src="https://youtu.be/OxokKDcYUK0"
+          title="Introducing Fuego !"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        ></iframe>
       </div>
     </header>
   );
