@@ -34,6 +34,8 @@ Chi, Gin, Fiber and Echo are great frameworks. But since they were designed a lo
 
 ## Examples
 
+### Hello World
+
 ```go
 package main
 
@@ -49,6 +51,8 @@ func main() {
 	s.Run()
 }
 ```
+
+### Simple POST
 
 ```go
 package main
@@ -80,6 +84,25 @@ func main() {
 
 	s.Run()
 }
+```
+
+### With transformation & custom validation
+
+```go
+type MyInput struct {
+	Name string `json:"name" validate:"required"`
+}
+
+func (r *MyInput) InTransform(context.Context) error {
+	r.Name = strings.ToLower(r.Name)
+
+	if r.Name == "fuego" {
+		return errors.New("fuego is not a valid name for this input")
+	}
+
+	return nil
+}
+
 ```
 
 <details>
