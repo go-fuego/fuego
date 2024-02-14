@@ -2,7 +2,6 @@ import clsx from "clsx";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import Layout from "@theme/Layout";
-import HomepageFeatures from "@site/src/components/HomepageFeatures";
 import Heading from "@theme/Heading";
 
 import styles from "./index.module.css";
@@ -18,21 +17,6 @@ function HomepageHeader() {
           {siteConfig.title}
         </Heading>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
-          <Link className="button button--secondary button--lg" to="/docs/">
-            Tutorial - 5 min ⏱️
-          </Link>
-        </div>
-        <iframe
-          style={{ marginTop: "80px", width: "100%", maxWidth: "900px" }}
-          width="640"
-          height="360"
-          src="https://www.youtube.com/embed/OxokKDcYUK0"
-          title="Introducing Fuego !"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        ></iframe>
       </div>
     </header>
   );
@@ -43,7 +27,23 @@ export default function Home(): JSX.Element {
   return (
     <Layout title={siteConfig.title} description={siteConfig.tagline}>
       <HomepageHeader />
-      <main>{/* <HomepageFeatures /> */}</main>
+      <main className={styles.main}>
+        <div className={styles.buttons}>
+          <Link className="button button--secondary button--lg" to="/docs/">
+            Tutorial - 5 min ⏱️
+          </Link>
+        </div>
+        <iframe
+          className={styles.video}
+          width="640"
+          height="360"
+          src="https://www.youtube.com/embed/OxokKDcYUK0"
+          title="Introducing Fuego !"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        ></iframe>
+      </main>
     </Layout>
   );
 }
