@@ -45,7 +45,7 @@ func (rs recipeRessource) getAllRecipes(c fuego.ContextNoBody) ([]store.Recipe, 
 	return recipes, nil
 }
 
-func (rs recipeRessource) newRecipe(c *fuego.ContextWithBody[store.CreateRecipeParams]) (store.Recipe, error) {
+func (rs recipeRessource) newRecipe(c fuego.Ctx[store.CreateRecipeParams]) (store.Recipe, error) {
 	body, err := c.Body()
 	if err != nil {
 		return store.Recipe{}, err

@@ -37,7 +37,7 @@ func (rs Ressource) adminRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 	return admin.RecipeList(recipes, searchParams), nil
 }
 
-func (rs Ressource) adminOneRecipe(c *fuego.ContextWithBody[store.UpdateRecipeParams]) (fuego.Templ, error) {
+func (rs Ressource) adminOneRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (fuego.Templ, error) {
 	id := c.Request().PathValue("id")
 
 	if c.Request().Method == "PUT" {
@@ -82,7 +82,7 @@ func (rs Ressource) adminOneRecipe(c *fuego.ContextWithBody[store.UpdateRecipePa
 	}), nil
 }
 
-func (rs Ressource) editRecipe(c *fuego.ContextWithBody[store.UpdateRecipeParams]) (any, error) {
+func (rs Ressource) editRecipe(c fuego.Ctx[store.UpdateRecipeParams]) (any, error) {
 	updateRecipeArgs, err := c.Body()
 	if err != nil {
 		return "", err
@@ -98,7 +98,7 @@ func (rs Ressource) editRecipe(c *fuego.ContextWithBody[store.UpdateRecipeParams
 	return c.Redirect(301, "/admin/recipes/"+recipe.ID)
 }
 
-func (rs Ressource) adminAddRecipes(c *fuego.ContextWithBody[store.CreateRecipeParams]) (any, error) {
+func (rs Ressource) adminAddRecipes(c fuego.Ctx[store.CreateRecipeParams]) (any, error) {
 	body, err := c.Body()
 	if err != nil {
 		return "", err
@@ -112,7 +112,7 @@ func (rs Ressource) adminAddRecipes(c *fuego.ContextWithBody[store.CreateRecipeP
 	return c.Redirect(301, "/admin/recipes")
 }
 
-func (rs Ressource) adminCreateRecipePage(c *fuego.ContextNoBody) (fuego.Templ, error) {
+func (rs Ressource) adminCreateRecipePage(c fuego.ContextNoBody) (fuego.Templ, error) {
 	allIngredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
 	if err != nil {
 		return nil, err
@@ -129,7 +129,7 @@ func (rs Ressource) adminCreateRecipePage(c *fuego.ContextNoBody) (fuego.Templ, 
 	}), nil
 }
 
-func (rs Ressource) adminAddDosing(c *fuego.ContextWithBody[store.CreateDosingParams]) (any, error) {
+func (rs Ressource) adminAddDosing(c fuego.Ctx[store.CreateDosingParams]) (any, error) {
 	body, err := c.Body()
 	if err != nil {
 		return "", err

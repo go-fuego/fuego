@@ -51,13 +51,13 @@ func TestTagFromType(t *testing.T) {
 
 func TestServer_generateOpenAPI(t *testing.T) {
 	s := NewServer()
-	Get(s, "/", func(*ContextNoBody) (MyStruct, error) {
+	Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 		return MyStruct{}, nil
 	})
-	Post(s, "/post", func(*ContextWithBody[MyStruct]) ([]MyStruct, error) {
+	Post(s, "/post", func(Ctx[MyStruct]) ([]MyStruct, error) {
 		return nil, nil
 	})
-	Get(s, "/post/{id}", func(*ContextNoBody) (MyOutputStruct, error) {
+	Get(s, "/post/{id}", func(ContextNoBody) (MyOutputStruct, error) {
 		return MyOutputStruct{}, nil
 	})
 	document := s.generateOpenAPI()
@@ -88,7 +88,7 @@ func BenchmarkRoutesRegistration(b *testing.B) {
 			return MyStruct{}, nil
 		})
 		for j := 0; j < 100; j++ {
-			Post(s, fmt.Sprintf("/post/%d", j), func(*ContextWithBody[MyStruct]) ([]MyStruct, error) {
+			Post(s, fmt.Sprintf("/post/%d", j), func(Ctx[MyStruct]) ([]MyStruct, error) {
 				return nil, nil
 			})
 		}
@@ -109,7 +109,7 @@ func BenchmarkServer_generateOpenAPI(b *testing.B) {
 			return MyStruct{}, nil
 		})
 		for j := 0; j < 100; j++ {
-			Post(s, fmt.Sprintf("/post/%d", j), func(*ContextWithBody[MyStruct]) ([]MyStruct, error) {
+			Post(s, fmt.Sprintf("/post/%d", j), func(Ctx[MyStruct]) ([]MyStruct, error) {
 				return nil, nil
 			})
 		}

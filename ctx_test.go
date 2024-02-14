@@ -405,7 +405,7 @@ func TestMainLang(t *testing.T) {
 func TestContextNoBody_Body(t *testing.T) {
 	body := `{"name":"John","age":30}`
 	r := httptest.NewRequest("GET", "/", strings.NewReader(body))
-	ctx := ContextNoBody{
+	ctx := BaseContext{
 		Req: r,
 		Res: httptest.NewRecorder(),
 	}
@@ -421,7 +421,7 @@ func TestContextNoBody_MustBody(t *testing.T) {
 	t.Run("can read JSON body", func(t *testing.T) {
 		body := `{"name":"John","age":30}`
 		r := httptest.NewRequest("GET", "/", strings.NewReader(body))
-		ctx := ContextNoBody{
+		ctx := BaseContext{
 			Req: r,
 			Res: httptest.NewRecorder(),
 		}
@@ -435,7 +435,7 @@ func TestContextNoBody_MustBody(t *testing.T) {
 	t.Run("cannot read invalid JSON body", func(t *testing.T) {
 		body := `{"name":"John","age":30`
 		r := httptest.NewRequest("GET", "/", strings.NewReader(body))
-		ctx := ContextNoBody{
+		ctx := BaseContext{
 			Req: r,
 			Res: httptest.NewRecorder(),
 		}
