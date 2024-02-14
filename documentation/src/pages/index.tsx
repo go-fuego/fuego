@@ -24,7 +24,7 @@ function HomepageHeader() {
           </Link>
         </div>
         <iframe
-          style={{ marginTop: "80px" }}
+          style={{ marginTop: "80px", width: "100%", maxWidth: "900px" }}
           width="640"
           height="360"
           src="https://www.youtube.com/embed/OxokKDcYUK0"
