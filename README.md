@@ -93,6 +93,7 @@ type MyInput struct {
 	Name string `json:"name" validate:"required"`
 }
 
+// Will be called just before returning c.Body()
 func (r *MyInput) InTransform(context.Context) error {
 	r.Name = strings.ToLower(r.Name)
 
@@ -115,11 +116,11 @@ import "github.com/go-fuego/fuego"
 func main() {
 	s := fuego.NewServer()
 
-	// With more typed OpenAPI options than the ones deduced by the controller
+	// Custom OpenAPI options that cannot be deduced by the controller signature
 	fuego.Post(s, "/", myController).
 		WithDescription("This route does something").
 		WithSummary("This is my summary").
-		SetTags("MyTag").
+		SetTags("MyTag"). // A tag is set by default according to the return type (can be desactivated)
 		SetDeprecated()
 
 	s.Run()
