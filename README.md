@@ -105,6 +105,27 @@ func (r *MyInput) InTransform(context.Context) error {
 
 ```
 
+### More OpenAPI documentation
+
+```go
+package main
+
+import "github.com/go-fuego/fuego"
+
+func main() {
+	s := fuego.NewServer()
+
+	// With more typed OpenAPI options than the ones deduced by the controller
+	fuego.Post(s, "/", myController).
+		WithDescription("This route does something").
+		WithSummary("This is my summary").
+		SetTags("MyTag").
+		SetDeprecated()
+
+	s.Run()
+}
+```
+
 <details>
 <summary>All features</summary>
 
