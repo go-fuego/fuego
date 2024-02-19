@@ -35,13 +35,18 @@ func main() {
 			return MyResponse{}, err
 		}
 
+		// read the request header test
+		if c.Request().Header.Get("test") != "test" {
+			return MyResponse{}, errors.New("test header not found")
+		}
+
 		c.Response().Header().Set("X-Hello", "World")
 
 		return MyResponse{
 			Message:       "Hello, " + data.Name,
 			BestFramework: "Fuego!",
 		}, nil
-	})
+	}).WithDescription("Say hello to the world").AddHeader("test")
 
 	// Standard net/http handler with automatic OpenAPI route declaration
 	fuego.GetStd(s, "/std", func(w http.ResponseWriter, r *http.Request) {
