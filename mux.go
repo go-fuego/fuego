@@ -125,6 +125,14 @@ func (r Route[ResponseBody, RequestBody]) AddHeader(header string) Route[Respons
 	return r
 }
 
+func (r Route[ResponseBody, RequestBody]) AddCookie(cookie string) Route[ResponseBody, RequestBody] {
+	r.operation.Parameters = append(r.operation.Parameters, &openapi3.ParameterRef{
+		Value: openapi3.NewCookieParameter(cookie),
+	})
+
+	return r
+}
+
 func (r Route[ResponseBody, RequestBody]) AddTags(tags ...string) Route[ResponseBody, RequestBody] {
 	r.operation.Tags = append(r.operation.Tags, tags...)
 	return r
