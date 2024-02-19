@@ -117,6 +117,14 @@ func (r Route[ResponseBody, RequestBody]) SetTags(tags ...string) Route[Response
 	return r
 }
 
+func (r Route[ResponseBody, RequestBody]) AddHeader(header string) Route[ResponseBody, RequestBody] {
+	r.operation.Parameters = append(r.operation.Parameters, &openapi3.ParameterRef{
+		Value: openapi3.NewHeaderParameter(header),
+	})
+
+	return r
+}
+
 func (r Route[ResponseBody, RequestBody]) AddTags(tags ...string) Route[ResponseBody, RequestBody] {
 	r.operation.Tags = append(r.operation.Tags, tags...)
 	return r
