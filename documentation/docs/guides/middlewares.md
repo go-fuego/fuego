@@ -22,7 +22,7 @@ func main() {
 	s := fuego.NewServer()
 
 	// Add a middleware to the whole server
-	s.Use(func(next http.Handler) http.Handler {
+	fuego.Use(func(s, next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Do something before the request
 			next.ServeHTTP(w, r)
