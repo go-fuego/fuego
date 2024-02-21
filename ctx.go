@@ -21,14 +21,14 @@ type ContextNoBody = Ctx[any]
 // Ctx is the context of the request.
 // It contains the request body, the path parameters, the query parameters, and the http request.
 // Please do not use a pointer type as parameter.
-type Ctx[B any] interface {
+type Ctx[Body any] interface {
 	// Body returns the body of the request.
 	// If (*B) implements [InTransformer], it will be transformed after deserialization.
 	// It caches the result, so it can be called multiple times.
-	Body() (B, error)
+	Body() (Body, error)
 
 	// MustBody works like Body, but panics if there is an error.
-	MustBody() B
+	MustBody() Body
 
 	// PathParam returns the path parameter with the given name.
 	// If it does not exist, it returns an empty string.
@@ -146,8 +146,8 @@ type readOptions struct {
 }
 
 var (
-	_ Ctx[any]    = &BaseContextWithBody[any]{}    // Check that ContextWithBody[any] implements Ctx.
-	_ Ctx[string] = &BaseContextWithBody[string]{} // Check that ContextWithBody[string] implements Ctx.
+	_ Ctx[any]    = &BaseContextWithBody[any]{}    // Check that BaseContextWithBody[any] implements Ctx.
+	_ Ctx[string] = &BaseContextWithBody[string]{} // Check that BaseContextWithBody[string] implements Ctx.
 	_ Ctx[any]    = &BaseContext{}                 // Check that ContextNoBody implements Ctx.
 	_ Ctx[any]    = BaseContext{}                  // Check that ContextNoBody implements Ctx.
 )

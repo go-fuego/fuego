@@ -42,7 +42,7 @@ In the example above, we have a `User` struct with two fields: `FirstName` and `
 When using the following controller, the data will be transformed before it is unmarshaled into the `User` struct.
 
 ```go
-func myController(c fuego.ContextWithBody[User]) (User, error) {
+func myController(c fuego.Context[User]) (User, error) {
 	user, err := c.Body()
 	if err != nil {
 		return User{}, err

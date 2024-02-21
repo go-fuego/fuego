@@ -9,7 +9,7 @@ import (
 )
 
 type MyContext struct {
-	fuego.BaseContext
+	fuego.MockContextNoBody
 }
 
 // Controllers tests for /NewController
