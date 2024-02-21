@@ -13,13 +13,13 @@ Controllers are the main way to interact with the application. They are responsi
 ### Returning JSON
 
 ```go
-func (c *fuego.ContextNoBody) (MyResponse, error)
+func (c fuego.ContextNoBody) (MyResponse, error)
 ```
 
 Used when the request does not have a body. The response will be automatically serialized to JSON.
 
 ```go
-func (c *fuego.ContextWithBody[MyInput]) (MyResponse, error)
+func (c fuego.Context[MyInput]) (MyResponse, error)
 ```
 
 Used when the request has a body.
@@ -28,7 +28,7 @@ Fuego will automatically parse the body and validate it using the input struct.
 ### Returning HTML
 
 ```go
-func (c *fuego.ContextNoBody) (fuego.HTML, error)
+func (c fuego.ContextNoBody) (fuego.HTML, error)
 ```
 
 Some special interface return types are used by Fuego to return special responses.
@@ -48,7 +48,7 @@ type MyResponse struct {
 	Message string `json:"message"`
 }
 
-func MyController(ctx *fuego.ContextWithBody[MyInput]) (MyResponse, error) {
+func MyController(ctx fuego.Context[MyInput]) (MyResponse, error) {
 	body, err := c.Body()
 	if err != nil {
 		return MyResponse{}, err

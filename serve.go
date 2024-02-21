@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"fmt"
 	"html/template"
 	"log/slog"
 	"net/http"
@@ -23,28 +22,8 @@ func (s *Server) Run() error {
 	return s.Server.ListenAndServe()
 }
 
-// initializes any Context type with the base ContextNoBody context.
-//
-//	var ctx ContextWithBody[any] // does not work because it will create a ContextWithBody[any] with a nil value
-func initContext[Contextable ctx[Body], Body any](baseContext ContextNoBody) Contextable {
-	var c Contextable
-
-	switch any(c).(type) {
-	case ContextNoBody:
-		return any(baseContext).(Contextable)
-	case *ContextNoBody:
-		return any(&baseContext).(Contextable)
-	case *ContextWithBody[Body]:
-		return any(&ContextWithBody[Body]{
-			ContextNoBody: baseContext,
-		}).(Contextable)
-	default:
-		panic("unknown type")
-	}
-}
-
 // httpHandler converts a Fuego controller into a http.HandlerFunc.
-func httpHandler[ReturnType any, Body any, Contextable ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error)) http.HandlerFunc {
+func httpHandler[ReturnType any, Body any](s *Server, controller func(c Ctx[Body]) (ReturnType, error)) http.HandlerFunc {
 	returnsHTML := reflect.TypeOf(controller).Out(0).Name() == "HTML"
 	var r ReturnType
 	_, returnsString := any(r).(*string)
@@ -52,10 +31,10 @@ func httpHandler[ReturnType any, Body any, Contextable ctx[Body]](s *Server, con
 		_, returnsString = any(r).(string)
 	}
 
-	baseContext := *new(Contextable)
-	if reflect.TypeOf(baseContext) == nil {
-		slog.Info(fmt.Sprintf("context is nil: %v %T", baseContext, baseContext))
-		panic("ctx must be provided as concrete type (not interface). ContextNoBody, ContextWithBody[any], ContextFull[any, any], ContextWithQueryParams[any] are supported")
+	readOptions := readOptions{}
+	if s != nil {
+		readOptions.DisallowUnknownFields = s.DisallowUnknownFields
+		readOptions.MaxBodySize = s.maxBodySize
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -68,16 +47,15 @@ func httpHandler[ReturnType any, Body any, Contextable ctx[Body]](s *Server, con
 		if s.template != nil {
 			templates = template.Must(s.template.Clone())
 		}
-		ctx := initContext[Contextable](ContextNoBody{
-			Req: r,
-			Res: w,
-			readOptions: readOptions{
-				DisallowUnknownFields: s.DisallowUnknownFields,
-				MaxBodySize:           s.maxBodySize,
+		ctx := &BaseContextWithBody[Body]{
+			BaseContext: BaseContext{
+				Req:         r,
+				Res:         w,
+				readOptions: readOptions,
+				fs:          s.fs,
+				templates:   templates,
 			},
-			fs:        s.fs,
-			templates: templates,
-		})
+		}
 
 		timeController := time.Now()
 		w.Header().Set("Server-Timing", Timing{"fuegoReqInit", timeController.Sub(timeCtxInit), ""}.String())

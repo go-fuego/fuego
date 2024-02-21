@@ -71,7 +71,7 @@ func main() {
 	s := fuego.NewServer()
 
 	// Automatically generates OpenAPI documentation for this route
-	fuego.Post(s, "/", func(c *fuego.ContextWithBody[MyInput]) (MyOutput, error) {
+	fuego.Post(s, "/", func(c fuego.Ctx[MyInput]) (MyOutput, error) {
 		body, err := c.Body()
 		if err != nil {
 			return MyOutput{}, err
@@ -162,7 +162,7 @@ func main() {
 	fuego.Use(s, chiMiddleware.Compress(5, "text/html", "text/css"))
 
 	// Fuego 🔥 handler with automatic OpenAPI generation, validation, (de)serialization and error handling
-	fuego.Post(s, "/", func(c *fuego.ContextWithBody[Received]) (MyResponse, error) {
+	fuego.Post(s, "/", func(c fuego.Context[Received]) (MyResponse, error) {
 		data, err := c.Body()
 		if err != nil {
 			return MyResponse{}, err

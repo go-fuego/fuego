@@ -27,7 +27,7 @@ type TokenResponse struct {
 }
 
 // Custom login controller
-func (rs Ressource) login(c *fuego.ContextWithBody[LoginPayload]) (TokenResponse, error) {
+func (rs Ressource) login(c fuego.Ctx[LoginPayload]) (TokenResponse, error) {
 	body, err := c.Body()
 	if err != nil {
 		return TokenResponse{}, err

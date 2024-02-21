@@ -37,7 +37,7 @@ func (rs NewControllerRessources) getAllNewController(c fuego.ContextNoBody) ([]
 	return rs.NewControllerService.GetAllNewController()
 }
 
-func (rs NewControllerRessources) postNewController(c *fuego.ContextWithBody[NewControllerCreate]) (NewController, error) {
+func (rs NewControllerRessources) postNewController(c fuego.Ctx[NewControllerCreate]) (NewController, error) {
 	body, err := c.Body()
 	if err != nil {
 		return NewController{}, err
@@ -57,7 +57,7 @@ func (rs NewControllerRessources) getNewController(c fuego.ContextNoBody) (NewCo
 	return rs.NewControllerService.GetNewController(id)
 }
 
-func (rs NewControllerRessources) putNewController(c *fuego.ContextWithBody[NewControllerUpdate]) (NewController, error) {
+func (rs NewControllerRessources) putNewController(c fuego.Ctx[NewControllerUpdate]) (NewController, error) {
 	id := c.PathParam("id")
 
 	body, err := c.Body()
@@ -73,7 +73,7 @@ func (rs NewControllerRessources) putNewController(c *fuego.ContextWithBody[NewC
 	return new, nil
 }
 
-func (rs NewControllerRessources) deleteNewController(c *fuego.ContextNoBody) (any, error) {
+func (rs NewControllerRessources) deleteNewController(c fuego.ContextNoBody) (any, error) {
 	return rs.NewControllerService.DeleteNewController(c.PathParam("id"))
 }
 

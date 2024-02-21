@@ -11,5 +11,5 @@ func TestCreateController(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, res, "package controller")
 	require.Contains(t, res, `fuego.Get(booksGroup, "/{id}", rs.getBooks)`)
-	require.Contains(t, res, `func (rs BooksRessources) postBooks(c *fuego.ContextWithBody[BooksCreate]) (Books, error)`)
+	require.Contains(t, res, `func (rs BooksRessources) postBooks(c fuego.Context[BooksCreate]) (Books, error)`)
 }

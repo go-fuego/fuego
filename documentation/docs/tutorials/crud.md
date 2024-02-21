@@ -89,7 +89,7 @@ func getBooks(c fuego.ContextNoBody) ([]Book, error) {
 	return nil, nil
 }
 
-func createBook(c fuego.ContextWithBody[BookToCreate]) (Book, error) {
+func createBook(c fuego.Context[BookToCreate]) (Book, error) {
 	// Your code here
 	return Book{}, nil
 }
@@ -99,7 +99,7 @@ func getBook(c fuego.ContextNoBody) (Book, error) {
 	return Book{}, nil
 }
 
-func updateBook(c fuego.ContextWithBody[Book]) (Book, error) {
+func updateBook(c fuego.Context[Book]) (Book, error) {
 	// Your code here
 	return Book{}, nil
 }

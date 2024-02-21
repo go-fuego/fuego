@@ -225,7 +225,7 @@ func (rs Ressource) showRecipesList(c fuego.ContextNoBody) (fuego.HTML, error) {
 	return c.Render("partials/recipes-list.partial.html", recipes)
 }
 
-func (rs Ressource) addRecipe(c *fuego.ContextWithBody[store.CreateRecipeParams]) (fuego.HTML, error) {
+func (rs Ressource) addRecipe(c fuego.Ctx[store.CreateRecipeParams]) (fuego.HTML, error) {
 	body, err := c.Body()
 	if err != nil {
 		return "", err

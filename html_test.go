@@ -18,7 +18,7 @@ func TestRender(t *testing.T) {
 		WithTemplateGlobs("testdata/*.html"),
 	)
 
-	Get(s, "/test", func(ctx *ContextNoBody) (HTML, error) {
+	Get(s, "/test", func(ctx ContextNoBody) (HTML, error) {
 		return ctx.Render("testdata/test.html", H{"Name": "test"})
 	})
 
