@@ -289,7 +289,7 @@ func TestWithQueryParams(t *testing.T) {
 	route := Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
 		return "test", nil
 	}).
-		WithQueryParam("my-param", "my description")
+		QueryParam("my-param", "my description")
 
 	require.Equal(t, "my description", route.operation.Parameters.GetByInAndName("query", "my-param").Description)
 }

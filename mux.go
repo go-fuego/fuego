@@ -117,19 +117,47 @@ func (r Route[ResponseBody, RequestBody]) SetTags(tags ...string) Route[Response
 	return r
 }
 
-func (r Route[ResponseBody, RequestBody]) AddHeader(header string) Route[ResponseBody, RequestBody] {
-	r.operation.Parameters = append(r.operation.Parameters, &openapi3.ParameterRef{
-		Value: openapi3.NewHeaderParameter(header),
-	})
+type OpenAPIParam struct {
+	Required bool
+	Example  string
+	Type     string // "query", "header", "cookie"
+}
+
+// Param registers a parameter for the route.
+// The paramType can be "query", "header" or "cookie".
+// [Cookie], [Header], [QueryParam] are shortcuts for Param.
+func (r Route[ResponseBody, RequestBody]) Param(paramType, name, description string, params ...OpenAPIParam) Route[ResponseBody, RequestBody] {
+	openapiParam := openapi3.NewHeaderParameter(name)
+	openapiParam.Description = description
+	openapiParam.Schema = openapi3.NewStringSchema().NewRef()
+	openapiParam.In = paramType
+
+	for _, param := range params {
+		openapiParam.Required = param.Required
+		openapiParam.Example = param.Example
+		openapiParam.In = param.Type
+	}
+
+	r.operation.AddParameter(openapiParam)
 
 	return r
 }
 
-func (r Route[ResponseBody, RequestBody]) AddCookie(cookie string) Route[ResponseBody, RequestBody] {
-	r.operation.Parameters = append(r.operation.Parameters, &openapi3.ParameterRef{
-		Value: openapi3.NewCookieParameter(cookie),
-	})
+// Header registers a header parameter for the route.
+func (r Route[ResponseBody, RequestBody]) Header(name, description string, params ...OpenAPIParam) Route[ResponseBody, RequestBody] {
+	r.Param("header", name, description, params...)
+	return r
+}
 
+// Cookie registers a cookie parameter for the route.
+func (r Route[ResponseBody, RequestBody]) Cookie(name, description string, params ...OpenAPIParam) Route[ResponseBody, RequestBody] {
+	r.Param("cookie", name, description, params...)
+	return r
+}
+
+// QueryParam registers a query parameter for the route.
+func (r Route[ResponseBody, RequestBody]) QueryParam(name, description string, params ...OpenAPIParam) Route[ResponseBody, RequestBody] {
+	r.Param("query", name, description, params...)
 	return r
 }
 
@@ -152,14 +180,6 @@ func (r Route[ResponseBody, RequestBody]) RemoveTags(tags ...string) Route[Respo
 
 func (r Route[ResponseBody, RequestBody]) SetDeprecated() Route[ResponseBody, RequestBody] {
 	r.operation.Deprecated = true
-	return r
-}
-
-func (r Route[ResponseBody, RequestBody]) WithQueryParam(name, description string) Route[ResponseBody, RequestBody] {
-	parameter := openapi3.NewQueryParameter(name)
-	parameter.Description = description
-	parameter.Schema = openapi3.NewStringSchema().NewRef()
-	r.operation.AddParameter(parameter)
 	return r
 }
 
