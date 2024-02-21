@@ -46,7 +46,7 @@ func main() {
 			Message:       "Hello, " + data.Name,
 			BestFramework: "Fuego!",
 		}, nil
-	}).WithDescription("Say hello to the world").AddHeader("test").AddCookie("test")
+	}).WithDescription("Say hello to the world").Header("test", "").Cookie("test", "")
 
 	// Standard net/http handler with automatic OpenAPI route declaration
 	fuego.GetStd(s, "/std", func(w http.ResponseWriter, r *http.Request) {
