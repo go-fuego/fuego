@@ -22,6 +22,11 @@ func (r Route[ResponseBody, RequestBody]) Summary(summary string) Route[Response
 	return r
 }
 
+func (r Route[ResponseBody, RequestBody]) OperationID(operationID string) Route[ResponseBody, RequestBody] {
+	r.operation.OperationID = operationID
+	return r
+}
+
 // Param registers a parameter for the route.
 // The paramType can be "query", "header" or "cookie".
 // [Cookie], [Header], [QueryParam] are shortcuts for Param.
