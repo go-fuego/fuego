@@ -22,6 +22,7 @@ func (r Route[ResponseBody, RequestBody]) Summary(summary string) Route[Response
 	return r
 }
 
+// Overrides the operationID for the route.
 func (r Route[ResponseBody, RequestBody]) OperationID(operationID string) Route[ResponseBody, RequestBody] {
 	r.operation.OperationID = operationID
 	return r
@@ -68,16 +69,20 @@ func (r Route[ResponseBody, RequestBody]) QueryParam(name, description string, p
 	return r
 }
 
+// Replace the tags for the route.
+// By default, the tag is the type of the response body.
 func (r Route[ResponseBody, RequestBody]) Tags(tags ...string) Route[ResponseBody, RequestBody] {
 	r.operation.Tags = tags
 	return r
 }
 
+// AddTags adds tags to the route.
 func (r Route[ResponseBody, RequestBody]) AddTags(tags ...string) Route[ResponseBody, RequestBody] {
 	r.operation.Tags = append(r.operation.Tags, tags...)
 	return r
 }
 
+// RemoveTags removes tags from the route.
 func (r Route[ResponseBody, RequestBody]) RemoveTags(tags ...string) Route[ResponseBody, RequestBody] {
 	for _, tag := range tags {
 		for i, t := range r.operation.Tags {
