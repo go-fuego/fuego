@@ -51,12 +51,12 @@ func (rs Ressource) MountRoutes(s *fuego.Server) {
 	fuego.Use(adminRoutes, fuego.AuthWallRegex(`^(super)?admin$`)) // Same as above, but with a regex
 
 	fuego.Get(adminRoutes, "/users", placeholderController).
-		WithDescription("Get all users").
-		WithSummary("Get all users").
-		SetTags("Admin")
+		Description("Get all users").
+		Summary("Get all users").
+		Tags("Admin")
 
 	testRoutes := fuego.Group(s, "/tests")
-	fuego.Get(testRoutes, "/slow", slow).WithDescription("This is a slow route").WithSummary("Slow route")
+	fuego.Get(testRoutes, "/slow", slow).Description("This is a slow route").Summary("Slow route")
 	fuego.Get(testRoutes, "/mounted-route", placeholderController)
 	fuego.Post(testRoutes, "/mounted-route-post", placeholderController)
 

@@ -118,10 +118,10 @@ func main() {
 
 	// Custom OpenAPI options that cannot be deduced by the controller signature
 	fuego.Post(s, "/", myController).
-		WithDescription("This route does something").
-		WithSummary("This is my summary").
-		SetTags("MyTag"). // A tag is set by default according to the return type (can be desactivated)
-		SetDeprecated()
+		Description("This route does something").
+		Summary("This is my summary").
+		Tags("MyTag"). // A tag is set by default according to the return type (can be desactivated)
+		Deprecated()
 
 	s.Run()
 }

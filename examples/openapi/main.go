@@ -8,9 +8,9 @@ func main() {
 	s := fuego.NewServer()
 
 	fuego.Get(s, "/", helloWorld).
-		WithSummary("A simple hello world").
-		WithDescription("This is a simple hello world").
-		SetDeprecated()
+		Summary("A simple hello world").
+		Description("This is a simple hello world").
+		Deprecated()
 
 	s.Run()
 }

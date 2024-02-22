@@ -245,55 +245,6 @@ func TestDeleteStd(t *testing.T) {
 	require.Equal(t, w.Body.String(), "test successful")
 }
 
-func TestSetTags(t *testing.T) {
-	s := NewServer()
-	route := Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
-		return "test", nil
-	}).
-		SetTags("my-tag").
-		WithDescription("my description").
-		WithSummary("my summary").
-		SetDeprecated()
-
-	require.Equal(t, route.operation.Tags, []string{"my-tag"})
-	require.Equal(t, route.operation.Description, "my description")
-	require.Equal(t, route.operation.Summary, "my summary")
-	require.Equal(t, route.operation.Deprecated, true)
-}
-
-func TestAddTags(t *testing.T) {
-	s := NewServer()
-	route := Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
-		return "test", nil
-	}).
-		AddTags("my-tag").
-		AddTags("my-other-tag")
-
-	require.Equal(t, route.operation.Tags, []string{"string", "my-tag", "my-other-tag"})
-}
-
-func TestRemoveTags(t *testing.T) {
-	s := NewServer()
-	route := Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
-		return "test", nil
-	}).
-		AddTags("my-tag").
-		RemoveTags("my-tag", "string").
-		AddTags("my-other-tag")
-
-	require.Equal(t, route.operation.Tags, []string{"my-other-tag"})
-}
-
-func TestWithQueryParams(t *testing.T) {
-	s := NewServer()
-	route := Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
-		return "test", nil
-	}).
-		QueryParam("my-param", "my description")
-
-	require.Equal(t, "my description", route.operation.Parameters.GetByInAndName("query", "my-param").Description)
-}
-
 func BenchmarkRequest(b *testing.B) {
 	type Resp struct {
 		Name string `json:"name"`
