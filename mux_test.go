@@ -373,6 +373,12 @@ func TestPerRouteMiddleware(t *testing.T) {
 func TestGroup(t *testing.T) {
 	s := NewServer()
 
+	main := Group(s, "/")
+	Use(main, dummyMiddleware) // middleware is scoped to the group
+	Get(main, "/main", func(ctx *ContextNoBody) (string, error) {
+		return "main", nil
+	})
+
 	group1 := Group(s, "/group")
 	Get(group1, "/route1", func(ctx *ContextNoBody) (string, error) {
 		return "route1", nil
@@ -418,5 +424,21 @@ func TestGroup(t *testing.T) {
 
 		require.Equal(t, "route3", w.Body.String())
 		require.Equal(t, "", w.Header().Get("X-Test-Response"), "middleware is not inherited")
+	})
+
+	t.Run("main group", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/main", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, "main", w.Body.String())
+		require.Equal(t, "response", w.Header().Get("X-Test-Response"), "middleware is not set to this group")
+	})
+
+	t.Run("group path can end with a slash (but with a warning)", func(t *testing.T) {
+		s := NewServer()
+		g := Group(s, "/slash/")
+		require.Equal(t, "/slash/", g.basePath)
 	})
 }
