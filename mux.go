@@ -15,8 +15,8 @@ import (
 // For example:
 //
 //	s := fuego.NewServer()
-//	viewsRoutes := fuego.Group("")
-//	apiRoutes := fuego.Group("/api")
+//	viewsRoutes := fuego.Group(s, "")
+//	apiRoutes := fuego.Group(s, "/api")
 //	// Registering a middlewares scoped to /api only
 //	fuego.Use(apiRoutes, myMiddleware)
 //	// Registering a route under /api/users
