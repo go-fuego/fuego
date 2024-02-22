@@ -18,8 +18,8 @@ func (rs recipeRessource) MountRoutes(s *fuego.Server) {
 		AddTags("Recipe")
 
 	fuego.Get(s, "/recipes", rs.getAllRecipes).
-		WithSummary("Get all recipes").WithDescription("Get all recipes").
-		WithQueryParam("limit", "number of recipes to return").
+		Summary("Get all recipes").Description("Get all recipes").
+		QueryParam("limit", "number of recipes to return").
 		AddTags("custom")
 
 	fuego.Post(s, "/recipes/new", rs.newRecipe)
