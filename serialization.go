@@ -1,4 +1,3 @@
-// Description: This file contains functions for sending JSON and XML responses.
 package fuego
 
 import (

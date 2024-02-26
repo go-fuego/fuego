@@ -1,5 +1,0 @@
-# Routing
-
-## Basics
-
-## Groups
