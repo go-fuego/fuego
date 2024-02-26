@@ -280,4 +280,4 @@ I know you might prefer to use `net/http` directly, but if having a frame can co
 
 ## License
 
-[GPL](./LICENSE.txt)
+[MIT](./LICENSE.txt)
