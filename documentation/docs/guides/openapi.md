@@ -28,7 +28,7 @@ Result for this simple example:
 
 The core idea of Fuego is to generate the OpenAPI specification automatically, so you don't have to worry about it. However, you can customize it if you want.
 
-## Customize the operations caracteristics
+## Operations
 
 Each route can be customized to add more information to the OpenAPI specification.
 
@@ -68,9 +68,7 @@ Fuego automatically provides an OpenAPI specification for your API in several wa
 
 Fuego will indicate in a log the paths where the OpenAPI specifications and Swagger UI are available.
 
-## Customize the OpenAPI specification output
-
-You can customize the path and to activate or not the feature, with the option WithOpenAPIConfig.
+You can customize the paths and to activate or not the feature, with the option `WithOpenAPIConfig`.
 
 ```go
 package main
@@ -94,4 +92,29 @@ func main() {
 
 	s.Run()
 }
+```
+
+## Custom UI
+
+The UI is customizable via build tags.
+For example, if you want to enable the embedded Swagger UI to work offline, you can use the `openapi_ui_local` build tag.
+
+```bash
+go build -tags openapi_ui_local
+go run -tags openapi_ui_local .
+```
+
+|               | StopLight Elements | Swagger            | Disabled          |
+| ------------- | ------------------ | ------------------ | ----------------- |
+| Enable        | default            | `openapi_ui_local` | `openapi_ui_none` |
+| UI            | StopLight Elements | Swagger UI         | _disabled_        |
+| Works offline | No ❌              | Yes ✅             | -                 |
+| Binary Size   | Smaller            | Larger (+10Mb)     | Smaller           |
+
+If you want to implement your own UI, you can use the `openapi_ui_none` build tag and use the JSON endpoint to build your own UI.
+
+```go
+fuego.Get(s, "/my-custom-ui", func(c fuego.ContextNoBody) (fuego.HTML, error) {
+	// ... your custom UI
+})
 ```
