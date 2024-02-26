@@ -18,7 +18,7 @@ Also empowers `html/template`, `a-h/templ` and `maragudk/gomponents`: see [the e
 
 ## Why Fuego?
 
-Chi, Gin, Fiber and Echo are great frameworks. But since they were designed a long time ago, they do not enjoy the possibilities that modern Go provides. Fuego offers a lot of features that make it easy to develop APIs and web applications.
+Chi, Gin, Fiber and Echo are great frameworks. But since they were designed a long time ago, [their current API does not allow them](https://github.com/gin-gonic/gin/issues/155) to deduce OpenAPI types from signatures, things that are now possible with generics. Fuego offers a lot of "modern Go based" features that make it easy to develop APIs and web applications.
 
 ## Features
 
