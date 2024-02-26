@@ -14,7 +14,6 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3gen"
-	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func NewOpenApiSpec() openapi3.T {
@@ -82,7 +81,7 @@ func localSave(jsonSpecLocalPath string, jsonSpec []byte) error {
 		return errors.New("error writing file ")
 	}
 
-	slog.Info("Updated " + jsonSpecLocalPath)
+	slog.Info("JSON file: " + jsonSpecLocalPath)
 	return nil
 }
 
@@ -93,14 +92,10 @@ func generateSwagger(s *Server, jsonSpec []byte) {
 		_, _ = w.Write(jsonSpec)
 	})
 
-	GetStd(s, s.OpenapiConfig.SwaggerUrl+"/", httpSwagger.Handler(
-		httpSwagger.Layout(httpSwagger.BaseLayout),
-		httpSwagger.PersistAuthorization(true),
-		httpSwagger.URL(s.OpenapiConfig.JsonUrl), // The url pointing to API definition
-	))
+	Handle(s, s.OpenapiConfig.SwaggerUrl+"/", openApiHandler(s.OpenapiConfig.JsonUrl))
 
-	slog.Info(fmt.Sprintf("Raw json spec available at http://localhost%s%s", s.Server.Addr, s.OpenapiConfig.JsonUrl))
-	slog.Info(fmt.Sprintf("OpenAPI generated at http://localhost%s%s/index.html", s.Server.Addr, s.OpenapiConfig.SwaggerUrl))
+	slog.Info(fmt.Sprintf("JSON spec: http://localhost%s%s", s.Server.Addr, s.OpenapiConfig.JsonUrl))
+	slog.Info(fmt.Sprintf("OpenAPI UI: http://localhost%s%s/index.html", s.Server.Addr, s.OpenapiConfig.SwaggerUrl))
 }
 
 func validateJsonSpecLocalPath(jsonSpecLocalPath string) bool {
