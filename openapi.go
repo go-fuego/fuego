@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,41 +10,23 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strings"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3gen"
+	"github.com/go-fuego/fuego/openapi3"
 )
 
-func NewOpenApiSpec() openapi3.T {
-	info := &openapi3.Info{
-		Title:       "OpenAPI",
-		Description: "OpenAPI",
-		Version:     "0.0.1",
-	}
-	spec := openapi3.T{
-		OpenAPI: "3.0.3",
-		Info:    info,
-		Paths:   &openapi3.Paths{},
-		Components: &openapi3.Components{
-			Schemas:       make(map[string]*openapi3.SchemaRef),
-			RequestBodies: make(map[string]*openapi3.RequestBodyRef),
-			Responses:     make(map[string]*openapi3.ResponseRef),
-		},
-	}
+func NewOpenApiSpec() openapi3.Document {
+	spec := openapi3.NewDocument()
+
 	return spec
 }
 
-func (s *Server) generateOpenAPI() openapi3.T {
-	// Validate
-	err := s.OpenApiSpec.Validate(context.Background())
-	if err != nil {
-		slog.Error("Error validating spec", "error", err)
-	}
+func (s *Server) generateOpenAPI() openapi3.Document {
 
-	// Marshal spec to JSON
 	jsonSpec, err := json.Marshal(s.OpenApiSpec)
 	if err != nil {
-		slog.Error("Error marshalling spec to JSON", "error", err)
+		slog.Error("Error marshalling OpenAPI spec", "error", err)
 	}
 
 	if !s.OpenapiConfig.DisableSwagger {
@@ -118,7 +99,10 @@ var generator = openapi3gen.NewGenerator(
 )
 
 func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*openapi3.Operation, error) {
-	operation := openapi3.NewOperation()
+	operation := &openapi3.Operation{
+		Summary:     "Summary",
+		Description: "Description",
+	}
 
 	// Tags
 	tag := tagFromType(*new(T))
@@ -132,62 +116,60 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 
 		bodySchema, ok := s.OpenApiSpec.Components.Schemas[bodyTag]
 		if !ok {
-			var err error
-			bodySchema, err = generator.NewSchemaRefForValue(new(B), s.OpenApiSpec.Components.Schemas)
-			if err != nil {
-				return operation, err
-			}
-			s.OpenApiSpec.Components.Schemas[bodyTag] = bodySchema
+
 		}
 
-		requestBody := openapi3.NewRequestBody().
-			WithRequired(true).
-			WithDescription("Request body for " + reflect.TypeOf(*new(B)).String())
+		requestBody := &openapi3.RequestBody{
+			Required: true,
+
+			Content: make(map[openapi3.MimeType]openapi3.SchemaObject),
+		}
 
 		if bodySchema != nil {
-			content := openapi3.NewContentWithSchema(bodySchema.Value, []string{"application/json"})
-			content["application/json"].Schema.Ref = "#/components/schemas/" + bodyTag
-			requestBody.WithContent(content)
+
+			// content := openapi3.NewContentWithSchema(bodySchema.Value, []string{"application/json"})
+			// content["application/json"].Schema.Ref = "#/components/schemas/" + bodyTag
+			// requestBody.WithContent(content)
+			requestBody.Content["application/json"] = openapi3.SchemaObject{
+				Schema: bodySchema,
+			}
 		}
 
-		s.OpenApiSpec.Components.RequestBodies[bodyTag] = &openapi3.RequestBodyRef{
-			Value: requestBody,
-		}
+		s.OpenApiSpec.Components.RequestBodies[bodyTag] = &openapi3.RequestBody{}
 
 		// add request body to operation
-		operation.RequestBody = &openapi3.RequestBodyRef{
-			Ref:   "#/components/requestBodies/" + bodyTag,
-			Value: requestBody,
-		}
+		operation.RequestBody = &openapi3.RequestBody{}
 	}
 
 	// Response body
 	responseSchema, ok := s.OpenApiSpec.Components.Schemas[tag]
 	if !ok {
-		var err error
-		responseSchema, err = generator.NewSchemaRefForValue(new(T), s.OpenApiSpec.Components.Schemas)
-		if err != nil {
-			return operation, err
-		}
-		s.OpenApiSpec.Components.Schemas[tag] = responseSchema
+		responseSchema = openapi3.ToSchema(*new(T))
+
 	}
 
-	response := openapi3.NewResponse().WithDescription("OK")
-	if responseSchema != nil {
-		content := openapi3.NewContentWithSchema(responseSchema.Value, []string{"application/json"})
-		content["application/json"].Schema.Ref = "#/components/schemas/" + tag
-		response.WithContent(content)
+	operation.Responses = make(map[string]*openapi3.Response)
+	operation.Responses["200"] = &openapi3.Response{
+		Description: "OK",
+		Content: map[openapi3.MimeType]openapi3.SchemaObject{
+			"application/json": {
+				Schema: responseSchema,
+			},
+		},
 	}
-	operation.AddResponse(200, response)
 
 	// Path parameters
 	for _, pathParam := range parsePathParams(path) {
-		parameter := openapi3.NewPathParameter(pathParam)
-		parameter.Schema = openapi3.NewStringSchema().NewRef()
-		operation.AddParameter(parameter)
+		operation.Parameters = append(operation.Parameters, &openapi3.Parameter{
+			Name: pathParam,
+			In:   "path",
+			Schema: openapi3.Schema{
+				Type: "string",
+			},
+		})
 	}
 
-	s.OpenApiSpec.AddOperation(path, method, operation)
+	s.OpenApiSpec.Paths.AddPath(path, strings.ToLower(method), operation)
 
 	return operation, nil
 }

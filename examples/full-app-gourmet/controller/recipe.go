@@ -59,10 +59,10 @@ func (rs recipeRessource) newRecipe(c *fuego.ContextWithBody[store.CreateRecipeP
 	return recipe, nil
 }
 
-func (rs recipeRessource) getRecipeWithIngredients(c fuego.ContextNoBody) ([]store.GetIngredientsOfRecipeRow, error) {
-	recipe, err := rs.IngredientRepository.GetIngredientsOfRecipe(c.Context(), c.PathParam("id"))
+func (rs recipeRessource) getRecipeWithIngredients(c fuego.ContextNoBody) (store.Recipe, error) {
+	recipe, err := rs.RecipeRepository.GetRecipe(c.Context(), c.PathParam("id"))
 	if err != nil {
-		return nil, err
+		return store.Recipe{}, err
 	}
 
 	return recipe, nil

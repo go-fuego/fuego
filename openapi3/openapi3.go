@@ -1,0 +1,145 @@
+package openapi3
+
+import "reflect"
+
+func NewDocument() Document {
+	return Document{
+		OpenAPI: "3.1.0",
+		Info: Info{
+			Title:       "OpenAPI",
+			Description: "OpenAPI",
+		},
+		Paths:      make(Paths),
+		Components: NewComponents(),
+	}
+}
+
+type Document struct {
+	OpenAPI string `json:"openapi" yaml:"openapi"`
+	Info    Info   `json:"info" yaml:"info"`
+
+	Paths      Paths      `json:"paths" yaml:"paths"`
+	Components Components `json:"components" yaml:"components"`
+}
+
+type Paths map[string]map[string]*Operation
+
+func (p Paths) AddPath(path string, method string, pathItem *Operation) {
+	if p[path] == nil {
+		p[path] = make(map[string]*Operation)
+	}
+	p[path][method] = pathItem
+}
+
+type Info struct {
+	Title       string `json:"title" yaml:"title"`
+	Description string `json:"description" yaml:"description"`
+	Version     string `json:"version" yaml:"version"`
+}
+
+type Schema struct {
+	Type       string            `json:"type" yaml:"type"`
+	Format     string            `json:"format,omitempty" yaml:"format,omitempty"`
+	Required   []string          `json:"required,omitempty" yaml:"required,omitempty"`
+	Example    string            `json:"example,omitempty" yaml:"example,omitempty"`
+	Properties map[string]Schema `json:"properties,omitempty" yaml:"properties,omitempty"`
+}
+
+func ToSchema(v any) *Schema {
+	if v == nil {
+		return nil
+	}
+
+	s := Schema{
+		Type:       "object",
+		Properties: make(map[string]Schema),
+	}
+
+	value := reflect.ValueOf(v)
+
+	if value.Kind() == reflect.Ptr {
+		value = value.Elem()
+	}
+
+	if value.Kind() == reflect.Slice {
+		s.Type = "array"
+	}
+
+	if value.Kind() == reflect.Struct {
+
+		// Iterate on fields with reflect
+		for i := range value.NumField() {
+			field := value.Field(i)
+			fieldType := value.Type().Field(i)
+
+			// If the field is a struct, we need to dive into it
+			if field.Kind() == reflect.Struct {
+				s.Properties[fieldType.Name] = *ToSchema(field.Interface())
+			} else {
+				// If the field is a basic type, we can just add it to the properties
+				s.Properties[fieldType.Name] = Schema{
+					Type: fieldType.Type.Name(),
+				}
+			}
+		}
+	}
+
+	if value.Kind() != reflect.Struct || value.Kind() != reflect.Slice {
+		s.Type = value.Kind().String()
+	}
+
+	return &s
+}
+
+type Parameter struct {
+	Name        string `json:"name" yaml:"name"`
+	In          string `json:"in" yaml:"in"`
+	Description string `json:"description" yaml:"description"`
+	Required    bool   `json:"required" yaml:"required"`
+	Schema      Schema `json:"schema" yaml:"schema"`
+	Example     string `json:"example,omitempty" yaml:"example"`
+}
+
+type MimeType string
+
+type Response struct {
+	Description string                    `json:"description" yaml:"description"`
+	Content     map[MimeType]SchemaObject `json:"content" yaml:"content"`
+}
+
+type SchemaObject struct {
+	Schema *Schema `json:"schema" yaml:"schema"`
+}
+
+type Operation struct {
+	OperationID string               `json:"operationId" yaml:"operationId"`
+	Summary     string               `json:"summary" yaml:"summary"`
+	Description string               `json:"description" yaml:"description"`
+	Deprecated  bool                 `json:"deprecated,omitempty" yaml:"deprecated"`
+	RequestBody *RequestBody         `json:"requestBody,omitempty" yaml:"requestBody"`
+	Parameters  []*Parameter         `json:"parameters,omitempty" yaml:"parameters"`
+	Tags        []string             `json:"tags,omitempty" yaml:"tags"`
+	Responses   map[string]*Response `json:"responses,omitempty" yaml:"responses"`
+}
+
+type RequestBody struct {
+	Required bool                      `json:"required" yaml:"required"`
+	Content  map[MimeType]SchemaObject `json:"content" yaml:"content"`
+}
+
+type Parameters struct {
+	Name string `json:"name" yaml:"name"`
+	In   string `json:"in" yaml:"in"`
+}
+
+func NewComponents() Components {
+	return Components{
+		Schemas:       make(map[string]*Schema),
+		RequestBodies: make(map[string]*RequestBody),
+	}
+}
+
+type Components struct {
+	Schemas       map[string]*Schema      `json:"schemas" yaml:"schemas"`
+	RequestBodies map[string]*RequestBody `json:"requestBodies" yaml:"requestBodies"`
+}

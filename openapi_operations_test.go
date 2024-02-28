@@ -50,7 +50,7 @@ func TestQueryParams(t *testing.T) {
 	}).
 		QueryParam("my-param", "my description")
 
-	require.Equal(t, "my description", route.operation.Parameters.GetByInAndName("query", "my-param").Description)
+	require.Equal(t, "my description", route.operation.Parameters[0].Description)
 }
 
 func TestHeaderParams(t *testing.T) {
@@ -58,7 +58,7 @@ func TestHeaderParams(t *testing.T) {
 	route := Get(s, "/test", testController).
 		Header("my-header", "my description")
 
-	require.Equal(t, "my description", route.operation.Parameters.GetByInAndName("header", "my-header").Description)
+	require.Equal(t, "my description", route.operation.Parameters[0].Description)
 }
 
 func TestCookieParams(t *testing.T) {
@@ -67,7 +67,7 @@ func TestCookieParams(t *testing.T) {
 		route := Get(s, "/test", testController).
 			Cookie("my-cookie", "my description")
 
-		require.Equal(t, "my description", route.operation.Parameters.GetByInAndName("cookie", "my-cookie").Description)
+		require.Equal(t, "my description", route.operation.Parameters[0].Description)
 	})
 
 	t.Run("with more parameters", func(t *testing.T) {
@@ -75,8 +75,8 @@ func TestCookieParams(t *testing.T) {
 		route := Get(s, "/test", testController).
 			Cookie("my-cookie", "my description", OpenAPIParam{Required: true, Example: "my-example"})
 
-		require.Equal(t, "my description", route.operation.Parameters.GetByInAndName("cookie", "my-cookie").Description)
-		require.Equal(t, true, route.operation.Parameters.GetByInAndName("cookie", "my-cookie").Required)
-		require.Equal(t, "my-example", route.operation.Parameters.GetByInAndName("cookie", "my-cookie").Example)
+		require.Equal(t, "my description", route.operation.Parameters[0].Description)
+		require.Equal(t, true, route.operation.Parameters[0].Required)
+		require.Equal(t, "my-example", route.operation.Parameters[0].Example)
 	})
 }

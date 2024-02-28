@@ -3,13 +3,17 @@ package fuego
 import (
 	"slices"
 
-	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/go-fuego/fuego/openapi3"
 )
 
 type OpenAPIParam struct {
 	Required bool
 	Example  string
 	Type     string // "query", "header", "cookie"
+}
+
+type Route[ResponseBody any, RequestBody any] struct {
+	operation *openapi3.Operation
 }
 
 func (r Route[ResponseBody, RequestBody]) Description(description string) Route[ResponseBody, RequestBody] {
@@ -32,21 +36,19 @@ func (r Route[ResponseBody, RequestBody]) OperationID(operationID string) Route[
 // The paramType can be "query", "header" or "cookie".
 // [Cookie], [Header], [QueryParam] are shortcuts for Param.
 func (r Route[ResponseBody, RequestBody]) Param(paramType, name, description string, params ...OpenAPIParam) Route[ResponseBody, RequestBody] {
-	openapiParam := openapi3.NewHeaderParameter(name)
-	openapiParam.Description = description
-	openapiParam.Schema = openapi3.NewStringSchema().NewRef()
-	openapiParam.In = paramType
+	openapiParam := &openapi3.Parameter{
+		Name:        name,
+		Description: description,
+		In:          paramType,
+	}
 
 	for _, param := range params {
 		if param.Required {
 			openapiParam.Required = param.Required
 		}
-		if param.Example != "" {
-			openapiParam.Example = param.Example
-		}
 	}
 
-	r.operation.AddParameter(openapiParam)
+	r.operation.Parameters = append(r.operation.Parameters, openapiParam)
 
 	return r
 }
