@@ -1,6 +1,9 @@
 package openapi3
 
-import "reflect"
+import (
+	"reflect"
+	"strings"
+)
 
 func NewDocument() Document {
 	return Document{
@@ -43,8 +46,10 @@ type Schema struct {
 	Required   []string          `json:"required,omitempty" yaml:"required,omitempty"`
 	Example    string            `json:"example,omitempty" yaml:"example,omitempty"`
 	Properties map[string]Schema `json:"properties,omitempty" yaml:"properties,omitempty"`
+	Items      *Schema           `json:"items,omitempty" yaml:"items,omitempty"`
 }
 
+// ToSchema converts any Go type to an OpenAPI Schema
 func ToSchema(v any) *Schema {
 	if v == nil {
 		return nil
@@ -63,10 +68,11 @@ func ToSchema(v any) *Schema {
 
 	if value.Kind() == reflect.Slice {
 		s.Type = "array"
+		one := reflect.New(value.Type().Elem())
+		s.Items = ToSchema(one.Interface())
 	}
 
 	if value.Kind() == reflect.Struct {
-
 		// Iterate on fields with reflect
 		for i := range value.NumField() {
 			field := value.Field(i)
@@ -77,8 +83,18 @@ func ToSchema(v any) *Schema {
 				s.Properties[fieldType.Name] = *ToSchema(field.Interface())
 			} else {
 				// If the field is a basic type, we can just add it to the properties
-				s.Properties[fieldType.Name] = Schema{
-					Type: fieldType.Type.Name(),
+				fieldTypeType := fieldType.Type.Name()
+				if strings.Contains(fieldTypeType, "int") {
+					fieldTypeType = "integer"
+				} else if fieldTypeType == "bool" {
+					fieldTypeType = "boolean"
+				}
+				fieldName := fieldType.Tag.Get("json")
+				if fieldName == "" {
+					fieldName = fieldType.Name
+				}
+				s.Properties[fieldName] = Schema{
+					Type: fieldTypeType,
 				}
 			}
 		}
@@ -86,6 +102,9 @@ func ToSchema(v any) *Schema {
 
 	if !(value.Kind() == reflect.Struct || value.Kind() == reflect.Slice) {
 		s.Type = value.Kind().String()
+		if strings.Contains(s.Type, "int") {
+			s.Type = "integer"
+		}
 	}
 
 	return &s

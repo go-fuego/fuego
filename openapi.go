@@ -12,7 +12,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/getkin/kin-openapi/openapi3gen"
 	"github.com/go-fuego/fuego/openapi3"
 )
 
@@ -23,7 +22,6 @@ func NewOpenApiSpec() openapi3.Document {
 }
 
 func (s *Server) generateOpenAPI() openapi3.Document {
-
 	jsonSpec, err := json.Marshal(s.OpenApiSpec)
 	if err != nil {
 		slog.Error("Error marshalling OpenAPI spec", "error", err)
@@ -94,10 +92,6 @@ func validateSwaggerUrl(swaggerUrl string) bool {
 	return swaggerUrlRegexp.MatchString(swaggerUrl)
 }
 
-var generator = openapi3gen.NewGenerator(
-	openapi3gen.UseAllExportedFields(),
-)
-
 func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*openapi3.Operation, error) {
 	operation := &openapi3.Operation{
 		Summary:     "Summary",
@@ -140,7 +134,6 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	responseSchema, ok := s.OpenApiSpec.Components.Schemas[tag]
 	if !ok {
 		responseSchema = openapi3.ToSchema(*new(T))
-
 	}
 
 	operation.Responses = make(map[string]*openapi3.Response)

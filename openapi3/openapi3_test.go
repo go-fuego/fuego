@@ -8,7 +8,6 @@ import (
 )
 
 func TestToSchema(t *testing.T) {
-
 	t.Run("string", func(t *testing.T) {
 		s := ToSchema("")
 		if s.Type != "string" {
@@ -18,8 +17,8 @@ func TestToSchema(t *testing.T) {
 
 	t.Run("int", func(t *testing.T) {
 		s := ToSchema(0)
-		if s.Type != "object" {
-			t.Errorf("expected object, got %s", s.Type)
+		if s.Type != "integer" {
+			t.Errorf("expected integer, got %s", s.Type)
 		}
 	})
 
@@ -27,31 +26,69 @@ func TestToSchema(t *testing.T) {
 		type S struct {
 			A      string
 			B      int
+			C      bool
 			Nested struct {
 				C string
 			}
 		}
 		s := ToSchema(S{})
-		if s.Type != "object" {
-			t.Errorf("expected object, got %s", s.Type)
-		}
-		if s.Properties["A"].Type != "string" {
-			t.Errorf("expected string, got %s", s.Properties["A"].Type)
-		}
-		if s.Properties["B"].Type != "int" {
-			t.Errorf("expected object, got %s", s.Properties["B"].Type)
-		}
-		if s.Properties["Nested"].Type != "object" {
-			t.Errorf("expected object, got %s", s.Properties["Nested"].Type)
-		}
-		if s.Properties["Nested"].Properties["C"].Type != "string" {
-			t.Errorf("expected string, got %s", s.Properties["Nested"].Properties["C"].Type)
-		}
+		require.Equal(t, "object", s.Type)
+		require.Equal(t, "string", s.Properties["A"].Type)
+		require.Equal(t, "integer", s.Properties["B"].Type)
+		require.Equal(t, "boolean", s.Properties["C"].Type)
+		// TODO require.Equal(t, []string{"A", "B", "Nested"}, s.Required)
+		require.Equal(t, "object", s.Properties["Nested"].Type)
+		require.Equal(t, "string", s.Properties["Nested"].Properties["C"].Type)
 
 		gotSchema, err := json.Marshal(s)
-		require.Error(t, err)
-		require.JSONEq(t, string(gotSchema), `{"type":"object","properties":{"A":{"type":"string"},"B":{"type":"integer"},"Nested":{"type":"object","properties":{"C":{"type":"string"}}}}}`)
-
+		require.NoError(t, err)
+		require.JSONEq(t, string(gotSchema), `
+		{
+			"type":"object",
+			"properties": {
+				"A":{"type":"string"},
+				"B":{"type":"integer"},
+				"Nested":{
+					"type":"object",
+					"properties":{
+						"C":{"type":"string"}
+					}
+				}
+			}
+		}`)
 	})
 
+	t.Run("ptr to struct", func(t *testing.T) {
+		type S struct {
+			A      string
+			B      int
+			Nested struct {
+				C string
+			}
+		}
+		s := ToSchema(&S{})
+		require.Equal(t, "object", s.Type)
+		require.Equal(t, "string", s.Properties["A"].Type)
+		require.Equal(t, "integer", s.Properties["B"].Type)
+		// TODO require.Equal(t, []string{"A", "B", "Nested"}, s.Required)
+		require.Equal(t, "object", s.Properties["Nested"].Type)
+		require.Equal(t, "string", s.Properties["Nested"].Properties["C"].Type)
+
+		gotSchema, err := json.Marshal(s)
+		require.NoError(t, err)
+		require.JSONEq(t, string(gotSchema), `
+		{
+			"type":"object",
+			"properties": {
+				"A":{"type":"string"},
+				"B":{"type":"integer"},
+				"Nested":{
+					"type":"object",
+					"properties":{
+						"C":{"type":"string"}
+					}
+				}
+			}
+		}`)
+	})
 }

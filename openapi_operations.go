@@ -46,6 +46,9 @@ func (r Route[ResponseBody, RequestBody]) Param(paramType, name, description str
 		if param.Required {
 			openapiParam.Required = param.Required
 		}
+		if param.Example != "" {
+			openapiParam.Example = param.Example
+		}
 	}
 
 	r.operation.Parameters = append(r.operation.Parameters, openapiParam)
