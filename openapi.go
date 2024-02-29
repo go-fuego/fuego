@@ -92,7 +92,7 @@ func generateSwagger(s *Server, jsonSpec []byte) {
 		_, _ = w.Write(jsonSpec)
 	})
 
-	Handle(s, s.OpenapiConfig.SwaggerUrl+"/", openApiHandler(s.OpenapiConfig.JsonUrl))
+	Handle(s, s.OpenapiConfig.SwaggerUrl+"/", s.UIHandler(s.OpenapiConfig.JsonUrl))
 
 	slog.Info(fmt.Sprintf("JSON spec: http://localhost%s%s", s.Server.Addr, s.OpenapiConfig.JsonUrl))
 	slog.Info(fmt.Sprintf("OpenAPI UI: http://localhost%s%s/index.html", s.Server.Addr, s.OpenapiConfig.SwaggerUrl))

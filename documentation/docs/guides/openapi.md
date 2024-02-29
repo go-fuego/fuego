@@ -96,25 +96,31 @@ func main() {
 
 ## Custom UI
 
-The UI is customizable via build tags.
-For example, if you want to enable the embedded Swagger UI to work offline, you can use the `openapi_ui_local` build tag.
+Fuego `Server` exposes a `UIHandler` field that enables you to implement your custom UI.
 
-```bash
-go build -tags openapi_ui_local
-go run -tags openapi_ui_local .
-```
-
-|               | StopLight Elements | Swagger            | Disabled          |
-| ------------- | ------------------ | ------------------ | ----------------- |
-| Enable        | default            | `openapi_ui_local` | `openapi_ui_none` |
-| UI            | StopLight Elements | Swagger UI         | _disabled_        |
-| Works offline | No ❌              | Yes ✅             | -                 |
-| Binary Size   | Smaller            | Larger (+10Mb)     | Smaller           |
-
-If you want to implement your own UI, you can use the `openapi_ui_none` build tag and use the JSON endpoint to build your own UI.
+Example with http swagger:
 
 ```go
-fuego.Get(s, "/my-custom-ui", func(c fuego.ContextNoBody) (fuego.HTML, error) {
-	// ... your custom UI
-})
+import (
+	"net/http"
+
+	httpSwagger "github.com/swaggo/http-swagger"
+)
+
+func openApiHandler(specURL string) http.Handler {
+	return httpSwagger.Handler(
+		httpSwagger.Layout(httpSwagger.BaseLayout),
+		httpSwagger.PersistAuthorization(true),
+		httpSwagger.URL(specURL), // The url pointing to API definition
+	)
+}
 ```
+
+The default spec url reference Element Stoplight swagger ui.
+
+Please note that if you embed swagger ui in your build it will increase its size by more than 10Mb.
+
+|               | StopLight Elements | Swagger        | Disabled |
+| ------------- | ------------------ | -------------- | -------- |
+| Works offline | No ❌              | Yes ✅         | -        |
+| Binary Size   | Smaller            | Larger (+10Mb) | Smaller  |
