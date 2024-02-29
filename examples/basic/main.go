@@ -12,7 +12,7 @@ import (
 )
 
 type Received struct {
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required,max=64" example:"John"`
 }
 
 type MyResponse struct {

@@ -24,7 +24,7 @@ func TestToSchema(t *testing.T) {
 
 	t.Run("struct", func(t *testing.T) {
 		type S struct {
-			A      string
+			A      string `json:"a" validate:"required" example:"hello"`
 			B      int
 			C      bool
 			Nested struct {
@@ -33,10 +33,10 @@ func TestToSchema(t *testing.T) {
 		}
 		s := ToSchema(S{})
 		require.Equal(t, "object", s.Type)
-		require.Equal(t, "string", s.Properties["A"].Type)
+		require.Equal(t, "string", s.Properties["a"].Type)
 		require.Equal(t, "integer", s.Properties["B"].Type)
 		require.Equal(t, "boolean", s.Properties["C"].Type)
-		// TODO require.Equal(t, []string{"A", "B", "Nested"}, s.Required)
+		require.Equal(t, []string{"a"}, s.Required)
 		require.Equal(t, "object", s.Properties["Nested"].Type)
 		require.Equal(t, "string", s.Properties["Nested"].Properties["C"].Type)
 
@@ -45,9 +45,11 @@ func TestToSchema(t *testing.T) {
 		require.JSONEq(t, string(gotSchema), `
 		{
 			"type":"object",
+			"required":["a"],
 			"properties": {
-				"A":{"type":"string"},
+				"a":{"type":"string","example":"hello"},
 				"B":{"type":"integer"},
+				"C":{"type":"boolean"},
 				"Nested":{
 					"type":"object",
 					"properties":{
