@@ -3,6 +3,7 @@ package openapi3
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -10,16 +11,22 @@ import (
 func TestToSchema(t *testing.T) {
 	t.Run("string", func(t *testing.T) {
 		s := ToSchema("")
-		if s.Type != "string" {
-			t.Errorf("expected string, got %s", s.Type)
-		}
+		require.Equal(t, "string", s.Type)
 	})
 
 	t.Run("int", func(t *testing.T) {
 		s := ToSchema(0)
-		if s.Type != "integer" {
-			t.Errorf("expected integer, got %s", s.Type)
-		}
+		require.Equal(t, "integer", s.Type)
+	})
+
+	t.Run("bool", func(t *testing.T) {
+		s := ToSchema(false)
+		require.Equal(t, "boolean", s.Type)
+	})
+
+	t.Run("time", func(t *testing.T) {
+		s := ToSchema(time.Now())
+		require.Equal(t, "string", s.Type)
 	})
 
 	t.Run("struct", func(t *testing.T) {

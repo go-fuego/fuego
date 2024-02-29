@@ -3,6 +3,7 @@ package openapi3
 import (
 	"reflect"
 	"strings"
+	"time"
 )
 
 func NewDocument() Document {
@@ -72,6 +73,13 @@ func ToSchema(v any) *Schema {
 		s.Items = ToSchema(one.Interface())
 	}
 
+	if _, isTime := value.Interface().(time.Time); isTime {
+		s.Type = "string"
+		s.Format = "date-time"
+		s.Example = value.Interface().(time.Time).Format(time.RFC3339)
+		return &s
+	}
+
 	if value.Kind() == reflect.Struct {
 		// Iterate on fields with reflect
 		for i := range value.NumField() {
@@ -80,12 +88,20 @@ func ToSchema(v any) *Schema {
 
 			// If the field is a struct, we need to dive into it
 			if field.Kind() == reflect.Struct {
-				s.Properties[fieldType.Name] = *ToSchema(field.Interface())
+				fieldName := fieldType.Tag.Get("json")
+				if fieldName == "" {
+					fieldName = fieldType.Name
+				}
+				s.Properties[fieldName] = *ToSchema(field.Interface())
 			} else {
 				// If the field is a basic type, we can just add it to the properties
 				fieldTypeType := fieldType.Type.Name()
+				format := fieldType.Tag.Get("format")
 				if strings.Contains(fieldTypeType, "int") {
 					fieldTypeType = "integer"
+					if format != "" {
+						format = fieldType.Type.Name()
+					}
 				} else if fieldTypeType == "bool" {
 					fieldTypeType = "boolean"
 				}
@@ -99,6 +115,7 @@ func ToSchema(v any) *Schema {
 				s.Properties[fieldName] = Schema{
 					Type:    fieldTypeType,
 					Example: fieldType.Tag.Get("example"),
+					Format:  format,
 				}
 			}
 		}
@@ -108,6 +125,8 @@ func ToSchema(v any) *Schema {
 		s.Type = value.Kind().String()
 		if strings.Contains(s.Type, "int") {
 			s.Type = "integer"
+		} else if s.Type == "bool" {
+			s.Type = "boolean"
 		}
 	}
 
