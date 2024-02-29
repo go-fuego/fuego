@@ -84,7 +84,7 @@ func ToSchema(v any) *Schema {
 		}
 	}
 
-	if value.Kind() != reflect.Struct || value.Kind() != reflect.Slice {
+	if !(value.Kind() == reflect.Struct || value.Kind() == reflect.Slice) {
 		s.Type = value.Kind().String()
 	}
 

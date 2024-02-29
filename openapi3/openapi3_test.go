@@ -1,6 +1,11 @@
 package openapi3
 
-import "testing"
+import (
+	"encoding/json"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
 
 func TestToSchema(t *testing.T) {
 
@@ -39,6 +44,14 @@ func TestToSchema(t *testing.T) {
 		if s.Properties["Nested"].Type != "object" {
 			t.Errorf("expected object, got %s", s.Properties["Nested"].Type)
 		}
+		if s.Properties["Nested"].Properties["C"].Type != "string" {
+			t.Errorf("expected string, got %s", s.Properties["Nested"].Properties["C"].Type)
+		}
+
+		gotSchema, err := json.Marshal(s)
+		require.Error(t, err)
+		require.JSONEq(t, string(gotSchema), `{"type":"object","properties":{"A":{"type":"string"},"B":{"type":"integer"},"Nested":{"type":"object","properties":{"C":{"type":"string"}}}}}`)
+
 	})
 
 }

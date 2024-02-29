@@ -116,29 +116,24 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 
 		bodySchema, ok := s.OpenApiSpec.Components.Schemas[bodyTag]
 		if !ok {
-
+			bodySchema = openapi3.ToSchema(*new(B))
 		}
 
 		requestBody := &openapi3.RequestBody{
 			Required: true,
-
-			Content: make(map[openapi3.MimeType]openapi3.SchemaObject),
+			Content:  make(map[openapi3.MimeType]openapi3.SchemaObject),
 		}
 
 		if bodySchema != nil {
-
-			// content := openapi3.NewContentWithSchema(bodySchema.Value, []string{"application/json"})
-			// content["application/json"].Schema.Ref = "#/components/schemas/" + bodyTag
-			// requestBody.WithContent(content)
 			requestBody.Content["application/json"] = openapi3.SchemaObject{
 				Schema: bodySchema,
 			}
 		}
 
-		s.OpenApiSpec.Components.RequestBodies[bodyTag] = &openapi3.RequestBody{}
+		s.OpenApiSpec.Components.RequestBodies[bodyTag] = requestBody
 
 		// add request body to operation
-		operation.RequestBody = &openapi3.RequestBody{}
+		operation.RequestBody = requestBody
 	}
 
 	// Response body
