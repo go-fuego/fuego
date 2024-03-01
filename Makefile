@@ -32,6 +32,12 @@ lint:
 example:
 	( cd examples/full-app-gourmet && go run . -debug )
 
+update-deps:
+	go get -u ./...
+	go mod tidy
+	go work sync
+	./update.sh
+
 example-watch:
 	( cd examples/full-app-gourmet && air -- -debug )
 
