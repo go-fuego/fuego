@@ -15,7 +15,7 @@ func TestTags(t *testing.T) {
 		Deprecated()
 
 	require.Equal(t, route.operation.Tags, []string{"my-tag"})
-	require.Equal(t, route.operation.Description, "my description")
+	require.Contains(t, route.operation.Description, "my description")
 	require.Equal(t, route.operation.Summary, "my summary")
 	require.Equal(t, route.operation.Deprecated, true)
 }

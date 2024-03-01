@@ -18,6 +18,13 @@ import (
 func NewOpenApiSpec() openapi3.Document {
 	spec := openapi3.NewDocument()
 
+	title, _ := os.Executable()
+	titleSplitted := strings.Split(title, "/")
+	title = titleSplitted[len(titleSplitted)-1]
+	if title != "" {
+		spec.Info.Title = title
+	}
+
 	return spec
 }
 
