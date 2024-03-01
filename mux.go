@@ -74,7 +74,7 @@ func Register[T any, B any, Contexted ctx[B]](s *Server, method string, path str
 
 	name, nameWithPath := funcName(controller)
 	route.operation.Summary = name
-	route.operation.Description = "controller: " + nameWithPath
+	route.operation.Description = "controller: `" + nameWithPath + "`\n\n---\n\n"
 	route.operation.OperationID = fullPath + ":" + name
 	return route
 }
@@ -138,7 +138,7 @@ func RegisterStd(s *Server, method string, path string, controller func(http.Res
 
 	name, nameWithPath := funcName(controller)
 	route.operation.Summary = name
-	route.operation.Description = "controller: " + nameWithPath
+	route.operation.Description = "controller: `" + nameWithPath + "`\n---\n"
 	route.operation.OperationID = fullPath + ":" + name
 	return route
 }
