@@ -109,32 +109,32 @@ func Handle(s *Server, path string, controller http.Handler, middlewares ...func
 	return register[any, any](s, http.MethodGet, path, controller, middlewares...)
 }
 
-func GetStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
+func GetStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[NetHTTP, NetHTTP] {
 	return RegisterStd(s, http.MethodGet, path, controller, middlewares...)
 }
 
-func PostStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
+func PostStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[NetHTTP, NetHTTP] {
 	return RegisterStd(s, http.MethodPost, path, controller, middlewares...)
 }
 
-func DeleteStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
+func DeleteStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[NetHTTP, NetHTTP] {
 	return RegisterStd(s, http.MethodDelete, path, controller, middlewares...)
 }
 
-func PutStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
+func PutStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[NetHTTP, NetHTTP] {
 	return RegisterStd(s, http.MethodPut, path, controller, middlewares...)
 }
 
-func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
+func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[NetHTTP, NetHTTP] {
 	return RegisterStd(s, http.MethodPatch, path, controller, middlewares...)
 }
 
 // RegisterStd registers a standard http handler into the default mux.
-func RegisterStd(s *Server, method string, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[any, any] {
+func RegisterStd(s *Server, method string, path string, controller func(http.ResponseWriter, *http.Request), middlewares ...func(http.Handler) http.Handler) Route[NetHTTP, NetHTTP] {
 	fullPath := method + " " + s.basePath + path
 
 	slog.Debug("registering standard controller " + fullPath)
-	route := register[any, any](s, method, path, http.HandlerFunc(controller), middlewares...)
+	route := register[NetHTTP, NetHTTP](s, method, path, http.HandlerFunc(controller), middlewares...)
 
 	name, nameWithPath := funcName(controller)
 	route.operation.Summary = name

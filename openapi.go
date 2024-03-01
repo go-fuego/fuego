@@ -169,6 +169,8 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	return operation, nil
 }
 
+type NetHTTP struct{}
+
 func tagFromType(v any) string {
 	if v == nil {
 		return "unknown-interface"
@@ -176,10 +178,12 @@ func tagFromType(v any) string {
 
 	tag := dive(reflect.TypeOf(v), 4)
 
-	if tag == "Renderer" || tag == "CtxRenderer" {
+	switch tag {
+	case "Renderer", "CtxRenderer":
 		return "HTML"
+	case "NetHTTP":
+		return "net/http"
 	}
-
 	return tag
 }
 
