@@ -106,13 +106,13 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	}
 
 	// Tags
-	tag := tagFromType(*new(T))
+	tag := tagFromType(new(T))
 	if tag != "unknown-interface" {
 		operation.Tags = append(operation.Tags, tag)
 	}
 
 	// Request body
-	bodyTag := tagFromType(*new(B))
+	bodyTag := tagFromType(new(B))
 	if (method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch) && bodyTag != "unknown-interface" && bodyTag != "string" {
 
 		bodySchema, ok := s.OpenApiSpec.Components.Schemas[bodyTag]
@@ -174,7 +174,13 @@ func tagFromType(v any) string {
 		return "unknown-interface"
 	}
 
-	return dive(reflect.TypeOf(v), 4)
+	tag := dive(reflect.TypeOf(v), 4)
+
+	if tag == "Renderer" || tag == "CtxRenderer" {
+		return "HTML"
+	}
+
+	return tag
 }
 
 // dive returns the name of the type of the given reflect.Type.

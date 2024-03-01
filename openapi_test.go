@@ -47,6 +47,11 @@ func TestTagFromType(t *testing.T) {
 		require.Equal(t, "string", tagFromType([]string{}))
 		require.Equal(t, "string", tagFromType(&[]string{}))
 	})
+
+	t.Run("detecting templ and gomponents as HTML", func(t *testing.T) {
+		require.Equal(t, "HTML", tagFromType(new(Templ)))
+		require.Equal(t, "HTML", tagFromType(new(Gomponent)))
+	})
 }
 
 func TestServer_generateOpenAPI(t *testing.T) {
