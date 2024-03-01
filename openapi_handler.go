@@ -17,7 +17,7 @@ func defaultOpenAPIHandler(specURL string) http.Handler {
 	<script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
 	<link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css" />
 </head>
-<body>
+<body style="height: 100vh;">
 	<elements-api
 		apiDescriptionUrl="` + specURL + `"
 		layout="responsive"
