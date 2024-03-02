@@ -11,6 +11,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/rs/cors"
 )
 
 type OpenapiConfig struct {
@@ -112,6 +113,12 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	return s
+}
+
+func WithCors(cors *cors.Cors) func(*Server) {
+	return func(s *Server) {
+		s.Server.Handler = cors.Handler(s.Mux)
+	}
 }
 
 // WithTemplateFS sets the filesystem used to load templates.

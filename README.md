@@ -187,9 +187,9 @@ type MyResponse struct {
 func main() {
 	s := fuego.NewServer(
 		fuego.WithPort(":8088"),
+		fuego.WithCors(cors.Default()),
 	)
-
-	fuego.Use(s, cors.Default().Handler)
+	
 	fuego.Use(s, chiMiddleware.Compress(5, "text/html", "text/css"))
 
 	// Fuego 🔥 handler with automatic OpenAPI generation, validation, (de)serialization and error handling
