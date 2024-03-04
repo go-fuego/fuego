@@ -130,7 +130,11 @@ func ToSchema(v any) *Schema {
 
 	if value.Kind() == reflect.Slice {
 		s.Type = "array"
-		one := reflect.New(value.Type().Elem())
+		itemType := value.Type().Elem()
+		if itemType.Kind() == reflect.Ptr {
+			itemType = itemType.Elem()
+		}
+		one := reflect.New(itemType)
 		s.Items = ToSchema(one.Interface())
 	}
 

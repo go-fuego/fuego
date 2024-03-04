@@ -100,4 +100,46 @@ func TestToSchema(t *testing.T) {
 			}
 		}`)
 	})
+
+	t.Run("slice of strings", func(t *testing.T) {
+		s := ToSchema([]string{})
+		require.Equal(t, "array", s.Type)
+		require.Equal(t, "string", s.Items.Type)
+	})
+
+	t.Run("slice of structs", func(t *testing.T) {
+		type S struct {
+			A string
+		}
+		s := ToSchema([]S{})
+		require.Equal(t, "array", s.Type)
+		require.Equal(t, "object", s.Items.Type)
+		require.Equal(t, "string", s.Items.Properties["A"].Type)
+	})
+
+	t.Run("slice of ptr to struct", func(t *testing.T) {
+		type S struct {
+			A string
+		}
+		s := ToSchema([]*S{})
+		require.Equal(t, "array", s.Type)
+		require.Equal(t, "object", s.Items.Type)
+		require.Equal(t, "string", s.Items.Properties["A"].Type)
+	})
+
+	t.Run("embedded struct", func(t *testing.T) {
+		type S struct {
+			A string
+		}
+		type T struct {
+			S
+			B int
+		}
+		s := ToSchema(T{})
+		require.Equal(t, "object", s.Type)
+		require.Equal(t, "", s.Properties["A"].Type)
+		require.Equal(t, "object", s.Properties["S"].Type)
+		require.Equal(t, "string", s.Properties["S"].Properties["A"].Type)
+		require.Equal(t, "integer", s.Properties["B"].Type)
+	})
 }
