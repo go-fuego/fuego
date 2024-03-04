@@ -112,7 +112,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 
 	// Request body
 	bodyTag := tagFromType(new(B))
-	if (method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch) && bodyTag != "unknown-interface" && bodyTag != "string" {
+	if method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch {
 
 		requestBody := &openapi3.RequestBody{
 			Required: true,
@@ -165,10 +165,6 @@ type NetHTTP struct{}
 // tagFromType returns the name of the type of the given value.
 // Custom version of openapi3.TagFromType for Fuego.
 func tagFromType(v any) string {
-	if v == nil {
-		return "unknown-interface"
-	}
-
 	tag := openapi3.TagFromType(v)
 
 	switch tag {

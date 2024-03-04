@@ -7,15 +7,7 @@ func TagFromType(v any) string {
 		return "nil"
 	}
 
-	tag := dive(reflect.TypeOf(v), 4)
-
-	switch tag {
-	case "Renderer", "CtxRenderer":
-		return "HTML"
-	case "NetHTTP":
-		return "net/http"
-	}
-	return tag
+	return dive(reflect.TypeOf(v), 4)
 }
 
 // dive returns the name of the type of the given reflect.Type.
