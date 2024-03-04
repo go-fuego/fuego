@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"reflect"
 	"regexp"
 	"strings"
 
@@ -163,12 +162,14 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 
 type NetHTTP struct{}
 
+// tagFromType returns the name of the type of the given value.
+// Custom version of openapi3.TagFromType for Fuego.
 func tagFromType(v any) string {
 	if v == nil {
 		return "unknown-interface"
 	}
 
-	tag := dive(reflect.TypeOf(v), 4)
+	tag := openapi3.TagFromType(v)
 
 	switch tag {
 	case "Renderer", "CtxRenderer":
@@ -177,19 +178,4 @@ func tagFromType(v any) string {
 		return "net/http"
 	}
 	return tag
-}
-
-// dive returns the name of the type of the given reflect.Type.
-// If the type is a pointer, slice, array, map, channel, function, or unsafe pointer,
-// it will dive into the type and return the name of the type it points to.
-func dive(t reflect.Type, maxDepth int) string {
-	switch t.Kind() {
-	case reflect.Ptr, reflect.Slice, reflect.Array, reflect.Map, reflect.Chan, reflect.Func, reflect.UnsafePointer:
-		if maxDepth == 0 {
-			return "default"
-		}
-		return dive(t.Elem(), maxDepth-1)
-	default:
-		return t.Name()
-	}
 }
