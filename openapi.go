@@ -115,24 +115,15 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	bodyTag := tagFromType(new(B))
 	if (method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch) && bodyTag != "unknown-interface" && bodyTag != "string" {
 
-		bodySchema, ok := s.OpenApiSpec.Components.Schemas[bodyTag]
-		if !ok {
-			bodySchema = openapi3.ToSchema(*new(B))
-			if bodySchema != nil {
-				s.OpenApiSpec.Components.Schemas[bodyTag] = bodySchema
-			}
-		}
-
 		requestBody := &openapi3.RequestBody{
 			Required: true,
 			Content:  make(map[openapi3.MimeType]openapi3.SchemaObject),
 		}
 
+		bodySchema := s.OpenApiSpec.RegisterType(new(B))
 		if bodySchema != nil {
 			requestBody.Content["application/json"] = openapi3.SchemaObject{
-				Schema: &openapi3.Schema{
-					Ref: "#/components/schemas/" + bodyTag,
-				},
+				Schema: bodySchema,
 			}
 		}
 
@@ -142,25 +133,16 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 		operation.RequestBody = requestBody
 	}
 
-	// Response body
-	_, ok := s.OpenApiSpec.Components.Schemas[tag]
-	if !ok {
-		responseSchema := openapi3.ToSchema(*new(T))
-		if responseSchema != nil {
-			s.OpenApiSpec.Components.Schemas[tag] = responseSchema
+	responseSchema := s.OpenApiSpec.RegisterType(*new(T))
+	content := make(map[openapi3.MimeType]openapi3.SchemaObject)
+	if responseSchema != nil {
+		content["application/json"] = openapi3.SchemaObject{
+			Schema: responseSchema,
 		}
 	}
-
 	operation.Responses = make(map[string]*openapi3.Response)
 	operation.Responses["200"] = &openapi3.Response{
-		Description: "OK",
-		Content: map[openapi3.MimeType]openapi3.SchemaObject{
-			"application/json": {
-				Schema: &openapi3.Schema{
-					Ref: "#/components/schemas/" + tag,
-				},
-			},
-		},
+		Content: content,
 	}
 
 	// Path parameters

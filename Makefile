@@ -6,8 +6,10 @@ ci-full: ci sec dependencies-analyze bench
 
 test: 
 	go test ./...
+	go test ./openapi3-testing
 
 cover:
+	go test ./openapi3-testing
 	go test -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out
 
