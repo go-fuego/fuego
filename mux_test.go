@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/require"
 )
 
@@ -243,6 +244,19 @@ func TestDeleteStd(t *testing.T) {
 
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "test successful")
+}
+
+func TestHideOpenapiRoutes(t *testing.T) {
+	s := NewServer()
+	s.Hide()
+	Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
+		return "test", nil
+	})
+
+	require.Equal(t, s.DisableOpenapi, true)
+	require.Equal(t, s.OpenApiSpec.Components.Schemas, openapi3.Schemas{})
+	require.Equal(t, s.OpenApiSpec.Components.Responses, openapi3.ResponseBodies{})
+	require.Equal(t, s.OpenApiSpec.Components.RequestBodies, openapi3.RequestBodies{}, "test successful")
 }
 
 func BenchmarkRequest(b *testing.B) {

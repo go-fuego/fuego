@@ -35,6 +35,12 @@ func NewOpenApiSpec() openapi3.T {
 	return spec
 }
 
+// Prevents the routes in this server or group from being included in the OpenAPI spec.
+func (s *Server) Hide() *Server {
+	s.DisableOpenapi = true
+	return s
+}
+
 func (s *Server) generateOpenAPI() openapi3.T {
 	// Validate
 	err := s.OpenApiSpec.Validate(context.Background())
