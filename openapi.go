@@ -118,6 +118,9 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 		bodySchema, ok := s.OpenApiSpec.Components.Schemas[bodyTag]
 		if !ok {
 			bodySchema = openapi3.ToSchema(*new(B))
+			if bodySchema != nil {
+				s.OpenApiSpec.Components.Schemas[bodyTag] = bodySchema
+			}
 		}
 
 		requestBody := &openapi3.RequestBody{
@@ -127,7 +130,9 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 
 		if bodySchema != nil {
 			requestBody.Content["application/json"] = openapi3.SchemaObject{
-				Schema: bodySchema,
+				Schema: &openapi3.Schema{
+					Ref: "#/components/schemas/" + bodyTag,
+				},
 			}
 		}
 
@@ -138,9 +143,12 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	}
 
 	// Response body
-	responseSchema, ok := s.OpenApiSpec.Components.Schemas[tag]
+	_, ok := s.OpenApiSpec.Components.Schemas[tag]
 	if !ok {
-		responseSchema = openapi3.ToSchema(*new(T))
+		responseSchema := openapi3.ToSchema(*new(T))
+		if responseSchema != nil {
+			s.OpenApiSpec.Components.Schemas[tag] = responseSchema
+		}
 	}
 
 	operation.Responses = make(map[string]*openapi3.Response)
@@ -148,7 +156,9 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 		Description: "OK",
 		Content: map[openapi3.MimeType]openapi3.SchemaObject{
 			"application/json": {
-				Schema: responseSchema,
+				Schema: &openapi3.Schema{
+					Ref: "#/components/schemas/" + tag,
+				},
 			},
 		},
 	}

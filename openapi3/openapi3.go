@@ -103,12 +103,13 @@ type Info struct {
 }
 
 type Schema struct {
-	Type       string            `json:"type" yaml:"type"`
+	Type       string            `json:"type,omitempty" yaml:"type"`
 	Format     string            `json:"format,omitempty" yaml:"format,omitempty"`
 	Required   []string          `json:"required,omitempty" yaml:"required,omitempty"`
 	Example    string            `json:"example,omitempty" yaml:"example,omitempty"`
 	Properties map[string]Schema `json:"properties,omitempty" yaml:"properties,omitempty"`
 	Items      *Schema           `json:"items,omitempty" yaml:"items,omitempty"`
+	Ref        string            `json:"$ref,omitempty" yaml:"$ref,omitempty"`
 }
 
 // ToSchema converts any Go type to an OpenAPI Schema
@@ -232,6 +233,7 @@ type Operation struct {
 type RequestBody struct {
 	Required bool                      `json:"required" yaml:"required"`
 	Content  map[MimeType]SchemaObject `json:"content" yaml:"content"`
+	Ref      string                    `json:"$ref,omitempty" yaml:"$ref,omitempty"`
 }
 
 type Parameters struct {
