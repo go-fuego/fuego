@@ -35,6 +35,12 @@ func NewOpenApiSpec() openapi3.T {
 	return spec
 }
 
+// Prevents the routes in this server or group from being included in the OpenAPI spec.
+func (s *Server) Hide() *Server {
+	s.DisableOpenapi = true
+	return s
+}
+
 // OutputOpenAPISpec takes the OpenAPI spec and outputs it to a JSON file and/or serves it on a URL.
 // Also serves a Swagger UI.
 // To modify its behavior, use the [WithOpenAPIConfig] option.

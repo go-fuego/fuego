@@ -91,6 +91,12 @@ func register[T any, B any](s *Server, method string, path string, controller ht
 	allMiddlewares := append(middlewares, s.middlewares...)
 	s.Mux.Handle(fullPath, withMiddlewares(controller, allMiddlewares...))
 
+	if s.DisableOpenapi {
+		return Route[T, B]{
+			operation: &openapi3.Operation{},
+		}
+	}
+
 	operation, err := RegisterOpenAPIOperation[T, B](s, method, s.basePath+path)
 	if err != nil {
 		slog.Warn("error documenting openapi operation", "error", err)

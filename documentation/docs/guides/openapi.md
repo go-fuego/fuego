@@ -124,3 +124,37 @@ Please note that if you embed swagger ui in your build it will increase its size
 | ------------- | ------------------ | -------------- | -------- |
 | Works offline | No ❌              | Yes ✅         | -        |
 | Binary Size   | Smaller            | Larger (+10Mb) | Smaller  |
+
+## Hide From Openapi Spec
+
+Certain routes such as web routes you may not want to be part of the openapi spec.
+
+You can prevent them from being added with the server.Hide().
+
+```go
+package main
+
+import (
+	"github.com/go-fuego/fuego"
+)
+
+func main() {
+	s := fuego.NewServer()
+
+	// Create a group of routes to be hidden
+	web := s.Group(s, "/")
+	web.Hide()
+
+	fuego.Get(web, "/", func(c fuego.ContextNoBody) (string, error) {
+		return "Hello, World!", nil
+	})
+
+	// These routes will still be added to the spec
+	api := s.Group(s, "/api")
+	fuego.Get(api, "/hello", func(c fuego.ContextNoBody) (string, error) {
+		return "Hello, World!", nil
+	})
+
+	s.Run()
+}
+```
