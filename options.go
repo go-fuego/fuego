@@ -57,6 +57,7 @@ type Server struct {
 	template *template.Template // TODO: use preparsed templates
 
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
+	DisableOpenapi        bool // If true, the the routes within the server will not generate an openapi spec.
 	maxBodySize           int64
 	Serialize             func(w http.ResponseWriter, ans any)   // Used to serialize the response. Defaults to [SendJSON].
 	SerializeError        func(w http.ResponseWriter, err error) // Used to serialize the error response. Defaults to [SendJSONError].
