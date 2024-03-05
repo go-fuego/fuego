@@ -24,7 +24,11 @@ type Ressource struct {
 
 func (rs Ressource) MountRoutes(s *fuego.Server) {
 	fuego.Use(s, cors.Default().Handler)
-	fuego.UseStd(s, basicauth.New(basicauth.Config{Username: os.Getenv("ADMIN_USER"), Password: os.Getenv("ADMIN_PASSWORD")}))
+	fuego.UseStd(s, basicauth.New(basicauth.Config{
+		Username: os.Getenv("ADMIN_USER"),
+		Password: os.Getenv("ADMIN_PASSWORD"),
+		AllowGet: true,
+	}))
 
 	recipeRessource{
 		RecipeRepository:     rs.RecipesQueries,
