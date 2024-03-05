@@ -1,9 +1,11 @@
 package controller
 
 import (
+	"os"
 	"time"
 
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/middleware/basicauth"
 	"github.com/rs/cors"
 )
 
@@ -22,6 +24,7 @@ type Ressource struct {
 
 func (rs Ressource) MountRoutes(s *fuego.Server) {
 	fuego.Use(s, cors.Default().Handler)
+	fuego.UseStd(s, basicauth.New(basicauth.Config{Username: os.Getenv("ADMIN_USER"), Password: os.Getenv("ADMIN_PASSWORD")}))
 
 	recipeRessource{
 		RecipeRepository:     rs.RecipesQueries,
