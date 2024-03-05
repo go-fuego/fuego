@@ -14,6 +14,23 @@ func TestToSchema(t *testing.T) {
 		require.Equal(t, "string", s.Type)
 	})
 
+	t.Run("alias to string", func(t *testing.T) {
+		type S string
+		s := ToSchema(S(""))
+		require.Equal(t, "string", s.Type)
+	})
+
+	t.Run("struct with a field alias to string", func(t *testing.T) {
+		type MyAlias string
+		type S struct {
+			A MyAlias
+		}
+
+		s := ToSchema(S{})
+		require.Equal(t, "object", s.Type)
+		require.Equal(t, "string", s.Properties["A"].Type)
+	})
+
 	t.Run("int", func(t *testing.T) {
 		s := ToSchema(0)
 		require.Equal(t, "integer", s.Type)

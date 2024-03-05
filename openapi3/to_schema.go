@@ -55,7 +55,7 @@ func ToSchema(v any) *Schema {
 				s.Properties[fieldName] = *ToSchema(field.Interface())
 			} else {
 				// If the field is a basic type, we can just add it to the properties
-				fieldTypeType := fieldType.Type.Name()
+				fieldTypeType := fieldType.Type.Kind().String()
 				format := fieldType.Tag.Get("format")
 				if strings.Contains(fieldTypeType, "int") {
 					fieldTypeType = "integer"
