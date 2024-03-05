@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -261,5 +262,27 @@ func WithOpenapiConfig(openapiConfig OpenapiConfig) func(*Server) {
 			slog.Error("Error serving swagger ui. Value of 's.OpenapiConfig.SwaggerUrl' option is not valid", "url", s.OpenapiConfig.SwaggerUrl)
 			return
 		}
+	}
+}
+
+// WithValidator sets the validator to be used by the fuego server.
+// If no validator is provided, a default validator will be used.
+//
+// Note: If you are using the default validator, you can add tags to your structs using the `validate` tag.
+// For example:
+//
+//	type MyStruct struct {
+//		Field1 string `validate:"required"`
+//		Field2 int    `validate:"min=10,max=20"`
+//	}
+//
+// The above struct will be validated using the default validator, and if any errors occur, they will be returned as part of the response.
+func WithValidator(newValidator *validator.Validate) func(*Server) {
+	if newValidator == nil {
+		panic("new validator not provided")
+	}
+
+	return func(s *Server) {
+		v = newValidator
 	}
 }

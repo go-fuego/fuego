@@ -8,6 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-playground/validator/v10"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -178,4 +180,45 @@ func TestWithLogHandler(t *testing.T) {
 	NewServer(
 		WithLogHandler(handler),
 	)
+}
+
+func TestWithValidator(t *testing.T) {
+	type args struct {
+		newValidator *validator.Validate
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantPanic bool
+	}{
+		{
+			name: "with custom validator",
+			args: args{
+				newValidator: validator.New(),
+			},
+		},
+		{
+			name: "no validator provided",
+			args: args{
+				newValidator: nil,
+			},
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				if tt.wantPanic {
+					assert.Panics(
+						t, func() { WithValidator(tt.args.newValidator) },
+					)
+				} else {
+					NewServer(
+						WithValidator(tt.args.newValidator),
+					)
+					assert.Equal(t, tt.args.newValidator, v)
+				}
+			},
+		)
+	}
 }
