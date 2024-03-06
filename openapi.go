@@ -111,7 +111,6 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	}
 
 	// Request body
-	bodyTag := tagFromType(new(B))
 	if method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch {
 
 		requestBody := &openapi3.RequestBody{
@@ -126,7 +125,9 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 			}
 		}
 
-		s.OpenApiSpec.Components.RequestBodies[bodyTag] = requestBody
+		if bodyTag := tagFromType(new(B)); bodyTag != "" {
+			s.OpenApiSpec.Components.RequestBodies[bodyTag] = requestBody
+		}
 
 		// add request body to operation
 		operation.RequestBody = requestBody
@@ -147,8 +148,9 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	// Path parameters
 	for _, pathParam := range parsePathParams(path) {
 		operation.Parameters = append(operation.Parameters, &openapi3.Parameter{
-			Name: pathParam,
-			In:   "path",
+			Name:     pathParam,
+			In:       "path",
+			Required: true,
 			Schema: openapi3.Schema{
 				Type: "string",
 			},
@@ -171,7 +173,7 @@ func tagFromType(v any) string {
 	case "Renderer", "CtxRenderer":
 		return "HTML"
 	case "NetHTTP":
-		return "net/http"
+		return "net-http"
 	}
 	return tag
 }

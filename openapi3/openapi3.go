@@ -118,7 +118,7 @@ type Parameter struct {
 type MimeType string
 
 type Response struct {
-	Description string                    `json:"description,omitempty" yaml:"description"`
+	Description string                    `json:"description" yaml:"description"`
 	Content     map[MimeType]SchemaObject `json:"content" yaml:"content"`
 }
 

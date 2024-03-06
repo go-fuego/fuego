@@ -27,6 +27,9 @@ func (d *Document) RegisterType(v any) *Schema {
 		item := reflect.New(reflect.TypeOf(v).Elem()).Interface()
 
 		name := TagFromType(item)
+		if name == "" {
+			return nil
+		}
 		if _, ok := d.Components.Schemas[name]; !ok {
 			d.Components.Schemas[name] = ToSchema(item)
 		}
@@ -37,6 +40,9 @@ func (d *Document) RegisterType(v any) *Schema {
 	}
 
 	name := TagFromType(v)
+	if name == "" {
+		return nil
+	}
 	if _, ok := d.Components.Schemas[name]; !ok {
 		d.Components.Schemas[name] = ToSchema(v)
 	}

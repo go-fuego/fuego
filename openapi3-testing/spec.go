@@ -6,6 +6,7 @@ package openapi3testing
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/go-fuego/fuego"
@@ -36,10 +37,9 @@ func validateSpec(s *fuego.Server) error {
 	valid, validationErrs := docValidator.ValidateDocument()
 	if !valid {
 		for _, e := range validationErrs {
-			// 5. Handle the error
-			fmt.Printf("Type: %s, Failure: %s\n", e.ValidationType, e.Message)
-			fmt.Printf("Fix: %s\n\n", e.HowToFix)
+			err = errors.Join(err, fmt.Errorf("error validating document: Type: %s, Failure: %s\nFix: %s", e.ValidationType, e.Message, e.HowToFix))
 		}
+		return err
 	}
 
 	return nil
