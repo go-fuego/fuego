@@ -72,11 +72,15 @@ func ToSchema(v any) *Schema {
 				if strings.Contains(fieldType.Tag.Get("validate"), "required") {
 					s.Required = append(s.Required, fieldName)
 				}
-				s.Properties[fieldName] = Schema{
+
+				fieldSchema := Schema{
 					Type:    fieldTypeType,
 					Example: fieldType.Tag.Get("example"),
 					Format:  format,
 				}
+				parseValidate(&fieldSchema, fieldType.Tag.Get("validate"))
+				s.Properties[fieldName] = fieldSchema
+
 			}
 		}
 	}

@@ -28,7 +28,7 @@ func (rs ingredientRessource) getAllIngredients(c fuego.ContextNoBody) ([]store.
 }
 
 type CreateIngredient struct {
-	Name        string `json:"name" validate:"required,min=3,max=20"`
+	Name        string `json:"name" validate:"required,min=3,max=20" example:"Tomato"`
 	Description string `json:"description"`
 }
 

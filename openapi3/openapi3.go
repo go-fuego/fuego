@@ -100,9 +100,14 @@ type Schema struct {
 	Type       string            `json:"type,omitempty" yaml:"type"`
 	Format     string            `json:"format,omitempty" yaml:"format,omitempty"`
 	Required   []string          `json:"required,omitempty" yaml:"required,omitempty"`
+	Nullable   bool              `json:"nullable,omitempty" yaml:"nullable,omitempty"`
 	Example    string            `json:"example,omitempty" yaml:"example,omitempty"`
 	Properties map[string]Schema `json:"properties,omitempty" yaml:"properties,omitempty"`
 	Items      *Schema           `json:"items,omitempty" yaml:"items,omitempty"`
+	MinLength  int               `json:"minLength,omitempty" yaml:"minLength,omitempty"`
+	MaxLength  int               `json:"maxLength,omitempty" yaml:"maxLength,omitempty"`
+	Minimum    int               `json:"minimum,omitempty" yaml:"minimum,omitempty"`
+	Maximum    int               `json:"maximum,omitempty" yaml:"maximum,omitempty"`
 	Ref        string            `json:"$ref,omitempty" yaml:"$ref,omitempty"`
 }
 
