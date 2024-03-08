@@ -37,6 +37,11 @@ type Server struct {
 	// [http.ServeMux.Handle] can also be used to register routes.
 	Mux *http.ServeMux
 
+	// Not stored with the oter middlewares because it is a special case :
+	// it applies on routes that are not registered.
+	// For example, it allows OPTIONS /foo even if it is not declared (only GET /foo is declared).
+	corsMiddleware func(http.Handler) http.Handler
+
 	middlewares []func(http.Handler) http.Handler
 
 	basePath string
@@ -129,6 +134,24 @@ func NewServer(options ...func(*Server)) *Server {
 //	WithTemplateFS(templates)
 func WithTemplateFS(fs fs.FS) func(*Server) {
 	return func(c *Server) { c.fs = fs }
+}
+
+// WithCorsMiddleware registers a middleware to handle CORS.
+// It is not handled like other middlewares with [Use] because it applies routes that are not registered.
+// For example:
+//
+//	import "github.com/rs/cors"
+//
+//	s := fuego.NewServer(
+//		WithCorsMiddleware(cors.New(cors.Options{
+//			AllowedOrigins:   []string{"*"},
+//			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+//			AllowedHeaders:   []string{"*"},
+//			AllowCredentials: true,
+//		}))
+//	)
+func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Server) {
+	return func(c *Server) { c.corsMiddleware = corsMiddleware }
 }
 
 // WithTemplates loads the templates used to render HTML.

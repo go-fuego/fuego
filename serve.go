@@ -20,6 +20,10 @@ func (s *Server) Run() error {
 
 	s.Server.Handler = s.Mux
 
+	if s.corsMiddleware != nil {
+		s.Server.Handler = s.corsMiddleware(s.Server.Handler)
+	}
+
 	return s.Server.ListenAndServe()
 }
 
