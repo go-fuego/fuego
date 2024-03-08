@@ -2,6 +2,7 @@ package openapi3
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 	"time"
 
@@ -158,5 +159,35 @@ func TestToSchema(t *testing.T) {
 		require.Equal(t, "object", s.Properties["S"].Type)
 		require.Equal(t, "string", s.Properties["S"].Properties["A"].Type)
 		require.Equal(t, "integer", s.Properties["B"].Type)
+	})
+}
+
+func TestFieldName(t *testing.T) {
+
+	t.Run("no tag", func(t *testing.T) {
+		require.Equal(t, "A", fieldName(reflect.StructField{
+			Name: "A",
+		}))
+	})
+
+	t.Run("json tag", func(t *testing.T) {
+		require.Equal(t, "a", fieldName(reflect.StructField{
+			Name: "A",
+			Tag:  `json:"a"`,
+		}))
+	})
+
+	t.Run("json tag with omitempty", func(t *testing.T) {
+		require.Equal(t, "a", fieldName(reflect.StructField{
+			Name: "A",
+			Tag:  `json:"a,omitempty"`,
+		}))
+	})
+
+	t.Run("json tag with no name, omitempty", func(t *testing.T) {
+		require.Equal(t, "A", fieldName(reflect.StructField{
+			Name: "A",
+			Tag:  `json:",omitempty"`,
+		}))
 	})
 }

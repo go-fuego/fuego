@@ -48,11 +48,7 @@ func ToSchema(v any) *Schema {
 
 			// If the field is a struct, we need to dive into it
 			if field.Kind() == reflect.Struct {
-				fieldName := fieldType.Tag.Get("json")
-				if fieldName == "" {
-					fieldName = fieldType.Name
-				}
-				s.Properties[fieldName] = *ToSchema(field.Interface())
+				s.Properties[fieldName(fieldType)] = *ToSchema(field.Interface())
 			} else {
 				// If the field is a basic type, we can just add it to the properties
 				fieldTypeType := fieldType.Type.Kind().String()
@@ -65,10 +61,7 @@ func ToSchema(v any) *Schema {
 				} else if fieldTypeType == "bool" {
 					fieldTypeType = "boolean"
 				}
-				fieldName := fieldType.Tag.Get("json")
-				if fieldName == "" {
-					fieldName = fieldType.Name
-				}
+				fieldName := fieldName(fieldType)
 				if strings.Contains(fieldType.Tag.Get("validate"), "required") {
 					s.Required = append(s.Required, fieldName)
 				}
@@ -95,4 +88,12 @@ func ToSchema(v any) *Schema {
 	}
 
 	return &s
+}
+
+func fieldName(s reflect.StructField) string {
+	jsonTags := strings.Split(s.Tag.Get("json"), ",")
+	if len(jsonTags) > 0 && jsonTags[0] != "" {
+		return jsonTags[0]
+	}
+	return s.Name
 }
