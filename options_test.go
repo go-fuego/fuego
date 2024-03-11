@@ -222,3 +222,78 @@ func TestWithValidator(t *testing.T) {
 		)
 	}
 }
+
+func TestWithAddr(t *testing.T) {
+	tests := []struct {
+		name         string
+		addr         string
+		expectedAddr string
+	}{
+		{
+			name:         "with custom addr, that addr is used",
+			addr:         "localhost:8888",
+			expectedAddr: "localhost:8888",
+		},
+		{
+			name:         "no addr provided, default is used (9999)",
+			addr:         "",
+			expectedAddr: ":9999",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				var opts []func(*Server)
+
+				if tt.addr != "" {
+					opts = append(opts, WithAddr(tt.addr))
+				}
+
+				s := NewServer(
+					opts...,
+				)
+				require.Equal(t, tt.expectedAddr, s.Server.Addr)
+			},
+		)
+	}
+}
+
+func TestWithPort(t *testing.T) {
+	tests := []struct {
+		name         string
+		port         string
+		expectedAddr string
+	}{
+		{
+			name:         "port provided with :",
+			port:         ":8888",
+			expectedAddr: ":8888",
+		},
+		{
+			name:         "port provided without :",
+			port:         "8888",
+			expectedAddr: ":8888",
+		},
+		{
+			name:         "no port provided",
+			port:         "",
+			expectedAddr: ":9999",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				var opts []func(*Server)
+
+				if tt.port != "" {
+					opts = append(opts, WithPort(tt.port))
+				}
+
+				s := NewServer(
+					opts...,
+				)
+				require.Equal(t, tt.expectedAddr, s.Server.Addr)
+			},
+		)
+	}
+}

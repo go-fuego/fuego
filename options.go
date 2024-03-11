@@ -1,12 +1,14 @@
 package fuego
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -93,7 +95,7 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	defaultOptions := [...]func(*Server){
-		WithPort(":9999"),
+		WithPort("9999"),
 		WithDisallowUnknownFields(true),
 		WithSerializer(SendJSON),
 		WithErrorSerializer(SendJSONError),
@@ -217,7 +219,20 @@ func WithDisallowUnknownFields(b bool) func(*Server) {
 
 // WithPort sets the port of the server. For example, ":8080".
 func WithPort(port string) func(*Server) {
-	return func(c *Server) { c.Server.Addr = port }
+	var addr string
+	if strings.HasPrefix(port, ":") {
+		addr = port
+	} else {
+		addr = fmt.Sprintf(":%s", port)
+	}
+
+	return func(c *Server) { c.Server.Addr = addr }
+}
+
+// WithAddr optionally specifies the TCP address for the server to listen on, in the form "host:port".
+// If not used port 9999 is used.
+func WithAddr(addr string) func(*Server) {
+	return func(c *Server) { c.Server.Addr = addr }
 }
 
 func WithXML() func(*Server) {
