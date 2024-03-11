@@ -218,6 +218,8 @@ func WithDisallowUnknownFields(b bool) func(*Server) {
 }
 
 // WithPort sets the port of the server. For example, ":8080".
+//
+// Deprecated: Use WithAddr instead as that allows to set the host and the port.
 func WithPort(port string) func(*Server) {
 	var addr string
 	if strings.HasPrefix(port, ":") {
