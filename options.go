@@ -71,7 +71,7 @@ type Server struct {
 // For example:
 //
 //	app := fuego.NewServer(
-//		fuego.WithPort(":8080"),
+//		fuego.WithAddr(":8080"),
 //		fuego.WithoutLogger(),
 //	)
 //
@@ -95,7 +95,7 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	defaultOptions := [...]func(*Server){
-		WithPort("9999"),
+		WithAddr(":9999"),
 		WithDisallowUnknownFields(true),
 		WithSerializer(SendJSON),
 		WithErrorSerializer(SendJSONError),
@@ -217,7 +217,7 @@ func WithDisallowUnknownFields(b bool) func(*Server) {
 	return func(c *Server) { c.DisallowUnknownFields = b }
 }
 
-// WithPort sets the port of the server. For example, ":8080".
+// WithPort sets the port of the server. For example, "8080".
 //
 // Deprecated: Use WithAddr instead as that allows to set the host and the port.
 func WithPort(port string) func(*Server) {
