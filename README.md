@@ -186,7 +186,7 @@ type MyResponse struct {
 
 func main() {
 	s := fuego.NewServer(
-		fuego.WithPort("8088"),
+		fuego.WithAddr("localhost:8088"),
 	)
 
 	fuego.Use(s, cors.Default().Handler)
