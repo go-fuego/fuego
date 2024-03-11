@@ -16,7 +16,7 @@ func (s *Server) Run() error {
 	go s.generateOpenAPI()
 	elapsed := time.Since(s.startTime)
 	slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
-	slog.Info("Server running ✅ on http://localhost"+s.Server.Addr, "started in", elapsed.String())
+	slog.Info("Server running ✅ on http://"+s.Server.Addr, "started in", elapsed.String())
 
 	s.Server.Handler = s.Mux
 

@@ -94,8 +94,8 @@ func generateSwagger(s *Server, jsonSpec []byte) {
 
 	Handle(s, s.OpenapiConfig.SwaggerUrl+"/", s.UIHandler(s.OpenapiConfig.JsonUrl))
 
-	slog.Info(fmt.Sprintf("JSON spec: http://localhost%s%s", s.Server.Addr, s.OpenapiConfig.JsonUrl))
-	slog.Info(fmt.Sprintf("OpenAPI UI: http://localhost%s%s/index.html", s.Server.Addr, s.OpenapiConfig.SwaggerUrl))
+	slog.Info(fmt.Sprintf("JSON spec: http://%s%s", s.Server.Addr, s.OpenapiConfig.JsonUrl))
+	slog.Info(fmt.Sprintf("OpenAPI UI: http://%s%s/index.html", s.Server.Addr, s.OpenapiConfig.SwaggerUrl))
 }
 
 func validateJsonSpecLocalPath(jsonSpecLocalPath string) bool {
