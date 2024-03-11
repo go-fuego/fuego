@@ -232,7 +232,7 @@ func WithPort(port string) func(*Server) {
 }
 
 // WithAddr optionally specifies the TCP address for the server to listen on, in the form "host:port".
-// If not used port 9999 is used.
+// If not specified addr ':9999' will be used.
 func WithAddr(addr string) func(*Server) {
 	return func(c *Server) { c.Server.Addr = addr }
 }
