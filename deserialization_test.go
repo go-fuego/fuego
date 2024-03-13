@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"errors"
@@ -13,9 +14,14 @@ import (
 )
 
 type BodyTest struct {
-	A string
-	B int
-	C bool
+	A string `yaml:"A"`
+	B int    `yaml:"B"`
+	C bool   `yaml:"C"`
+}
+
+type WrongBody struct {
+	A string `yaml:"A"`
+	B int    `yaml:"B"`
 }
 
 func TestReadJSON(t *testing.T) {
@@ -33,11 +39,30 @@ func TestReadJSON(t *testing.T) {
 	})
 
 	t.Run("cannot deserialize JSON to wrong struct", func(t *testing.T) {
-		type WrongBody struct {
-			A string
-			B int
-			// Missing C bool
-		}
+		_, err := ReadJSON[WrongBody](context.Background(), input)
+		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
+	})
+}
+
+func TestReadYAML(t *testing.T) {
+	input := bytes.NewReader([]byte(`
+A: a
+B: 1
+C: true
+`))
+
+	t.Run("ReadYAML", func(t *testing.T) {
+		body, err := ReadYAML[BodyTest](context.Background(), input)
+		require.NoError(t, err)
+		require.Equal(t, BodyTest{"a", 1, true}, body)
+	})
+
+	t.Run("cannot read invalid YAML", func(t *testing.T) {
+		_, err := ReadYAML[BodyTest](context.Background(), input)
+		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
+	})
+
+	t.Run("cannot deserialize YAML to wrong struct", func(t *testing.T) {
 		_, err := ReadJSON[WrongBody](context.Background(), input)
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 	})
