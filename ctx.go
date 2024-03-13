@@ -99,14 +99,16 @@ func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptio
 	return c
 }
 
-// ContextWithBody is used internally by Fuego. You probably want to use Ctx[B] instead. Please do not use a pointer type as parameter.
+// ContextWithBody is the same as fuego.ContextNoBody, but
+// has a Body. The Body type parameter repesents the expected data type
+// from http.Request.Body. Please do not use a pointer as a type parameter.
 type ContextWithBody[Body any] struct {
 	body *Body // Cache the body in request context, because it is not possible to read an http request body multiple times.
 	ContextNoBody
 }
 
 // ContextNoBody is used when the controller does not have a body.
-// It used as a base context for other Context types.
+// It is used as a base context for other Context types.
 type ContextNoBody struct {
 	Req *http.Request
 	Res http.ResponseWriter
