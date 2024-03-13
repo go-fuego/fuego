@@ -11,6 +11,7 @@ import (
 	"reflect"
 
 	"github.com/gorilla/schema"
+	"gopkg.in/yaml.v3"
 )
 
 // InTransformer is an interface for entities that can be transformed.
@@ -37,13 +38,41 @@ func ReadJSON[B any](context context.Context, input io.Reader) (B, error) {
 // or as a method of Context.
 // It will also read strings.
 func readJSON[B any](context context.Context, input io.Reader, options readOptions) (B, error) {
-	var body B
-
 	// Deserialize the request body.
 	dec := json.NewDecoder(input)
 	if options.DisallowUnknownFields {
 		dec.DisallowUnknownFields()
 	}
+
+	return read[B](context, dec)
+}
+
+// ReadYAML reads the request body as YAML.
+// Can be used independantly from Fuego framework.
+// Customisable by modifying ReadOptions.
+func ReadYAML[B any](context context.Context, input io.Reader) (B, error) {
+	return readYAML[B](context, input, ReadOptions)
+}
+
+// readYAML reads the request body as YAML.
+// Can be used independantly from framework using ReadYAML,
+// or as a method of Context.
+func readYAML[B any](context context.Context, input io.Reader, options readOptions) (B, error) {
+	dec := yaml.NewDecoder(input)
+	if options.DisallowUnknownFields {
+		dec.KnownFields(true)
+	}
+
+	return read[B](context, dec)
+}
+
+type decoder interface {
+	Decode(v any) error
+}
+
+func read[B any](context context.Context, dec decoder) (B, error) {
+	var body B
+
 	err := dec.Decode(&body)
 	if err != nil {
 		return body, BadRequestError{Message: "cannot decode request body: " + err.Error()}
@@ -107,8 +136,6 @@ func newDecoder() *schema.Decoder {
 	return decoder
 }
 
-var decoder = newDecoder()
-
 // ReadURLEncoded reads the request body as HTML Form.
 func ReadURLEncoded[B any](r *http.Request) (B, error) {
 	return readURLEncoded[B](r, ReadOptions)
@@ -125,6 +152,7 @@ func readURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
 		return body, fmt.Errorf("cannot parse form: %w", err)
 	}
 
+	decoder := newDecoder()
 	decoder.IgnoreUnknownKeys(!options.DisallowUnknownFields)
 
 	err = decoder.Decode(&body, r.PostForm)
