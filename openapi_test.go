@@ -60,7 +60,7 @@ func TestServer_generateOpenAPI(t *testing.T) {
 	Get(s, "/post/{id}", func(*ContextNoBody) (MyOutputStruct, error) {
 		return MyOutputStruct{}, nil
 	})
-	document := s.generateOpenAPI()
+	document := s.OutputOpenAPISpec()
 	require.NotNil(t, document)
 	require.NotNil(t, document.Paths.Find("/"))
 	require.Nil(t, document.Paths.Find("/unknown"))
@@ -119,7 +119,7 @@ func BenchmarkServer_generateOpenAPI(b *testing.B) {
 			})
 		}
 
-		s.generateOpenAPI()
+		s.OutputOpenAPISpec()
 	}
 }
 
@@ -157,7 +157,7 @@ func TestValidateSwaggerUrl(t *testing.T) {
 
 func TestLocalSave(t *testing.T) {
 	t.Run("with valid path", func(t *testing.T) {
-		err := localSave("/tmp/jsonSpec.json", []byte("test"))
+		err := saveOpenAPIToFile("/tmp/jsonSpec.json", []byte("test"))
 		require.NoError(t, err)
 
 		// cleanup
@@ -165,7 +165,7 @@ func TestLocalSave(t *testing.T) {
 	})
 
 	t.Run("with invalid path", func(t *testing.T) {
-		err := localSave("///jsonSpec.json", []byte("test"))
+		err := saveOpenAPIToFile("///jsonSpec.json", []byte("test"))
 		require.Error(t, err)
 	})
 }

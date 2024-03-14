@@ -11,9 +11,10 @@ import (
 
 // Run starts the server.
 // It is blocking.
-// It returns an error if the server could not start (it could not bind to the port).
+// It returns an error if the server could not start (it could not bind to the port for example).
+// It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) Run() error {
-	go s.generateOpenAPI()
+	go s.OutputOpenAPISpec()
 	elapsed := time.Since(s.startTime)
 	slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
 	slog.Info("Server running ✅ on http://"+s.Server.Addr, "started in", elapsed.String())
