@@ -20,6 +20,4 @@ There are many ways to contribute, from writing tutorials or blog posts, improvi
 
 ## Contributors
 
-Thanks to the following people who have contributed to this project:
-
-- @EwenQuim
+Thanks to [everyone who have contributed](https://github.com/go-fuego/fuego/graphs/contributors) to this project!

@@ -273,7 +273,11 @@ https://github.com/go-fuego/fuego/assets/46993939/7438a71c-75a4-4e88-a584-71da63
 
 ## Contributing
 
-See the [contributing guide](CONTRIBUTING.md)
+See the [contributing guide](CONTRIBUTING.md). Thanks to [everyone who has contributed](https://github.com/go-fuego/fuego/graphs/contributors) to this project! ❤️
+
+## Roadmap
+
+See the [board](https://github.com/orgs/go-fuego/projects/1).
 
 ## Disclaimer for experienced gophers
 

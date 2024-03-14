@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,43 +8,29 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"reflect"
 	"regexp"
+	"strings"
 
-	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/getkin/kin-openapi/openapi3gen"
+	"github.com/go-fuego/fuego/openapi3"
 )
 
-func NewOpenApiSpec() openapi3.T {
-	info := &openapi3.Info{
-		Title:       "OpenAPI",
-		Description: "OpenAPI",
-		Version:     "0.0.1",
+func NewOpenApiSpec() openapi3.Document {
+	spec := openapi3.NewDocument()
+
+	title, _ := os.Executable()
+	titleSplitted := strings.Split(title, "/")
+	title = titleSplitted[len(titleSplitted)-1]
+	if title != "" {
+		spec.Info.Title = title
 	}
-	spec := openapi3.T{
-		OpenAPI: "3.0.3",
-		Info:    info,
-		Paths:   &openapi3.Paths{},
-		Components: &openapi3.Components{
-			Schemas:       make(map[string]*openapi3.SchemaRef),
-			RequestBodies: make(map[string]*openapi3.RequestBodyRef),
-			Responses:     make(map[string]*openapi3.ResponseRef),
-		},
-	}
+
 	return spec
 }
 
-func (s *Server) generateOpenAPI() openapi3.T {
-	// Validate
-	err := s.OpenApiSpec.Validate(context.Background())
-	if err != nil {
-		slog.Error("Error validating spec", "error", err)
-	}
-
-	// Marshal spec to JSON
+func (s *Server) generateOpenAPI() openapi3.Document {
 	jsonSpec, err := json.Marshal(s.OpenApiSpec)
 	if err != nil {
-		slog.Error("Error marshalling spec to JSON", "error", err)
+		slog.Error("Error marshalling OpenAPI spec", "error", err)
 	}
 
 	if !s.OpenapiConfig.DisableSwagger {
@@ -113,104 +98,81 @@ func validateSwaggerUrl(swaggerUrl string) bool {
 	return swaggerUrlRegexp.MatchString(swaggerUrl)
 }
 
-var generator = openapi3gen.NewGenerator(
-	openapi3gen.UseAllExportedFields(),
-)
-
 func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*openapi3.Operation, error) {
-	operation := openapi3.NewOperation()
+	operation := &openapi3.Operation{
+		Summary:     "Summary",
+		Description: "Description",
+	}
 
 	// Tags
-	tag := tagFromType(*new(T))
+	tag := tagFromType(new(T))
 	if tag != "unknown-interface" {
 		operation.Tags = append(operation.Tags, tag)
 	}
 
 	// Request body
-	bodyTag := tagFromType(*new(B))
-	if (method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch) && bodyTag != "unknown-interface" && bodyTag != "string" {
-
-		bodySchema, ok := s.OpenApiSpec.Components.Schemas[bodyTag]
-		if !ok {
-			var err error
-			bodySchema, err = generator.NewSchemaRefForValue(new(B), s.OpenApiSpec.Components.Schemas)
-			if err != nil {
-				return operation, err
-			}
-			s.OpenApiSpec.Components.Schemas[bodyTag] = bodySchema
+	if method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch {
+		requestBody := &openapi3.RequestBody{
+			Required: true,
+			Content:  make(map[openapi3.MimeType]openapi3.SchemaObject),
 		}
 
-		requestBody := openapi3.NewRequestBody().
-			WithRequired(true).
-			WithDescription("Request body for " + reflect.TypeOf(*new(B)).String())
-
+		bodySchema := s.OpenApiSpec.RegisterType(new(B))
 		if bodySchema != nil {
-			content := openapi3.NewContentWithSchema(bodySchema.Value, []string{"application/json"})
-			content["application/json"].Schema.Ref = "#/components/schemas/" + bodyTag
-			requestBody.WithContent(content)
+			requestBody.Content["application/json"] = openapi3.SchemaObject{
+				Schema: bodySchema,
+			}
 		}
 
-		s.OpenApiSpec.Components.RequestBodies[bodyTag] = &openapi3.RequestBodyRef{
-			Value: requestBody,
+		if bodyTag := tagFromType(new(B)); bodyTag != "" {
+			s.OpenApiSpec.Components.RequestBodies[bodyTag] = requestBody
 		}
 
 		// add request body to operation
-		operation.RequestBody = &openapi3.RequestBodyRef{
-			Ref:   "#/components/requestBodies/" + bodyTag,
-			Value: requestBody,
-		}
+		operation.RequestBody = requestBody
 	}
 
-	// Response body
-	responseSchema, ok := s.OpenApiSpec.Components.Schemas[tag]
-	if !ok {
-		var err error
-		responseSchema, err = generator.NewSchemaRefForValue(new(T), s.OpenApiSpec.Components.Schemas)
-		if err != nil {
-			return operation, err
-		}
-		s.OpenApiSpec.Components.Schemas[tag] = responseSchema
-	}
-
-	response := openapi3.NewResponse().WithDescription("OK")
+	responseSchema := s.OpenApiSpec.RegisterType(*new(T))
+	content := make(map[openapi3.MimeType]openapi3.SchemaObject)
 	if responseSchema != nil {
-		content := openapi3.NewContentWithSchema(responseSchema.Value, []string{"application/json"})
-		content["application/json"].Schema.Ref = "#/components/schemas/" + tag
-		response.WithContent(content)
+		content["application/json"] = openapi3.SchemaObject{
+			Schema: responseSchema,
+		}
 	}
-	operation.AddResponse(200, response)
+	operation.Responses = make(map[string]*openapi3.Response)
+	operation.Responses["200"] = &openapi3.Response{
+		Content: content,
+	}
 
 	// Path parameters
 	for _, pathParam := range parsePathParams(path) {
-		parameter := openapi3.NewPathParameter(pathParam)
-		parameter.Schema = openapi3.NewStringSchema().NewRef()
-		operation.AddParameter(parameter)
+		operation.Parameters = append(operation.Parameters, &openapi3.Parameter{
+			Name:     pathParam,
+			In:       "path",
+			Required: true,
+			Schema: openapi3.Schema{
+				Type: "string",
+			},
+		})
 	}
 
-	s.OpenApiSpec.AddOperation(path, method, operation)
+	s.OpenApiSpec.Paths.AddPath(path, strings.ToLower(method), operation)
 
 	return operation, nil
 }
 
+type NetHTTP struct{}
+
+// tagFromType returns the name of the type of the given value.
+// Custom version of openapi3.TagFromType for Fuego.
 func tagFromType(v any) string {
-	if v == nil {
-		return "unknown-interface"
-	}
+	tag := openapi3.TagFromType(v)
 
-	return dive(reflect.TypeOf(v), 4)
-}
-
-// dive returns the name of the type of the given reflect.Type.
-// If the type is a pointer, slice, array, map, channel, function, or unsafe pointer,
-// it will dive into the type and return the name of the type it points to.
-func dive(t reflect.Type, maxDepth int) string {
-	switch t.Kind() {
-	case reflect.Ptr, reflect.Slice, reflect.Array, reflect.Map, reflect.Chan, reflect.Func, reflect.UnsafePointer:
-		if maxDepth == 0 {
-			return "default"
-		}
-		return dive(t.Elem(), maxDepth-1)
-	default:
-		return t.Name()
+	switch tag {
+	case "Renderer", "CtxRenderer":
+		return "HTML"
+	case "NetHTTP":
+		return "net-http"
 	}
+	return tag
 }

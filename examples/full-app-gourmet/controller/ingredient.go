@@ -14,7 +14,8 @@ type ingredientRessource struct {
 
 func (rs ingredientRessource) MountRoutes(s *fuego.Server) {
 	fuego.Get(s, "/ingredients", rs.getAllIngredients)
-	fuego.Post(s, "/ingredients/new", rs.newIngredient)
+	fuego.Post(s, "/ingredients/new", rs.newIngredient).
+		Description("Create a new ingredient")
 }
 
 func (rs ingredientRessource) getAllIngredients(c fuego.ContextNoBody) ([]store.Ingredient, error) {
@@ -27,7 +28,7 @@ func (rs ingredientRessource) getAllIngredients(c fuego.ContextNoBody) ([]store.
 }
 
 type CreateIngredient struct {
-	Name        string `json:"name" validate:"required,min=3,max=20"`
+	Name        string `json:"name" validate:"required,min=3,max=20" example:"Tomato"`
 	Description string `json:"description"`
 }
 

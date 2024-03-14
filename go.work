@@ -8,4 +8,5 @@ use (
 	./examples/full-app-gourmet
 	./examples/hello-world
 	./examples/openapi
+	./openapi3-testing
 )

@@ -6,3 +6,4 @@ coverage.out
 .env.local
 recipe.db
 bin
+go.work.sum

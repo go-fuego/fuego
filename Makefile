@@ -6,8 +6,10 @@ ci-full: ci sec dependencies-analyze bench
 
 test: 
 	go test ./...
+	go test ./openapi3-testing
 
 cover:
+	go test ./openapi3-testing
 	go test -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out
 
@@ -31,6 +33,12 @@ lint:
 
 example:
 	( cd examples/full-app-gourmet && go run . -debug )
+
+update-deps:
+	go get -u ./...
+	go mod tidy
+	go work sync
+	./update.sh
 
 example-watch:
 	( cd examples/full-app-gourmet && air -- -debug )
