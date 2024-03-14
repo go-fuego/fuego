@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -217,18 +216,11 @@ func WithDisallowUnknownFields(b bool) func(*Server) {
 	return func(c *Server) { c.DisallowUnknownFields = b }
 }
 
-// WithPort sets the port of the server. For example, "8080".
-//
-// Deprecated: Use WithAddr instead as that allows to set the host and the port.
-func WithPort(port string) func(*Server) {
-	var addr string
-	if strings.HasPrefix(port, ":") {
-		addr = port
-	} else {
-		addr = fmt.Sprintf(":%s", port)
-	}
-
-	return func(c *Server) { c.Server.Addr = addr }
+// WithPort sets the port of the server. For example, 8080.
+// If not specified, the default port is 9999.
+// If you want to use a different address, use [WithAddr] instead.
+func WithPort(port int) func(*Server) {
+	return func(s *Server) { s.Server.Addr = fmt.Sprintf(":%d", port) }
 }
 
 // WithAddr optionally specifies the TCP address for the server to listen on, in the form "host:port".
