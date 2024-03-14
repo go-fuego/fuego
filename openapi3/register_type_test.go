@@ -20,10 +20,10 @@ func TestDocument_RegisterType(t *testing.T) {
 		s := d.RegisterType(T{})
 		// will return a schema with a reference to the schema of T
 		require.Equal(t, "#/components/schemas/T", s.Ref)
-		require.Equal(t, "object", d.Components.Schemas["T"].Type)
-		require.Equal(t, "integer", d.Components.Schemas["T"].Properties["B"].Type)
-		require.Equal(t, "", d.Components.Schemas["T"].Properties["A"].Type)
-		require.Equal(t, "string", d.Components.Schemas["T"].Properties["S"].Properties["A"].Type)
+		require.Equal(t, Object, d.Components.Schemas["T"].Type)
+		require.Equal(t, Integer, d.Components.Schemas["T"].Properties["B"].Type)
+		require.Equal(t, OpenAPIType(""), d.Components.Schemas["T"].Properties["A"].Type)
+		require.Equal(t, String, d.Components.Schemas["T"].Properties["S"].Properties["A"].Type)
 	})
 
 	t.Run("array", func(t *testing.T) {
@@ -34,10 +34,10 @@ func TestDocument_RegisterType(t *testing.T) {
 		d := NewDocument()
 		s := d.RegisterType([]S{})
 		// will return a schema with a reference to the schema of T
-		require.Equal(t, "array", s.Type)
+		require.Equal(t, Array, s.Type)
 		require.Equal(t, "#/components/schemas/S", s.Items.Ref)
-		require.Equal(t, "object", d.Components.Schemas["S"].Type)
-		require.Equal(t, "string", d.Components.Schemas["S"].Properties["A"].Type)
+		require.Equal(t, Object, d.Components.Schemas["S"].Type)
+		require.Equal(t, String, d.Components.Schemas["S"].Properties["A"].Type)
 	})
 }
 

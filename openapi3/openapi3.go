@@ -97,7 +97,7 @@ type Info struct {
 }
 
 type Schema struct {
-	Type       string            `json:"type,omitempty" yaml:"type"`
+	Type       OpenAPIType       `json:"type,omitempty" yaml:"type"`
 	Format     string            `json:"format,omitempty" yaml:"format,omitempty"`
 	Required   []string          `json:"required,omitempty" yaml:"required,omitempty"`
 	Nullable   bool              `json:"nullable,omitempty" yaml:"nullable,omitempty"`

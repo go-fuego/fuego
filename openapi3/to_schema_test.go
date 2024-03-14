@@ -12,13 +12,13 @@ import (
 func TestToSchema(t *testing.T) {
 	t.Run("string", func(t *testing.T) {
 		s := ToSchema("")
-		require.Equal(t, "string", s.Type)
+		require.Equal(t, String, s.Type)
 	})
 
 	t.Run("alias to string", func(t *testing.T) {
 		type S string
 		s := ToSchema(S(""))
-		require.Equal(t, "string", s.Type)
+		require.Equal(t, String, s.Type)
 	})
 
 	t.Run("struct with a field alias to string", func(t *testing.T) {
@@ -28,23 +28,23 @@ func TestToSchema(t *testing.T) {
 		}
 
 		s := ToSchema(S{})
-		require.Equal(t, "object", s.Type)
-		require.Equal(t, "string", s.Properties["A"].Type)
+		require.Equal(t, Object, s.Type)
+		require.Equal(t, String, s.Properties["A"].Type)
 	})
 
 	t.Run("int", func(t *testing.T) {
 		s := ToSchema(0)
-		require.Equal(t, "integer", s.Type)
+		require.Equal(t, Integer, s.Type)
 	})
 
 	t.Run("bool", func(t *testing.T) {
 		s := ToSchema(false)
-		require.Equal(t, "boolean", s.Type)
+		require.Equal(t, Boolean, s.Type)
 	})
 
 	t.Run("time", func(t *testing.T) {
 		s := ToSchema(time.Now())
-		require.Equal(t, "string", s.Type)
+		require.Equal(t, String, s.Type)
 	})
 
 	t.Run("struct", func(t *testing.T) {
@@ -57,13 +57,13 @@ func TestToSchema(t *testing.T) {
 			}
 		}
 		s := ToSchema(S{})
-		require.Equal(t, "object", s.Type)
-		require.Equal(t, "string", s.Properties["a"].Type)
-		require.Equal(t, "integer", s.Properties["B"].Type)
-		require.Equal(t, "boolean", s.Properties["C"].Type)
+		require.Equal(t, Object, s.Type)
+		require.Equal(t, String, s.Properties["a"].Type)
+		require.Equal(t, Integer, s.Properties["B"].Type)
+		require.Equal(t, Boolean, s.Properties["C"].Type)
 		require.Equal(t, []string{"a"}, s.Required)
-		require.Equal(t, "object", s.Properties["Nested"].Type)
-		require.Equal(t, "string", s.Properties["Nested"].Properties["C"].Type)
+		require.Equal(t, Object, s.Properties["Nested"].Type)
+		require.Equal(t, String, s.Properties["Nested"].Properties["C"].Type)
 
 		gotSchema, err := json.Marshal(s)
 		require.NoError(t, err)
@@ -94,12 +94,12 @@ func TestToSchema(t *testing.T) {
 			}
 		}
 		s := ToSchema(&S{})
-		require.Equal(t, "object", s.Type)
-		require.Equal(t, "string", s.Properties["A"].Type)
-		require.Equal(t, "integer", s.Properties["B"].Type)
+		require.Equal(t, Object, s.Type)
+		require.Equal(t, String, s.Properties["A"].Type)
+		require.Equal(t, Integer, s.Properties["B"].Type)
 		// TODO require.Equal(t, []string{"A", "B", "Nested"}, s.Required)
-		require.Equal(t, "object", s.Properties["Nested"].Type)
-		require.Equal(t, "string", s.Properties["Nested"].Properties["C"].Type)
+		require.Equal(t, Object, s.Properties["Nested"].Type)
+		require.Equal(t, String, s.Properties["Nested"].Properties["C"].Type)
 
 		gotSchema, err := json.Marshal(s)
 		require.NoError(t, err)
@@ -121,8 +121,8 @@ func TestToSchema(t *testing.T) {
 
 	t.Run("slice of strings", func(t *testing.T) {
 		s := ToSchema([]string{})
-		require.Equal(t, "array", s.Type)
-		require.Equal(t, "string", s.Items.Type)
+		require.Equal(t, Array, s.Type)
+		require.Equal(t, String, s.Items.Type)
 	})
 
 	t.Run("slice of structs", func(t *testing.T) {
@@ -130,9 +130,9 @@ func TestToSchema(t *testing.T) {
 			A string
 		}
 		s := ToSchema([]S{})
-		require.Equal(t, "array", s.Type)
-		require.Equal(t, "object", s.Items.Type)
-		require.Equal(t, "string", s.Items.Properties["A"].Type)
+		require.Equal(t, Array, s.Type)
+		require.Equal(t, Object, s.Items.Type)
+		require.Equal(t, String, s.Items.Properties["A"].Type)
 	})
 
 	t.Run("slice of ptr to struct", func(t *testing.T) {
@@ -140,9 +140,9 @@ func TestToSchema(t *testing.T) {
 			A string
 		}
 		s := ToSchema([]*S{})
-		require.Equal(t, "array", s.Type)
-		require.Equal(t, "object", s.Items.Type)
-		require.Equal(t, "string", s.Items.Properties["A"].Type)
+		require.Equal(t, Array, s.Type)
+		require.Equal(t, Object, s.Items.Type)
+		require.Equal(t, String, s.Items.Properties["A"].Type)
 	})
 
 	t.Run("embedded struct", func(t *testing.T) {
@@ -154,16 +154,45 @@ func TestToSchema(t *testing.T) {
 			B int
 		}
 		s := ToSchema(T{})
-		require.Equal(t, "object", s.Type)
-		require.Equal(t, "", s.Properties["A"].Type)
-		require.Equal(t, "object", s.Properties["S"].Type)
-		require.Equal(t, "string", s.Properties["S"].Properties["A"].Type)
-		require.Equal(t, "integer", s.Properties["B"].Type)
+		require.Equal(t, Object, s.Type)
+		require.Equal(t, OpenAPIType(""), s.Properties["A"].Type)
+		require.Equal(t, Object, s.Properties["S"].Type)
+		require.Equal(t, String, s.Properties["S"].Properties["A"].Type)
+		require.Equal(t, Integer, s.Properties["B"].Type)
+	})
+
+	t.Run("struct of slices of structs", func(t *testing.T) {
+		type S struct {
+			A string
+		}
+
+		type T struct {
+			SliceOfS []S
+		}
+
+		tt := ToSchema(T{})
+		require.Equal(t, Object, tt.Type)
+		require.Equal(t, Array, tt.Properties["SliceOfS"].Type)
+		require.NotNil(t, tt.Properties["SliceOfS"].Items)
+		require.Equal(t, Array, tt.Properties["SliceOfS"].Type)
+		require.Equal(t, Object, tt.Properties["SliceOfS"].Items.Type)
+		require.Equal(t, String, tt.Properties["SliceOfS"].Items.Properties["A"].Type)
+	})
+
+	t.Run("struct with ptrs properties", func(t *testing.T) {
+		t.Skip("TODO")
+		type S struct {
+			A *string
+			B *int
+		}
+		s := ToSchema(S{})
+		require.Equal(t, Object, s.Type)
+		require.Equal(t, String, s.Properties["A"].Type)
+		require.Equal(t, Integer, s.Properties["B"].Type)
 	})
 }
 
 func TestFieldName(t *testing.T) {
-
 	t.Run("no tag", func(t *testing.T) {
 		require.Equal(t, "A", fieldName(reflect.StructField{
 			Name: "A",

@@ -112,7 +112,6 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 
 	// Request body
 	if method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch {
-
 		requestBody := &openapi3.RequestBody{
 			Required: true,
 			Content:  make(map[openapi3.MimeType]openapi3.SchemaObject),
