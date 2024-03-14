@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Flags
-	port := flag.String("port", ":8083", "port to listen to")
+	port := flag.Int("port", 8083, "port to listen to")
 	dbPath := flag.String("db", "./recipe.db", "path to database file")
 	debug := flag.Bool("debug", false, "debug mode")
 	flag.Parse()

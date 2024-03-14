@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Username string
 	Password string
+	AllowGet bool // Allow GET requests without auth
 }
 
 // Basic auth middleware
@@ -22,6 +23,11 @@ func New(config Config) func(http.Handler) http.Handler {
 
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == http.MethodGet && config.AllowGet {
+				h.ServeHTTP(w, r)
+				return
+			}
+
 			user, pass, ok := r.BasicAuth()
 
 			if ok && user == config.Username && pass == config.Password {

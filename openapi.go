@@ -41,7 +41,10 @@ func (s *Server) Hide() *Server {
 	return s
 }
 
-func (s *Server) generateOpenAPI() openapi3.T {
+// OutputOpenAPISpec takes the OpenAPI spec and outputs it to a JSON file and/or serves it on a URL.
+// Also serves a Swagger UI.
+// To modify its behavior, use the [WithOpenAPIConfig] option.
+func (s *Server) OutputOpenAPISpec() openapi3.T {
 	// Validate
 	err := s.OpenApiSpec.Validate(context.Background())
 	if err != nil {
@@ -54,21 +57,21 @@ func (s *Server) generateOpenAPI() openapi3.T {
 		slog.Error("Error marshalling spec to JSON", "error", err)
 	}
 
-	if !s.OpenapiConfig.DisableSwagger {
-		generateSwagger(s, jsonSpec)
+	if !s.OpenAPIConfig.DisableSwagger {
+		registerOpenAPIRoutes(s, jsonSpec)
 	}
 
-	if !s.OpenapiConfig.DisableLocalSave {
-		err := localSave(s.OpenapiConfig.JsonFilePath, jsonSpec)
+	if !s.OpenAPIConfig.DisableLocalSave {
+		err := saveOpenAPIToFile(s.OpenAPIConfig.JsonFilePath, jsonSpec)
 		if err != nil {
-			slog.Error("Error saving spec to local path", "error", err, "path", s.OpenapiConfig.JsonFilePath)
+			slog.Error("Error saving spec to local path", "error", err, "path", s.OpenAPIConfig.JsonFilePath)
 		}
 	}
 
 	return s.OpenApiSpec
 }
 
-func localSave(jsonSpecLocalPath string, jsonSpec []byte) error {
+func saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) error {
 	jsonFolder := filepath.Dir(jsonSpecLocalPath)
 
 	err := os.MkdirAll(jsonFolder, 0o750)
@@ -92,16 +95,16 @@ func localSave(jsonSpecLocalPath string, jsonSpec []byte) error {
 }
 
 // Registers the routes to serve the OpenAPI spec and Swagger UI.
-func generateSwagger(s *Server, jsonSpec []byte) {
-	GetStd(s, s.OpenapiConfig.JsonUrl, func(w http.ResponseWriter, r *http.Request) {
+func registerOpenAPIRoutes(s *Server, jsonSpec []byte) {
+	GetStd(s, s.OpenAPIConfig.JsonUrl, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write(jsonSpec)
 	})
 
-	Handle(s, s.OpenapiConfig.SwaggerUrl+"/", s.UIHandler(s.OpenapiConfig.JsonUrl))
+	Handle(s, s.OpenAPIConfig.SwaggerUrl+"/", s.UIHandler(s.OpenAPIConfig.JsonUrl))
 
-	slog.Info(fmt.Sprintf("JSON spec: http://localhost%s%s", s.Server.Addr, s.OpenapiConfig.JsonUrl))
-	slog.Info(fmt.Sprintf("OpenAPI UI: http://localhost%s%s/index.html", s.Server.Addr, s.OpenapiConfig.SwaggerUrl))
+	slog.Info(fmt.Sprintf("JSON spec: http://%s%s", s.Server.Addr, s.OpenAPIConfig.JsonUrl))
+	slog.Info(fmt.Sprintf("OpenAPI UI: http://%s%s/index.html", s.Server.Addr, s.OpenAPIConfig.SwaggerUrl))
 }
 
 func validateJsonSpecLocalPath(jsonSpecLocalPath string) bool {

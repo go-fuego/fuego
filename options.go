@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"io/fs"
@@ -10,10 +11,11 @@ import (
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type OpenapiConfig struct {
+type OpenAPIConfig struct {
 	DisableSwagger   bool   // If true, the server will not serve the swagger ui nor the openapi json spec
 	DisableLocalSave bool   // If true, the server will not save the openapi json spec locally
 	SwaggerUrl       string // URL to serve the swagger ui
@@ -21,7 +23,7 @@ type OpenapiConfig struct {
 	JsonFilePath     string // Local path to save the openapi json spec
 }
 
-var defaultOpenapiConfig = OpenapiConfig{
+var defaultOpenAPIConfig = OpenAPIConfig{
 	SwaggerUrl:   "/swagger",
 	JsonUrl:      "/swagger/openapi.json",
 	JsonFilePath: "doc/openapi.json",
@@ -29,12 +31,17 @@ var defaultOpenapiConfig = OpenapiConfig{
 
 type Server struct {
 	// The underlying http server
-	Server *http.Server
+	*http.Server
 
 	// Will be plugged into the Server field.
 	// Not using directly the Server field so
 	// [http.ServeMux.Handle] can also be used to register routes.
 	Mux *http.ServeMux
+
+	// Not stored with the oter middlewares because it is a special case :
+	// it applies on routes that are not registered.
+	// For example, it allows OPTIONS /foo even if it is not declared (only GET /foo is declared).
+	corsMiddleware func(http.Handler) http.Handler
 
 	middlewares []func(http.Handler) http.Handler
 
@@ -57,14 +64,14 @@ type Server struct {
 	ErrorHandler          func(err error) error                  // Used to transform any error into a unified error type structure with status code. Defaults to [ErrorHandler]
 	startTime             time.Time
 
-	OpenapiConfig OpenapiConfig
+	OpenAPIConfig OpenAPIConfig
 }
 
 // NewServer creates a new server with the given options.
 // For example:
 //
 //	app := fuego.NewServer(
-//		fuego.WithPort(":8080"),
+//		fuego.WithAddr(":8080"),
 //		fuego.WithoutLogger(),
 //	)
 //
@@ -81,14 +88,14 @@ func NewServer(options ...func(*Server)) *Server {
 		Mux:         http.NewServeMux(),
 		OpenApiSpec: NewOpenApiSpec(),
 
-		OpenapiConfig: defaultOpenapiConfig,
+		OpenAPIConfig: defaultOpenAPIConfig,
 		UIHandler:     defaultOpenAPIHandler,
 
 		Security: NewSecurity(),
 	}
 
 	defaultOptions := [...]func(*Server){
-		WithPort(":9999"),
+		WithAddr(":9999"),
 		WithDisallowUnknownFields(true),
 		WithSerializer(SendJSON),
 		WithErrorSerializer(SendJSONError),
@@ -129,6 +136,24 @@ func NewServer(options ...func(*Server)) *Server {
 //	WithTemplateFS(templates)
 func WithTemplateFS(fs fs.FS) func(*Server) {
 	return func(c *Server) { c.fs = fs }
+}
+
+// WithCorsMiddleware registers a middleware to handle CORS.
+// It is not handled like other middlewares with [Use] because it applies routes that are not registered.
+// For example:
+//
+//	import "github.com/rs/cors"
+//
+//	s := fuego.NewServer(
+//		WithCorsMiddleware(cors.New(cors.Options{
+//			AllowedOrigins:   []string{"*"},
+//			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+//			AllowedHeaders:   []string{"*"},
+//			AllowCredentials: true,
+//		}))
+//	)
+func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Server) {
+	return func(c *Server) { c.corsMiddleware = corsMiddleware }
 }
 
 // WithTemplates loads the templates used to render HTML.
@@ -192,9 +217,17 @@ func WithDisallowUnknownFields(b bool) func(*Server) {
 	return func(c *Server) { c.DisallowUnknownFields = b }
 }
 
-// WithPort sets the port of the server. For example, ":8080".
-func WithPort(port string) func(*Server) {
-	return func(c *Server) { c.Server.Addr = port }
+// WithPort sets the port of the server. For example, 8080.
+// If not specified, the default port is 9999.
+// If you want to use a different address, use [WithAddr] instead.
+func WithPort(port int) func(*Server) {
+	return func(s *Server) { s.Server.Addr = fmt.Sprintf(":%d", port) }
+}
+
+// WithAddr optionally specifies the TCP address for the server to listen on, in the form "host:port".
+// If not specified addr ':9999' will be used.
+func WithAddr(addr string) func(*Server) {
+	return func(c *Server) { c.Server.Addr = addr }
 }
 
 func WithXML() func(*Server) {
@@ -232,35 +265,57 @@ func WithoutLogger() func(*Server) {
 	}
 }
 
-func WithOpenapiConfig(openapiConfig OpenapiConfig) func(*Server) {
+func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
 	return func(s *Server) {
-		s.OpenapiConfig = openapiConfig
+		s.OpenAPIConfig = openapiConfig
 
-		if s.OpenapiConfig.JsonUrl == "" {
-			s.OpenapiConfig.JsonUrl = defaultOpenapiConfig.JsonUrl
+		if s.OpenAPIConfig.JsonUrl == "" {
+			s.OpenAPIConfig.JsonUrl = defaultOpenAPIConfig.JsonUrl
 		}
 
-		if s.OpenapiConfig.SwaggerUrl == "" {
-			s.OpenapiConfig.SwaggerUrl = defaultOpenapiConfig.SwaggerUrl
+		if s.OpenAPIConfig.SwaggerUrl == "" {
+			s.OpenAPIConfig.SwaggerUrl = defaultOpenAPIConfig.SwaggerUrl
 		}
 
-		if s.OpenapiConfig.JsonFilePath == "" {
-			s.OpenapiConfig.JsonFilePath = defaultOpenapiConfig.JsonFilePath
+		if s.OpenAPIConfig.JsonFilePath == "" {
+			s.OpenAPIConfig.JsonFilePath = defaultOpenAPIConfig.JsonFilePath
 		}
 
-		if !validateJsonSpecLocalPath(s.OpenapiConfig.JsonFilePath) {
-			slog.Error("Error writing json spec. Value of 'jsonSpecLocalPath' option is not valid", "file", s.OpenapiConfig.JsonFilePath)
+		if !validateJsonSpecLocalPath(s.OpenAPIConfig.JsonFilePath) {
+			slog.Error("Error writing json spec. Value of 'jsonSpecLocalPath' option is not valid", "file", s.OpenAPIConfig.JsonFilePath)
 			return
 		}
 
-		if !validateJsonSpecUrl(s.OpenapiConfig.JsonUrl) {
-			slog.Error("Error serving openapi json spec. Value of 's.OpenapiConfig.JsonSpecUrl' option is not valid", "url", s.OpenapiConfig.JsonUrl)
+		if !validateJsonSpecUrl(s.OpenAPIConfig.JsonUrl) {
+			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIConfig.JsonSpecUrl' option is not valid", "url", s.OpenAPIConfig.JsonUrl)
 			return
 		}
 
-		if !validateSwaggerUrl(s.OpenapiConfig.SwaggerUrl) {
-			slog.Error("Error serving swagger ui. Value of 's.OpenapiConfig.SwaggerUrl' option is not valid", "url", s.OpenapiConfig.SwaggerUrl)
+		if !validateSwaggerUrl(s.OpenAPIConfig.SwaggerUrl) {
+			slog.Error("Error serving swagger ui. Value of 's.OpenAPIConfig.SwaggerUrl' option is not valid", "url", s.OpenAPIConfig.SwaggerUrl)
 			return
 		}
+	}
+}
+
+// WithValidator sets the validator to be used by the fuego server.
+// If no validator is provided, a default validator will be used.
+//
+// Note: If you are using the default validator, you can add tags to your structs using the `validate` tag.
+// For example:
+//
+//	type MyStruct struct {
+//		Field1 string `validate:"required"`
+//		Field2 int    `validate:"min=10,max=20"`
+//	}
+//
+// The above struct will be validated using the default validator, and if any errors occur, they will be returned as part of the response.
+func WithValidator(newValidator *validator.Validate) func(*Server) {
+	if newValidator == nil {
+		panic("new validator not provided")
+	}
+
+	return func(s *Server) {
+		v = newValidator
 	}
 }
