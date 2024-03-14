@@ -15,7 +15,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type OpenapiConfig struct {
+type OpenAPIConfig struct {
 	DisableSwagger   bool   // If true, the server will not serve the swagger ui nor the openapi json spec
 	DisableLocalSave bool   // If true, the server will not save the openapi json spec locally
 	SwaggerUrl       string // URL to serve the swagger ui
@@ -23,7 +23,7 @@ type OpenapiConfig struct {
 	JsonFilePath     string // Local path to save the openapi json spec
 }
 
-var defaultOpenapiConfig = OpenapiConfig{
+var defaultOpenAPIConfig = OpenAPIConfig{
 	SwaggerUrl:   "/swagger",
 	JsonUrl:      "/swagger/openapi.json",
 	JsonFilePath: "doc/openapi.json",
@@ -63,7 +63,7 @@ type Server struct {
 	ErrorHandler          func(err error) error                  // Used to transform any error into a unified error type structure with status code. Defaults to [ErrorHandler]
 	startTime             time.Time
 
-	OpenapiConfig OpenapiConfig
+	OpenAPIConfig OpenAPIConfig
 }
 
 // NewServer creates a new server with the given options.
@@ -87,7 +87,7 @@ func NewServer(options ...func(*Server)) *Server {
 		Mux:         http.NewServeMux(),
 		OpenApiSpec: NewOpenApiSpec(),
 
-		OpenapiConfig: defaultOpenapiConfig,
+		OpenAPIConfig: defaultOpenAPIConfig,
 		UIHandler:     defaultOpenAPIHandler,
 
 		Security: NewSecurity(),
@@ -264,34 +264,34 @@ func WithoutLogger() func(*Server) {
 	}
 }
 
-func WithOpenapiConfig(openapiConfig OpenapiConfig) func(*Server) {
+func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
 	return func(s *Server) {
-		s.OpenapiConfig = openapiConfig
+		s.OpenAPIConfig = openapiConfig
 
-		if s.OpenapiConfig.JsonUrl == "" {
-			s.OpenapiConfig.JsonUrl = defaultOpenapiConfig.JsonUrl
+		if s.OpenAPIConfig.JsonUrl == "" {
+			s.OpenAPIConfig.JsonUrl = defaultOpenAPIConfig.JsonUrl
 		}
 
-		if s.OpenapiConfig.SwaggerUrl == "" {
-			s.OpenapiConfig.SwaggerUrl = defaultOpenapiConfig.SwaggerUrl
+		if s.OpenAPIConfig.SwaggerUrl == "" {
+			s.OpenAPIConfig.SwaggerUrl = defaultOpenAPIConfig.SwaggerUrl
 		}
 
-		if s.OpenapiConfig.JsonFilePath == "" {
-			s.OpenapiConfig.JsonFilePath = defaultOpenapiConfig.JsonFilePath
+		if s.OpenAPIConfig.JsonFilePath == "" {
+			s.OpenAPIConfig.JsonFilePath = defaultOpenAPIConfig.JsonFilePath
 		}
 
-		if !validateJsonSpecLocalPath(s.OpenapiConfig.JsonFilePath) {
-			slog.Error("Error writing json spec. Value of 'jsonSpecLocalPath' option is not valid", "file", s.OpenapiConfig.JsonFilePath)
+		if !validateJsonSpecLocalPath(s.OpenAPIConfig.JsonFilePath) {
+			slog.Error("Error writing json spec. Value of 'jsonSpecLocalPath' option is not valid", "file", s.OpenAPIConfig.JsonFilePath)
 			return
 		}
 
-		if !validateJsonSpecUrl(s.OpenapiConfig.JsonUrl) {
-			slog.Error("Error serving openapi json spec. Value of 's.OpenapiConfig.JsonSpecUrl' option is not valid", "url", s.OpenapiConfig.JsonUrl)
+		if !validateJsonSpecUrl(s.OpenAPIConfig.JsonUrl) {
+			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIConfig.JsonSpecUrl' option is not valid", "url", s.OpenAPIConfig.JsonUrl)
 			return
 		}
 
-		if !validateSwaggerUrl(s.OpenapiConfig.SwaggerUrl) {
-			slog.Error("Error serving swagger ui. Value of 's.OpenapiConfig.SwaggerUrl' option is not valid", "url", s.OpenapiConfig.SwaggerUrl)
+		if !validateSwaggerUrl(s.OpenAPIConfig.SwaggerUrl) {
+			slog.Error("Error serving swagger ui. Value of 's.OpenAPIConfig.SwaggerUrl' option is not valid", "url", s.OpenAPIConfig.SwaggerUrl)
 			return
 		}
 	}
