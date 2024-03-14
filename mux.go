@@ -90,6 +90,8 @@ func register[T any, B any](s *Server, method string, path string, controller ht
 		slog.Warn("error documenting openapi operation", "error", err)
 	}
 
+	operation.Handler = controller
+
 	return Route[T, B]{
 		operation: operation,
 	}

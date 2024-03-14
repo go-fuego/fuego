@@ -24,13 +24,10 @@ func ToSchema(v any) *Schema {
 	}
 
 	if _, isTime := v.(time.Time); isTime {
-		s.Type = "string"
-		s.Format = "date-time"
-		s.Example = time.RFC3339
 		return &Schema{
-			Type:    "string",
-			Format:  "date-time",
-			Example: time.RFC3339,
+			Type:     "string",
+			Format:   "date-time",
+			Examples: []string{time.RFC3339},
 		}
 	}
 
@@ -43,7 +40,7 @@ func ToSchema(v any) *Schema {
 		}
 		one := reflect.New(itemType)
 		s.Items = ToSchema(one.Interface())
-		s.Example = "[]"
+		s.Examples = []string{"[]"}
 	case reflect.Struct:
 		for i := range value.NumField() {
 			structField := value.Type().Field(i)
@@ -59,7 +56,7 @@ func ToSchema(v any) *Schema {
 				s.Required = append(s.Required, fieldName)
 			}
 			parseValidate(&fieldSchema, structField.Tag.Get("validate"))
-			fieldSchema.Example = structField.Tag.Get("example")
+			fieldSchema.Examples = parseExampleList(structField.Tag.Get("example"))
 			fieldSchema.Format = structField.Tag.Get("format")
 			s.Properties[fieldName] = fieldSchema
 		}
@@ -76,6 +73,13 @@ func fieldName(s reflect.StructField) string {
 		return jsonTags[0]
 	}
 	return s.Name
+}
+
+func parseExampleList(examples string) []string {
+	if examples == "" {
+		return nil
+	}
+	return strings.Split(examples, ",")
 }
 
 type OpenAPIType string

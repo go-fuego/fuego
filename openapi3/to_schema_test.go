@@ -72,7 +72,7 @@ func TestToSchema(t *testing.T) {
 			"type":"object",
 			"required":["a"],
 			"properties": {
-				"a":{"type":"string","example":"hello"},
+				"a":{"type":"string","examples":["hello"]},
 				"B":{"type":"integer"},
 				"C":{"type":"boolean"},
 				"Nested":{

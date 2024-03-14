@@ -101,7 +101,7 @@ type Schema struct {
 	Format     string            `json:"format,omitempty" yaml:"format,omitempty"`
 	Required   []string          `json:"required,omitempty" yaml:"required,omitempty"`
 	Nullable   bool              `json:"nullable,omitempty" yaml:"nullable,omitempty"`
-	Example    string            `json:"example,omitempty" yaml:"example,omitempty"`
+	Examples   []string          `json:"examples,omitempty" yaml:"example,omitempty"`
 	Properties map[string]Schema `json:"properties,omitempty" yaml:"properties,omitempty"`
 	Items      *Schema           `json:"items,omitempty" yaml:"items,omitempty"`
 	MinLength  int               `json:"minLength,omitempty" yaml:"minLength,omitempty"`
@@ -140,6 +140,7 @@ type Operation struct {
 	Parameters  []*Parameter         `json:"parameters,omitempty" yaml:"parameters"`
 	Tags        []string             `json:"tags,omitempty" yaml:"tags"`
 	Responses   map[string]*Response `json:"responses,omitempty" yaml:"responses"`
+	Handler     interface{}          `json:"-" yaml:"-"`
 }
 
 type RequestBody struct {
