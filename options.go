@@ -31,7 +31,7 @@ var defaultOpenapiConfig = OpenapiConfig{
 
 type Server struct {
 	// The underlying http server
-	Server *http.Server
+	*http.Server
 
 	// Will be plugged into the Server field.
 	// Not using directly the Server field so
