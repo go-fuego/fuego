@@ -4,7 +4,7 @@ Description=Gourmet service
 [Service]
 User=ubuntu
 WorkingDirectory=/home/ubuntu/gourmet
-ExecStart=/home/ubuntu/gourmet/gourmet-app -port :8074 -db /home/ubuntu/gourmet.db
+ExecStart=/home/ubuntu/gourmet/gourmet-app -port 8074 -db /home/ubuntu/gourmet.db
 Restart=on-failure
 RestartSec=5s
 
