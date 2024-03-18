@@ -95,7 +95,7 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	defaultOptions := [...]func(*Server){
-		WithAddr(":9999"),
+		WithPort(9999),
 		WithDisallowUnknownFields(true),
 		WithSerializer(SendJSON),
 		WithErrorSerializer(SendJSONError),
@@ -221,7 +221,7 @@ func WithDisallowUnknownFields(b bool) func(*Server) {
 // If not specified, the default port is 9999.
 // If you want to use a different address, use [WithAddr] instead.
 func WithPort(port int) func(*Server) {
-	return func(s *Server) { s.Server.Addr = fmt.Sprintf(":%d", port) }
+	return func(s *Server) { s.Server.Addr = fmt.Sprintf("localhost:%d", port) }
 }
 
 // WithAddr optionally specifies the TCP address for the server to listen on, in the form "host:port".

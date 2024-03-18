@@ -237,7 +237,7 @@ func TestWithAddr(t *testing.T) {
 		{
 			name:         "no addr provided, default is used (9999)",
 			addr:         "",
-			expectedAddr: ":9999",
+			expectedAddr: "localhost:9999",
 		},
 	}
 	for _, tt := range tests {
@@ -263,11 +263,11 @@ func TestWithPort(t *testing.T) {
 		s := NewServer(
 			WithPort(8488),
 		)
-		require.Equal(t, ":8488", s.Server.Addr)
+		require.Equal(t, "localhost:8488", s.Server.Addr)
 	})
 
 	t.Run("no port provided, default is used (9999)", func(t *testing.T) {
 		s := NewServer()
-		require.Equal(t, ":9999", s.Server.Addr)
+		require.Equal(t, "localhost:9999", s.Server.Addr)
 	})
 }
