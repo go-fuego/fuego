@@ -11,14 +11,15 @@ import (
 	"github.com/go-fuego/fuego"
 )
 
-func (rs Ressource) deleteRecipe(c fuego.ContextNoBody) (any, error) {
+func (rs Ressource) adminDeleteRecipe(c fuego.ContextNoBody) (any, error) {
 	id := c.PathParam("id")
+
 	err := rs.RecipesQueries.DeleteRecipe(c.Context(), id)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.Redirect(301, "/admin/recipes")
+	return rs.adminRecipes(c)
 }
 
 func (rs Ressource) adminRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {

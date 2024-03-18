@@ -32,7 +32,9 @@ func (rs Ressource) Routes(s *fuego.Server) {
 	fuego.UseStd(adminRoutes, basicauth.New(basicauth.Config{Username: os.Getenv("ADMIN_USER"), Password: os.Getenv("ADMIN_PASSWORD")}))
 	fuego.Get(adminRoutes, "", rs.pageAdmin)
 	fuego.Get(adminRoutes, "/recipes", rs.adminRecipes)
-	fuego.All(adminRoutes, "/recipes/{id}", rs.adminOneRecipe)
+	fuego.Get(adminRoutes, "/recipes/{id}", rs.adminOneRecipe)
+	fuego.Put(adminRoutes, "/recipes/{id}", rs.adminOneRecipe)
+	fuego.Delete(adminRoutes, "/recipes/{id}", rs.adminDeleteRecipe)
 	fuego.Get(adminRoutes, "/recipes/create", rs.adminCreateRecipePage)
 	fuego.Put(adminRoutes, "/recipes/edit", rs.editRecipe)
 	fuego.Post(adminRoutes, "/recipes-new", rs.adminAddRecipes)
@@ -44,6 +46,4 @@ func (rs Ressource) Routes(s *fuego.Server) {
 	fuego.Post(adminRoutes, "/ingredients/new", rs.adminCreateIngredient)
 	fuego.Get(adminRoutes, "/users", rs.adminRecipes)
 
-	// Admin Chunks
-	fuego.Delete(adminRoutes, "/recipes/del", rs.deleteRecipe)
 }

@@ -13,13 +13,24 @@ type RecipePageProps struct {
 templ RecipePage(props RecipePageProps) {
 	@htmlPage("Recipe - "+props.Recipe.Name, true) {
 		<h1>Edit Recipe</h1>
+		<button
+			hx-delete={ "/admin/recipes/" + props.Recipe.ID }
+			hx-target="#page"
+			hx-select="#page"
+			hx-swap="outerHTML"
+			hx-replace-url="/admin/recipes"
+			hx-confirm="Are you sure you want to delete this recipe?"
+			class="btn btn-danger my-4"
+		>
+			Delete
+		</button>
 		@RecipeForm(RecipeFormProps{
-			Recipe: props.Recipe,
-			Dosings: props.Dosings,
+			Recipe:         props.Recipe,
+			Dosings:        props.Dosings,
 			AllIngredients: props.AllIngredients,
-			FormAction:"/admin/recipes/" + props.Recipe.ID,
-			IsCreating: false,
-			HXTrigger: "change delay:500ms",
+			FormAction:     "/admin/recipes/" + props.Recipe.ID,
+			IsCreating:     false,
+			HXTrigger:      "change delay:500ms",
 		})
 	}
 }
