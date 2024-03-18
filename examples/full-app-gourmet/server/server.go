@@ -45,7 +45,7 @@ func (rs Ressources) Setup(
 	})
 
 	// Register views (controllers that return HTML pages)
-	rs.Views.Routes(fuego.Group(app, "/"))
+	rs.Views.Routes(fuego.Group(app, "/").Hide())
 
 	// Register API routes (controllers that return JSON)
 	rs.API.MountRoutes(fuego.Group(app, "/api"))

@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/require"
 )
 
@@ -247,16 +246,55 @@ func TestDeleteStd(t *testing.T) {
 }
 
 func TestHideOpenapiRoutes(t *testing.T) {
-	s := NewServer()
-	s.Hide()
-	Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
-		return "test", nil
+	t.Run("hide main server", func(t *testing.T) {
+		s := NewServer()
+		Get(s, "/not-hidden", func(ctx *ContextNoBody) (string, error) { return "", nil })
+		s.Hide()
+		Get(s, "/test", func(ctx *ContextNoBody) (string, error) { return "", nil })
+
+		require.Equal(t, s.DisableOpenapi, true)
+		require.True(t, s.OpenApiSpec.Paths.Find("/not-hidden") != nil)
+		require.True(t, s.OpenApiSpec.Paths.Find("/test") == nil)
 	})
 
-	require.Equal(t, s.DisableOpenapi, true)
-	require.Equal(t, s.OpenApiSpec.Components.Schemas, openapi3.Schemas{})
-	require.Equal(t, s.OpenApiSpec.Components.Responses, openapi3.ResponseBodies{})
-	require.Equal(t, s.OpenApiSpec.Components.RequestBodies, openapi3.RequestBodies{}, "test successful")
+	t.Run("hide group", func(t *testing.T) {
+		s := NewServer()
+		Get(s, "/not-hidden", func(ctx *ContextNoBody) (string, error) { return "", nil })
+
+		g := Group(s, "/group").Hide()
+		Get(g, "/test", func(ctx *ContextNoBody) (string, error) { return "", nil })
+
+		require.Equal(t, g.DisableOpenapi, true)
+		require.True(t, s.OpenApiSpec.Paths.Find("/not-hidden") != nil)
+		require.True(t, s.OpenApiSpec.Paths.Find("/group/test") == nil)
+	})
+
+	t.Run("hide group but not other group", func(t *testing.T) {
+		s := NewServer()
+		g := Group(s, "/group").Hide()
+		Get(g, "/test", func(ctx *ContextNoBody) (string, error) { return "test", nil })
+
+		g2 := Group(s, "/group2")
+		Get(g2, "/test", func(ctx *ContextNoBody) (string, error) { return "test", nil })
+
+		require.Equal(t, true, g.DisableOpenapi)
+		require.Equal(t, false, g2.DisableOpenapi)
+		require.True(t, s.OpenApiSpec.Paths.Find("/group/test") == nil)
+		require.True(t, s.OpenApiSpec.Paths.Find("/group2/test") != nil)
+	})
+
+	t.Run("hide group but show sub group", func(t *testing.T) {
+		s := NewServer()
+		g := Group(s, "/group").Hide()
+		Get(g, "/test", func(ctx *ContextNoBody) (string, error) { return "test", nil })
+
+		g2 := Group(g, "/sub").Show()
+		Get(g2, "/test", func(ctx *ContextNoBody) (string, error) { return "test", nil })
+
+		require.Equal(t, true, g.DisableOpenapi)
+		require.True(t, s.OpenApiSpec.Paths.Find("/group/test") == nil)
+		require.True(t, s.OpenApiSpec.Paths.Find("/group/sub/test") != nil)
+	})
 }
 
 func BenchmarkRequest(b *testing.B) {
