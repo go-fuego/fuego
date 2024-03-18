@@ -14,6 +14,7 @@ templ Card(props CardProps) {
 			hx-boost="true"
 			hx-target="#page"
 			hx-select="#page"
+			hx-swap="outerHTML show:window:top"
 			href={ templ.URL(props.Link) }
 			class="block p-4 h-full w-full rounded-lg leading-normal
   transition hover:cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 hover:shadow-md"
