@@ -116,9 +116,19 @@ func (rs Ressource) showRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 }
 
 func (rs Ressource) relatedRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
+	baseRecipeID := c.PathParam("id")
+
 	recipes, err := rs.RecipesQueries.GetRandomRecipes(c.Context())
 	if err != nil {
 		return nil, err
+	}
+
+	filteredRecipes := make([]store.Recipe, 0, len(recipes))
+	for _, r := range recipes {
+		if r.ID == baseRecipeID {
+			continue
+		}
+		filteredRecipes = append(filteredRecipes, r)
 	}
 
 	return templa.RelatedRecipes(recipes), nil
