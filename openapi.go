@@ -108,7 +108,7 @@ func registerOpenAPIRoutes(s *Server, jsonSpec []byte) {
 		_, _ = w.Write(jsonSpec)
 	})
 
-	Handle(s, s.OpenAPIConfig.SwaggerUrl+"/", s.UIHandler(s.OpenAPIConfig.JsonUrl))
+	Handle(s, s.OpenAPIConfig.SwaggerUrl+"/", s.OpenAPIConfig.UIHandler(s.OpenAPIConfig.JsonUrl))
 
 	slog.Info(fmt.Sprintf("JSON spec: http://%s%s", s.Server.Addr, s.OpenAPIConfig.JsonUrl))
 	slog.Info(fmt.Sprintf("OpenAPI UI: http://%s%s/index.html", s.Server.Addr, s.OpenAPIConfig.SwaggerUrl))
