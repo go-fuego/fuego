@@ -2,6 +2,7 @@ package fuego
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -493,4 +494,45 @@ func TestGroup(t *testing.T) {
 		g := Group(s, "/slash/")
 		require.Equal(t, "/slash/", g.basePath)
 	})
+}
+
+func ExampleContextNoBody_SetCookie() {
+	s := NewServer()
+	Get(s, "/test", func(c *ContextNoBody) (string, error) {
+		c.SetCookie(http.Cookie{
+			Name:  "name",
+			Value: "value",
+		})
+		return "test", nil
+	})
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/test", nil)
+
+	s.Mux.ServeHTTP(w, r)
+
+	fmt.Println(w.Result().Cookies()[0].Name)
+	fmt.Println(w.Result().Cookies()[0].Value)
+
+	// Output:
+	// name
+	// value
+}
+
+func ExampleContextNoBody_SetHeader() {
+	s := NewServer()
+	Get(s, "/test", func(c *ContextNoBody) (string, error) {
+		c.SetHeader("X-Test", "test")
+		return "test", nil
+	})
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/test", nil)
+
+	s.Mux.ServeHTTP(w, r)
+
+	fmt.Println(w.Header().Get("X-Test"))
+
+	// Output:
+	// test
 }

@@ -65,6 +65,11 @@ type ctx[B any] interface {
 	// By default, [templateToExecute] is added to the list of templates to override.
 	Render(templateToExecute string, data any, templateGlobsToOverride ...string) (HTML, error)
 
+	Cookie(name string) (*http.Cookie, error) // Get request cookie
+	SetCookie(cookie http.Cookie)             // Sets response cookie
+	Header(key string) string                 // Get request header
+	SetHeader(key, value string)              // Sets response header
+
 	Context() context.Context
 
 	Request() *http.Request        // Request returns the underlying http request.
@@ -160,6 +165,26 @@ func (c ContextNoBody) Redirect(code int, url string) (any, error) {
 
 func (c ContextNoBody) Context() context.Context {
 	return c.Req.Context()
+}
+
+// Get request header
+func (c ContextNoBody) Header(key string) string {
+	return c.Request().Header.Get(key)
+}
+
+// Sets response header
+func (c ContextNoBody) SetHeader(key, value string) {
+	c.Response().Header().Set(key, value)
+}
+
+// Get request cookie
+func (c ContextNoBody) Cookie(name string) (*http.Cookie, error) {
+	return c.Request().Cookie(name)
+}
+
+// Sets response cookie
+func (c ContextNoBody) SetCookie(cookie http.Cookie) {
+	http.SetCookie(c.Response(), &cookie)
 }
 
 // Render renders the given templates with the given data.
