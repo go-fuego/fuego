@@ -89,7 +89,7 @@ func NewServer(options ...func(*Server)) *Server {
 		OpenApiSpec: NewOpenApiSpec(),
 
 		OpenAPIConfig: defaultOpenAPIConfig,
-		UIHandler:     defaultOpenAPIHandler,
+		UIHandler:     DefaultOpenAPIHandler,
 
 		Security: NewSecurity(),
 	}
