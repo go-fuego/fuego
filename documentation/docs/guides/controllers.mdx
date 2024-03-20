@@ -4,8 +4,6 @@ import FlowChart from '@site/src/components/FlowChart';
 
 Controllers are the main way to interact with the application. They are responsible for handling the requests and responses.
 
-
-
 <FlowChart selected="Controller" />
 
 ## Controller types
@@ -48,7 +46,7 @@ type MyResponse struct {
 	Message string `json:"message"`
 }
 
-func MyController(ctx *fuego.ContextWithBody[MyInput]) (MyResponse, error) {
+func MyController(c *fuego.ContextWithBody[MyInput]) (MyResponse, error) {
 	body, err := c.Body()
 	if err != nil {
 		return MyResponse{}, err
@@ -60,3 +58,44 @@ func MyController(ctx *fuego.ContextWithBody[MyInput]) (MyResponse, error) {
 }
 ```
 
+## Headers
+
+You can always go further in the request and response by using the underlying net/http request and response, by using `c.Request` and `c.Response`.
+
+### Get request header
+
+```go
+func MyController(c *fuego.ContextNoBody) (MyResponse, error) {
+	value := c.Header("X-My-Header")
+	return MyResponse{}, nil
+}
+```
+
+### Set response header
+
+```go
+func MyController(c *fuego.ContextNoBody) (MyResponse, error) {
+	c.SetHeader("X-My-Header", "value")
+	return MyResponse{}, nil
+}
+```
+
+## Cookies
+
+### Get request cookie
+
+```go
+func MyController(c *fuego.ContextNoBody) (MyResponse, error) {
+	value := c.Cookie("my-cookie")
+	return MyResponse{}, nil
+}
+```
+
+### Set response cookie
+
+```go
+func MyController(c *fuego.ContextNoBody) (MyResponse, error) {
+	c.SetCookie("my-cookie", "value")
+	return MyResponse{}, nil
+}
+```
