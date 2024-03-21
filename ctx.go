@@ -203,11 +203,15 @@ func (c ContextNoBody) Render(templateToExecute string, data any, layoutsGlobs .
 		tmpl, err := cloned.ParseFS(c.fs, layoutsGlobs...)
 		if err != nil {
 			return "", HTTPError{
-				StatusCode: http.StatusInternalServerError,
-				Message:    fmt.Errorf("error parsing template '%s': %w", layoutsGlobs, err).Error(),
-				MoreInfo: map[string]any{
-					"templates": layoutsGlobs,
-					"help":      "Check that the template exists and have the correct extension.",
+				Err:    err,
+				Status: http.StatusInternalServerError,
+				Title:  "Error parsing template",
+				Detail: fmt.Errorf("error parsing template '%s': %w", layoutsGlobs, err).Error(),
+				Errors: []ErrorItem{
+					{
+						Name:   "templates",
+						Reason: "Check that the template exists and have the correct extension. Globs: " + strings.Join(layoutsGlobs, ", "),
+					},
 				},
 			}
 		}
@@ -222,11 +226,15 @@ func (c ContextNoBody) Render(templateToExecute string, data any, layoutsGlobs .
 	err := c.templates.ExecuteTemplate(c.Res, templateToExecute, data)
 	if err != nil {
 		return "", HTTPError{
-			StatusCode: http.StatusInternalServerError,
-			Message:    fmt.Errorf("error executing template '%s': %w", templateToExecute, err).Error(),
-			MoreInfo: map[string]any{
-				"templates": layoutsGlobs,
-				"help":      "Check that the template exists and have the correct extension.",
+			Err:    err,
+			Status: http.StatusInternalServerError,
+			Title:  "Error rendering template",
+			Detail: fmt.Errorf("error executing template '%s': %w", templateToExecute, err).Error(),
+			Errors: []ErrorItem{
+				{
+					Name:   "templates",
+					Reason: "Check that the template exists and have the correct extension. Template: " + templateToExecute,
+				},
 			},
 		}
 	}

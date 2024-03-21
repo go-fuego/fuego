@@ -54,11 +54,11 @@ func TestXML(t *testing.T) {
 
 	t.Run("can serialize xml error", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		err := HTTPError{Message: "Hello World"}
+		err := HTTPError{Detail: "Hello World"}
 		SendXMLError(w, err)
 		body := w.Body.String()
 
-		require.Equal(t, `<HTTPError><Error>Hello World</Error></HTTPError>`, body)
+		require.Equal(t, `<HTTPError><detail>Hello World</detail></HTTPError>`, body)
 	})
 }
 
@@ -169,44 +169,68 @@ func TestJSONError(t *testing.T) {
 
 	require.JSONEq(t, `
 	{
-		"error":"Name should be max=10, Age should be min=18, Required is required, Email should be a valid email, ExternalID should be a valid UUID",
-		"info": {
-		   "validation": [
-			  {
-				 "devField":"validatableStruct.Name",
-				 "field":"Name",
-				 "tag":"max",
-				 "param":"10",
-				 "value":"Napoleon Bonaparte"
-			  },
-			  {
-				 "devField":"validatableStruct.Age",
-				 "field":"Age",
-				 "tag":"min",
-				 "param":"18",
-				 "value":12
-			  },
-			  {
-				 "devField":"validatableStruct.Required",
-				 "field":"Required",
-				 "tag":"required",
-				 "value":""
-			  },
-			  {
-				 "devField":"validatableStruct.Email",
-				 "field":"Email",
-				 "tag":"email",
-				 "value":"not_an_email"
-			  },
-			  {
-				 "devField":"validatableStruct.ExternalID",
-				 "field":"ExternalID",
-				 "tag":"uuid",
-				 "value":"not_an_uuid"
-			  }
-		   ]
-		}
-	 }`, w.Body.String())
+		"title": "Validation Error",
+		"status": 400,
+		"detail": "Name should be max=10, Age should be min=18, Required is required, Email should be a valid email, ExternalID should be a valid UUID",
+		"errors": [
+		  {
+			"name": "validatableStruct.Name",
+			"reason": "Key: 'validatableStruct.Name' Error:Field validation for 'Name' failed on the 'max' tag",
+			"more": {
+			  "field": "Name",
+			  "nsField": "validatableStruct.Name",
+			  "param": "10",
+			  "tag": "max",
+			  "value": "Napoleon Bonaparte"
+			}
+		  },
+		  {
+			"name": "validatableStruct.Age",
+			"reason": "Key: 'validatableStruct.Age' Error:Field validation for 'Age' failed on the 'min' tag",
+			"more": {
+			  "field": "Age",
+			  "nsField": "validatableStruct.Age",
+			  "param": "18",
+			  "tag": "min",
+			  "value": 12
+			}
+		  },
+		  {
+			"name": "validatableStruct.Required",
+			"reason": "Key: 'validatableStruct.Required' Error:Field validation for 'Required' failed on the 'required' tag",
+			"more": {
+			  "field": "Required",
+			  "nsField": "validatableStruct.Required",
+			  "param": "",
+			  "tag": "required",
+			  "value": ""
+			}
+		  },
+		  {
+			"name": "validatableStruct.Email",
+			"reason": "Key: 'validatableStruct.Email' Error:Field validation for 'Email' failed on the 'email' tag",
+			"more": {
+			  "field": "Email",
+			  "nsField": "validatableStruct.Email",
+			  "param": "",
+			  "tag": "email",
+			  "value": "not_an_email"
+			}
+		  },
+		  {
+			"name": "validatableStruct.ExternalID",
+			"reason": "Key: 'validatableStruct.ExternalID' Error:Field validation for 'ExternalID' failed on the 'uuid' tag",
+			"more": {
+			  "field": "ExternalID",
+			  "nsField": "validatableStruct.ExternalID",
+			  "param": "",
+			  "tag": "uuid",
+			  "value": "not_an_uuid"
+			}
+		  }
+		]
+	  }
+	  `, w.Body.String())
 }
 
 func TestSend(t *testing.T) {

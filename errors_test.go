@@ -12,8 +12,10 @@ type myError struct {
 	status int
 }
 
-func (e myError) Error() string { return "test error" }
-func (e myError) Status() int   { return e.status }
+var _ ErrorWithStatus = myError{}
+
+func (e myError) Error() string   { return "test error" }
+func (e myError) StatusCode() int { return e.status }
 
 func TestErrorHandler(t *testing.T) {
 	t.Run("basic error", func(t *testing.T) {
@@ -21,9 +23,17 @@ func TestErrorHandler(t *testing.T) {
 
 		errResponse := ErrorHandler(err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
-		require.Equal(t, "test error", errResponse.Error())
-		require.Equal(t, http.StatusInternalServerError, errResponse.(HTTPError).Status())
-		require.Nil(t, errResponse.(HTTPError).Info())
+		require.Contains(t, errResponse.Error(), "Internal Server Error")
+		require.Equal(t, http.StatusInternalServerError, errResponse.(HTTPError).StatusCode())
+	})
+
+	t.Run("not found error", func(t *testing.T) {
+		err := NotFoundError{}
+		errResponse := ErrorHandler(err)
+		require.ErrorAs(t, errResponse, &HTTPError{})
+		require.Contains(t, errResponse.Error(), "Not Found")
+		require.Contains(t, errResponse.Error(), "404")
+		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).StatusCode())
 	})
 
 	t.Run("error with status ", func(t *testing.T) {
@@ -32,23 +42,8 @@ func TestErrorHandler(t *testing.T) {
 		}
 		errResponse := ErrorHandler(err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
-		require.Equal(t, "test error", errResponse.Error())
-		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).Status())
-		require.Nil(t, errResponse.(HTTPError).Info())
-	})
-
-	t.Run("error with status and info", func(t *testing.T) {
-		err := HTTPError{
-			Message:    "test error",
-			StatusCode: http.StatusNotFound,
-			MoreInfo: map[string]any{
-				"test": "info",
-			},
-		}
-		errResponse := ErrorHandler(err)
-		require.ErrorAs(t, errResponse, &HTTPError{})
-		require.Equal(t, "test error", errResponse.Error())
-		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).Status())
-		require.NotNil(t, errResponse.(HTTPError).Info())
+		require.Contains(t, errResponse.Error(), "Not Found")
+		require.Contains(t, errResponse.Error(), "404")
+		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).StatusCode())
 	})
 }
