@@ -296,4 +296,54 @@ func TestServerTags(t *testing.T) {
 
 		require.Equal(t, s.tags, []string{"my-server-tag"})
 	})
+
+	t.Run("inherit tags from group, replace", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag")
+
+		group := Group(s, "/api").
+			Tags("my-group-tag")
+
+		require.Equal(t, group.tags, []string{"my-group-tag"})
+
+		subGroup := Group(group, "/users").
+			Tags("my-sub-group-tag")
+
+		require.Equal(t, subGroup.tags, []string{"my-sub-group-tag"})
+	})
+
+	t.Run("inherit tags from group, add", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag")
+
+		group := Group(s, "/api").
+			AddTags("my-group-tag")
+
+		require.Equal(t, group.tags, []string{"my-server-tag", "my-group-tag"})
+
+		subGroup := Group(group, "/users").
+			AddTags("my-sub-group-tag")
+
+		require.Equal(t, subGroup.tags, []string{"my-server-tag", "my-group-tag", "my-sub-group-tag"})
+	})
+
+	t.Run("inherit tags from group, remove", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag")
+
+		group := Group(s, "/api").
+			AddTags("my-group-tag")
+
+		require.Equal(t, group.tags, []string{"my-server-tag", "my-group-tag"})
+
+		siblingGroup := Group(s, "/api2").
+			AddTags("my-sibling-group-tag")
+
+		require.Equal(t, siblingGroup.tags, []string{"my-server-tag", "my-sibling-group-tag"})
+
+		subGroup := Group(group, "/users").
+			RemoveTags("my-group-tag")
+
+		require.Equal(t, subGroup.tags, []string{"my-server-tag"})
+	})
 }
