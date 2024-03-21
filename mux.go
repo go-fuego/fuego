@@ -82,7 +82,6 @@ func Register[T any, B any, Contexted ctx[B]](s *Server, method string, path str
 	route.operation.Summary = name
 	route.operation.Description = "controller: " + nameWithPath
 	route.operation.OperationID = fullPath + ":" + name
-	route.operation.Tags = append(route.operation.Tags, s.tags...)
 	return route
 }
 

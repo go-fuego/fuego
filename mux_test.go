@@ -253,29 +253,35 @@ func TestRegister(t *testing.T) {
 		route := Register(s, http.MethodGet, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
 		})
-		require.Equal(t, []string{"string", "my-server-tag"}, route.operation.Tags)
+		require.Equal(t, []string{"my-server-tag", "string"}, route.operation.Tags)
 	})
+
 	t.Run("route tag override", func(t *testing.T) {
 		s := NewServer().
 			Tags("my-server-tag")
+
 		route := Register(s, http.MethodGet, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
 		}).Tags("my-route-tag")
 
 		require.Equal(t, []string{"my-route-tag"}, route.operation.Tags)
 	})
+
 	t.Run("route tag add", func(t *testing.T) {
 		s := NewServer().
 			Tags("my-server-tag")
+
 		route := Register(s, http.MethodGet, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
 		}).AddTags("my-route-tag")
 
-		require.Equal(t, []string{"string", "my-server-tag", "my-route-tag"}, route.operation.Tags)
+		require.Equal(t, []string{"my-server-tag", "string", "my-route-tag"}, route.operation.Tags)
 	})
+
 	t.Run("route tag removal", func(t *testing.T) {
 		s := NewServer().
 			Tags("my-server-tag")
+
 		route := Register(s, http.MethodGet, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
 		}).AddTags("my-route-tag").RemoveTags("my-server-tag")
