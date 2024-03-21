@@ -2,6 +2,7 @@ package fuego
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 )
@@ -10,88 +11,126 @@ import (
 // additional information about the error.
 type ErrorWithStatus interface {
 	error
-	Status() int
-}
-
-// ErrorWithInfo is an interface that can be implemented by an error to provide
-// additional information about the error.
-type ErrorWithInfo interface {
-	error
-	Info() map[string]any
+	StatusCode() int
 }
 
 // HTTPError is the error response used by the serialization part of the framework.
 type HTTPError struct {
-	Err        error          `json:",omitempty"`                          // backend developer readable error message
-	Message    string         `json:"error" xml:"Error"`                   // human readable error message
-	StatusCode int            `json:"-" xml:"-"`                           // http status code
-	MoreInfo   map[string]any `json:"info,omitempty" xml:"Info,omitempty"` // additional info
+	Err      error       `json:"-" xml:"-"`                               // Developer readable error message. Not shown to the user to avoid security leaks.
+	Type     string      `json:"type,omitempty" xml:"type,omitempty"`     // URL of the error type. Can be used to lookup the error in a documentation
+	Title    string      `json:"title,omitempty" xml:"title,omitempty"`   // Short title of the error
+	Status   int         `json:"status,omitempty" xml:"status,omitempty"` // HTTP status code. If using a different type than [HTTPError], for example [BadRequestError], this will be automatically overridden after Fuego error handling.
+	Detail   string      `json:"detail,omitempty" xml:"detail,omitempty"` // Human readable error message
+	Instance string      `json:"instance,omitempty" xml:"instance,omitempty"`
+	Errors   []ErrorItem `json:"errors,omitempty" xml:"errors,omitempty"`
 }
 
-var (
-	_ ErrorWithInfo   = HTTPError{}
-	_ ErrorWithStatus = HTTPError{}
-)
+type ErrorItem struct {
+	Name   string         `json:"name"`
+	Reason string         `json:"reason"`
+	More   map[string]any `json:"more,omitempty"`
+}
 
 func (e HTTPError) Error() string {
-	return e.Message
+	title := e.Title
+	if title == "" {
+		title = http.StatusText(e.Status)
+		if title == "" {
+			title = "HTTP Error"
+		}
+	}
+	return fmt.Sprintf("%s (%d): %s", title, e.Status, e.Detail)
 }
 
-func (e HTTPError) Info() map[string]any {
-	return e.MoreInfo
-}
-
-func (e HTTPError) Status() int {
-	if e.StatusCode == 0 {
+func (e HTTPError) StatusCode() int {
+	if e.Status == 0 {
 		return http.StatusInternalServerError
 	}
-	return e.StatusCode
+	return e.Status
 }
+
+func (e HTTPError) Unwrap() error { return e.Err }
 
 // BadRequestError is an error used to return a 400 status code.
-type BadRequestError struct {
-	Err      error          // developer readable error message
-	Message  string         `json:"error" xml:"Error"`                   // human readable error message
-	MoreInfo map[string]any `json:"info,omitempty" xml:"Info,omitempty"` // additional info
-}
+type BadRequestError HTTPError
 
-var (
-	_ ErrorWithInfo   = BadRequestError{}
-	_ ErrorWithStatus = BadRequestError{}
-)
+var _ ErrorWithStatus = BadRequestError{}
 
-func (e BadRequestError) Error() string {
-	return e.Message
-}
+func (e BadRequestError) Error() string { return e.Err.Error() }
 
-func (e BadRequestError) Info() map[string]any {
-	return e.MoreInfo
-}
+func (e BadRequestError) StatusCode() int { return http.StatusBadRequest }
 
-func (e BadRequestError) Status() int {
-	return http.StatusBadRequest
-}
+func (e BadRequestError) Unwrap() error { return HTTPError(e) }
+
+// NotFoundError is an error used to return a 404 status code.
+type NotFoundError HTTPError
+
+var _ ErrorWithStatus = NotFoundError{}
+
+func (e NotFoundError) Error() string { return e.Err.Error() }
+
+func (e NotFoundError) StatusCode() int { return http.StatusNotFound }
+
+func (e NotFoundError) Unwrap() error { return HTTPError(e) }
+
+// UnauthorizedError is an error used to return a 401 status code.
+type UnauthorizedError HTTPError
+
+var _ ErrorWithStatus = UnauthorizedError{}
+
+func (e UnauthorizedError) Error() string { return e.Err.Error() }
+
+func (e UnauthorizedError) StatusCode() int { return http.StatusUnauthorized }
+
+func (e UnauthorizedError) Unwrap() error { return HTTPError(e) }
+
+// ForbiddenError is an error used to return a 403 status code.
+type ForbiddenError HTTPError
+
+var _ ErrorWithStatus = ForbiddenError{}
+
+func (e ForbiddenError) Error() string { return e.Err.Error() }
+
+func (e ForbiddenError) StatusCode() int { return http.StatusForbidden }
+
+func (e ForbiddenError) Unwrap() error { return HTTPError(e) }
+
+// ConflictError is an error used to return a 409 status code.
+type ConflictError HTTPError
+
+var _ ErrorWithStatus = ConflictError{}
+
+func (e ConflictError) Error() string { return e.Err.Error() }
+
+func (e ConflictError) StatusCode() int { return http.StatusConflict }
+
+func (e ConflictError) Unwrap() error { return HTTPError(e) }
 
 // ErrorHandler is the default error handler used by the framework.
 // It transforms any error into the unified error type [HTTPError],
 // Using the [ErrorWithStatus] and [ErrorWithInfo] interfaces.
 func ErrorHandler(err error) error {
 	errResponse := HTTPError{
-		Message: err.Error(),
+		Err: err,
 	}
 
-	errResponse.StatusCode = http.StatusInternalServerError
+	var errorInfo HTTPError
+	if errors.As(err, &errorInfo) {
+		errResponse = errorInfo
+	}
+
+	// Check status code
+	errResponse.Status = http.StatusInternalServerError
 	var errorStatus ErrorWithStatus
 	if errors.As(err, &errorStatus) {
-		errResponse.StatusCode = errorStatus.Status()
+		errResponse.Status = errorStatus.StatusCode()
 	}
 
-	var errorInfo ErrorWithInfo
-	if errors.As(err, &errorInfo) {
-		errResponse.MoreInfo = errorInfo.Info()
+	if errResponse.Title == "" {
+		errResponse.Title = http.StatusText(errResponse.Status)
 	}
 
-	slog.Error("Error : "+errResponse.Message, "status:", errResponse.StatusCode, "info:", errResponse.MoreInfo)
+	slog.Error("Error "+errResponse.Title, "status", errResponse.StatusCode, "detail", errResponse.Detail, "error", errResponse.Err)
 
 	return errResponse
 }

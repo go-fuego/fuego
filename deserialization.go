@@ -75,18 +75,26 @@ func read[B any](context context.Context, dec decoder) (B, error) {
 
 	err := dec.Decode(&body)
 	if err != nil {
-		return body, BadRequestError{Message: "cannot decode request body: " + err.Error()}
+		return body, BadRequestError{
+			Title:  "Decoding Failed",
+			Err:    err,
+			Detail: "cannot decode request body: " + err.Error(),
+		}
 	}
 	slog.Debug("Decoded body", "body", body)
 
 	body, err = transform(context, body)
 	if err != nil {
-		return body, BadRequestError{Message: "cannot transform request body: " + err.Error()}
+		return body, BadRequestError{
+			Title:  "Transformation Failed",
+			Err:    err,
+			Detail: "cannot transform request body: " + err.Error(),
+		}
 	}
 
 	err = validate(body)
 	if err != nil {
-		return body, BadRequestError{Message: "cannot validate request body: " + err.Error()}
+		return body, err
 	}
 
 	return body, nil
@@ -103,7 +111,10 @@ func readString[B ~string](context context.Context, input io.Reader, options rea
 	// Read the request body.
 	readBody, err := io.ReadAll(input)
 	if err != nil {
-		return "", BadRequestError{Message: "cannot read request body: " + err.Error()}
+		return "", BadRequestError{
+			Err:    err,
+			Detail: "cannot read request body: " + err.Error(),
+		}
 	}
 
 	body := B(readBody)
@@ -158,11 +169,10 @@ func readURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
 	err = decoder.Decode(&body, r.PostForm)
 	if err != nil {
 		return body, BadRequestError{
-			Message: "cannot decode x-www-form-urlencoded request body: " + err.Error(),
-			Err:     err,
-			MoreInfo: map[string]any{
-				"form": r.PostForm,
-				"help": "check that the form is valid, and that the content-type is correct",
+			Detail: "cannot decode x-www-form-urlencoded request body: " + err.Error(),
+			Err:    err,
+			Errors: []ErrorItem{
+				{Name: "form", Reason: "check that the form is valid, and that the content-type is correct"},
 			},
 		}
 	}
@@ -171,11 +181,11 @@ func readURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
 	body, err = transform(r.Context(), body)
 	if err != nil {
 		return body, BadRequestError{
-			Message: "cannot transform x-www-form-urlencoded request body: " + err.Error(),
-			Err:     err,
-			MoreInfo: map[string]any{
-				"body": body,
-				"help": "transformation failed",
+			Title:  "Transformation Failed",
+			Detail: "cannot transform x-www-form-urlencoded request body: " + err.Error(),
+			Err:    err,
+			Errors: []ErrorItem{
+				{Name: "transformation", Reason: "transformation failed"},
 			},
 		}
 	}
@@ -193,7 +203,10 @@ func transform[B any](ctx context.Context, body B) (B, error) {
 	if inTransformerBody, ok := any(&body).(InTransformer); ok {
 		err := inTransformerBody.InTransform(ctx)
 		if err != nil {
-			return body, BadRequestError{Message: "cannot transform request body: " + err.Error()}
+			return body, BadRequestError{
+				Err:    err,
+				Detail: "cannot transform request body: " + err.Error(),
+			}
 		}
 		body = *any(inTransformerBody).(*B)
 

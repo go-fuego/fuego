@@ -94,7 +94,7 @@ func TestHttpHandler(t *testing.T) {
 		handler(w, req)
 
 		body := w.Body.String()
-		require.Equal(t, crlf(`{"error":"error happened!"}`), body)
+		require.Equal(t, crlf(`{"title":"Internal Server Error","status":500}`), body)
 	})
 
 	t.Run("can outTransform before serializing a value", func(t *testing.T) {
@@ -127,7 +127,7 @@ func TestHttpHandler(t *testing.T) {
 		handler(w, req)
 
 		body := w.Body.String()
-		require.Equal(t, crlf(`{"error":"error happened!"}`), body)
+		require.Equal(t, crlf(`{"title":"Internal Server Error","status":500}`), body)
 	})
 
 	t.Run("can handle nil in outTransform", func(t *testing.T) {

@@ -62,7 +62,7 @@ func TestWithXML(t *testing.T) {
 
 		require.Equal(t, 500, recorder.Code)
 		require.Equal(t, "application/xml", recorder.Header().Get("Content-Type"))
-		require.Equal(t, "<HTTPError><Error>error</Error></HTTPError>", recorder.Body.String())
+		require.Equal(t, "<HTTPError><title>Internal Server Error</title><status>500</status></HTTPError>", recorder.Body.String())
 	})
 }
 

@@ -8,54 +8,23 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type fieldValidationError struct {
-	DevField string      `json:"devField,omitempty"` // Dev-friendly name of the field e.g. "user.Name"
-	Field    string      `json:"field,omitempty"`    // User-friendly name of the field e.g. "Name"
-	Tag      string      `json:"tag,omitempty"`      // Name of the validation tag, e.g. "required"
-	Param    string      `json:"param,omitempty"`    // Parameter of the validation tag, e.g. "3" in "min=3"
-	Value    interface{} `json:"value,omitempty"`    // Actual value of the field, e.g. "" (empty string so that's why the validation failed)
-}
-
-type structValidationError struct {
-	Errors []fieldValidationError
-}
-
-func (e structValidationError) Status() int {
-	return http.StatusBadRequest
-}
-
-func (e structValidationError) Error() string {
-	if len(e.Errors) == 0 {
-		return "validation error"
-	}
-
-	messages := make([]string, 0, len(e.Errors))
-	for _, err := range e.Errors {
-		humanReadableError := ""
-		switch err.Tag {
-		case "required":
-			humanReadableError = fmt.Sprintf("%s is required", err.Field)
-		case "email":
-			humanReadableError = fmt.Sprintf("%s should be a valid email", err.Field)
-		case "uuid":
-			humanReadableError = fmt.Sprintf("%s should be a valid UUID", err.Field)
-		case "e164":
-			humanReadableError = fmt.Sprintf("%s should be a valid international phone number (e.g. +33 6 06 06 06 06)", err.Field)
-		default:
-			humanReadableError = fmt.Sprintf("%s should be %s", err.Field, err.Tag)
-			if err.Param != "" {
-				humanReadableError += "=" + err.Param
-			}
+// explainError translates a validator error into a human readable string.
+func explainError(err validator.FieldError) string {
+	switch err.Tag() {
+	case "required":
+		return fmt.Sprintf("%s is required", err.Field())
+	case "email":
+		return fmt.Sprintf("%s should be a valid email", err.Field())
+	case "uuid":
+		return fmt.Sprintf("%s should be a valid UUID", err.Field())
+	case "e164":
+		return fmt.Sprintf("%s should be a valid international phone number (e.g. +33 6 06 06 06 06)", err.Field())
+	default:
+		resp := fmt.Sprintf("%s should be %s", err.Field(), err.Tag())
+		if err.Param() != "" {
+			resp += "=" + err.Param()
 		}
-		messages = append(messages, humanReadableError)
-	}
-
-	return strings.Join(messages, ", ")
-}
-
-func (e structValidationError) Info() map[string]any {
-	return map[string]any{
-		"validation": e.Errors,
+		return resp
 	}
 }
 
@@ -75,16 +44,28 @@ func validate(a any) error {
 			return fmt.Errorf("validation error: %w", err)
 		}
 
-		validationError := structValidationError{}
+		validationError := HTTPError{
+			Err:    err,
+			Status: http.StatusBadRequest,
+			Title:  "Validation Error",
+		}
+		var errorsSummary []string
 		for _, err := range err.(validator.ValidationErrors) {
-			validationError.Errors = append(validationError.Errors, fieldValidationError{
-				DevField: err.StructNamespace(),
-				Field:    err.StructField(),
-				Tag:      err.Tag(),
-				Param:    err.Param(),
-				Value:    err.Value(),
+			errorsSummary = append(errorsSummary, explainError(err))
+			validationError.Errors = append(validationError.Errors, ErrorItem{
+				Name:   err.StructNamespace(),
+				Reason: err.Error(),
+				More: map[string]any{
+					"nsField": err.StructNamespace(),
+					"field":   err.StructField(),
+					"tag":     err.Tag(),
+					"param":   err.Param(),
+					"value":   err.Value(),
+				},
 			})
 		}
+
+		validationError.Detail = strings.Join(errorsSummary, ", ")
 
 		return validationError
 	}

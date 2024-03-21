@@ -36,8 +36,9 @@ func New(config Config) func(http.Handler) http.Handler {
 			}
 
 			err := fuego.HTTPError{
-				Message:    "unauthorized",
-				StatusCode: http.StatusUnauthorized,
+				Title:  "unauthorized access",
+				Detail: "wrong username or password",
+				Status: http.StatusUnauthorized,
 			}
 
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
