@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"slices"
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -44,6 +45,10 @@ type Server struct {
 	// it applies on routes that are not registered.
 	// For example, it allows OPTIONS /foo even if it is not declared (only GET /foo is declared).
 	corsMiddleware func(http.Handler) http.Handler
+
+	// OpenAPI documentation tags used for logical groupings of operations
+	// These tags will be inherited by child Routes/Groups
+	tags []string
 
 	middlewares []func(http.Handler) http.Handler
 
@@ -328,4 +333,32 @@ func WithValidator(newValidator *validator.Validate) func(*Server) {
 	return func(s *Server) {
 		v = newValidator
 	}
+}
+
+// Replaces Tags for the Server (i.e Group)
+// By default, the tag is the type of the response body.
+func (s *Server) Tags(tags ...string) *Server {
+	s.tags = tags
+	return s
+}
+
+// AddTags adds tags from the Server (i.e Group)
+// Tags from the parent Groups will be respected
+func (s *Server) AddTags(tags ...string) *Server {
+	s.tags = append(s.tags, tags...)
+	return s
+}
+
+// RemoveTags removes tags from the Server (i.e Group)
+// if the parent Group(s) has matching tags they will be removed
+func (s *Server) RemoveTags(tags ...string) *Server {
+	for _, tag := range tags {
+		for i, t := range s.tags {
+			if t == tag {
+				s.tags = slices.Delete(s.tags, i, i+1)
+				break
+			}
+		}
+	}
+	return s
 }
