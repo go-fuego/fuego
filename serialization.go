@@ -100,6 +100,7 @@ func SendJSONError(w http.ResponseWriter, err error) {
 	}
 
 	w.WriteHeader(status)
+	w.Header().Set("Content-Type", "application/problems+json")
 	SendJSON(w, errorStatus)
 }
 
