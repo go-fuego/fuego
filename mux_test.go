@@ -246,6 +246,44 @@ func TestDeleteStd(t *testing.T) {
 	require.Equal(t, w.Body.String(), "test successful")
 }
 
+func TestRegister(t *testing.T) {
+	t.Run("route tag inheritance", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag")
+		route := Register(s, http.MethodGet, "/path", func(ctx *ContextNoBody) (string, error) {
+			return "test", nil
+		})
+		require.Equal(t, []string{"string", "my-server-tag"}, route.operation.Tags)
+	})
+	t.Run("route tag override", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag")
+		route := Register(s, http.MethodGet, "/path", func(ctx *ContextNoBody) (string, error) {
+			return "test", nil
+		}).Tags("my-route-tag")
+
+		require.Equal(t, []string{"my-route-tag"}, route.operation.Tags)
+	})
+	t.Run("route tag add", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag")
+		route := Register(s, http.MethodGet, "/path", func(ctx *ContextNoBody) (string, error) {
+			return "test", nil
+		}).AddTags("my-route-tag")
+
+		require.Equal(t, []string{"string", "my-server-tag", "my-route-tag"}, route.operation.Tags)
+	})
+	t.Run("route tag removal", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag")
+		route := Register(s, http.MethodGet, "/path", func(ctx *ContextNoBody) (string, error) {
+			return "test", nil
+		}).AddTags("my-route-tag").RemoveTags("my-server-tag")
+
+		require.Equal(t, []string{"string", "my-route-tag"}, route.operation.Tags)
+	})
+}
+
 func TestHideOpenapiRoutes(t *testing.T) {
 	t.Run("hide main server", func(t *testing.T) {
 		s := NewServer()
@@ -494,6 +532,51 @@ func TestGroup(t *testing.T) {
 		g := Group(s, "/slash/")
 		require.Equal(t, "/slash/", g.basePath)
 	})
+}
+
+func TestGroupTags(t *testing.T) {
+	t.Run("inherit tags", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag")
+		group := Group(s, "/slash")
+
+		require.Equal(t, []string{"my-server-tag"}, group.tags)
+	})
+	t.Run("override parent tags", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag")
+		group := Group(s, "/slash").
+			Tags("my-group-tag")
+
+		require.Equal(t, []string{"my-group-tag"}, group.tags)
+	})
+	t.Run("add child group tag", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag")
+		group := Group(s, "/slash").
+			AddTags("my-group-tag")
+
+		require.Equal(t, []string{"my-server-tag", "my-group-tag"}, group.tags)
+	})
+	t.Run("remove server tag", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag", "my-other-server-tag")
+		group := Group(s, "/slash").
+			RemoveTags("my-server-tag")
+
+		require.Equal(t, []string{"my-other-server-tag"}, group.tags)
+	})
+	t.Run("multiple groups inheritance", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag")
+		group := Group(s, "/slash").
+			AddTags("my-group-tag")
+		childGroup := Group(group, "/slash").
+			AddTags("my-childGroup-tag")
+
+		require.Equal(t, []string{"my-server-tag", "my-group-tag", "my-childGroup-tag"}, childGroup.tags)
+	})
+
 }
 
 func ExampleContextNoBody_SetCookie() {
