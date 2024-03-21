@@ -273,25 +273,27 @@ func TestWithPort(t *testing.T) {
 }
 
 func TestServerTags(t *testing.T) {
-	s := NewServer().
-		Tags("my-server-tag")
+	t.Run("set tags", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag")
 
-	require.Equal(t, s.tags, []string{"my-server-tag"})
-}
+		require.Equal(t, s.tags, []string{"my-server-tag"})
+	})
 
-func TestServerAddTags(t *testing.T) {
-	s := NewServer().
-		AddTags("my-server-tag").
-		AddTags("my-other-server-tag")
+	t.Run("add tags", func(t *testing.T) {
+		s := NewServer().
+			AddTags("my-server-tag").
+			AddTags("my-other-server-tag")
 
-	require.Equal(t, s.tags, []string{"my-server-tag", "my-other-server-tag"})
-}
+		require.Equal(t, s.tags, []string{"my-server-tag", "my-other-server-tag"})
+	})
 
-func TestServerRemoveTags(t *testing.T) {
-	s := NewServer().
-		Tags("my-server-tag").
-		AddTags("my-other-server-tag").
-		RemoveTags("my-other-server-tag")
+	t.Run("remove tags", func(t *testing.T) {
+		s := NewServer().
+			Tags("my-server-tag").
+			AddTags("my-other-server-tag").
+			RemoveTags("my-other-server-tag")
 
-	require.Equal(t, s.tags, []string{"my-server-tag"})
+		require.Equal(t, s.tags, []string{"my-server-tag"})
+	})
 }
