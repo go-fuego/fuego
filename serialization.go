@@ -97,13 +97,15 @@ func SendJSONError(w http.ResponseWriter, err error) {
 		status = errorStatus.StatusCode()
 	}
 
-	w.WriteHeader(status)
-	SendJSON(w, err)
+	w.Header().Set("Content-Type", "application/json")
 
 	var httpError HTTPError
 	if errors.As(err, &httpError) {
 		w.Header().Set("Content-Type", "application/problem+json")
 	}
+
+	w.WriteHeader(status)
+	SendJSON(w, err)
 }
 
 // SendXML sends a XML response.

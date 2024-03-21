@@ -25,7 +25,7 @@ func TestContentType(t *testing.T) {
 		w := httptest.NewRecorder()
 		server.Mux.ServeHTTP(w, req)
 
-		require.Equal(t, "application/problem+json", w.Header().Get("Content-Type"))
+		require.Equal(t, "application/problem+json", w.Result().Header.Get("Content-Type"))
 		require.Equal(t, 401, w.Code)
 		require.Contains(t, w.Body.String(), "Unauthorized")
 	})
