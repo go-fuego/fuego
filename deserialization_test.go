@@ -63,7 +63,7 @@ C: true
 	})
 
 	t.Run("cannot deserialize YAML to wrong struct", func(t *testing.T) {
-		_, err := ReadJSON[WrongBody](context.Background(), input)
+		_, err := ReadYAML[WrongBody](context.Background(), input)
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 	})
 }
