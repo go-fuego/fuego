@@ -271,3 +271,27 @@ func TestWithPort(t *testing.T) {
 		require.Equal(t, "localhost:9999", s.Server.Addr)
 	})
 }
+
+func TestServerTags(t *testing.T) {
+	s := NewServer().
+		Tags("my-server-tag")
+
+	require.Equal(t, s.tags, []string{"my-server-tag"})
+}
+
+func TestServerAddTags(t *testing.T) {
+	s := NewServer().
+		AddTags("my-server-tag").
+		AddTags("my-other-server-tag")
+
+	require.Equal(t, s.tags, []string{"my-server-tag", "my-other-server-tag"})
+}
+
+func TestServerRemoveTags(t *testing.T) {
+	s := NewServer().
+		Tags("my-server-tag").
+		AddTags("my-other-server-tag").
+		RemoveTags("my-other-server-tag")
+
+	require.Equal(t, s.tags, []string{"my-server-tag"})
+}
