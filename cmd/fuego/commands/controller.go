@@ -65,10 +65,12 @@ func createController(controllerName, outputFile string) (string, error) {
 
 	controllerPath := outputFile
 	if controllerPath == "" {
-		controllerPath = fmt.Sprintf("%s%s.go", outputFile, controllerName)
+		controllerPath = fmt.Sprintf("%s.go", controllerName)
+	} else if !strings.HasSuffix(controllerPath, ".go") {
+		controllerPath = fmt.Sprintf("%s.go", controllerPath)
 	}
 
-	err = os.WriteFile(controllerPath, []byte(newContent), 0o644)
+	err = os.WriteFile(fmt.Sprintf("controllers/%s", controllerPath), []byte(newContent), 0o644)
 	if err != nil {
 		return "", err
 	}
