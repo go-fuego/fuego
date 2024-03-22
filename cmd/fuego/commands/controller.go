@@ -58,7 +58,7 @@ func createController(controllerName string) (string, error) {
 
 	controllerPath := fmt.Sprintf("%s%s.go", controllerDir, controllerName)
 
-	err = os.WriteFile(fmt.Sprintf("controllers/%s", controllerPath), []byte(newContent), 0o644)
+	err = os.WriteFile(controllerPath, []byte(newContent), 0o644)
 	if err != nil {
 		return "", err
 	}
