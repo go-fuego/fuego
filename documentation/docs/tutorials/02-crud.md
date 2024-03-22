@@ -49,8 +49,8 @@ type RealBooksService struct {
 	BooksService
 }
 
-func (s RealBooksService) GetBooks(id string) (Test, error) {
-	return Test{
+func (s RealBooksService) GetBooks(id string) (Books, error) {
+	return Books{
 		ID:   id,
 		Name: "Test book data",
 	}, nil
