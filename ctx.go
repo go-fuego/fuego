@@ -398,6 +398,8 @@ func body[B any](c ContextNoBody) (B, error) {
 		err = errReadingString
 	case "application/x-www-form-urlencoded", "multipart/form-data":
 		body, err = readURLEncoded[B](c.Req, c.readOptions)
+	case "application/xml":
+		return readXML[B](c.Req.Context(), c.Req.Body, c.readOptions)
 	case "application/x-yaml":
 		return readYAML[B](c.Req.Context(), c.Req.Body, c.readOptions)
 	case "application/json":
