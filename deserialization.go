@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"log/slog"
@@ -42,6 +43,25 @@ func readJSON[B any](context context.Context, input io.Reader, options readOptio
 	dec := json.NewDecoder(input)
 	if options.DisallowUnknownFields {
 		dec.DisallowUnknownFields()
+	}
+
+	return read[B](context, dec)
+}
+
+// ReadXML reads the request body as XML.
+// Can be used independantly from Fuego framework.
+// Customisable by modifying ReadOptions.
+func ReadXML[B any](context context.Context, input io.Reader) (B, error) {
+	return readXML[B](context, input, ReadOptions)
+}
+
+// readXML reads the request body as XML.
+// Can be used independantly from framework using ReadYAML,
+// or as a method of Context.
+func readXML[B any](context context.Context, input io.Reader, options readOptions) (B, error) {
+	dec := xml.NewDecoder(input)
+	if options.DisallowUnknownFields {
+		dec.Strict = true
 	}
 
 	return read[B](context, dec)

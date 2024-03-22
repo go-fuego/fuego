@@ -1,7 +1,9 @@
 package fuego
 
 import (
+	"bytes"
 	"context"
+	"encoding/xml"
 	"errors"
 	"net/http/httptest"
 	"strings"
@@ -126,8 +128,9 @@ func TestContext_QueryParams(t *testing.T) {
 }
 
 type testStruct struct {
-	Name string `json:"name"`
-	Age  int    `json:"age"`
+	XMLName xml.Name `xml:"TestStruct"`
+	Name    string   `json:"name" xml:"Name"`
+	Age     int      `json:"age" xml:"Age"`
 }
 
 type testStructInTransformer struct {
@@ -246,6 +249,26 @@ func TestContext_Body(t *testing.T) {
 		require.Error(t, err)
 		require.Equal(t, body.Name, "John")
 		require.Equal(t, body.Age, 30)
+	})
+
+	t.Run("can read XML body", func(t *testing.T) {
+		a := bytes.NewReader([]byte(`
+<TestStruct>
+	<Name>John</Name>
+	<Age>30</Age>
+</TestStruct>
+`))
+		// Test an http request
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "http://example.com/foo", a)
+		r.Header.Add("Content-Type", "application/xml")
+
+		c := NewContext[testStruct](w, r, readOptions{})
+
+		body, err := c.Body()
+		require.NoError(t, err)
+		require.Equal(t, "John", body.Name)
+		require.Equal(t, 30, body.Age)
 	})
 
 	t.Run("unparsable because restricted to 1 byte", func(t *testing.T) {

@@ -14,7 +14,7 @@ import (
 )
 
 func controller(c *ContextNoBody) (testStruct, error) {
-	return testStruct{"Ewen", 23}, nil
+	return testStruct{Name: "Ewen", Age: 23}, nil
 }
 
 func controllerWithError(c *ContextNoBody) (testStruct, error) {
@@ -51,7 +51,7 @@ func TestWithXML(t *testing.T) {
 
 		require.Equal(t, 200, recorder.Code)
 		require.Equal(t, "application/xml", recorder.Header().Get("Content-Type"))
-		require.Equal(t, "<testStruct><Name>Ewen</Name><Age>23</Age></testStruct>", recorder.Body.String())
+		require.Equal(t, "<TestStruct><Name>Ewen</Name><Age>23</Age></TestStruct>", recorder.Body.String())
 	})
 
 	t.Run("error response is XML", func(t *testing.T) {
