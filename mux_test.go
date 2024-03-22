@@ -263,6 +263,36 @@ func TestHandle(t *testing.T) {
 	require.Equal(t, w.Body.String(), "test successful")
 }
 
+func TestAllStd(t *testing.T) {
+	s := NewServer()
+	AllStd(s, "/test", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("test successful"))
+	})
+
+	t.Run("get", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodPatch, "/test", nil)
+
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, w.Code, http.StatusOK)
+		require.Equal(t, w.Body.String(), "test successful")
+	})
+
+	t.Run("post", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodPost, "/test", nil)
+
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, w.Code, http.StatusOK)
+		require.Equal(t, w.Body.String(), "test successful")
+	})
+}
+
 func TestGetStd(t *testing.T) {
 	s := NewServer()
 	GetStd(s, "/test", func(w http.ResponseWriter, r *http.Request) {
@@ -348,47 +378,47 @@ func TestDeleteStd(t *testing.T) {
 	require.Equal(t, w.Body.String(), "test successful")
 }
 
-func TestRegister(t *testing.T) {
+func TestGroupTagsOnRoute(t *testing.T) {
 	t.Run("route tag inheritance", func(t *testing.T) {
 		s := NewServer().
 			Tags("my-server-tag")
-		route := Register(s, http.MethodGet, "/path", func(ctx *ContextNoBody) (string, error) {
+		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
 		})
-		require.Equal(t, []string{"my-server-tag", "string"}, route.operation.Tags)
+		require.Equal(t, []string{"my-server-tag", "string"}, route.Operation.Tags)
 	})
 
 	t.Run("route tag override", func(t *testing.T) {
 		s := NewServer().
 			Tags("my-server-tag")
 
-		route := Register(s, http.MethodGet, "/path", func(ctx *ContextNoBody) (string, error) {
+		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
 		}).Tags("my-route-tag")
 
-		require.Equal(t, []string{"my-route-tag"}, route.operation.Tags)
+		require.Equal(t, []string{"my-route-tag"}, route.Operation.Tags)
 	})
 
 	t.Run("route tag add", func(t *testing.T) {
 		s := NewServer().
 			Tags("my-server-tag")
 
-		route := Register(s, http.MethodGet, "/path", func(ctx *ContextNoBody) (string, error) {
+		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
 		}).AddTags("my-route-tag")
 
-		require.Equal(t, []string{"my-server-tag", "string", "my-route-tag"}, route.operation.Tags)
+		require.Equal(t, []string{"my-server-tag", "string", "my-route-tag"}, route.Operation.Tags)
 	})
 
 	t.Run("route tag removal", func(t *testing.T) {
 		s := NewServer().
 			Tags("my-server-tag")
 
-		route := Register(s, http.MethodGet, "/path", func(ctx *ContextNoBody) (string, error) {
+		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
 		}).AddTags("my-route-tag").RemoveTags("my-server-tag")
 
-		require.Equal(t, []string{"string", "my-route-tag"}, route.operation.Tags)
+		require.Equal(t, []string{"string", "my-route-tag"}, route.Operation.Tags)
 	})
 }
 
@@ -725,4 +755,31 @@ func ExampleContextNoBody_SetHeader() {
 
 	// Output:
 	// test
+}
+
+func BenchmarkCamelToHuman(b *testing.B) {
+	b.Run("camelToHuman", func(b *testing.B) {
+		for range b.N {
+			camelToHuman("listAllRecipes")
+		}
+	})
+}
+
+func TestCamelToHuman(t *testing.T) {
+	testCases := []struct {
+		input  string
+		output string
+	}{
+		{"listAllRecipes", "list all recipes"},
+		{"get5Recipes", "get5 recipes"},
+		{"getHTTP", "get h t t p"},
+		{"getHTTP2", "get h t t p2"},
+		{"getHTTP2Server", "get h t t p2 server"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.input, func(t *testing.T) {
+			require.Equal(t, tc.output, camelToHuman(tc.input))
+		})
+	}
 }

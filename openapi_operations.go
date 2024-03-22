@@ -13,18 +13,18 @@ type OpenAPIParam struct {
 }
 
 func (r Route[ResponseBody, RequestBody]) Description(description string) Route[ResponseBody, RequestBody] {
-	r.operation.Description = description
+	r.Operation.Description = description
 	return r
 }
 
 func (r Route[ResponseBody, RequestBody]) Summary(summary string) Route[ResponseBody, RequestBody] {
-	r.operation.Summary = summary
+	r.Operation.Summary = summary
 	return r
 }
 
 // Overrides the operationID for the route.
 func (r Route[ResponseBody, RequestBody]) OperationID(operationID string) Route[ResponseBody, RequestBody] {
-	r.operation.OperationID = operationID
+	r.Operation.OperationID = operationID
 	return r
 }
 
@@ -46,7 +46,7 @@ func (r Route[ResponseBody, RequestBody]) Param(paramType, name, description str
 		}
 	}
 
-	r.operation.AddParameter(openapiParam)
+	r.Operation.AddParameter(openapiParam)
 
 	return r
 }
@@ -72,22 +72,22 @@ func (r Route[ResponseBody, RequestBody]) QueryParam(name, description string, p
 // Replace the tags for the route.
 // By default, the tag is the type of the response body.
 func (r Route[ResponseBody, RequestBody]) Tags(tags ...string) Route[ResponseBody, RequestBody] {
-	r.operation.Tags = tags
+	r.Operation.Tags = tags
 	return r
 }
 
 // AddTags adds tags to the route.
 func (r Route[ResponseBody, RequestBody]) AddTags(tags ...string) Route[ResponseBody, RequestBody] {
-	r.operation.Tags = append(r.operation.Tags, tags...)
+	r.Operation.Tags = append(r.Operation.Tags, tags...)
 	return r
 }
 
 // RemoveTags removes tags from the route.
 func (r Route[ResponseBody, RequestBody]) RemoveTags(tags ...string) Route[ResponseBody, RequestBody] {
 	for _, tag := range tags {
-		for i, t := range r.operation.Tags {
+		for i, t := range r.Operation.Tags {
 			if t == tag {
-				r.operation.Tags = slices.Delete(r.operation.Tags, i, i+1)
+				r.Operation.Tags = slices.Delete(r.Operation.Tags, i, i+1)
 				break
 			}
 		}
@@ -96,6 +96,6 @@ func (r Route[ResponseBody, RequestBody]) RemoveTags(tags ...string) Route[Respo
 }
 
 func (r Route[ResponseBody, RequestBody]) Deprecated() Route[ResponseBody, RequestBody] {
-	r.operation.Deprecated = true
+	r.Operation.Deprecated = true
 	return r
 }
