@@ -129,8 +129,8 @@ func TestContext_QueryParams(t *testing.T) {
 
 type testStruct struct {
 	XMLName xml.Name `xml:"TestStruct"`
-	Name    string   `json:"name" xml:"Name"`
-	Age     int      `json:"age" xml:"Age"`
+	Name    string   `json:"name" xml:"Name" yaml:"name"`
+	Age     int      `json:"age" xml:"Age" yaml:"age"`
 }
 
 type testStructInTransformer struct {
@@ -262,6 +262,24 @@ func TestContext_Body(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 		r.Header.Add("Content-Type", "application/xml")
+
+		c := NewContext[testStruct](w, r, readOptions{})
+
+		body, err := c.Body()
+		require.NoError(t, err)
+		require.Equal(t, "John", body.Name)
+		require.Equal(t, 30, body.Age)
+	})
+
+	t.Run("can read YAML body", func(t *testing.T) {
+		a := bytes.NewReader([]byte(`
+name: John
+age: 30
+`))
+		// Test an http request
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "http://example.com/foo", a)
+		r.Header.Add("Content-Type", "application/x-yaml")
 
 		c := NewContext[testStruct](w, r, readOptions{})
 
