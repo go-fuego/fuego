@@ -51,7 +51,7 @@ func TestContext_QueryParam(t *testing.T) {
 	t.Run("string", func(t *testing.T) {
 		param := c.QueryParam("other")
 		require.NotEmpty(t, param)
-		require.Equal(t, param, "hello")
+		require.Equal(t, "hello", param)
 
 		param = c.QueryParam("notfound")
 		require.Empty(t, param)
@@ -60,20 +60,20 @@ func TestContext_QueryParam(t *testing.T) {
 	t.Run("int", func(t *testing.T) {
 		param := c.QueryParam("id")
 		require.NotEmpty(t, param)
-		require.Equal(t, param, "456")
+		require.Equal(t, "456", param)
 
 		paramInt := c.QueryParamInt("id", 0)
-		require.Equal(t, paramInt, 456)
+		require.Equal(t, 456, paramInt)
 
 		paramInt = c.QueryParamInt("notfound", 42)
-		require.Equal(t, paramInt, 42)
+		require.Equal(t, 42, paramInt)
 
 		paramInt = c.QueryParamInt("other", 42)
-		require.Equal(t, paramInt, 42)
+		require.Equal(t, 42, paramInt)
 
 		paramInt, err := c.QueryParamIntErr("id")
 		require.NoError(t, err)
-		require.Equal(t, paramInt, 456)
+		require.Equal(t, 456, paramInt)
 
 		paramInt, err = c.QueryParamIntErr("notfound")
 		require.Error(t, err)
@@ -83,34 +83,34 @@ func TestContext_QueryParam(t *testing.T) {
 		paramInt, err = c.QueryParamIntErr("other")
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "param other=hello is not of type int")
-		require.Equal(t, paramInt, 0)
+		require.Equal(t, 0, paramInt)
 	})
 
 	t.Run("bool", func(t *testing.T) {
 		param := c.QueryParam("boo")
 		require.NotEmpty(t, param)
-		require.Equal(t, param, "true")
+		require.Equal(t, "true", param)
 
 		paramBool := c.QueryParamBool("boo", false)
-		require.Equal(t, paramBool, true)
+		require.Equal(t, true, paramBool)
 
 		paramBool = c.QueryParamBool("notfound", true)
-		require.Equal(t, paramBool, true)
+		require.Equal(t, true, paramBool)
 
 		paramBool = c.QueryParamBool("other", true)
-		require.Equal(t, paramBool, true)
+		require.Equal(t, true, paramBool)
 
 		paramBool, err := c.QueryParamBoolErr("boo")
 		require.NoError(t, err)
-		require.Equal(t, paramBool, true)
+		require.Equal(t, true, paramBool)
 
 		paramBool, err = c.QueryParamBoolErr("notfound")
 		require.Error(t, err)
-		require.Equal(t, paramBool, false)
+		require.Equal(t, false, paramBool)
 
 		paramBool, err = c.QueryParamBoolErr("other")
 		require.Error(t, err)
-		require.Equal(t, paramBool, false)
+		require.Equal(t, false, paramBool)
 	})
 }
 
@@ -166,8 +166,8 @@ func TestContext_Body(t *testing.T) {
 
 		body, err := c.Body()
 		require.NoError(t, err)
-		require.Equal(t, body.Name, "John")
-		require.Equal(t, body.Age, 30)
+		require.Equal(t, "John", body.Name)
+		require.Equal(t, 30, body.Age)
 	})
 
 	t.Run("can read JSON body twice", func(t *testing.T) {
@@ -180,13 +180,13 @@ func TestContext_Body(t *testing.T) {
 
 		body, err := c.Body()
 		require.NoError(t, err)
-		require.Equal(t, body.Name, "John")
-		require.Equal(t, body.Age, 30)
+		require.Equal(t, "John", body.Name)
+		require.Equal(t, 30, body.Age)
 
 		body, err = c.Body()
 		require.NoError(t, err)
-		require.Equal(t, body.Name, "John")
-		require.Equal(t, body.Age, 30)
+		require.Equal(t, "John", body.Name)
+		require.Equal(t, 30, body.Age)
 	})
 
 	t.Run("can read and validate valid JSON body", func(t *testing.T) {
@@ -203,8 +203,8 @@ func TestContext_Body(t *testing.T) {
 
 		body, err := c.Body()
 		require.NoError(t, err)
-		require.Equal(t, body.Name, "John")
-		require.Equal(t, body.Age, 30)
+		require.Equal(t, "John", body.Name)
+		require.Equal(t, 30, body.Age)
 	})
 
 	t.Run("can read and validate invalid JSON body", func(t *testing.T) {
@@ -221,8 +221,8 @@ func TestContext_Body(t *testing.T) {
 
 		body, err := c.Body()
 		require.Error(t, err)
-		require.Equal(t, body.Name, "VeryLongName")
-		require.Equal(t, body.Age, 12)
+		require.Equal(t, "VeryLongName", body.Name)
+		require.Equal(t, 12, body.Age)
 	})
 
 	t.Run("can transform JSON body with custom method", func(t *testing.T) {
@@ -234,8 +234,8 @@ func TestContext_Body(t *testing.T) {
 
 		body, err := c.Body()
 		require.NoError(t, err)
-		require.Equal(t, body.Name, "transformed John")
-		require.Equal(t, body.Age, 60)
+		require.Equal(t, "transformed John", body.Name)
+		require.Equal(t, 60, body.Age)
 	})
 
 	t.Run("can transform JSON body with custom method returning error", func(t *testing.T) {
@@ -247,8 +247,8 @@ func TestContext_Body(t *testing.T) {
 
 		body, err := c.Body()
 		require.Error(t, err)
-		require.Equal(t, body.Name, "John")
-		require.Equal(t, body.Age, 30)
+		require.Equal(t, "John", body.Name)
+		require.Equal(t, 30, body.Age)
 	})
 
 	t.Run("can read XML body", func(t *testing.T) {
@@ -412,8 +412,8 @@ func TestContext_MustBody(t *testing.T) {
 		c := NewContext[testStruct](w, r, readOptions{})
 
 		body := c.MustBody()
-		require.Equal(t, body.Name, "John")
-		require.Equal(t, body.Age, 30)
+		require.Equal(t, "John", body.Name)
+		require.Equal(t, 30, body.Age)
 	})
 
 	t.Run("cannot read invalid JSON body", func(t *testing.T) {
