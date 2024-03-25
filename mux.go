@@ -156,8 +156,8 @@ func RegisterStd(s *Server, method string, path string, controller func(http.Res
 }
 
 func withMiddlewares(controller http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
-	for _, middleware := range middlewares {
-		controller = middleware(controller)
+	for i := len(middlewares) - 1; i >= 0; i-- {
+		controller = middlewares[i](controller)
 	}
 	return controller
 }
