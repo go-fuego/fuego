@@ -88,7 +88,7 @@ func Register[T any, B any, Contexted ctx[B]](s *Server, method string, path str
 func register[T any, B any](s *Server, method string, path string, controller http.Handler, middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	fullPath := method + " " + s.basePath + path
 
-	allMiddlewares := append(middlewares, s.middlewares...)
+	allMiddlewares := append(s.middlewares, middlewares...)
 	s.Mux.Handle(fullPath, withMiddlewares(controller, allMiddlewares...))
 
 	if s.DisableOpenapi {
