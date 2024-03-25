@@ -20,6 +20,101 @@ func dummyMiddleware(handler http.Handler) http.Handler {
 	})
 }
 
+// orderMiddleware sets the X-Test-Order Header on the request and
+// X-Test-Response header on the response. It is
+// used to test the order execution of our middleware
+func orderMiddleware(s string) func(http.Handler) http.Handler {
+	return func(handler http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			orderValue := strings.Split(r.Header.Get("X-Test-Order"), ",")
+			orderValue = append(orderValue, s)
+
+			r.Header.Set("X-Test-Order", strings.Join(orderValue, ","))
+			w.Header().Set("X-Test-Response", "response")
+			handler.ServeHTTP(w, r)
+		})
+	}
+}
+
+// TestUse is used to mainly test the ordering of middleware execution
+func TestUse(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		s := NewServer()
+		Use(s, orderMiddleware("First!"))
+		Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
+			return "test", nil
+		})
+
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		r.Header.Set("X-Test-Order", "Start!")
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		orderValue := strings.Split(r.Header.Get("X-Test-Order"), ",")
+		require.Equal(t, []string{"Start!", "First!"}, orderValue)
+	})
+
+	t.Run("multiple uses of Use", func(t *testing.T) {
+		s := NewServer()
+		Use(s, orderMiddleware("First!"))
+		Use(s, orderMiddleware("Second!"))
+		Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
+			return "test", nil
+		})
+
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		r.Header.Set("X-Test-Order", "Start!")
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		orderValue := strings.Split(r.Header.Get("X-Test-Order"), ",")
+		require.Equal(t, []string{"Start!", "First!", "Second!"}, orderValue)
+	})
+
+	t.Run("variadic use of Use", func(t *testing.T) {
+		s := NewServer()
+		Use(s, orderMiddleware("First!"))
+		Use(s, orderMiddleware("Second!"), orderMiddleware("Third!"))
+		Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
+			return "test", nil
+		})
+
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		r.Header.Set("X-Test-Order", "Start!")
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		orderValue := strings.Split(r.Header.Get("X-Test-Order"), ",")
+		require.Equal(t, []string{"Start!", "First!", "Second!", "Third!"}, orderValue)
+	})
+
+	t.Run("variadic use of Route Get", func(t *testing.T) {
+		s := NewServer()
+		Use(s, orderMiddleware("First!"))
+		Use(s, orderMiddleware("Second!"), orderMiddleware("Third!"))
+		Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
+			return "test", nil
+		}, orderMiddleware("Fourth!"), orderMiddleware("Fifth!"))
+
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		r.Header.Set("X-Test-Order", "Start!")
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		orderValue := strings.Split(r.Header.Get("X-Test-Order"), ",")
+		require.Equal(
+			t, []string{
+				"Start!", "First!", "Second!", "Third!", "Fourth!", "Fifth!",
+			},
+			orderValue,
+		)
+	})
+}
+
 func TestUseStd(t *testing.T) {
 	s := NewServer()
 	UseStd(s, dummyMiddleware)
