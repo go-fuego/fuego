@@ -14,10 +14,10 @@ func TestTags(t *testing.T) {
 		Summary("my summary").
 		Deprecated()
 
-	require.Equal(t, route.operation.Tags, []string{"my-tag"})
-	require.Equal(t, route.operation.Description, "my description")
-	require.Equal(t, route.operation.Summary, "my summary")
-	require.Equal(t, route.operation.Deprecated, true)
+	require.Equal(t, route.Operation.Tags, []string{"my-tag"})
+	require.Equal(t, route.Operation.Description, "my description")
+	require.Equal(t, route.Operation.Summary, "my summary")
+	require.Equal(t, route.Operation.Deprecated, true)
 }
 
 func TestAddTags(t *testing.T) {
@@ -28,7 +28,7 @@ func TestAddTags(t *testing.T) {
 		AddTags("my-tag").
 		AddTags("my-other-tag")
 
-	require.Equal(t, route.operation.Tags, []string{"string", "my-tag", "my-other-tag"})
+	require.Equal(t, route.Operation.Tags, []string{"string", "my-tag", "my-other-tag"})
 }
 
 func TestRemoveTags(t *testing.T) {
@@ -40,7 +40,7 @@ func TestRemoveTags(t *testing.T) {
 		RemoveTags("my-tag", "string").
 		AddTags("my-other-tag")
 
-	require.Equal(t, route.operation.Tags, []string{"my-other-tag"})
+	require.Equal(t, route.Operation.Tags, []string{"my-other-tag"})
 }
 
 func TestQueryParams(t *testing.T) {
@@ -50,7 +50,7 @@ func TestQueryParams(t *testing.T) {
 	}).
 		QueryParam("my-param", "my description")
 
-	require.Equal(t, "my description", route.operation.Parameters.GetByInAndName("query", "my-param").Description)
+	require.Equal(t, "my description", route.Operation.Parameters.GetByInAndName("query", "my-param").Description)
 }
 
 func TestHeaderParams(t *testing.T) {
@@ -58,7 +58,7 @@ func TestHeaderParams(t *testing.T) {
 	route := Get(s, "/test", testController).
 		Header("my-header", "my description")
 
-	require.Equal(t, "my description", route.operation.Parameters.GetByInAndName("header", "my-header").Description)
+	require.Equal(t, "my description", route.Operation.Parameters.GetByInAndName("header", "my-header").Description)
 }
 
 func TestCookieParams(t *testing.T) {
@@ -67,7 +67,7 @@ func TestCookieParams(t *testing.T) {
 		route := Get(s, "/test", testController).
 			Cookie("my-cookie", "my description")
 
-		require.Equal(t, "my description", route.operation.Parameters.GetByInAndName("cookie", "my-cookie").Description)
+		require.Equal(t, "my description", route.Operation.Parameters.GetByInAndName("cookie", "my-cookie").Description)
 	})
 
 	t.Run("with more parameters", func(t *testing.T) {
@@ -75,8 +75,8 @@ func TestCookieParams(t *testing.T) {
 		route := Get(s, "/test", testController).
 			Cookie("my-cookie", "my description", OpenAPIParam{Required: true, Example: "my-example"})
 
-		require.Equal(t, "my description", route.operation.Parameters.GetByInAndName("cookie", "my-cookie").Description)
-		require.Equal(t, true, route.operation.Parameters.GetByInAndName("cookie", "my-cookie").Required)
-		require.Equal(t, "my-example", route.operation.Parameters.GetByInAndName("cookie", "my-cookie").Example)
+		require.Equal(t, "my description", route.Operation.Parameters.GetByInAndName("cookie", "my-cookie").Description)
+		require.Equal(t, true, route.Operation.Parameters.GetByInAndName("cookie", "my-cookie").Required)
+		require.Equal(t, "my-example", route.Operation.Parameters.GetByInAndName("cookie", "my-cookie").Example)
 	})
 }

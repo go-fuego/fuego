@@ -48,8 +48,8 @@ func initContext[Contextable ctx[Body], Body any](baseContext ContextNoBody) Con
 	}
 }
 
-// httpHandler converts a Fuego controller into a http.HandlerFunc.
-func httpHandler[ReturnType any, Body any, Contextable ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error)) http.HandlerFunc {
+// HTTPHandler converts a Fuego controller into a http.HandlerFunc.
+func HTTPHandler[ReturnType any, Body any, Contextable ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error)) http.HandlerFunc {
 	returnsHTML := reflect.TypeOf(controller).Out(0).Name() == "HTML"
 	var r ReturnType
 	_, returnsString := any(r).(*string)
