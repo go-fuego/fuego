@@ -22,7 +22,7 @@ func (rs Ressource) adminOneIngredient(c *fuego.ContextWithBody[store.UpdateIngr
 
 		updateIngredientArgs.ID = c.PathParam("id")
 
-		_, err = rs.IngredientsQueries.UpdateIngredient(c.Context(), updateIngredientArgs)
+		_, err = rs.IngredientsQueries.UpdateIngredient(c, updateIngredientArgs)
 		if err != nil {
 			return nil, err
 		}
@@ -30,7 +30,7 @@ func (rs Ressource) adminOneIngredient(c *fuego.ContextWithBody[store.UpdateIngr
 		c.Response().Header().Set("HX-Trigger", "entity-updated")
 	}
 
-	ingredient, err := rs.IngredientsQueries.GetIngredient(c.Context(), id)
+	ingredient, err := rs.IngredientsQueries.GetIngredient(c, id)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (rs Ressource) adminCreateIngredient(c *fuego.ContextWithBody[store.CreateI
 		return nil, err
 	}
 
-	_, err = rs.IngredientsQueries.CreateIngredient(c.Context(), createIngredientArgs)
+	_, err = rs.IngredientsQueries.CreateIngredient(c, createIngredientArgs)
 	if err != nil {
 		return nil, err
 	}
