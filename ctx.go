@@ -124,6 +124,9 @@ type ContextNoBody struct {
 	readOptions readOptions
 }
 
+var _ ctx[any] = ContextNoBody{}        // Check that ContextNoBody implements Ctx.
+var _ context.Context = ContextNoBody{} // Check that ContextNoBody implements context.Context.
+
 func (c ContextNoBody) Body() (any, error) {
 	slog.Warn("this method should not be called. It probably happened because you passed the context to another controller.")
 	return body[map[string]any](c)
@@ -163,6 +166,27 @@ func (c ContextNoBody) Redirect(code int, url string) (any, error) {
 	return nil, nil
 }
 
+// ContextNoBody implements the context interface via [net/http.Request.Context]
+func (c ContextNoBody) Deadline() (deadline time.Time, ok bool) {
+	return c.Req.Context().Deadline()
+}
+
+// ContextNoBody implements the context interface via [net/http.Request.Context]
+func (c ContextNoBody) Done() <-chan struct{} {
+	return c.Req.Context().Done()
+}
+
+// ContextNoBody implements the context interface via [net/http.Request.Context]
+func (c ContextNoBody) Err() error {
+	return c.Req.Context().Err()
+}
+
+// ContextNoBody implements the context interface via [net/http.Request.Context]
+func (c ContextNoBody) Value(key any) any {
+	return c.Req.Context().Value(key)
+}
+
+// ContextNoBody implements the context interface via [net/http.Request.Context]
 func (c ContextNoBody) Context() context.Context {
 	return c.Req.Context()
 }
