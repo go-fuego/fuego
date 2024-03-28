@@ -75,6 +75,7 @@ func TestWithOpenAPIConfig(t *testing.T) {
 		require.Equal(t, "/swagger", s.OpenAPIConfig.SwaggerUrl)
 		require.Equal(t, "/swagger/openapi.json", s.OpenAPIConfig.JsonUrl)
 		require.Equal(t, "doc/openapi.json", s.OpenAPIConfig.JsonFilePath)
+		require.False(t, s.OpenAPIConfig.PrettyFormatJson)
 	})
 
 	t.Run("with custom values", func(t *testing.T) {
@@ -85,6 +86,7 @@ func TestWithOpenAPIConfig(t *testing.T) {
 				JsonFilePath:     "openapi.json",
 				DisableSwagger:   true,
 				DisableLocalSave: true,
+				PrettyFormatJson: true,
 			}),
 		)
 
@@ -93,6 +95,7 @@ func TestWithOpenAPIConfig(t *testing.T) {
 		require.Equal(t, "openapi.json", s.OpenAPIConfig.JsonFilePath)
 		require.True(t, s.OpenAPIConfig.DisableSwagger)
 		require.True(t, s.OpenAPIConfig.DisableLocalSave)
+		require.True(t, s.OpenAPIConfig.PrettyFormatJson)
 	})
 
 	t.Run("with invalid local path values", func(t *testing.T) {
