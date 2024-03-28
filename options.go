@@ -23,6 +23,7 @@ type OpenAPIConfig struct {
 	UIHandler        func(specURL string) http.Handler // Handler to serve the openapi ui from spec url
 	JsonUrl          string                            // URL to serve the openapi json spec
 	JsonFilePath     string                            // Local path to save the openapi json spec
+	PrettyFormatJson bool                              // Pretty prints the open api spec with proper json indentation
 }
 
 var defaultOpenAPIConfig = OpenAPIConfig{
@@ -288,13 +289,9 @@ func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
 			s.OpenAPIConfig.UIHandler = openapiConfig.UIHandler
 		}
 
-		if openapiConfig.DisableSwagger {
-			s.OpenAPIConfig.DisableSwagger = true
-		}
-
-		if openapiConfig.DisableLocalSave {
-			s.OpenAPIConfig.DisableLocalSave = true
-		}
+		s.OpenAPIConfig.DisableSwagger = openapiConfig.DisableSwagger
+		s.OpenAPIConfig.DisableLocalSave = openapiConfig.DisableLocalSave
+		s.OpenAPIConfig.PrettyFormatJson = openapiConfig.PrettyFormatJson
 
 		if !validateJsonSpecLocalPath(s.OpenAPIConfig.JsonFilePath) {
 			slog.Error("Error writing json spec. Value of 'jsonSpecLocalPath' option is not valid", "file", s.OpenAPIConfig.JsonFilePath)

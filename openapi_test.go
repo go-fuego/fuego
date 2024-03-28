@@ -1,7 +1,9 @@
 package fuego
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net/http/httptest"
 	"os"
 	"testing"
@@ -77,6 +79,106 @@ func TestServer_generateOpenAPI(t *testing.T) {
 
 		require.Equal(t, 200, w.Code)
 	})
+}
+
+func TestServer_OutputOpenApiSpec(t *testing.T) {
+	docPath := "doc/openapi.json"
+	t.Run("base", func(t *testing.T) {
+		s := NewServer(
+			WithOpenAPIConfig(
+				OpenAPIConfig{
+					JsonFilePath: docPath,
+				},
+			),
+		)
+		Get(s, "/", func(*ContextNoBody) (MyStruct, error) {
+			return MyStruct{}, nil
+		})
+
+		document := s.OutputOpenAPISpec()
+		require.NotNil(t, document)
+
+		file, err := os.Open(docPath)
+		require.NoError(t, err)
+		require.NotNil(t, file)
+		defer os.Remove(file.Name())
+		require.Equal(t, 1, lineCounter(t, file))
+	})
+	t.Run("do not print file", func(t *testing.T) {
+		s := NewServer(
+			WithOpenAPIConfig(
+				OpenAPIConfig{
+					JsonFilePath:     docPath,
+					DisableLocalSave: true,
+				},
+			),
+		)
+		Get(s, "/", func(*ContextNoBody) (MyStruct, error) {
+			return MyStruct{}, nil
+		})
+
+		document := s.OutputOpenAPISpec()
+		require.NotNil(t, document)
+
+		file, err := os.Open(docPath)
+		require.Error(t, err)
+		require.Nil(t, file)
+	})
+	t.Run("swagger disabled", func(t *testing.T) {
+		s := NewServer(
+			WithOpenAPIConfig(
+				OpenAPIConfig{
+					JsonFilePath:     docPath,
+					DisableLocalSave: true,
+					DisableSwagger:   true,
+				},
+			),
+		)
+		Get(s, "/", func(*ContextNoBody) (MyStruct, error) {
+			return MyStruct{}, nil
+		})
+
+		document := s.OutputOpenAPISpec()
+		require.Len(t, document.Paths.Map(), 1)
+		require.NotNil(t, document)
+
+		file, err := os.Open(docPath)
+		require.Error(t, err)
+		require.Nil(t, file)
+	})
+	t.Run("pretty format json file", func(t *testing.T) {
+		s := NewServer(
+			WithOpenAPIConfig(
+				OpenAPIConfig{
+					JsonFilePath:     docPath,
+					PrettyFormatJson: true,
+				},
+			),
+		)
+		Get(s, "/", func(*ContextNoBody) (MyStruct, error) {
+			return MyStruct{}, nil
+		})
+
+		document := s.OutputOpenAPISpec()
+		require.NotNil(t, document)
+
+		file, err := os.Open(docPath)
+		require.NoError(t, err)
+		require.NotNil(t, file)
+		defer os.Remove(file.Name())
+		require.Greater(t, lineCounter(t, file), 1)
+	})
+}
+
+func lineCounter(t *testing.T, r io.Reader) int {
+	buf := make([]byte, 32*1024)
+	count := 1
+	lineSep := []byte{'\n'}
+
+	c, err := r.Read(buf)
+	require.NoError(t, err)
+	count += bytes.Count(buf[:c], lineSep)
+	return count
 }
 
 func BenchmarkRoutesRegistration(b *testing.B) {

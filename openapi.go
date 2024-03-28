@@ -59,7 +59,7 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 	}
 
 	// Marshal spec to JSON
-	jsonSpec, err := json.Marshal(s.OpenApiSpec)
+	jsonSpec, err := s.marshalSpec()
 	if err != nil {
 		slog.Error("Error marshalling spec to JSON", "error", err)
 	}
@@ -76,6 +76,13 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 	}
 
 	return s.OpenApiSpec
+}
+
+func (s *Server) marshalSpec() ([]byte, error) {
+	if s.OpenAPIConfig.PrettyFormatJson {
+		return json.MarshalIndent(s.OpenApiSpec, "", "	")
+	}
+	return json.Marshal(s.OpenApiSpec)
 }
 
 func saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) error {
