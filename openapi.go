@@ -13,7 +13,6 @@ import (
 	"regexp"
 
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/getkin/kin-openapi/openapi3gen"
 )
 
 func NewOpenApiSpec() openapi3.T {
@@ -136,10 +135,6 @@ func validateSwaggerUrl(swaggerUrl string) bool {
 	return swaggerUrlRegexp.MatchString(swaggerUrl)
 }
 
-var generator = openapi3gen.NewGenerator(
-	openapi3gen.UseAllExportedFields(),
-)
-
 // RegisterOpenAPIOperation registers an OpenAPI operation.
 func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*openapi3.Operation, error) {
 	operation := openapi3.NewOperation()
@@ -159,7 +154,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 		bodySchema, ok := s.OpenApiSpec.Components.Schemas[bodyTag]
 		if !ok {
 			var err error
-			bodySchema, err = generator.NewSchemaRefForValue(new(B), s.OpenApiSpec.Components.Schemas)
+			bodySchema, err = s.OpenAPIGenerator.NewSchemaRefForValue(new(B), s.OpenApiSpec.Components.Schemas)
 			if err != nil {
 				return operation, err
 			}
@@ -191,7 +186,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	responseSchema, ok := s.OpenApiSpec.Components.Schemas[tag]
 	if !ok {
 		var err error
-		responseSchema, err = generator.NewSchemaRefForValue(new(T), s.OpenApiSpec.Components.Schemas)
+		responseSchema, err = s.OpenAPIGenerator.NewSchemaRefForValue(new(T), s.OpenApiSpec.Components.Schemas)
 		if err != nil {
 			return operation, err
 		}

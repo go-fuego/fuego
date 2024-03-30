@@ -6,8 +6,11 @@ import (
 	"io"
 	"log/slog"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3gen"
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -183,6 +186,55 @@ func TestWithLogHandler(t *testing.T) {
 	NewServer(
 		WithLogHandler(handler),
 	)
+}
+
+func TestWithOpenAPIGenerator(t *testing.T) {
+	type User struct {
+		Id *string `json:"test_id,omitempty" description:"test_description" readOnly:"true"`
+	}
+
+	t.Run("with default generator", func(t *testing.T) {
+		s := NewServer()
+
+		Get(s, "/users/{id}", func(*ContextNoBody) (User, error) {
+			return User{}, nil
+		})
+
+		document := s.OutputOpenAPISpec()
+		require.NotNil(t, document.Components.Schemas["User"].Value.Properties["test_id"])
+		require.False(t, document.Components.Schemas["User"].Value.Properties["test_id"].Value.ReadOnly)
+		require.Equal(t, document.Components.Schemas["User"].Value.Properties["test_id"].Value.Description, "")
+	})
+
+	t.Run("with custom generator", func(t *testing.T) {
+		s := NewServer(
+			WithOpenAPIGenerator(
+				openapi3gen.NewGenerator(
+					openapi3gen.UseAllExportedFields(),
+					openapi3gen.SchemaCustomizer(func(name string, t reflect.Type, tag reflect.StructTag, schema *openapi3.Schema) error {
+						if v := tag.Get("readOnly"); v == "true" {
+							schema.ReadOnly = true
+						}
+
+						if v := tag.Get("description"); v != "" {
+							schema.Description = v
+						}
+
+						return nil
+					}),
+				),
+			),
+		)
+
+		Get(s, "/users/{id}", func(*ContextNoBody) (User, error) {
+			return User{}, nil
+		})
+
+		document := s.OutputOpenAPISpec()
+		require.NotNil(t, document.Components.Schemas["User"].Value.Properties["test_id"])
+		require.True(t, document.Components.Schemas["User"].Value.Properties["test_id"].Value.ReadOnly)
+		require.Equal(t, document.Components.Schemas["User"].Value.Properties["test_id"].Value.Description, "test_description")
+	})
 }
 
 func TestWithValidator(t *testing.T) {

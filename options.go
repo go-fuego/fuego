@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3gen"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -71,7 +72,8 @@ type Server struct {
 	ErrorHandler          func(err error) error                  // Used to transform any error into a unified error type structure with status code. Defaults to [ErrorHandler]
 	startTime             time.Time
 
-	OpenAPIConfig OpenAPIConfig
+	OpenAPIConfig    OpenAPIConfig
+	OpenAPIGenerator *openapi3gen.Generator // OpenAPI generator used to generate the OpenAPI schemas
 }
 
 // NewServer creates a new server with the given options.
@@ -98,6 +100,9 @@ func NewServer(options ...func(*Server)) *Server {
 		OpenAPIConfig: defaultOpenAPIConfig,
 
 		Security: NewSecurity(),
+		OpenAPIGenerator: openapi3gen.NewGenerator(
+			openapi3gen.UseAllExportedFields(),
+		),
 	}
 
 	defaultOptions := [...]func(*Server){
@@ -228,6 +233,11 @@ func WithDisallowUnknownFields(b bool) func(*Server) {
 // If you want to use a different address, use [WithAddr] instead.
 func WithPort(port int) func(*Server) {
 	return func(s *Server) { s.Server.Addr = fmt.Sprintf("localhost:%d", port) }
+}
+
+// WithOpenAPIGenerator sets the OpenAPI generator of the server.
+func WithOpenAPIGenerator(generator *openapi3gen.Generator) func(*Server) {
+	return func(s *Server) { s.OpenAPIGenerator = generator }
 }
 
 // WithAddr optionally specifies the TCP address for the server to listen on, in the form "host:port".
