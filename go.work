@@ -4,6 +4,7 @@ use (
 	.
 	./cmd/fuego
 	./examples/basic
+	./examples/custom-open-api-generator
 	./examples/custom-serializer
 	./examples/full-app-gourmet
 	./examples/hello-world
