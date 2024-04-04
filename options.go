@@ -101,7 +101,7 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	defaultOptions := [...]func(*Server){
-		WithPort(9999),
+		WithAddr("localhost:9999"),
 		WithDisallowUnknownFields(true),
 		WithSerializer(SendJSON),
 		WithErrorSerializer(SendJSONError),
@@ -226,6 +226,7 @@ func WithDisallowUnknownFields(b bool) func(*Server) {
 // WithPort sets the port of the server. For example, 8080.
 // If not specified, the default port is 9999.
 // If you want to use a different address, use [WithAddr] instead.
+// Deprecated: Please use fuego.WithAddr(addr string)
 func WithPort(port int) func(*Server) {
 	return func(s *Server) { s.Server.Addr = fmt.Sprintf("localhost:%d", port) }
 }
