@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -69,7 +70,7 @@ func main() {
 		Views: viewsRessources,
 	}
 
-	app := rs.Setup(fuego.WithPort(*port))
+	app := rs.Setup(fuego.WithAddr(fmt.Sprintf("localhost:%d", *port)))
 
 	// Run the server!
 	err = app.Run()

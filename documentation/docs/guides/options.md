@@ -11,7 +11,7 @@ import "github.com/go-fuego/fuego"
 
 func main() {
 	s := fuego.NewServer(
-		fuego.WithPort(8080),
+		fuego.WithAddr("localhost:8080"),
 		fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
 			DisableSwagger   : true,
 		}),
@@ -27,7 +27,19 @@ func main() {
 
 ## Some options
 
-### Port
+### Address
+
+You can change the address of the server with the `WithAddr` option.
+
+```go
+s := fuego.NewServer(
+	fuego.WithAddr("localhost:8080"),
+)
+```
+
+### Port (Deprecated)
+
+**Deprecated** in favor of `WithAddr` shown above.
 
 You can change the port of the server with the `WithPort` option.
 
