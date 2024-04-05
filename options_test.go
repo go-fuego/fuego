@@ -275,6 +275,21 @@ func TestWithPort(t *testing.T) {
 	})
 }
 
+func TestWithoutAutoGroupTags(t *testing.T) {
+	s := NewServer(
+		WithoutAutoGroupTags(),
+	)
+
+	require.True(t, s.disableAutoGroupTags)
+
+	group := Group(s, "/api")
+	Get(group, "/test", controller)
+
+	document := s.OutputOpenAPISpec()
+	require.NotNil(t, document)
+	require.Nil(t, document.Paths.Find("/api/test").Get.Tags)
+}
+
 func TestServerTags(t *testing.T) {
 	t.Run("set tags", func(t *testing.T) {
 		s := NewServer().

@@ -150,7 +150,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	operation.Tags = s.tags
 
 	// Tags
-	if s.groupTag != "" {
+	if !s.disableAutoGroupTags && s.groupTag != "" {
 		operation.Tags = append(operation.Tags, s.groupTag)
 	}
 

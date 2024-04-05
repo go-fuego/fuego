@@ -53,7 +53,8 @@ type Server struct {
 
 	middlewares []func(http.Handler) http.Handler
 
-	groupTag string
+	disableAutoGroupTags bool
+	groupTag             string
 
 	basePath string
 
@@ -162,6 +163,20 @@ func WithTemplateFS(fs fs.FS) func(*Server) {
 //	)
 func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Server) {
 	return func(c *Server) { c.corsMiddleware = corsMiddleware }
+}
+
+// WithoutAutoGroupTags disables the automatic grouping of routes by tags.
+// By default, routes are tagged by group.
+// For example:
+//
+//	recipeGroup := fuego.Group(s, "/recipes")
+//	fuego.Get(recipeGroup, "/", func(*ContextNoBody) (ans, error) {
+//		return ans{}, nil
+//	})
+//
+//	RecipeThis route will be tagged with "recipes" by default, but with this option, they will not be tagged.
+func WithoutAutoGroupTags() func(*Server) {
+	return func(c *Server) { c.disableAutoGroupTags = true }
 }
 
 // WithTemplates loads the templates used to render HTML.
