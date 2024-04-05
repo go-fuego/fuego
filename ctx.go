@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"html/template"
+	"io"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -124,8 +125,10 @@ type ContextNoBody struct {
 	readOptions readOptions
 }
 
-var _ ctx[any] = ContextNoBody{}        // Check that ContextNoBody implements Ctx.
-var _ context.Context = ContextNoBody{} // Check that ContextNoBody implements context.Context.
+var (
+	_ ctx[any]        = ContextNoBody{} // Check that ContextNoBody implements Ctx.
+	_ context.Context = ContextNoBody{} // Check that ContextNoBody implements context.Context.
+)
 
 func (c ContextNoBody) Body() (any, error) {
 	slog.Warn("this method should not be called. It probably happened because you passed the context to another controller.")
@@ -423,9 +426,20 @@ func body[B any](c ContextNoBody) (B, error) {
 	case "application/x-www-form-urlencoded", "multipart/form-data":
 		body, err = readURLEncoded[B](c.Req, c.readOptions)
 	case "application/xml":
-		return readXML[B](c.Req.Context(), c.Req.Body, c.readOptions)
+		body, err = readXML[B](c.Req.Context(), c.Req.Body, c.readOptions)
 	case "application/x-yaml":
-		return readYAML[B](c.Req.Context(), c.Req.Body, c.readOptions)
+		body, err = readYAML[B](c.Req.Context(), c.Req.Body, c.readOptions)
+	case "application/octet-stream":
+		// Read c.Req Body to bytes
+		bytes, err := io.ReadAll(c.Req.Body)
+		if err != nil {
+			return body, err
+		}
+		respBytes, ok := any(bytes).(B)
+		if !ok {
+			return body, fmt.Errorf("could not convert bytes to %T. To read binary data from the request, use []byte as the body type", body)
+		}
+		body = respBytes
 	case "application/json":
 		fallthrough
 	default:

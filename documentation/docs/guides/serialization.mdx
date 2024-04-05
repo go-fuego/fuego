@@ -6,6 +6,23 @@ Fuego automatically serializes and deserializes inputs and outputs with standard
 
 <FlowChart selected="resp" />
 
+## Deserialize binary data
+
+If you just want to read the body of the request as a byte slice, you can use the `[]byte` receiver type.
+
+Don't forget to set the request `Content-Type` header to `application/octet-stream`. 
+
+```go
+fuego.Put(s, "/blob", func(c *fuego.ContextWithBody[[]byte]) (any, error) {
+	body, err := c.Body()
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+})
+```
+
 ## Custom serialization
 
 But you can also use the `Serialize` and `Deserialize` functions to manually serialize and deserialize data.

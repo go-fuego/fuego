@@ -170,6 +170,23 @@ func TestContext_Body(t *testing.T) {
 		require.Equal(t, 30, body.Age)
 	})
 
+	t.Run("can read JSON body with Content-Type application/json", func(t *testing.T) {
+		// Create new Reader
+		a := strings.NewReader(`{"name":"John","age":30}`)
+
+		// Test an http request
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "http://example.com/foo", a)
+		r.Header.Add("Content-Type", "application/json")
+
+		c := NewContext[testStruct](w, r, readOptions{})
+
+		body, err := c.Body()
+		require.NoError(t, err)
+		require.Equal(t, "John", body.Name)
+		require.Equal(t, 30, body.Age)
+	})
+
 	t.Run("can read JSON body twice", func(t *testing.T) {
 		a := strings.NewReader(`{"name":"John","age":30}`)
 
@@ -249,6 +266,37 @@ func TestContext_Body(t *testing.T) {
 		require.Error(t, err)
 		require.Equal(t, "John", body.Name)
 		require.Equal(t, 30, body.Age)
+	})
+
+	t.Run("can read bytes", func(t *testing.T) {
+		// Create new Reader with pure bytes from an image
+		a := bytes.NewReader([]byte(`image`))
+
+		// Test an http request
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "http://example.com/foo", a)
+		r.Header.Add("Content-Type", "application/octet-stream")
+
+		c := NewContext[[]byte](w, r, readOptions{})
+		body, err := c.Body()
+		require.NoError(t, err)
+		require.Equal(t, []byte(`image`), body)
+	})
+
+	t.Run("cannot read bytes if expected type is different than bytes", func(t *testing.T) {
+		// Create new Reader with pure bytes from an image
+		a := bytes.NewReader([]byte(`image`))
+
+		// Test an http request
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "http://example.com/foo", a)
+		r.Header.Add("Content-Type", "application/octet-stream")
+
+		c := NewContext[*struct{}](w, r, readOptions{})
+		body, err := c.Body()
+		require.Error(t, err)
+		require.ErrorContains(t, err, "use []byte as the body type")
+		require.Equal(t, (*struct{})(nil), body)
 	})
 
 	t.Run("can read XML body", func(t *testing.T) {
