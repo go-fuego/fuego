@@ -13,8 +13,9 @@ type ingredientRessource struct {
 }
 
 func (rs ingredientRessource) MountRoutes(s *fuego.Server) {
-	fuego.Get(s, "/ingredients", rs.getAllIngredients)
-	fuego.Post(s, "/ingredients/new", rs.newIngredient)
+	ingredientsGroup := fuego.Group(s, "/ingredients")
+	fuego.Get(ingredientsGroup, "/ingredients", rs.getAllIngredients)
+	fuego.Post(ingredientsGroup, "/ingredients/new", rs.newIngredient)
 }
 
 func (rs ingredientRessource) getAllIngredients(c fuego.ContextNoBody) ([]store.Ingredient, error) {

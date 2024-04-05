@@ -28,7 +28,7 @@ func TestAddTags(t *testing.T) {
 		AddTags("my-tag").
 		AddTags("my-other-tag")
 
-	require.Equal(t, route.Operation.Tags, []string{"string", "my-tag", "my-other-tag"})
+	require.Equal(t, route.Operation.Tags, []string{"my-tag", "my-other-tag"})
 }
 
 func TestRemoveTags(t *testing.T) {

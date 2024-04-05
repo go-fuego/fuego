@@ -12,7 +12,8 @@ type dosingRessource struct {
 }
 
 func (rs dosingRessource) MountRoutes(s *fuego.Server) {
-	fuego.Post(s, "/dosings/new", rs.newDosing)
+	dosingGroup := fuego.Group(s, "/dosings")
+	fuego.Post(dosingGroup, "/new", rs.newDosing)
 }
 
 func (rs dosingRessource) newDosing(c *fuego.ContextWithBody[store.CreateDosingParams]) (store.Dosing, error) {

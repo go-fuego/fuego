@@ -271,3 +271,37 @@ func TestLocalSave(t *testing.T) {
 		require.Error(t, err)
 	})
 }
+
+func TestAutoGroupTags(t *testing.T) {
+	s := NewServer(
+		WithOpenAPIConfig(OpenAPIConfig{
+			DisableLocalSave: true,
+			DisableSwagger:   true,
+		}),
+	)
+	Get(s, "/a", func(*ContextNoBody) (MyStruct, error) {
+		return MyStruct{}, nil
+	})
+
+	group := Group(s, "/group")
+	Get(group, "/b", func(*ContextNoBody) (MyStruct, error) {
+		return MyStruct{}, nil
+	})
+
+	subGroup := Group(group, "/subgroup")
+	Get(subGroup, "/c", func(*ContextNoBody) (MyStruct, error) {
+		return MyStruct{}, nil
+	})
+
+	otherGroup := Group(s, "/other")
+	Get(otherGroup, "/d", func(*ContextNoBody) (MyStruct, error) {
+		return MyStruct{}, nil
+	})
+
+	document := s.OutputOpenAPISpec()
+	require.NotNil(t, document)
+	require.Nil(t, document.Paths.Find("/a").Get.Tags)
+	require.Equal(t, []string{"group"}, document.Paths.Find("/group/b").Get.Tags)
+	require.Equal(t, []string{"subgroup"}, document.Paths.Find("/group/subgroup/c").Get.Tags)
+	require.Equal(t, []string{"other"}, document.Paths.Find("/other/d").Get.Tags)
+}

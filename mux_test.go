@@ -385,7 +385,7 @@ func TestGroupTagsOnRoute(t *testing.T) {
 		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
 		})
-		require.Equal(t, []string{"my-server-tag", "string"}, route.Operation.Tags)
+		require.Equal(t, []string{"my-server-tag"}, route.Operation.Tags)
 	})
 
 	t.Run("route tag override", func(t *testing.T) {
@@ -407,7 +407,7 @@ func TestGroupTagsOnRoute(t *testing.T) {
 			return "test", nil
 		}).AddTags("my-route-tag")
 
-		require.Equal(t, []string{"my-server-tag", "string", "my-route-tag"}, route.Operation.Tags)
+		require.Equal(t, []string{"my-server-tag", "my-route-tag"}, route.Operation.Tags)
 	})
 
 	t.Run("route tag removal", func(t *testing.T) {
@@ -418,7 +418,7 @@ func TestGroupTagsOnRoute(t *testing.T) {
 			return "test", nil
 		}).AddTags("my-route-tag").RemoveTags("my-server-tag")
 
-		require.Equal(t, []string{"string", "my-route-tag"}, route.Operation.Tags)
+		require.Equal(t, []string{"my-route-tag"}, route.Operation.Tags)
 	})
 }
 
