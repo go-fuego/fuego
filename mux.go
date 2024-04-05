@@ -34,6 +34,7 @@ func Group(s *Server, path string) *Server {
 	ss := *s
 	newServer := &ss
 	newServer.basePath += path
+	newServer.groupTag = strings.TrimLeft(path, "/")
 
 	return newServer
 }

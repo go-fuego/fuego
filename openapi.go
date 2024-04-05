@@ -150,9 +150,8 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 	operation.Tags = s.tags
 
 	// Tags
-	tag := tagFromType(*new(T))
-	if tag != "unknown-interface" {
-		operation.Tags = append(operation.Tags, tag)
+	if s.groupTag != "" {
+		operation.Tags = append(operation.Tags, s.groupTag)
 	}
 
 	// Request body
@@ -190,6 +189,7 @@ func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*op
 		}
 	}
 
+	tag := tagFromType(*new(T))
 	// Response body
 	responseSchema, ok := s.OpenApiSpec.Components.Schemas[tag]
 	if !ok {

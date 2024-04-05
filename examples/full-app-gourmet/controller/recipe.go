@@ -17,13 +17,15 @@ func (rs recipeRessource) MountRoutes(s *fuego.Server) {
 	fuego.GetStd(s, "/recipes-standard-with-helpers", rs.getAllRecipesStandardWithHelpers).
 		AddTags("Recipe")
 
-	fuego.Get(s, "/recipes", rs.getAllRecipes).
+	recipeGroup := fuego.Group(s, "/recipes")
+
+	fuego.Get(recipeGroup, "/", rs.getAllRecipes).
 		Summary("Get all recipes").Description("Get all recipes").
 		QueryParam("limit", "number of recipes to return").
 		AddTags("custom")
 
-	fuego.Post(s, "/recipes/new", rs.newRecipe)
-	fuego.Get(s, "/recipes/{id}", rs.getRecipeWithIngredients)
+	fuego.Post(recipeGroup, "/new", rs.newRecipe)
+	fuego.Get(recipeGroup, "/{id}", rs.getRecipeWithIngredients)
 }
 
 func (rs recipeRessource) getAllRecipesStandardWithHelpers(w http.ResponseWriter, r *http.Request) {
