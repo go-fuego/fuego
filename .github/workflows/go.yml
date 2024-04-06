@@ -8,6 +8,9 @@ on:
   pull_request:
     branches: ["main"]
 
+env:
+  GO_VERSION: "1.22"
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -17,13 +20,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Build
-        run: go build -v ./...
+        run: make build
 
       - name: Test
-        run: go test -v -coverprofile=covprofile ./...
+        run: make cover
 
       - name: Install goveralls
         run: go install github.com/mattn/goveralls@latest
@@ -31,17 +34,27 @@ jobs:
       - name: Send coverage
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: goveralls -coverprofile=covprofile -service=github
+        run: goveralls -coverprofile=coverage.out -service=github
 
-  staticcheck:
+  golangci-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: ${{ env.GO_VERSION }}
 
-      - run: go install honnef.co/go/tools/cmd/staticcheck@2023.1.7
+      - run: make lint
 
-      - run: ~/go/bin/staticcheck -checks all
+  govulncheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - run: make dependencies-analyze
+

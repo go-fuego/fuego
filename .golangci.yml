@@ -1,6 +1,24 @@
 run:
-  go: "1.21"
+  go: "1.22"
   concurrency: 4
   timeout: 1m
   tests: false
+
+linters:
+  disable-all: false
+  enable:
+    - errcheck
+    - gofumpt
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+
+linters-settings:
+  gofumpt:
+    extra-rules: true
+  staticcheck:
+    checks: ["all"]
 
