@@ -54,7 +54,7 @@ func main() {
 	s := fuego.NewServer()
 
 	// Add a middleware to a group of routes
-	api := s.Group(s, "/api")
+	api := fuego.Group(s, "/api")
 
 	fuego.Use(api, func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
