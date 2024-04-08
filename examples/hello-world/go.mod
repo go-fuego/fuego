@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/hello-world
 
-go 1.22.0
+go 1.22.2
 
 require github.com/go-fuego/fuego v0.10.3
 
