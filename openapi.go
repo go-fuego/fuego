@@ -144,7 +144,7 @@ var generator = openapi3gen.NewGenerator(
 )
 
 // RegisterOpenAPIOperation registers an OpenAPI operation.
-func RegisterOpenAPIOperation[T any, B any](s *Server, method, path string) (*openapi3.Operation, error) {
+func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openapi3.Operation, error) {
 	operation := openapi3.NewOperation()
 
 	operation.Tags = s.tags
