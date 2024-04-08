@@ -4,8 +4,8 @@
 name: Go
 
 on:
-  push:
   pull_request:
+  push:
     branches: ["main"]
 
 env:
