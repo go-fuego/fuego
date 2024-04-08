@@ -403,7 +403,7 @@ func TestSecurity_StdLoginHandler(t *testing.T) {
 
 func TestSecurity_LoginHandler(t *testing.T) {
 	security := NewSecurity()
-	v := func(user string, password string) (jwt.Claims, error) {
+	v := func(user, password string) (jwt.Claims, error) {
 		if user != "test" || password != "test" {
 			return nil, ErrUnauthorized
 		}

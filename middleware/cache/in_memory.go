@@ -22,6 +22,6 @@ func (t *TTLCache) Get(key string) (string, bool) {
 	return t.cache.Get(key)
 }
 
-func (t *TTLCache) Set(key string, value string) {
+func (t *TTLCache) Set(key, value string) {
 	t.cache.Add(key, value)
 }

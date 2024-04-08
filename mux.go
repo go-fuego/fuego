@@ -47,14 +47,14 @@ type Route[ResponseBody any, RequestBody any] struct {
 }
 
 // Capture all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
-func All[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func All[T, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register(s, Route[T, B]{
 		Path:     path,
 		FullName: FuncName(controller),
 	}, HTTPHandler(s, controller), middlewares...)
 }
 
-func Get[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func Get[T, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register(s, Route[T, B]{
 		Method:   http.MethodGet,
 		Path:     path,
@@ -62,7 +62,7 @@ func Get[T any, B any, Contexted ctx[B]](s *Server, path string, controller func
 	}, HTTPHandler(s, controller), middlewares...)
 }
 
-func Post[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func Post[T, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register(s, Route[T, B]{
 		Method:   http.MethodPost,
 		Path:     path,
@@ -70,7 +70,7 @@ func Post[T any, B any, Contexted ctx[B]](s *Server, path string, controller fun
 	}, HTTPHandler(s, controller), middlewares...)
 }
 
-func Delete[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func Delete[T, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register(s, Route[T, B]{
 		Method: http.MethodDelete,
 		Path:   path,
@@ -79,7 +79,7 @@ func Delete[T any, B any, Contexted ctx[B]](s *Server, path string, controller f
 	}, HTTPHandler(s, controller), middlewares...)
 }
 
-func Put[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func Put[T, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register(s, Route[T, B]{
 		Method:   http.MethodPut,
 		Path:     path,
@@ -87,7 +87,7 @@ func Put[T any, B any, Contexted ctx[B]](s *Server, path string, controller func
 	}, HTTPHandler(s, controller), middlewares...)
 }
 
-func Patch[T any, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func Patch[T, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	return Register(s, Route[T, B]{
 		Method:   http.MethodPatch,
 		Path:     path,
@@ -96,7 +96,7 @@ func Patch[T any, B any, Contexted ctx[B]](s *Server, path string, controller fu
 }
 
 // Register registers a controller into the default mux and documents it in the OpenAPI spec.
-func Register[T any, B any](s *Server, route Route[T, B], controller http.Handler, middlewares ...func(http.Handler) http.Handler) Route[T, B] {
+func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, middlewares ...func(http.Handler) http.Handler) Route[T, B] {
 	route.Handler = controller
 
 	fullPath := s.basePath + route.Path
