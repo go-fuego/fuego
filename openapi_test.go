@@ -258,8 +258,9 @@ func TestValidateSwaggerUrl(t *testing.T) {
 }
 
 func TestLocalSave(t *testing.T) {
+	s := NewServer()
 	t.Run("with valid path", func(t *testing.T) {
-		err := saveOpenAPIToFile("/tmp/jsonSpec.json", []byte("test"))
+		err := s.saveOpenAPIToFile("/tmp/jsonSpec.json", []byte("test"))
 		require.NoError(t, err)
 
 		// cleanup
@@ -267,7 +268,7 @@ func TestLocalSave(t *testing.T) {
 	})
 
 	t.Run("with invalid path", func(t *testing.T) {
-		err := saveOpenAPIToFile("///jsonSpec.json", []byte("test"))
+		err := s.saveOpenAPIToFile("///jsonSpec.json", []byte("test"))
 		require.Error(t, err)
 	})
 }

@@ -16,9 +16,7 @@ import (
 func (s *Server) Run() error {
 	go s.OutputOpenAPISpec()
 
-	if !s.disableStartupMessage {
-		s.printStartupMessage()
-	}
+	s.printStartupMessage()
 
 	s.Server.Handler = s.Mux
 	if s.corsMiddleware != nil {
@@ -29,9 +27,11 @@ func (s *Server) Run() error {
 }
 
 func (s *Server) printStartupMessage() {
-	elapsed := time.Since(s.startTime)
-	slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
-	slog.Info("Server running ✅ on http://"+s.Server.Addr, "started in", elapsed.String())
+	if !s.disableStartupMessages {
+		elapsed := time.Since(s.startTime)
+		slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
+		slog.Info("Server running ✅ on http://"+s.Server.Addr, "started in", elapsed.String())
+	}
 }
 
 // initializes any Context type with the base ContextNoBody context.
