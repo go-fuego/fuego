@@ -65,11 +65,11 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 	}
 
 	if !s.OpenAPIConfig.DisableSwagger {
-		registerOpenAPIRoutes(s, jsonSpec)
+		s.registerOpenAPIRoutes(jsonSpec)
 	}
 
 	if !s.OpenAPIConfig.DisableLocalSave {
-		err := saveOpenAPIToFile(s.OpenAPIConfig.JsonFilePath, jsonSpec)
+		err := s.saveOpenAPIToFile(s.OpenAPIConfig.JsonFilePath, jsonSpec)
 		if err != nil {
 			slog.Error("Error saving spec to local path", "error", err, "path", s.OpenAPIConfig.JsonFilePath)
 		}
@@ -85,7 +85,7 @@ func (s *Server) marshalSpec() ([]byte, error) {
 	return json.Marshal(s.OpenApiSpec)
 }
 
-func saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) error {
+func (s *Server) saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) error {
 	jsonFolder := filepath.Dir(jsonSpecLocalPath)
 
 	err := os.MkdirAll(jsonFolder, 0o750)
@@ -104,12 +104,12 @@ func saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) error {
 		return errors.New("error writing file ")
 	}
 
-	slog.Info("JSON file: " + jsonSpecLocalPath)
+	s.printOpenAPIMessage("JSON file: " + jsonSpecLocalPath)
 	return nil
 }
 
 // Registers the routes to serve the OpenAPI spec and Swagger UI.
-func registerOpenAPIRoutes(s *Server, jsonSpec []byte) {
+func (s *Server) registerOpenAPIRoutes(jsonSpec []byte) {
 	GetStd(s, s.OpenAPIConfig.JsonUrl, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write(jsonSpec)
@@ -120,8 +120,14 @@ func registerOpenAPIRoutes(s *Server, jsonSpec []byte) {
 		Path:   s.OpenAPIConfig.SwaggerUrl + "/",
 	}, s.OpenAPIConfig.UIHandler(s.OpenAPIConfig.JsonUrl))
 
-	slog.Info(fmt.Sprintf("JSON spec: http://%s%s", s.Server.Addr, s.OpenAPIConfig.JsonUrl))
-	slog.Info(fmt.Sprintf("OpenAPI UI: http://%s%s/index.html", s.Server.Addr, s.OpenAPIConfig.SwaggerUrl))
+	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: http://%s%s", s.Server.Addr, s.OpenAPIConfig.JsonUrl))
+	s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: http://%s%s/index.html", s.Server.Addr, s.OpenAPIConfig.SwaggerUrl))
+}
+
+func (s *Server) printOpenAPIMessage(msg string) {
+	if !s.disableStartupMessages {
+		slog.Info(msg)
+	}
 }
 
 func validateJsonSpecLocalPath(jsonSpecLocalPath string) bool {

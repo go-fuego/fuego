@@ -53,9 +53,9 @@ type Server struct {
 
 	middlewares []func(http.Handler) http.Handler
 
-	disableStartupMessage bool
-	disableAutoGroupTags  bool
-	groupTag              string
+	disableStartupMessages bool
+	disableAutoGroupTags   bool
+	groupTag               string
 
 	basePath string
 
@@ -285,8 +285,8 @@ func WithErrorHandler(errorHandler func(err error) error) func(*Server) {
 }
 
 // WithoutStartupMessage disables the startup message
-func WithoutStartupMessage() func(*Server) {
-	return func(c *Server) { c.disableStartupMessage = true }
+func WithoutStartupMessages() func(*Server) {
+	return func(c *Server) { c.disableStartupMessages = true }
 }
 
 // WithoutLogger disables the default logger.

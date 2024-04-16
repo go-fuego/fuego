@@ -277,10 +277,10 @@ func TestWithPort(t *testing.T) {
 
 func TestWithoutStartupMessage(t *testing.T) {
 	s := NewServer(
-		WithoutStartupMessage(),
+		WithoutStartupMessages(),
 	)
 
-	require.True(t, s.disableStartupMessage)
+	require.True(t, s.disableStartupMessages)
 }
 
 func TestWithoutAutoGroupTags(t *testing.T) {
