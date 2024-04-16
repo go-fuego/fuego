@@ -188,6 +188,32 @@ func TestServer_Run(t *testing.T) {
 	})
 }
 
+func TestServer_RunTLS(t *testing.T) {
+	// This is not a standard test, it is here to ensure that the server can run.
+	// Please do not run this kind of test for your controllers, it is NOT unit testing.
+	t.Run("can run TLS server", func(t *testing.T) {
+		s := NewServer(
+			WithoutLogger(),
+		)
+
+		Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
+			return "OK", nil
+		})
+
+		go func() {
+			_ = s.RunTLS("", "")
+		}()
+
+		require.Eventually(t, func() bool {
+			req := httptest.NewRequest("GET", "/test", nil)
+			w := httptest.NewRecorder()
+			s.Mux.ServeHTTP(w, req)
+
+			return w.Body.String() == `OK`
+		}, 5*time.Millisecond, 500*time.Microsecond)
+	})
+}
+
 func TestSetStatusBeforeSend(t *testing.T) {
 	s := NewServer()
 
