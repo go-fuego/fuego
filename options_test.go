@@ -275,7 +275,7 @@ func TestWithPort(t *testing.T) {
 	})
 }
 
-func TestWithoutStartupMessage(t *testing.T) {
+func TestWithoutStartupMessages(t *testing.T) {
 	s := NewServer(
 		WithoutStartupMessages(),
 	)
