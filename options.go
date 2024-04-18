@@ -288,7 +288,7 @@ func WithErrorHandler(errorHandler func(err error) error) func(*Server) {
 	return func(c *Server) { c.ErrorHandler = errorHandler }
 }
 
-// WithoutStartupMessage disables the startup message
+// WithoutStartupMessages disables the startup message
 func WithoutStartupMessages() func(*Server) {
 	return func(c *Server) { c.disableStartupMessages = true }
 }
