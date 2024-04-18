@@ -32,7 +32,7 @@ func (s *Server) setupRun(isTLS bool) {
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) Run() error {
-	s.setupRun(false)
+	s.setupRun(s.isTLS())
 	return s.Server.ListenAndServe()
 }
 
@@ -49,7 +49,7 @@ func (s *Server) printStartupMessage() {
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) RunTLS(certFile, keyFile string) error {
-	s.setupRun(true)
+	s.setupRun(s.isTLS())
 	return s.Server.ListenAndServeTLS(certFile, keyFile)
 }
 

@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"crypto/tls"
 	"errors"
 	"html/template"
 	"io"
@@ -372,4 +373,25 @@ func TestServerTags(t *testing.T) {
 
 		require.Equal(t, subGroup.tags, []string{"my-server-tag"})
 	})
+}
+
+func TestWithTLSConfig(t *testing.T) {
+	testTlsConfig := &tls.Config{}
+	s := NewServer(
+		WithTLSConfig(testTlsConfig),
+	)
+
+	require.NotNil(t, s.Server.TLSConfig)
+	require.Equal(t, testTlsConfig, s.Server.TLSConfig)
+}
+
+func TestWithTLS(t *testing.T) {
+	cert := "foo.pem"
+	key := "bar.key"
+	s := NewServer(
+		WithTLS(cert, key),
+	)
+
+	require.Equal(t, s.tlsCertFile, cert)
+	require.Equal(t, s.tlsKeyFile, key)
 }

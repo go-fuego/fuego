@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"crypto/tls"
 	"fmt"
 	"html/template"
 	"io"
@@ -42,7 +43,7 @@ type Server struct {
 	// [http.ServeMux.Handle] can also be used to register routes.
 	Mux *http.ServeMux
 
-	// Not stored with the oter middlewares because it is a special case :
+	// Not stored with the other middlewares because it is a special case :
 	// it applies on routes that are not registered.
 	// For example, it allows OPTIONS /foo even if it is not declared (only GET /foo is declared).
 	corsMiddleware func(http.Handler) http.Handler
@@ -68,7 +69,7 @@ type Server struct {
 	template *template.Template // TODO: use preparsed templates
 
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
-	DisableOpenapi        bool // If true, the the routes within the server will not generate an openapi spec.
+	DisableOpenapi        bool // If true, the routes within the server will not generate an openapi spec.
 	maxBodySize           int64
 	Serialize             func(w http.ResponseWriter, ans any)   // Used to serialize the response. Defaults to [SendJSON].
 	SerializeError        func(w http.ResponseWriter, err error) // Used to serialize the error response. Defaults to [SendJSONError].
@@ -76,6 +77,9 @@ type Server struct {
 	startTime             time.Time
 
 	OpenAPIConfig OpenAPIConfig
+
+	tlsCertFile string
+	tlsKeyFile  string
 }
 
 // NewServer creates a new server with the given options.
@@ -383,4 +387,23 @@ func (s *Server) RemoveTags(tags ...string) *Server {
 		}
 	}
 	return s
+}
+
+// WithTLSConfig allows setting a custom TLS configuration, and it will make the underling Server run in TLS mode.
+func WithTLSConfig(tlsConfig *tls.Config) func(*Server) {
+	return func(s *Server) {
+		s.Server.TLSConfig = tlsConfig
+	}
+}
+
+// WithTLS allows setting the certificate and key files, and it will make the underling Server run in TLS mode.
+func WithTLS(certFile, keyFile string) func(*Server) {
+	return func(s *Server) {
+		s.tlsCertFile = certFile
+		s.tlsKeyFile = keyFile
+	}
+}
+
+func (s *Server) isTLS() bool {
+	return s.Server.TLSConfig != nil || (s.tlsCertFile != "" && s.tlsKeyFile != "")
 }
