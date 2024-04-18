@@ -396,8 +396,8 @@ func WithTLSConfig(tlsConfig *tls.Config) func(*Server) {
 	}
 }
 
-// WithTLS allows setting the certificate and key files, and it will make the underling Server run in TLS mode.
-func WithTLS(certFile, keyFile string) func(*Server) {
+// WithTLSFiles allows setting the certificate and key files, and it will make the underling Server run in TLS mode.
+func WithTLSFiles(certFile, keyFile string) func(*Server) {
 	return func(s *Server) {
 		s.tlsCertFile = certFile
 		s.tlsKeyFile = keyFile

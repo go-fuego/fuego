@@ -9,6 +9,25 @@ import (
 	"time"
 )
 
+// Run starts the server.
+// It is blocking.
+// It returns an error if the server could not start (it could not bind to the port for example).
+// It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
+func (s *Server) Run() error {
+	go s.OutputOpenAPISpec()
+
+	s.printStartupMessage()
+
+	s.Server.Handler = s.Mux
+	if s.corsMiddleware != nil {
+		s.Server.Handler = s.corsMiddleware(s.Server.Handler)
+	}
+	if s.isTLS() {
+		return s.Server.ListenAndServeTLS(s.tlsCertFile, s.tlsKeyFile)
+	}
+	return s.Server.ListenAndServe()
+}
+
 func (s *Server) printStartupMessage() {
 	if !s.disableStartupMessages {
 		elapsed := time.Since(s.startTime)
@@ -19,35 +38,6 @@ func (s *Server) printStartupMessage() {
 		}
 		slog.Info("Server running ✅ on "+proto+"://"+s.Server.Addr, "started in", elapsed.String())
 	}
-}
-
-func (s *Server) setupRun() {
-	go s.OutputOpenAPISpec()
-
-	s.printStartupMessage()
-
-	s.Server.Handler = s.Mux
-	if s.corsMiddleware != nil {
-		s.Server.Handler = s.corsMiddleware(s.Server.Handler)
-	}
-}
-
-// Run starts the server.
-// It is blocking.
-// It returns an error if the server could not start (it could not bind to the port for example).
-// It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
-func (s *Server) Run() error {
-	s.setupRun()
-	return s.Server.ListenAndServe()
-}
-
-// RunTLS starts the server with TLS.
-// It is blocking.
-// It returns an error if the server could not start (it could not bind to the port for example).
-// It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
-func (s *Server) RunTLS(certFile, keyFile string) error {
-	s.setupRun()
-	return s.Server.ListenAndServeTLS(certFile, keyFile)
 }
 
 // initializes any Context type with the base ContextNoBody context.

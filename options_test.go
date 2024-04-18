@@ -385,11 +385,11 @@ func TestWithTLSConfig(t *testing.T) {
 	require.Equal(t, testTlsConfig, s.Server.TLSConfig)
 }
 
-func TestWithTLS(t *testing.T) {
+func TestWithTLSFiles(t *testing.T) {
 	cert := "foo.pem"
 	key := "bar.key"
 	s := NewServer(
-		WithTLS(cert, key),
+		WithTLSFiles(cert, key),
 	)
 
 	require.Equal(t, s.tlsCertFile, cert)
