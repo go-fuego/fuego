@@ -9,15 +9,20 @@ import (
 	"time"
 )
 
-func (s *Server) setupRun(isTLS bool) {
-	go s.OutputOpenAPISpec()
-	proto := "http"
-	if isTLS {
-		proto = "https"
+func (s *Server) printStartupMessage() {
+	if !s.disableStartupMessages {
+		elapsed := time.Since(s.startTime)
+		slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
+		proto := "http"
+		if s.isTLS() {
+			proto = "https"
+		}
+		slog.Info("Server running ✅ on "+proto+"://"+s.Server.Addr, "started in", elapsed.String())
 	}
-	elapsed := time.Since(s.startTime)
-	slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
-	slog.Info("Server running ✅ on "+proto+"://"+s.Server.Addr, "started in", elapsed.String())
+}
+
+func (s *Server) setupRun() {
+	go s.OutputOpenAPISpec()
 
 	s.printStartupMessage()
 
@@ -32,16 +37,8 @@ func (s *Server) setupRun(isTLS bool) {
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) Run() error {
-	s.setupRun(s.isTLS())
+	s.setupRun()
 	return s.Server.ListenAndServe()
-}
-
-func (s *Server) printStartupMessage() {
-	if !s.disableStartupMessages {
-		elapsed := time.Since(s.startTime)
-		slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
-		slog.Info("Server running ✅ on http://"+s.Server.Addr, "started in", elapsed.String())
-	}
 }
 
 // RunTLS starts the server with TLS.
@@ -49,7 +46,7 @@ func (s *Server) printStartupMessage() {
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) RunTLS(certFile, keyFile string) error {
-	s.setupRun(s.isTLS())
+	s.setupRun()
 	return s.Server.ListenAndServeTLS(certFile, keyFile)
 }
 
