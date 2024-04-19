@@ -454,7 +454,7 @@ func TestServer_RunTLS(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewServer()
+			s := NewServer(WithoutLogger())
 
 			if tc.tlsConfig != nil {
 				s.Server.TLSConfig = tc.tlsConfig
