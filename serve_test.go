@@ -2,10 +2,20 @@ package fuego
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"errors"
+	"fmt"
 	"io"
+	"math/big"
+	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -159,32 +169,6 @@ func TestHttpHandler(t *testing.T) {
 		handler(w, req)
 
 		require.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
-	})
-}
-
-func TestServer_Run(t *testing.T) {
-	// This is not a standard test, it is here to ensure that the server can run.
-	// Please do not run this kind of test for your controllers, it is NOT unit testing.
-	t.Run("can run server", func(t *testing.T) {
-		s := NewServer(
-			WithoutLogger(),
-		)
-
-		Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
-			return "OK", nil
-		})
-
-		go func() {
-			s.Run()
-		}()
-
-		require.Eventually(t, func() bool {
-			req := httptest.NewRequest("GET", "/test", nil)
-			w := httptest.NewRecorder()
-			s.Mux.ServeHTTP(w, req)
-
-			return w.Body.String() == `OK`
-		}, 5*time.Millisecond, 500*time.Microsecond)
 	})
 }
 
@@ -399,4 +383,183 @@ func TestIni(t *testing.T) {
 			})
 		})
 	})
+}
+
+func TestServer_Run(t *testing.T) {
+	// This is not a standard test, it is here to ensure that the server can run.
+	// Please do not run this kind of test for your controllers, it is NOT unit testing.
+	t.Run("can run server", func(t *testing.T) {
+		s := NewServer(
+			WithoutLogger(),
+		)
+
+		Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
+			return "OK", nil
+		})
+
+		go func() {
+			s.Run()
+		}()
+		defer func() { // stop our test server when we are done
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			if err := s.Server.Shutdown(ctx); err != nil {
+				t.Log(err)
+			}
+			cancel()
+		}()
+
+		require.Eventually(t, func() bool {
+			req := httptest.NewRequest("GET", "/test", nil)
+			w := httptest.NewRecorder()
+			s.Mux.ServeHTTP(w, req)
+
+			return w.Body.String() == `OK`
+		}, 5*time.Millisecond, 500*time.Microsecond)
+	})
+}
+
+func TestServer_RunTLS(t *testing.T) {
+	// This is not a standard test, it is here to ensure that the server can run.
+	// Please do not run this kind of test for your controllers, it is NOT unit testing.
+	testHelper, err := newTLSTestHelper()
+	if err != nil {
+		t.Fatal(err)
+	}
+	testTLSConfig, err := testHelper.getTLSConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+	testCertFile, testKeyFile, err := testHelper.getTLSFiles()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(testCertFile)
+	defer os.Remove(testKeyFile)
+
+	tt := []struct {
+		name      string
+		tlsConfig *tls.Config
+		certFile  string
+		keyFile   string
+	}{
+		{
+			name:      "can run TLS server with TLS config and empty files",
+			tlsConfig: testTLSConfig,
+		},
+		{
+			name:     "can run TLS server with TLS files",
+			certFile: testCertFile,
+			keyFile:  testKeyFile,
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			s := NewServer(WithoutLogger())
+
+			if tc.tlsConfig != nil {
+				s.Server.TLSConfig = tc.tlsConfig
+			}
+
+			Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
+				return "OK", nil
+			})
+
+			go func() { // start our test server async
+				_ = s.RunTLS(tc.certFile, tc.keyFile)
+			}()
+			defer func() { // stop our test server when we are done
+				ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+				if err := s.Server.Shutdown(ctx); err != nil {
+					t.Log(err)
+				}
+				cancel()
+			}()
+
+			// wait for the server to start
+			conn, err := net.DialTimeout("tcp", s.Server.Addr, 1*time.Second)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer conn.Close()
+
+			client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
+			resp, err := client.Get(fmt.Sprintf("https://%s/test", s.Server.Addr))
+			if err != nil {
+				t.Fatal(err)
+			}
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			require.Equal(t, []byte("OK"), body)
+		})
+	}
+}
+
+type tlsTestHelper struct {
+	cert []byte
+	key  []byte
+}
+
+func (h *tlsTestHelper) getTLSConfig() (*tls.Config, error) {
+	cert, err := tls.X509KeyPair(h.cert, h.key)
+	if err != nil {
+		return nil, err
+	}
+	return &tls.Config{Certificates: []tls.Certificate{cert}}, nil
+}
+
+func (h *tlsTestHelper) getTLSFiles() (string, string, error) {
+	certFile, err := os.CreateTemp("", "fuego-test-cert-")
+	if err != nil {
+		return "", "", err
+	}
+	defer certFile.Close()
+
+	keyFile, err := os.CreateTemp("", "fuego-test-key-")
+	if err != nil {
+		return "", "", err
+	}
+	defer keyFile.Close()
+
+	if _, err := certFile.Write(h.cert); err != nil {
+		return "", "", err
+	}
+
+	if _, err := keyFile.Write(h.key); err != nil {
+		return "", "", err
+	}
+
+	return certFile.Name(), keyFile.Name(), nil
+}
+
+func newTLSTestHelper() (*tlsTestHelper, error) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return nil, err
+	}
+
+	template := x509.Certificate{
+		SerialNumber: big.NewInt(1),
+		Subject: pkix.Name{
+			Organization: []string{"Example Org"},
+		},
+		NotBefore:             time.Now(),
+		NotAfter:              time.Now().Add(1 * time.Minute),
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		BasicConstraintsValid: true,
+	}
+	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
+	if err != nil {
+		return nil, err
+	}
+	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
+
+	privateKeyBytes, err := x509.MarshalPKCS8PrivateKey(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateKeyBytes})
+	return &tlsTestHelper{cert: certPEM, key: keyPEM}, nil
 }

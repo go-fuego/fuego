@@ -42,7 +42,7 @@ type Server struct {
 	// [http.ServeMux.Handle] can also be used to register routes.
 	Mux *http.ServeMux
 
-	// Not stored with the oter middlewares because it is a special case :
+	// Not stored with the other middlewares because it is a special case :
 	// it applies on routes that are not registered.
 	// For example, it allows OPTIONS /foo even if it is not declared (only GET /foo is declared).
 	corsMiddleware func(http.Handler) http.Handler
@@ -68,7 +68,7 @@ type Server struct {
 	template *template.Template // TODO: use preparsed templates
 
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
-	DisableOpenapi        bool // If true, the the routes within the server will not generate an openapi spec.
+	DisableOpenapi        bool // If true, the routes within the server will not generate an openapi spec.
 	maxBodySize           int64
 	Serialize             func(w http.ResponseWriter, ans any)   // Used to serialize the response. Defaults to [SendJSON].
 	SerializeError        func(w http.ResponseWriter, err error) // Used to serialize the error response. Defaults to [SendJSONError].
@@ -76,6 +76,8 @@ type Server struct {
 	startTime             time.Time
 
 	OpenAPIConfig OpenAPIConfig
+
+	isTLS bool
 }
 
 // NewServer creates a new server with the given options.
@@ -284,7 +286,7 @@ func WithErrorHandler(errorHandler func(err error) error) func(*Server) {
 	return func(c *Server) { c.ErrorHandler = errorHandler }
 }
 
-// WithoutStartupMessage disables the startup message
+// WithoutStartupMessages disables the startup message
 func WithoutStartupMessages() func(*Server) {
 	return func(c *Server) { c.disableStartupMessages = true }
 }
