@@ -187,6 +187,13 @@ func TestServer_Run(t *testing.T) {
 		go func() {
 			s.Run()
 		}()
+		defer func() { // stop our test server when we are done
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			if err := s.Server.Shutdown(ctx); err != nil {
+				t.Log(err)
+			}
+			cancel()
+		}()
 
 		require.Eventually(t, func() bool {
 			req := httptest.NewRequest("GET", "/test", nil)
@@ -435,11 +442,11 @@ func TestServer_RunTLS(t *testing.T) {
 	}{
 		{
 			name: "can run TLS server with TLS config",
-			opts: []func(*Server){WithTLSConfig(testTLSConfig), WithAddr("localhost:65443"), WithoutLogger()},
+			opts: []func(*Server){WithTLSConfig(testTLSConfig), WithoutLogger()},
 		},
 		{
 			name: "can run TLS server with TLS files",
-			opts: []func(*Server){WithTLSFiles(testCertFile, testKeyFile), WithAddr("localhost:65443"), WithoutLogger()},
+			opts: []func(*Server){WithTLSFiles(testCertFile, testKeyFile), WithoutLogger()},
 		},
 	}
 	for _, tc := range tt {
