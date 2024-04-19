@@ -22,10 +22,26 @@ func (s *Server) Run() error {
 	if s.corsMiddleware != nil {
 		s.Server.Handler = s.corsMiddleware(s.Server.Handler)
 	}
-	if s.isTLS() {
-		return s.Server.ListenAndServeTLS(s.tlsCertFile, s.tlsKeyFile)
-	}
+
 	return s.Server.ListenAndServe()
+}
+
+// RunTLS starts the server with a TLS listener
+// It is blocking.
+// It returns an error if the server could not start (it could not bind to the port for example).
+// It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
+func (s *Server) RunTLS(certFile, keyFile string) error {
+	s.isTLS = true
+	go s.OutputOpenAPISpec()
+
+	s.printStartupMessage()
+
+	s.Server.Handler = s.Mux
+	if s.corsMiddleware != nil {
+		s.Server.Handler = s.corsMiddleware(s.Server.Handler)
+	}
+
+	return s.Server.ListenAndServeTLS(certFile, keyFile)
 }
 
 func (s *Server) printStartupMessage() {
@@ -33,7 +49,7 @@ func (s *Server) printStartupMessage() {
 		elapsed := time.Since(s.startTime)
 		slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
 		proto := "http"
-		if s.isTLS() {
+		if s.isTLS {
 			proto = "https"
 		}
 		slog.Info("Server running ✅ on "+proto+"://"+s.Server.Addr, "started in", elapsed.String())

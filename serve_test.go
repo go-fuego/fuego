@@ -437,28 +437,35 @@ func TestServer_RunTLS(t *testing.T) {
 	defer os.Remove(testKeyFile)
 
 	tt := []struct {
-		name string
-		opts []func(*Server)
+		name      string
+		tlsConfig *tls.Config
+		certFile  string
+		keyFile   string
 	}{
 		{
-			name: "can run TLS server with TLS config",
-			opts: []func(*Server){WithTLSConfig(testTLSConfig), WithoutLogger()},
+			name:      "can run TLS server with TLS config and empty files",
+			tlsConfig: testTLSConfig,
 		},
 		{
-			name: "can run TLS server with TLS files",
-			opts: []func(*Server){WithTLSFiles(testCertFile, testKeyFile), WithoutLogger()},
+			name:     "can run TLS server with TLS files",
+			certFile: testCertFile,
+			keyFile:  testKeyFile,
 		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewServer(tc.opts...)
+			s := NewServer()
+
+			if tc.tlsConfig != nil {
+				s.Server.TLSConfig = tc.tlsConfig
+			}
 
 			Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
 				return "OK", nil
 			})
 
 			go func() { // start our test server async
-				_ = s.Run()
+				_ = s.RunTLS(tc.certFile, tc.keyFile)
 			}()
 			defer func() { // stop our test server when we are done
 				ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)

@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"crypto/tls"
 	"fmt"
 	"html/template"
 	"io"
@@ -78,8 +77,7 @@ type Server struct {
 
 	OpenAPIConfig OpenAPIConfig
 
-	tlsCertFile string
-	tlsKeyFile  string
+	isTLS bool
 }
 
 // NewServer creates a new server with the given options.
@@ -387,23 +385,4 @@ func (s *Server) RemoveTags(tags ...string) *Server {
 		}
 	}
 	return s
-}
-
-// WithTLSConfig allows setting a custom TLS configuration, and it will make the underling Server run in TLS mode.
-func WithTLSConfig(tlsConfig *tls.Config) func(*Server) {
-	return func(s *Server) {
-		s.Server.TLSConfig = tlsConfig
-	}
-}
-
-// WithTLSFiles allows setting the certificate and key files, and it will make the underling Server run in TLS mode.
-func WithTLSFiles(certFile, keyFile string) func(*Server) {
-	return func(s *Server) {
-		s.tlsCertFile = certFile
-		s.tlsKeyFile = keyFile
-	}
-}
-
-func (s *Server) isTLS() bool {
-	return s.Server.TLSConfig != nil || (s.tlsCertFile != "" && s.tlsKeyFile != "")
 }
