@@ -8,5 +8,4 @@ use (
 	./examples/full-app-gourmet
 	./examples/hello-world
 	./examples/openapi
-	./examples/acme-tls
 )
