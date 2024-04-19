@@ -23,6 +23,7 @@ var (
 
 // main starts a simple Fuego 🔥 server with ACME certificates from Let's Encrypt
 // It also uses a simple HTTP server to solve the ACME HTTP challenges and redirect any HTTP request to HTTPS
+// For this to run proper you need to use real domain name (and email) pointing to a server with ports 80 and 443
 func main() {
 	flag.StringVar(&domainName, "td", "", "domain name to use for TLS")
 	flag.StringVar(&acmeEmail, "te", "", "email address for ACME Server")
