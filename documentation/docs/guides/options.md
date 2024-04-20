@@ -58,8 +58,8 @@ import "github.com/rs/cors"
 
 s := fuego.NewServer(
 	fuego.WithCorsMiddleware(cors.New(cors.Options{
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
 	}).Handler),
 )
 ```
