@@ -120,12 +120,8 @@ func (s *Server) registerOpenAPIRoutes(jsonSpec []byte) {
 		Path:   s.OpenAPIConfig.SwaggerUrl + "/",
 	}, s.OpenAPIConfig.UIHandler(s.OpenAPIConfig.JsonUrl))
 
-	proto := "http"
-	if s.isTLS {
-		proto = "https"
-	}
-	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s://%s%s", proto, s.Server.Addr, s.OpenAPIConfig.JsonUrl))
-	s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s://%s%s/index.html", proto, s.Server.Addr, s.OpenAPIConfig.SwaggerUrl))
+	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s://%s%s", s.proto(), s.Server.Addr, s.OpenAPIConfig.JsonUrl))
+	s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s://%s%s/index.html", s.proto(), s.Server.Addr, s.OpenAPIConfig.SwaggerUrl))
 }
 
 func (s *Server) printOpenAPIMessage(msg string) {

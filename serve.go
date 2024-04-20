@@ -14,15 +14,7 @@ import (
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) Run() error {
-	go s.OutputOpenAPISpec()
-
-	s.printStartupMessage()
-
-	s.Server.Handler = s.Mux
-	if s.corsMiddleware != nil {
-		s.Server.Handler = s.corsMiddleware(s.Server.Handler)
-	}
-
+	s.setup()
 	return s.Server.ListenAndServe()
 }
 
@@ -32,28 +24,34 @@ func (s *Server) Run() error {
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) RunTLS(certFile, keyFile string) error {
 	s.isTLS = true
-	go s.OutputOpenAPISpec()
 
+	s.setup()
+	return s.Server.ListenAndServeTLS(certFile, keyFile)
+}
+
+func (s *Server) setup() {
+	go s.OutputOpenAPISpec()
 	s.printStartupMessage()
 
 	s.Server.Handler = s.Mux
 	if s.corsMiddleware != nil {
 		s.Server.Handler = s.corsMiddleware(s.Server.Handler)
 	}
-
-	return s.Server.ListenAndServeTLS(certFile, keyFile)
 }
 
 func (s *Server) printStartupMessage() {
 	if !s.disableStartupMessages {
 		elapsed := time.Since(s.startTime)
 		slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
-		proto := "http"
-		if s.isTLS {
-			proto = "https"
-		}
-		slog.Info("Server running ✅ on "+proto+"://"+s.Server.Addr, "started in", elapsed.String())
+		slog.Info("Server running ✅ on "+s.proto()+"://"+s.Server.Addr, "started in", elapsed.String())
 	}
+}
+
+func (s *Server) proto() string {
+	if s.isTLS {
+		return "https"
+	}
+	return "http"
 }
 
 // initializes any Context type with the base ContextNoBody context.
