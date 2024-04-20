@@ -162,7 +162,7 @@ func WithTemplateFS(fs fs.FS) func(*Server) {
 //			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 //			AllowedHeaders:   []string{"*"},
 //			AllowCredentials: true,
-//		}))
+//		}).Handler)
 //	)
 func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Server) {
 	return func(c *Server) { c.corsMiddleware = corsMiddleware }
