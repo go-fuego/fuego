@@ -240,19 +240,24 @@ func schemaDive[V any](s *Server, t reflect.Type, schemaRef openapi3.SchemaRef, 
 		}
 		return schemaRef, nil
 	default:
-		componentRef, ok := s.OpenApiSpec.Components.Schemas[t.Name()]
-		if !ok {
-			var err error
-			componentRef, err = generator.NewSchemaRefForValue(new(V), s.OpenApiSpec.Components.Schemas)
-			if err != nil {
-				return openapi3.SchemaRef{}, err
-			}
-			s.OpenApiSpec.Components.Schemas[t.Name()] = componentRef
-		}
-		schemaRef.Value = componentRef.Value
+		var err error
 		schemaRef.Ref = "#/components/schemas/" + t.Name()
-		return schemaRef, nil
+		schemaRef.Value, err = s.getOrCreateSchema(t.Name(), new(V))
+		return schemaRef, err
 	}
+}
+
+func (s *Server) getOrCreateSchema(key string, v any) (*openapi3.Schema, error) {
+	var err error
+	schemaRef, ok := s.OpenApiSpec.Components.Schemas[key]
+	if !ok {
+		schemaRef, err = generator.NewSchemaRefForValue(v, s.OpenApiSpec.Components.Schemas)
+		if err != nil {
+			return nil, err
+		}
+		s.OpenApiSpec.Components.Schemas[key] = schemaRef
+	}
+	return schemaRef.Value, err
 }
 
 func tagFromType(v any) string {
