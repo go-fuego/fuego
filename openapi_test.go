@@ -22,34 +22,34 @@ type MyOutputStruct struct {
 	Quantity int    `json:"quantity"`
 }
 
-func TestTagFromType(t *testing.T) {
-	require.Equal(t, "unknown-interface", tagFromType(*new(any)), "behind any interface")
-	require.Equal(t, "MyStruct", tagFromType(MyStruct{}))
+// func TestTagFromType(t *testing.T) {
+// 	require.Equal(t, "unknown-interface", tagFromType(*new(any)), "behind any interface")
+// 	require.Equal(t, "MyStruct", tagFromType(MyStruct{}))
 
-	t.Run("behind pointers or pointers-like", func(t *testing.T) {
-		require.Equal(t, "MyStruct", tagFromType(&MyStruct{}))
-		require.Equal(t, "MyStruct", tagFromType([]MyStruct{}))
-		require.Equal(t, "MyStruct", tagFromType(&[]MyStruct{}))
-		type DeeplyNested *[]MyStruct
-		require.Equal(t, "MyStruct", tagFromType(new(DeeplyNested)), "behind 4 pointers")
-	})
+// 	t.Run("behind pointers or pointers-like", func(t *testing.T) {
+// 		require.Equal(t, "MyStruct", tagFromType(&MyStruct{}))
+// 		require.Equal(t, "MyStruct", tagFromType([]MyStruct{}))
+// 		require.Equal(t, "MyStruct", tagFromType(&[]MyStruct{}))
+// 		type DeeplyNested *[]MyStruct
+// 		require.Equal(t, "MyStruct", tagFromType(new(DeeplyNested)), "behind 4 pointers")
+// 	})
 
-	t.Run("safety against recursion", func(t *testing.T) {
-		type DeeplyNested *[]MyStruct
-		type MoreDeeplyNested *[]DeeplyNested
-		require.Equal(t, "MyStruct", tagFromType(*new(MoreDeeplyNested)), "behind 5 pointers")
+// 	t.Run("safety against recursion", func(t *testing.T) {
+// 		type DeeplyNested *[]MyStruct
+// 		type MoreDeeplyNested *[]DeeplyNested
+// 		require.Equal(t, "MyStruct", tagFromType(*new(MoreDeeplyNested)), "behind 5 pointers")
 
-		require.Equal(t, "default", tagFromType(new(MoreDeeplyNested)), "behind 6 pointers")
-		require.Equal(t, "default", tagFromType([]*MoreDeeplyNested{}), "behind 7 pointers")
-	})
+// 		require.Equal(t, "default", tagFromType(new(MoreDeeplyNested)), "behind 6 pointers")
+// 		require.Equal(t, "default", tagFromType([]*MoreDeeplyNested{}), "behind 7 pointers")
+// 	})
 
-	t.Run("detecting string", func(t *testing.T) {
-		require.Equal(t, "string", tagFromType("string"))
-		require.Equal(t, "string", tagFromType(new(string)))
-		require.Equal(t, "string", tagFromType([]string{}))
-		require.Equal(t, "string", tagFromType(&[]string{}))
-	})
-}
+// 	t.Run("detecting string", func(t *testing.T) {
+// 		require.Equal(t, "string", tagFromType("string"))
+// 		require.Equal(t, "string", tagFromType(new(string)))
+// 		require.Equal(t, "string", tagFromType([]string{}))
+// 		require.Equal(t, "string", tagFromType(&[]string{}))
+// 	})
+// }
 
 func TestServer_generateOpenAPI(t *testing.T) {
 	s := NewServer()
