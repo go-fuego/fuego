@@ -221,7 +221,7 @@ func schemaTagFromType[V any](s *Server, v any) (schemaTag, error) {
 		}, nil
 	}
 
-	return dive[V](s, reflect.TypeOf(v), schemaTag{}, 4)
+	return dive[V](s, reflect.TypeOf(v), schemaTag{}, 5)
 }
 
 func dive[V any](s *Server, t reflect.Type, tag schemaTag, maxDepth int) (schemaTag, error) {
@@ -244,6 +244,7 @@ func dive[V any](s *Server, t reflect.Type, tag schemaTag, maxDepth int) (schema
 			return schemaTag{}, err
 		}
 
+		tag.name = item.name
 		tag.Value = &openapi3.Schema{
 			Type:  "array",
 			Items: &item.SchemaRef,
