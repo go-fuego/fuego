@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,34 +23,127 @@ type MyOutputStruct struct {
 	Quantity int    `json:"quantity"`
 }
 
-// func TestTagFromType(t *testing.T) {
-// 	require.Equal(t, "unknown-interface", tagFromType(*new(any)), "behind any interface")
-// 	require.Equal(t, "MyStruct", tagFromType(MyStruct{}))
+type testCaseForTagType[V any] struct {
+	name        string
+	description string
+	inputType   V
+	s           *Server
 
-// 	t.Run("behind pointers or pointers-like", func(t *testing.T) {
-// 		require.Equal(t, "MyStruct", tagFromType(&MyStruct{}))
-// 		require.Equal(t, "MyStruct", tagFromType([]MyStruct{}))
-// 		require.Equal(t, "MyStruct", tagFromType(&[]MyStruct{}))
-// 		type DeeplyNested *[]MyStruct
-// 		require.Equal(t, "MyStruct", tagFromType(new(DeeplyNested)), "behind 4 pointers")
-// 	})
+	expectedTagValue string
+	expectedErr      error
+}
 
-// 	t.Run("safety against recursion", func(t *testing.T) {
-// 		type DeeplyNested *[]MyStruct
-// 		type MoreDeeplyNested *[]DeeplyNested
-// 		require.Equal(t, "MyStruct", tagFromType(*new(MoreDeeplyNested)), "behind 5 pointers")
+func runTestCase[V any](tc testCaseForTagType[V]) func(t *testing.T) {
+	return func(t *testing.T) {
+		tag, err := schemaTagFromType[V](tc.s, tc.inputType)
+		require.Equal(t, tc.expectedErr, err, tc.description)
+		assert.Equal(t, tc.expectedTagValue, tag.name, tc.description)
+	}
+}
 
-// 		require.Equal(t, "default", tagFromType(new(MoreDeeplyNested)), "behind 6 pointers")
-// 		require.Equal(t, "default", tagFromType([]*MoreDeeplyNested{}), "behind 7 pointers")
-// 	})
+func Test_tagFromType(t *testing.T) {
+	s := NewServer()
+	type DeeplyNested *[]MyStruct
+	type MoreDeeplyNested *[]DeeplyNested
 
-// 	t.Run("detecting string", func(t *testing.T) {
-// 		require.Equal(t, "string", tagFromType("string"))
-// 		require.Equal(t, "string", tagFromType(new(string)))
-// 		require.Equal(t, "string", tagFromType([]string{}))
-// 		require.Equal(t, "string", tagFromType(&[]string{}))
-// 	})
-// }
+	tcs := []testCaseForTagType[any]{
+		{
+			name:             "unknown_interface",
+			description:      "behind any interface",
+			inputType:        *new(any),
+			expectedTagValue: "unknown-interface",
+			s:                s,
+		},
+		{
+			name:             "simple_struct",
+			description:      "basic struct",
+			inputType:        MyStruct{},
+			expectedTagValue: "MyStruct",
+			s:                s,
+		},
+		{
+			name:             "is_pointer",
+			description:      "",
+			inputType:        &MyStruct{},
+			expectedTagValue: "MyStruct",
+			s:                s,
+		},
+		{
+			name:             "is_array",
+			description:      "",
+			inputType:        []MyStruct{},
+			expectedTagValue: "MyStruct",
+			s:                s,
+		},
+		{
+			name:             "is_reference_to_array",
+			description:      "",
+			inputType:        &[]MyStruct{},
+			expectedTagValue: "MyStruct",
+			s:                s,
+		},
+		{
+			name:             "is_deeply_nested",
+			description:      "behind 4 pointers",
+			inputType:        new(DeeplyNested),
+			expectedTagValue: "MyStruct",
+			s:                s,
+		},
+		{
+			name:             "5_pointers",
+			description:      "behind 5 pointers",
+			inputType:        *new(MoreDeeplyNested),
+			expectedTagValue: "MyStruct",
+			s:                s,
+		},
+		{
+			name:             "6_pointers",
+			description:      "behind 6 pointers",
+			inputType:        new(MoreDeeplyNested),
+			expectedTagValue: "default",
+			s:                s,
+		},
+		{
+			name:             "7_pointers",
+			description:      "behind 7 pointers",
+			inputType:        []*MoreDeeplyNested{},
+			expectedTagValue: "default",
+			s:                s,
+		},
+		{
+			name:             "detecting_string",
+			description:      "",
+			inputType:        "string",
+			expectedTagValue: "string",
+			s:                s,
+		},
+		{
+			name:             "new_string",
+			description:      "",
+			inputType:        new(string),
+			expectedTagValue: "string",
+			s:                s,
+		},
+		{
+			name:             "string_array",
+			description:      "",
+			inputType:        []string{},
+			expectedTagValue: "string",
+			s:                s,
+		},
+		{
+			name:             "pointer_string_array",
+			description:      "",
+			inputType:        &[]string{},
+			expectedTagValue: "string",
+			s:                s,
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, runTestCase(tc))
+	}
+}
 
 func TestServer_generateOpenAPI(t *testing.T) {
 	s := NewServer()
