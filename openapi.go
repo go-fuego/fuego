@@ -168,6 +168,7 @@ func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openap
 		if err != nil {
 			return operation, err
 		}
+		s.OpenApiSpec.Components.Schemas[bodyTag] = bodySchema
 
 		content := openapi3.NewContentWithSchema(bodySchema.Value, []string{"application/json"})
 		content["application/json"].Schema.Ref = "#/components/schemas/" + bodyTag
@@ -192,6 +193,7 @@ func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openap
 	if err != nil {
 		return operation, err
 	}
+	s.OpenApiSpec.Components.Schemas[tag] = responseSchema
 
 	content := openapi3.NewContentWithSchema(responseSchema.Value, []string{"application/json"})
 	content["application/json"].Schema.Ref = "#/components/schemas/" + tag
