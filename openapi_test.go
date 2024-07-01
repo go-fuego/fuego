@@ -30,13 +30,11 @@ type testCaseForTagType[V any] struct {
 	s           *Server
 
 	expectedTagValue string
-	expectedErr      error
 }
 
 func runTestCase[V any](tc testCaseForTagType[V]) func(t *testing.T) {
 	return func(t *testing.T) {
-		tag, err := schemaTagFromType[V](tc.s, tc.inputType)
-		require.Equal(t, tc.expectedErr, err, tc.description)
+		tag := schemaTagFromType[V](tc.s, tc.inputType)
 		assert.Equal(t, tc.expectedTagValue, tag.name, tc.description)
 	}
 }
