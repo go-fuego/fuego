@@ -3,12 +3,13 @@ module github.com/go-fuego/fuego
 go 1.22.2
 
 require (
-	github.com/getkin/kin-openapi v0.123.0
+	github.com/getkin/kin-openapi v0.125.0
 	github.com/go-playground/validator/v10 v10.19.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/gomarkdown/markdown v0.0.0-20231222211730-1d6d20845b47
 	github.com/gorilla/schema v1.2.1
 	github.com/hashicorp/golang-lru/v2 v2.0.7
+	github.com/rs/cors v1.11.0
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1
 )
