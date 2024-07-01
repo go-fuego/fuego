@@ -161,10 +161,7 @@ func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openap
 	}
 
 	// Request body
-	bodyTag, err := schemaTagFromType[B](s, *new(B))
-	if err != nil {
-		return operation, err
-	}
+	bodyTag := schemaTagFromType[B](s, *new(B))
 	if (method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch) && bodyTag.name != "unknown-interface" && bodyTag.name != "string" {
 		content := openapi3.NewContentWithSchemaRef(&bodyTag.SchemaRef, []string{"application/json"})
 		requestBody := openapi3.NewRequestBody().
@@ -183,10 +180,7 @@ func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openap
 		}
 	}
 
-	responseSchema, err := schemaTagFromType[T](s, *new(T))
-	if err != nil {
-		return operation, err
-	}
+	responseSchema := schemaTagFromType[T](s, *new(T))
 	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json"})
 	response := openapi3.NewResponse().
 		WithDescription("OK").
@@ -211,27 +205,34 @@ type schemaTag struct {
 	name string
 }
 
-func schemaTagFromType[V any](s *Server, v any) (schemaTag, error) {
+func schemaTagFromType[V any](s *Server, v any) schemaTag {
 	if v == nil {
 		return schemaTag{
 			name: "unknown-interface",
 			SchemaRef: openapi3.SchemaRef{
 				Ref: "#/components/schemas/unknown-interface",
 			},
-		}, nil
+		}
 	}
 
 	return dive[V](s, reflect.TypeOf(v), schemaTag{}, 5)
 }
 
-func dive[V any](s *Server, t reflect.Type, tag schemaTag, maxDepth int) (schemaTag, error) {
+// dive returns a schemaTag which includes the generated openapi3.SchemaRef and
+// the name of the struct being passed in.
+// If the type is a pointer, map, channel, function, or unsafe pointer,
+// it will dive into the type and return the name of the type it points to.
+// If the type is a slice or array type it will dive into the type as well as
+// build and openapi3.Schema where Type is array and Ref is set to the proper
+// components Schema
+func dive[V any](s *Server, t reflect.Type, tag schemaTag, maxDepth int) schemaTag {
 	if maxDepth == 0 {
 		return schemaTag{
 			name: "default",
 			SchemaRef: openapi3.SchemaRef{
 				Ref: "#/components/schemas/default",
 			},
-		}, nil
+		}
 	}
 
 	switch t.Kind() {
@@ -239,36 +240,27 @@ func dive[V any](s *Server, t reflect.Type, tag schemaTag, maxDepth int) (schema
 		return dive[V](s, t.Elem(), tag, maxDepth-1)
 
 	case reflect.Slice, reflect.Array:
-		item, err := dive[V](s, t.Elem(), tag, maxDepth-1)
-		if err != nil {
-			return schemaTag{}, err
-		}
-
+		item := dive[V](s, t.Elem(), tag, maxDepth-1)
 		tag.name = item.name
 		tag.Value = &openapi3.Schema{
 			Type:  "array",
 			Items: &item.SchemaRef,
 		}
-		return tag, nil
+		return tag
 
 	default:
-		var err error
 		tag.name = t.Name()
 		tag.Ref = "#/components/schemas/" + tag.name
-		tag.Value, err = s.getOrCreateSchema(tag.name, new(V))
-		return tag, err
+		tag.Value = s.getOrCreateSchema(tag.name, new(V))
+		return tag
 	}
 }
 
-func (s *Server) getOrCreateSchema(key string, v any) (*openapi3.Schema, error) {
-	var err error
+func (s *Server) getOrCreateSchema(key string, v any) *openapi3.Schema {
 	schemaRef, ok := s.OpenApiSpec.Components.Schemas[key]
 	if !ok {
-		schemaRef, err = generator.NewSchemaRefForValue(v, s.OpenApiSpec.Components.Schemas)
-		if err != nil {
-			return nil, err
-		}
+		schemaRef, _ = generator.NewSchemaRefForValue(v, s.OpenApiSpec.Components.Schemas)
 		s.OpenApiSpec.Components.Schemas[key] = schemaRef
 	}
-	return schemaRef.Value, err
+	return schemaRef.Value
 }
