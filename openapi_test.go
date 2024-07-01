@@ -32,13 +32,6 @@ type testCaseForTagType[V any] struct {
 	expectedTagValue string
 }
 
-func runTestCase[V any](tc testCaseForTagType[V]) func(t *testing.T) {
-	return func(t *testing.T) {
-		tag := schemaTagFromType[V](tc.s, tc.inputType)
-		assert.Equal(t, tc.expectedTagValue, tag.name, tc.description)
-	}
-}
-
 func Test_tagFromType(t *testing.T) {
 	s := NewServer()
 	type DeeplyNested *[]MyStruct
@@ -139,7 +132,10 @@ func Test_tagFromType(t *testing.T) {
 	}
 
 	for _, tc := range tcs {
-		t.Run(tc.name, runTestCase(tc))
+		t.Run(tc.name, func(t *testing.T) {
+			tag := schemaTagFromType(tc.s, tc.inputType)
+			assert.Equal(t, tc.expectedTagValue, tag.name, tc.description)
+		})
 	}
 }
 
