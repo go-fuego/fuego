@@ -207,6 +207,8 @@ type schemaTag struct {
 
 func schemaTagFromType[V any](s *Server, v any) schemaTag {
 	if v == nil {
+		// ensure we add unknown-interface to our schemas
+		s.getOrCreateSchema("unknown-interface", struct{}{})
 		return schemaTag{
 			name: "unknown-interface",
 			SchemaRef: openapi3.SchemaRef{
