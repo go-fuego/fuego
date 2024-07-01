@@ -123,9 +123,9 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, m
 		route.FullName = route.Path
 	}
 
-	route.Operation.Summary = NameFromNamespace(route.FullName)
+	route.Operation.Summary = NameFromNamespace(route.FullName, camelToHuman)
 	route.Operation.Description = "controller: `" + route.FullName + "`\n\n---\n\n"
-	route.Operation.OperationID = route.Method + " " + s.basePath + route.Path + ":" + route.FullName
+	route.Operation.OperationID = route.Method + " " + s.basePath + route.Path + ":" + NameFromNamespace(route.FullName)
 
 	return route
 }
@@ -206,9 +206,13 @@ func FuncName(f interface{}) string {
 	return strings.TrimSuffix(runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name(), "-fm")
 }
 
-func NameFromNamespace(namespace string) string {
-	fullName := strings.Split(namespace, ".")
-	return camelToHuman(fullName[len(fullName)-1])
+func NameFromNamespace(namespace string, opts ...func(string) string) string {
+	ss := strings.Split(namespace, ".")
+	name := ss[len(ss)-1]
+	for _, o := range opts {
+		name = o(name)
+	}
+	return name
 }
 
 // transform camelCase to human readable string
