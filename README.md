@@ -17,6 +17,16 @@ Go framework generating OpenAPI documentation from code. Inspired by Nest, built
 
 Also empowers `html/template`, `a-h/templ` and `maragudk/gomponents`: see [the example](./examples/full-app-gourmet) - actually running [in prod](https://gourmet.quimerch.com)!
 
+## Sponsors
+
+Fuego is proudly sponsored by [Zuplo](https://zuplo.link/fuego-gh), that provides [a Fuego integration](https://zuplo.link/fuego-gh)!
+
+<div align="center">
+<img src="./assets/Zuplo.png" style="border-radius:10px" height="100" alt="Fuego Logo" />
+</div>
+
+> Zuplo allows you to secure your Fuego API, scale it globally, generate documentation from your OpenAPI, and add monetization.
+
 ## Why Fuego?
 
 Chi, Gin, Fiber and Echo are great frameworks. But since they were designed a long time ago, [their current API does not allow them](https://github.com/gin-gonic/gin/issues/155) to deduce OpenAPI types from signatures, things that are now possible with generics. Fuego offers a lot of "modern Go based" features that make it easy to develop APIs and web applications.

@@ -91,6 +91,12 @@ const config: Config = {
           label: "GitHub",
           position: "right",
         },
+        {
+          position: "left",
+          value:
+            "<a href='https://zuplo.link/fuego-gh' style='background-color: rgb(255 0 189);padding: 6px;border-radius: 2px; color: white'>Try Zuplo!</a> <span class='hidden-when-small'>Serverless API Gateway, designed for developers.</span>",
+          type: "html",
+        },
       ],
     },
     footer: {

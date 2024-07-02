@@ -28,3 +28,9 @@
   --ifm-color-primary-lightest: #ffe1b7;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+@media only screen and (max-width: 1300px) {
+  .hidden-when-small {
+    display: none;
+  }
+}
