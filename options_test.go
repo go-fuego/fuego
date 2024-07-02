@@ -37,15 +37,14 @@ func TestNewServer(t *testing.T) {
 }
 
 func TestWithXML(t *testing.T) {
-	s := NewServer(
-		WithXML(),
-	)
+	s := NewServer()
 	Get(s, "/", controller)
 	Get(s, "/error", controllerWithError)
 
 	t.Run("response is XML", func(t *testing.T) {
 		recorder := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/", nil)
+		req.Header.Set("Accept", "application/xml")
 
 		s.Mux.ServeHTTP(recorder, req)
 
@@ -57,12 +56,13 @@ func TestWithXML(t *testing.T) {
 	t.Run("error response is XML", func(t *testing.T) {
 		recorder := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/error", nil)
+		req.Header.Set("Accept", "application/xml")
 
 		s.Mux.ServeHTTP(recorder, req)
 
 		require.Equal(t, 500, recorder.Code)
-		require.Equal(t, "application/xml", recorder.Header().Get("Content-Type"))
 		require.Equal(t, "<HTTPError><title>Internal Server Error</title><status>500</status></HTTPError>", recorder.Body.String())
+		require.Equal(t, "application/xml", recorder.Header().Get("Content-Type"))
 	})
 }
 

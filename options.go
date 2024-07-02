@@ -70,10 +70,14 @@ type Server struct {
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
 	DisableOpenapi        bool // If true, the routes within the server will not generate an openapi spec.
 	maxBodySize           int64
-	Serialize             func(w http.ResponseWriter, ans any)   // Used to serialize the response. Defaults to [SendJSON].
-	SerializeError        func(w http.ResponseWriter, err error) // Used to serialize the error response. Defaults to [SendJSONError].
-	ErrorHandler          func(err error) error                  // Used to transform any error into a unified error type structure with status code. Defaults to [ErrorHandler]
-	startTime             time.Time
+
+	// Used to serialize the response. Defaults to [SendJSON].
+	//
+	// Deprecated: fuego supports automatic serialization when using the header "Accept: xxx".
+	Serialize      func(w http.ResponseWriter, ans any)
+	SerializeError func(w http.ResponseWriter, err error) // Used to serialize the error response. Defaults to [SendJSONError].
+	ErrorHandler   func(err error) error                  // Used to transform any error into a unified error type structure with status code. Defaults to [ErrorHandler]
+	startTime      time.Time
 
 	OpenAPIConfig OpenAPIConfig
 
@@ -258,6 +262,9 @@ func WithAddr(addr string) func(*Server) {
 	return func(c *Server) { c.Server.Addr = addr }
 }
 
+// WithXML sets the serializer to XML
+//
+// Deprecated: fuego supports automatic XML serialization when using the header "Accept: application/xml".
 func WithXML() func(*Server) {
 	return func(c *Server) {
 		c.Serialize = SendXML
