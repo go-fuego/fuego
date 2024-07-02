@@ -123,9 +123,9 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, m
 		route.FullName = route.Path
 	}
 
-	route.Operation.Summary = NameFromNamespace(route.FullName)
+	route.Operation.Summary = route.NameFromNamespace(camelToHuman)
 	route.Operation.Description = "controller: `" + route.FullName + "`\n\n---\n\n"
-	route.Operation.OperationID = route.Method + " " + s.basePath + route.Path + ":" + route.FullName
+	route.Operation.OperationID = route.Method + " " + s.basePath + route.Path + ":" + route.NameFromNamespace()
 
 	return route
 }
@@ -206,9 +206,19 @@ func FuncName(f interface{}) string {
 	return strings.TrimSuffix(runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name(), "-fm")
 }
 
-func NameFromNamespace(namespace string) string {
-	fullName := strings.Split(namespace, ".")
-	return camelToHuman(fullName[len(fullName)-1])
+// NameFromNamespace returns the Route's FullName final string
+// delimited by `.`. Essentially getting the name of the function
+// and leaving the package path
+//
+// The output can be further modified with a list of optional
+// string manipulation funcs (i.e func(string) string)
+func (r Route[T, B]) NameFromNamespace(opts ...func(string) string) string {
+	ss := strings.Split(r.FullName, ".")
+	name := ss[len(ss)-1]
+	for _, o := range opts {
+		name = o(name)
+	}
+	return name
 }
 
 // transform camelCase to human readable string
