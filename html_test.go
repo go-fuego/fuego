@@ -18,7 +18,7 @@ func TestRender(t *testing.T) {
 		WithTemplateGlobs("testdata/*.html"),
 	)
 
-	Get(s, "/test", func(ctx *ContextNoBody) (HTML, error) {
+	Get(s, "/test", func(ctx *ContextNoBody) (CtxRenderer, error) {
 		return ctx.Render("testdata/test.html", H{"Name": "test"})
 	})
 
@@ -43,7 +43,7 @@ func TestRender(t *testing.T) {
 	})
 
 	t.Run("cannot parse unexisting file", func(t *testing.T) {
-		Get(s, "/file-not-found", func(ctx ContextNoBody) (HTML, error) {
+		Get(s, "/file-not-found", func(ctx ContextNoBody) (CtxRenderer, error) {
 			return ctx.Render("testdata/not-found.html", H{"Name": "test"})
 		})
 
@@ -56,7 +56,7 @@ func TestRender(t *testing.T) {
 	})
 
 	t.Run("can execute template with missing variable in map", func(t *testing.T) {
-		Get(s, "/impossible", func(ctx ContextNoBody) (HTML, error) {
+		Get(s, "/impossible", func(ctx ContextNoBody) (CtxRenderer, error) {
 			return ctx.Render("testdata/test.html", H{"NotName": "test"})
 		})
 
@@ -71,7 +71,7 @@ func TestRender(t *testing.T) {
 	})
 
 	t.Run("cannot execute template with missing variable in struct", func(t *testing.T) {
-		Get(s, "/impossible-struct", func(ctx ContextNoBody) (HTML, error) {
+		Get(s, "/impossible-struct", func(ctx ContextNoBody) (CtxRenderer, error) {
 			return ctx.Render("testdata/test.html", struct{}{})
 		})
 
@@ -93,7 +93,7 @@ func BenchmarkRender(b *testing.B) {
 		WithTemplateGlobs("testdata/*.html"),
 	)
 
-	Get(s, "/test", func(ctx ContextNoBody) (HTML, error) {
+	Get(s, "/test", func(ctx ContextNoBody) (CtxRenderer, error) {
 		return ctx.Render("testdata/test.html", H{"Name": "test"})
 	})
 
