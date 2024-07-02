@@ -757,6 +757,75 @@ func ExampleContextNoBody_SetHeader() {
 	// test
 }
 
+func wrappedFunc(custom string) func(string) string {
+	return func(s string) string {
+		return s + custom
+	}
+}
+
+func TestNameFromNamespace(t *testing.T) {
+	testCases := []struct {
+		name string
+
+		opts           []func(string) string
+		route          Route[any, any]
+		expectedOutput string
+	}{
+		{
+			name: "base",
+
+			route: Route[any, any]{
+				FullName: "pkg.test.MyFunc1",
+			},
+			expectedOutput: "MyFunc1",
+		},
+		{
+			name: "with camelToHuman",
+
+			route: Route[any, any]{
+				FullName: "pkg.test.MyFunc1",
+			},
+			opts: []func(string) string{
+				camelToHuman,
+			},
+			expectedOutput: "my func1",
+		},
+		{
+			name: "with inline opt",
+
+			route: Route[any, any]{
+				FullName: "pkg.test.MyFunc1",
+			},
+			opts: []func(string) string{
+				camelToHuman,
+				func(s string) string {
+					return s + " foo"
+				},
+			},
+			expectedOutput: "my func1 foo",
+		},
+		{
+			name: "with wrapped func",
+
+			route: Route[any, any]{
+				FullName: "pkg.test.MyFunc1",
+			},
+			opts: []func(string) string{
+				wrappedFunc("Foo"),
+				camelToHuman,
+			},
+			expectedOutput: "my func1 foo",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := tc.route.NameFromNamespace(tc.opts...)
+			require.Equal(t, tc.expectedOutput, actual)
+		})
+	}
+}
+
 func BenchmarkCamelToHuman(b *testing.B) {
 	b.Run("camelToHuman", func(b *testing.B) {
 		for range b.N {
