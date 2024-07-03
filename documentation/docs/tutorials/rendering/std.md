@@ -4,9 +4,11 @@ sidebar_position: 1
 
 # html/template
 
-Fuego supports rendering HTML templates with the [html/template](https://pkg.go.dev/html/template) package.
+Fuego supports rendering HTML templates with the
+[html/template](https://pkg.go.dev/html/template) package.
 
-Just use the `fuego.HTML` type as a return type for your handler, and return `c.Render()` with the template name and data.
+Just use the `fuego.HTML` type as a return type for your handler, and return
+`c.Render()` with the template name and data.
 
 ```go
 // highlight-next-line

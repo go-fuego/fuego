@@ -14,7 +14,8 @@ fuego controller books
 go run github.com/go-fuego/fuego/cmd/fuego@latest controller books
 ```
 
-After executing the above code, you need to slightly modify the generated controllers/books.go and main.go files.
+After executing the above code,
+you need to slightly modify the generated controllers/books.go and main.go files.
 
 ```go title="controllers/books.go" {8-9,28-39}
 package controller
@@ -95,7 +96,8 @@ The generator will create the following routes:
 
 :::tip
 
-Fuego comes with a [**generator**](#generation) that can generates CRUD routes and controllers for you!
+Fuego comes with a [**generator**](#generation)
+that can generates CRUD routes and controllers for you!
 
 :::
 

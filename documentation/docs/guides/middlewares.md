@@ -2,9 +2,11 @@
 
 Fuego supports `net/http` middlewares.
 
-It means that all existing middlewares for `net/http`, including the ones from `chi` and `gorilla` can be used with Fuego! :fire:
+It means that all existing middlewares for `net/http`,
+including the ones from `chi` and `gorilla` can be used with Fuego! :fire:
 
-You can use them to add functionalities to your routes, such as logging, authentication, etc.
+You can use them to add functionalities to your routes, such as logging,
+authentication, etc.
 
 ## App-level middlewares
 
@@ -78,7 +80,8 @@ func main() {
 
 ## Route middlewares
 
-You can also add middlewares to a single route. Simply add the middlewares as the last arguments of the route handler:
+You can also add middlewares to a single route.
+Simply add the middlewares as the last arguments of the route handler:
 
 ```go
 package main
