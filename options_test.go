@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"io"
 	"log/slog"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -37,15 +38,14 @@ func TestNewServer(t *testing.T) {
 }
 
 func TestWithXML(t *testing.T) {
-	s := NewServer(
-		WithXML(),
-	)
+	s := NewServer()
 	Get(s, "/", controller)
 	Get(s, "/error", controllerWithError)
 
 	t.Run("response is XML", func(t *testing.T) {
 		recorder := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/", nil)
+		req.Header.Set("Accept", "application/xml")
 
 		s.Mux.ServeHTTP(recorder, req)
 
@@ -57,12 +57,13 @@ func TestWithXML(t *testing.T) {
 	t.Run("error response is XML", func(t *testing.T) {
 		recorder := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/error", nil)
+		req.Header.Set("Accept", "application/xml")
 
 		s.Mux.ServeHTTP(recorder, req)
 
 		require.Equal(t, 500, recorder.Code)
-		require.Equal(t, "application/xml", recorder.Header().Get("Content-Type"))
 		require.Equal(t, "<HTTPError><title>Internal Server Error</title><status>500</status></HTTPError>", recorder.Body.String())
+		require.Equal(t, "application/xml", recorder.Header().Get("Content-Type"))
 	})
 }
 
@@ -372,4 +373,25 @@ func TestServerTags(t *testing.T) {
 
 		require.Equal(t, subGroup.tags, []string{"my-server-tag"})
 	})
+}
+
+func TestCustomSerialization(t *testing.T) {
+	s := NewServer(
+		WithSerializer(func(w http.ResponseWriter, r *http.Request, a any) error {
+			w.WriteHeader(202)
+			_, err := w.Write([]byte("custom serialization"))
+			return err
+		}),
+	)
+
+	Get(s, "/", func(c *ContextNoBody) (ans, error) {
+		return ans{Ans: "Hello World"}, nil
+	})
+
+	req := httptest.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+	s.Mux.ServeHTTP(w, req)
+
+	require.Equal(t, 202, w.Code)
+	require.Equal(t, "custom serialization", w.Body.String())
 }
