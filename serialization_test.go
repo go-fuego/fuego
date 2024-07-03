@@ -2,6 +2,7 @@ package fuego
 
 import (
 	"context"
+	"io"
 	"net/http/httptest"
 	"testing"
 
@@ -46,7 +47,8 @@ func TestJSON(t *testing.T) {
 func TestXML(t *testing.T) {
 	t.Run("can serialize xml", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendXML(w, response{Message: "Hello World", Code: 200})
+		err := SendXML(w, nil, response{Message: "Hello World", Code: 200})
+		require.NoError(t, err)
 		body := w.Body.String()
 
 		require.Equal(t, `<response><Message>Hello World</Message><Code>200</Code></response>`, body)
@@ -55,7 +57,7 @@ func TestXML(t *testing.T) {
 	t.Run("can serialize xml error", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		err := HTTPError{Detail: "Hello World"}
-		SendXMLError(w, err)
+		SendXMLError(w, nil, err)
 		body := w.Body.String()
 
 		require.Equal(t, `<HTTPError><detail>Hello World</detail></HTTPError>`, body)
@@ -235,7 +237,69 @@ func TestJSONError(t *testing.T) {
 
 func TestSend(t *testing.T) {
 	w := httptest.NewRecorder()
-	Send(w, "Hello World")
+	SendText(w, "Hello World")
 
 	require.Equal(t, "Hello World", w.Body.String())
+}
+
+type templateMock struct{}
+
+func (t templateMock) Render(w io.Writer) error {
+	return nil
+}
+
+var _ Renderer = templateMock{}
+
+func TestInferAcceptHeaderFromType(t *testing.T) {
+	t.Run("can infer json", func(t *testing.T) {
+		accept := InferAcceptHeaderFromType(response{})
+		require.Equal(t, "application/json", accept)
+	})
+
+	t.Run("can infer that type is a template (implements Renderer)", func(t *testing.T) {
+		accept := InferAcceptHeaderFromType(templateMock{})
+		require.Equal(t, "text/html", accept)
+	})
+
+	t.Run("can infer that type is a template (implements CtxRenderer)", func(t *testing.T) {
+		accept := InferAcceptHeaderFromType(MockCtxRenderer{})
+		require.Equal(t, "text/html", accept)
+	})
+}
+
+func TestParseAcceptHeader(t *testing.T) {
+	t.Run("can parse text/plain", func(t *testing.T) {
+		accept := parseAcceptHeader("text/plain", "Hello World")
+		require.Equal(t, "text/plain", accept)
+	})
+
+	t.Run("can parse text/html", func(t *testing.T) {
+		accept := parseAcceptHeader("text/html", "<h1>Hello World</h1>")
+		require.Equal(t, "text/html", accept)
+	})
+
+	t.Run("can parse text/html from multiple options", func(t *testing.T) {
+		accept := parseAcceptHeader("text/html, text/plain", "<h1>Hello World</h1>")
+		require.Equal(t, "text/html", accept)
+	})
+
+	t.Run("can parse application/json", func(t *testing.T) {
+		accept := parseAcceptHeader("application/json", ans{})
+		require.Equal(t, "application/json", accept)
+	})
+
+	t.Run("can infer json", func(t *testing.T) {
+		accept := parseAcceptHeader("", response{})
+		require.Equal(t, "application/json", accept)
+	})
+
+	t.Run("can infer json", func(t *testing.T) {
+		accept := parseAcceptHeader("*/*", response{})
+		require.Equal(t, "application/json", accept)
+	})
+
+	t.Run("can infer text/html from a real browser", func(t *testing.T) {
+		accept := parseAcceptHeader("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "<h1>Hello World</h1>")
+		require.Equal(t, "text/html", accept)
+	})
 }

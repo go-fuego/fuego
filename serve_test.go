@@ -165,6 +165,7 @@ func TestHttpHandler(t *testing.T) {
 		handler := HTTPHandler(s, testControllerReturningPtrToString)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
+		req.Header.Set("Accept", "text/plain")
 		w := httptest.NewRecorder()
 		handler(w, req)
 
@@ -234,7 +235,7 @@ func (t testCtxErrorRenderer) Render(ctx context.Context, w io.Writer) error {
 
 func TestServeRenderer(t *testing.T) {
 	s := NewServer(
-		WithErrorSerializer(func(w http.ResponseWriter, err error) {
+		WithErrorSerializer(func(w http.ResponseWriter, r *http.Request, err error) {
 			w.WriteHeader(500)
 			w.Write([]byte("<body><h1>error</h1></body>"))
 		}),
@@ -316,6 +317,24 @@ func TestServeRenderer(t *testing.T) {
 			require.Equal(t, 500, w.Code)
 			require.Equal(t, "<body><h1>error</h1></body>", w.Body.String())
 		})
+	})
+}
+
+func TestServeError(t *testing.T) {
+	s := NewServer()
+
+	Get(s, "/ctx/error-in-controller", func(c *ContextNoBody) (CtxRenderer, error) {
+		return nil, errors.New("error")
+	})
+
+	t.Run("error return, asking for HTML", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/ctx/error-in-controller", nil)
+		req.Header.Set("Accept", "text/html")
+		w := httptest.NewRecorder()
+		s.Mux.ServeHTTP(w, req)
+
+		require.Equal(t, 500, w.Code)
+		require.Equal(t, "Internal Server Error (500): ", w.Body.String())
 	})
 }
 
@@ -483,7 +502,13 @@ func TestServer_RunTLS(t *testing.T) {
 			defer conn.Close()
 
 			client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
-			resp, err := client.Get(fmt.Sprintf("https://%s/test", s.Server.Addr))
+			req, err := http.NewRequest("GET", fmt.Sprintf("https://%s/test", s.Server.Addr), nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Set("Accept", "text/plain")
+
+			resp, err := client.Do(req)
 			if err != nil {
 				t.Fatal(err)
 			}

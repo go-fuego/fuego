@@ -64,7 +64,7 @@ type ctx[B any] interface {
 	// and you want to override one above the other, you can do:
 	//   c.Render("admin.page.html", recipes, "partials/aaa/nav.partial.html")
 	// By default, [templateToExecute] is added to the list of templates to override.
-	Render(templateToExecute string, data any, templateGlobsToOverride ...string) (HTML, error)
+	Render(templateToExecute string, data any, templateGlobsToOverride ...string) (CtxRenderer, error)
 
 	Cookie(name string) (*http.Cookie, error) // Get request cookie
 	SetCookie(cookie http.Cookie)             // Sets response cookie
@@ -222,51 +222,14 @@ func (c ContextNoBody) SetCookie(cookie http.Cookie) {
 // that the templates will be parsed only once, removing
 // the need to parse the templates on each request but also preventing
 // to dynamically use new templates.
-func (c ContextNoBody) Render(templateToExecute string, data any, layoutsGlobs ...string) (HTML, error) {
-	if strings.Contains(templateToExecute, "/") || strings.Contains(templateToExecute, "*") {
-
-		layoutsGlobs = append(layoutsGlobs, templateToExecute) // To override all blocks defined in the main template
-		cloned := template.Must(c.templates.Clone())
-		tmpl, err := cloned.ParseFS(c.fs, layoutsGlobs...)
-		if err != nil {
-			return "", HTTPError{
-				Err:    err,
-				Status: http.StatusInternalServerError,
-				Title:  "Error parsing template",
-				Detail: fmt.Errorf("error parsing template '%s': %w", layoutsGlobs, err).Error(),
-				Errors: []ErrorItem{
-					{
-						Name:   "templates",
-						Reason: "Check that the template exists and have the correct extension. Globs: " + strings.Join(layoutsGlobs, ", "),
-					},
-				},
-			}
-		}
-		c.templates = template.Must(tmpl.Clone())
-	}
-
-	// Get only last template name (for example, with partials/nav/main/nav.partial.html, get nav.partial.html)
-	myTemplate := strings.Split(templateToExecute, "/")
-	templateToExecute = myTemplate[len(myTemplate)-1]
-
-	c.Res.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err := c.templates.ExecuteTemplate(c.Res, templateToExecute, data)
-	if err != nil {
-		return "", HTTPError{
-			Err:    err,
-			Status: http.StatusInternalServerError,
-			Title:  "Error rendering template",
-			Detail: fmt.Errorf("error executing template '%s': %w", templateToExecute, err).Error(),
-			Errors: []ErrorItem{
-				{
-					Name:   "templates",
-					Reason: "Check that the template exists and have the correct extension. Template: " + templateToExecute,
-				},
-			},
-		}
-	}
-
-	return "", err
+func (c ContextNoBody) Render(templateToExecute string, data any, layoutsGlobs ...string) (CtxRenderer, error) {
+	return &StdRenderer{
+		templateToExecute: templateToExecute,
+		templates:         c.templates,
+		layoutsGlobs:      layoutsGlobs,
+		fs:                c.fs,
+		data:              data,
+	}, nil
 }
 
 // PathParams returns the path parameters of the request.
@@ -427,7 +390,7 @@ func body[B any](c ContextNoBody) (B, error) {
 		body, err = readURLEncoded[B](c.Req, c.readOptions)
 	case "application/xml":
 		body, err = readXML[B](c.Req.Context(), c.Req.Body, c.readOptions)
-	case "application/x-yaml":
+	case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
 		body, err = readYAML[B](c.Req.Context(), c.Req.Body, c.readOptions)
 	case "application/octet-stream":
 		// Read c.Req Body to bytes

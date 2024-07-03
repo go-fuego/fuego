@@ -70,10 +70,11 @@ type Server struct {
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
 	DisableOpenapi        bool // If true, the routes within the server will not generate an openapi spec.
 	maxBodySize           int64
-	Serialize             func(w http.ResponseWriter, ans any)   // Used to serialize the response. Defaults to [SendJSON].
-	SerializeError        func(w http.ResponseWriter, err error) // Used to serialize the error response. Defaults to [SendJSONError].
-	ErrorHandler          func(err error) error                  // Used to transform any error into a unified error type structure with status code. Defaults to [ErrorHandler]
-	startTime             time.Time
+
+	Serialize      func(w http.ResponseWriter, r *http.Request, ans any) error // Custom serializer that overrides the default one.
+	SerializeError func(w http.ResponseWriter, r *http.Request, err error)     // Used to serialize the error response. Defaults to [SendError].
+	ErrorHandler   func(err error) error                                       // Used to transform any error into a unified error type structure with status code. Defaults to [ErrorHandler]
+	startTime      time.Time
 
 	OpenAPIConfig OpenAPIConfig
 
@@ -109,8 +110,8 @@ func NewServer(options ...func(*Server)) *Server {
 	defaultOptions := [...]func(*Server){
 		WithAddr("localhost:9999"),
 		WithDisallowUnknownFields(true),
-		WithSerializer(SendJSON),
-		WithErrorSerializer(SendJSONError),
+		WithSerializer(Send),
+		WithErrorSerializer(SendError),
 		WithErrorHandler(ErrorHandler),
 	}
 
@@ -258,6 +259,9 @@ func WithAddr(addr string) func(*Server) {
 	return func(c *Server) { c.Server.Addr = addr }
 }
 
+// WithXML sets the serializer to XML
+//
+// Deprecated: fuego supports automatic XML serialization when using the header "Accept: application/xml".
 func WithXML() func(*Server) {
 	return func(c *Server) {
 		c.Serialize = SendXML
@@ -274,11 +278,13 @@ func WithLogHandler(handler slog.Handler) func(*Server) {
 	}
 }
 
-func WithSerializer(serializer func(w http.ResponseWriter, ans any)) func(*Server) {
+// WithSerializer sets a custom serializer that overrides the default one.
+// Please send a PR if you think the default serializer should be improved, instead of jumping to this option.
+func WithSerializer(serializer func(w http.ResponseWriter, r *http.Request, ans any) error) func(*Server) {
 	return func(c *Server) { c.Serialize = serializer }
 }
 
-func WithErrorSerializer(serializer func(w http.ResponseWriter, err error)) func(*Server) {
+func WithErrorSerializer(serializer func(w http.ResponseWriter, r *http.Request, err error)) func(*Server) {
 	return func(c *Server) { c.SerializeError = serializer }
 }
 
