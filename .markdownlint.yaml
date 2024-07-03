@@ -1,0 +1,9 @@
+MD001: false
+
+MD010: false
+
+MD013:
+  code_blocks: false
+  tables: false
+
+MD033: false

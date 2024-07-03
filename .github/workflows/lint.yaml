@@ -1,0 +1,16 @@
+name: Lint
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  markdownlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: markdownlint-cli
+        uses: nosborn/github-action-markdown-cli@v3.3.0
+        with:
+          files: .
+          config_file: .markdownlint.yaml
+          dot: true
