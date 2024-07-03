@@ -51,7 +51,11 @@ s := fuego.NewServer(
 
 ### CORS
 
-CORS middleware is not registered as a usual middleware, because it applies on routes that aren't registered. For example, `OPTIONS /foo` is not a registered route (only `GET /foo` is registered for example), but it's a request that needs to be handled by the CORS middleware.
+CORS middleware is not registered as a usual middleware,
+because it applies on routes that aren't registered. For example,
+`OPTIONS /foo` is not a registered route
+(only `GET /foo` is registered for example),
+but it's a request that needs to be handled by the CORS middleware.
 
 ```go
 import "github.com/rs/cors"

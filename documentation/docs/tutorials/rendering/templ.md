@@ -2,7 +2,8 @@
 
 Fuego supports templating with [Templ](https://github.com/a-h/templ).
 
-Simply return a Templ component from your handler, with the `fuego.Templ` return type.
+Simply return a Templ component from your handler,
+with the `fuego.Templ` return type.
 
 Example from [a recipe app](https://github.com/go-fuego/fuego/tree/main/examples/full-app-gourmet):
 
@@ -31,4 +32,6 @@ func (rs Ressource) adminIngredients(c fuego.ContextNoBody) (fuego.Templ, error)
 }
 ```
 
-Note that the `fuego.Templ` type is a simple alias for `fuego.CtxRenderer` : any type that implements the `Render(context.Context, io.Writer) error` method can be used as a return type for a handler.
+Note that the `fuego.Templ` type is a simple alias for `fuego.CtxRenderer`:
+any type that implements the `Render(context.Context, io.Writer) error`
+method can be used as a return type for a handler.

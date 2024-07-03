@@ -22,4 +22,5 @@ Or **try Fuego immediately** by cloning **[one of our exemples](https://github.c
 
 ### What you'll need
 
-- [Golang v1.22](https://golang.org/doc/go1.22) or above _(Fuego relies on a new feature of the net/http package only available after 1.22)_.
+- [Golang v1.22](https://golang.org/doc/go1.22) or above
+_(Fuego relies on a new feature of the net/http package only available after 1.22)_.

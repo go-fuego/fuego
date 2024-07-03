@@ -2,7 +2,8 @@
 
 Fuego supports rendering HTML templates with [Gomponents](https://github.com/maragudk/gomponents).
 
-Just use the `fuego.Gomponent` type as a return type for your handler, and return the gomponent.
+Just use the `fuego.Gomponent` type as a return type for your handler,
+and return the gomponent.
 
 ```go
 // highlight-next-line
@@ -29,4 +30,6 @@ func (rs Ressource) adminIngredients(c fuego.ContextNoBody) (fuego.Gomponent, er
 }
 ```
 
-Note that the `fuego.Gomponent` type is a simple alias for `fuego.Renderer` : any type that implements the `Render(io.Writer) error` method can be used as a return type for a handler.
+Note that the `fuego.Gomponent` type is a simple alias for `fuego.Renderer`:
+any type that implements the `Render(io.Writer) error`
+method can be used as a return type for a handler.

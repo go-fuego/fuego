@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD041 -->
 <p align="center">
   <img src="./data/fuego.svg" height="200" alt="Fuego Logo" />
 </p>
@@ -13,25 +14,42 @@
 
 **Build your API or web application in minutes!**
 
-Go framework generating OpenAPI documentation from code. Inspired by Nest, built for Go developers.
+Go framework generating OpenAPI documentation from code.
+Inspired by Nest, built for Go developers.
 
-Also empowers `html/template`, `a-h/templ` and `maragudk/gomponents`: see [the example](./examples/full-app-gourmet) - actually running [in prod](https://gourmet.quimerch.com)!
+Also empowers `html/template`, `a-h/templ` and `maragudk/gomponents`:
+see [the example](./examples/full-app-gourmet) - actually running [in prod](https://gourmet.quimerch.com)!
 
 ## Why Fuego?
 
-Chi, Gin, Fiber and Echo are great frameworks. But since they were designed a long time ago, [their current API does not allow them](https://github.com/gin-gonic/gin/issues/155) to deduce OpenAPI types from signatures, things that are now possible with generics. Fuego offers a lot of "modern Go based" features that make it easy to develop APIs and web applications.
+Chi, Gin, Fiber and Echo are great frameworks.
+But since they were designed a long time ago,
+[their current API does not allow them][gin-gonic-issue]
+to deduce OpenAPI types from signatures, things that are
+now possible with generics. Fuego offers a lot of "modern Go based"
+features that make it easy to develop APIs and web applications.
 
 ## Features
 
-- **OpenAPI**: Fuego automatically generates OpenAPI documentation from **code** - _not from comments nor yaml files!_
-- **`net/http` compatible**: Fuego is built on top of `net/http`, so you can use any `http.Handler` middleware or handler! Fuego also supports `log/slog`, `context` and `html/template`
+- **OpenAPI**: Fuego automatically generates OpenAPI documentation
+  from **code** - _not from comments nor yaml files!_
+- **`net/http` compatible**: Fuego is built on top of `net/http`,
+  so you can use any `http.Handler` middleware or handler! Fuego also supports
+  `log/slog`, `context` and `html/template`
 - **Routing**: Fuego provides a simple API for the Go 1.22 `net/http`
-- **Serialization/Deserialization**: Fuego automatically serializes and deserializes JSON, XML and HTML Forms based on user-provided structs (or not, if you want to do it yourself)
+- **Serialization/Deserialization**: Fuego automatically serializes and
+  deserializes JSON, XML and HTML Forms based on user-provided structs
+  (or not, if you want to do it yourself)
 - **Validation**: Fuego provides a simple and fast validator based on `go-playground/validator`
-- **Transformation**: easily transform your data by implementing the `fuego.InTransform` and `fuego.OutTransform` interfaces - also useful for **validation**
-- **Middlewares**: easily add a custom `net/http` middleware or use the provided middlewares.
-- **Error handling**: Fuego provides centralized error handling with the standard [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457).
-- **Rendering**: Fuego provides a simple and fast rendering system based on `html/template` - you can still also use your own template system like `templ` or `gomponents`
+- **Transformation**: easily transform your data by implementing the
+  `fuego.InTransform` and `fuego.OutTransform` interfaces - also useful for **validation**
+- **Middlewares**: easily add a custom `net/http` middleware
+  or use the provided middlewares.
+- **Error handling**: Fuego provides centralized error handling with
+  the standard [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457).
+- **Rendering**: Fuego provides a simple and fast rendering system based on
+  `html/template` - you can still also use your own template system like
+  `templ` or `gomponents`
 
 ## Examples
 
@@ -121,7 +139,7 @@ func main() {
 	fuego.Post(s, "/", myController).
 		Description("This route does something").
 		Summary("This is my summary").
-		Tags("MyTag"). // A tag is set by default according to the return type (can be desactivated)
+		Tags("MyTag"). // A tag is set by default according to the return type (can be deactivated)
 		Deprecated()
 
 	s.Run()
@@ -245,12 +263,12 @@ curl http://localhost:8088 -X POST -d '{"name": "Fuego"}' -H 'Content-Type: appl
 
 ## From net/http to Fuego in 10s
 
-https://github.com/go-fuego/fuego/assets/46993939/7438a71c-75a4-4e88-a584-71da6362c575
+<https://github.com/go-fuego/fuego/assets/46993939/7438a71c-75a4-4e88-a584-71da6362c575>
 
 <details>
 <summary>Views</summary>
 
-#### Before
+### Before
 
 <img width="946" alt="image" src="https://github.com/go-fuego/fuego/assets/46993939/394fed17-a1e2-4b67-89b2-8e6c9eeb771b">
 
@@ -273,7 +291,8 @@ https://github.com/go-fuego/fuego/assets/46993939/7438a71c-75a4-4e88-a584-71da63
 
 ## Contributing
 
-See the [contributing guide](CONTRIBUTING.md). Thanks to [everyone who has contributed](https://github.com/go-fuego/fuego/graphs/contributors) to this project! ❤️
+See the [contributing guide](CONTRIBUTING.md).
+Thanks to [everyone who has contributed][contributors-url] to this project! ❤️
 
 ## Roadmap
 
@@ -281,8 +300,14 @@ See the [board](https://github.com/orgs/go-fuego/projects/1).
 
 ## Disclaimer for experienced gophers
 
-I know you might prefer to use `net/http` directly, but if having a frame can convince my company to use Go instead of Node, I'm happy to use it.
+I know you might prefer to use `net/http` directly,
+but if having a frame can convince my company to use
+Go instead of Node, I'm happy to use it.
 
 ## License
 
 [MIT](./LICENSE.txt)
+
+[gin-gonic-issue]: https://github.com/gin-gonic/gin/issues/155
+
+[contributors-url]: https://github.com/go-fuego/fuego/graphs/contributors

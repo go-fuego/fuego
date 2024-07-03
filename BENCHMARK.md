@@ -1,6 +1,7 @@
 # Benchmark against other frameworks
 
-We have benchmarked the API and the performance of Fuego against other popular frameworks. The results are shown below.
+We have benchmarked the API and the performance of Fuego against other popular
+frameworks. The results are shown below.
 
 ## API
 

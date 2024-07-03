@@ -32,7 +32,6 @@ lint:
 lint-markdown:
 	markdownlint --fix .
 
-
 example:
 	( cd examples/full-app-gourmet && go run . -debug )
 

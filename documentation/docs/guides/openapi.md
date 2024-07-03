@@ -26,7 +26,8 @@ Result for this simple example:
 
 ![Swagger UI](../../static/img/hello-world-openapi.png)
 
-The core idea of Fuego is to generate the OpenAPI specification automatically, so you don't have to worry about it. However, you can customize it if you want.
+The core idea of Fuego is to generate the OpenAPI specification automatically,
+so you don't have to worry about it. However, you can customize it if you want.
 
 ## Operations
 
@@ -66,7 +67,8 @@ Fuego automatically provides an OpenAPI specification for your API in several wa
 - **Swagger UI**
 - **JSON endpoint**
 
-Fuego will indicate in a log the paths where the OpenAPI specifications and Swagger UI are available.
+Fuego will indicate in a log the paths where the OpenAPI specifications and
+Swagger UI are available.
 
 You can customize the paths and to activate or not the feature, with the option `WithOpenAPIConfig`.
 
@@ -97,7 +99,8 @@ func main() {
 
 ## Custom UI
 
-Fuego `Server` exposes a `UIHandler` field that enables you to implement your custom UI.
+Fuego `Server` exposes a `UIHandler` field that enables you
+to implement your custom UI.
 
 Example with http swagger:
 
@@ -131,7 +134,8 @@ func main() {
 
 The default spec url reference Element Stoplight swagger ui.
 
-Please note that if you embed swagger ui in your build it will increase its size by more than 10Mb.
+Please note that if you embed swagger ui in your build it will increase its size
+by more than 10Mb.
 
 |               | StopLight Elements | Swagger        | Disabled |
 | ------------- | ------------------ | -------------- | -------- |

@@ -1,12 +1,16 @@
 # Contributing
 
-First of all, if you are reading this, thank you for considering contributing to the project! It's people like you that make it a reality. ❤️
+First of all, if you are reading this, thank you for considering contributing to
+ the project! It's people like you that make it a reality. ❤️
 
-In return, we will do our best to make the contribution process as easy and transparent as possible.
+In return, we will do our best to make the contribution process as easy and
+transparent as possible.
 
 ## How to contribute
 
-There are many ways to contribute, from writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests or writing code which can be incorporated into the project itself.
+There are many ways to contribute, from writing tutorials or blog posts,
+improving the documentation, submitting bug reports and feature requests
+or writing code which can be incorporated into the project itself.
 
 ## Installation
 
@@ -20,4 +24,6 @@ There are many ways to contribute, from writing tutorials or blog posts, improvi
 
 ## Contributors
 
-Thanks to [everyone who have contributed](https://github.com/go-fuego/fuego/graphs/contributors) to this project!
+Thanks to [everyone who have contributed][contributors-url] to this project!
+
+[contributors-url]: https://github.com/go-fuego/fuego/graphs/contributors>
