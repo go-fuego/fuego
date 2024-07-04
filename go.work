@@ -1,12 +1,13 @@
-go 1.22.2
+go 1.22.4
 
 use (
 	.
 	./cmd/fuego
+	./examples/acme-tls
 	./examples/basic
 	./examples/custom-serializer
 	./examples/full-app-gourmet
 	./examples/hello-world
 	./examples/openapi
-	./examples/acme-tls
+	./testing-from-outside
 )

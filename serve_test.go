@@ -19,7 +19,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rs/cors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -392,10 +391,6 @@ func TestServer_Run(t *testing.T) {
 	t.Run("can run server", func(t *testing.T) {
 		s := NewServer(
 			WithoutLogger(),
-			WithCorsMiddleware(cors.New(cors.Options{
-				AllowedOrigins: []string{"*"},
-				AllowedMethods: []string{"GET"},
-			}).Handler),
 		)
 
 		Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
