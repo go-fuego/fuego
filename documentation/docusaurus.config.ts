@@ -94,7 +94,13 @@ const config: Config = {
         {
           position: "left",
           value:
-            "<a href='https://zuplo.link/fuego-gh' style='background-color: rgb(255 0 189);padding: 6px;border-radius: 2px; color: white'>Try Zuplo!</a> <span class='hidden-when-small'>Serverless API Gateway, designed for developers.</span>",
+            "<div class='hidden-when-small' style='background-color: light-dark(rgb(235 237 240), rgb(68 73 80));padding-top: 6px; padding-bottom: 6px; padding-left: 6px; padding-right: 6px;border-radius: 12px; color: light-dark(black, white)'><span>Secure, Document, and Monetize your Fuego API for FREE</span><a target='_blank' href='https://zuplo.link/fuego-web' style='background-color: rgb(255 0 189);padding: 6px;border-radius: 8px; margin-left:6px; color: white; text-wrap: nowrap'>Try Zuplo!</a></div>",
+          type: "html",
+        },
+        {
+          position: "left",
+          value:
+            "<div class='hidden-when-large' style='background-color: light-dark(rgb(235 237 240), rgb(68 73 80));padding-top: 6px; padding-bottom: 6px; padding-left: 6px; padding-right: 6px;border-radius: 12px; color: light-dark(black, white)'><span>Scale your Fuego API</span><a target='_blank' href='https://zuplo.link/fuego-web' style='background-color: rgb(255 0 189);padding: 6px;border-radius: 8px; margin-left:6px; color: white; text-wrap: nowrap'>Try Zuplo!</a></div>",
           type: "html",
         },
       ],

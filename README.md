@@ -28,7 +28,7 @@ Fuego is proudly sponsored by [Zuplo](https://zuplo.link/fuego-gh), that provide
 <img src="./assets/Zuplo.png" style="border-radius:10px" height="100" alt="Fuego Logo" />
 </div>
 
-> Zuplo allows you to secure your Fuego API, scale it globally, generate documentation from your OpenAPI, and add monetization.
+> Zuplo allows you to secure your Fuego API, scale it globally, generate documentation from your OpenAPI, and monetize your users.
 
 ## Why Fuego?
 
@@ -319,5 +319,4 @@ Go instead of Node, I'm happy to use it.
 [MIT](./LICENSE.txt)
 
 [gin-gonic-issue]: https://github.com/gin-gonic/gin/issues/155
-
 [contributors-url]: https://github.com/go-fuego/fuego/graphs/contributors
