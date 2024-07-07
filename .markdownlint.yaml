@@ -1,9 +1,22 @@
-MD001: false
-
+# MD010/no-hard-tabs : Hard tabs : https://github.com/DavidAnson/markdownlint/blob/v0.34.0/doc/md010.md
+#
+# The rendered markdown is viewed in github and
+# the Docusaurus site which render hard-tabs fine.
+# It is annoying to have to deal with so many spaces
+# specifically in golang code blocks.
 MD010: false
 
+# MD013/line-length : Line length : https://github.com/DavidAnson/markdownlint/blob/v0.34.0/doc/md013.md
 MD013:
+  # Applying line length to code blocks
+  # makes the code look worse sometimes.
   code_blocks: false
+  # Applying line length to tables makes
+  # it more difficult to edit.
   tables: false
 
+# MD033/no-inline-html : Inline HTML : https://github.com/DavidAnson/markdownlint/blob/v0.34.0/doc/md033.md
+#
+# It's more convenient to work with HTML in some cases.
+# We use HTML in a lot of our docs.
 MD033: false
