@@ -20,7 +20,8 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Framework version (please check if it happens with the last Fuego version before posting):**
+**Framework version (please check if it happens with the last
+Fuego version before posting):**
 
 **Go version (please check if it happens with the last Go version before posting):**
 

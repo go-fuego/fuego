@@ -30,7 +30,7 @@ lint:
 	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run
 
 lint-markdown:
-	markdownlint --fix .
+	markdownlint --dot .
 
 example:
 	( cd examples/full-app-gourmet && go run . -debug )
