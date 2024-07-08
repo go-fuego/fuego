@@ -32,6 +32,7 @@ subgraph fuego
  click ErrorHandler "/fuego/docs/guides/errors" "Error Handling"
 end
 
+ErrorHandler -- JSON{b:'Error!'} --> resp(Response)
 Serialization -- JSON{b:'My Response!'} --> resp(Response)
 Controller -. JSON{b:'Custom Response!'} .-> resp(Response)
 
