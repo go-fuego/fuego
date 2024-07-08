@@ -2,9 +2,89 @@ import FlowChart from '@site/src/components/FlowChart';
 
 # Serialization / Deserialization
 
+Serialization is the process of converting Go data into a format that can be stored or transmitted. Deserialization is the process of converting serialized data back into its original Go form.
+
+The classic example is transforming **Go data into JSON** and back.
+
 Fuego automatically serializes and deserializes inputs and outputs with standard `encoding/json` package.
 
-<FlowChart selected="resp" />
+<FlowChart selected="Serialization" />
+
+## Serialize data
+
+To serialize data, just return the data you want to serialize from your controller. It will be automatically serialized into JSON, XML, YAML, or HTML, depending on the `Accept` header in the request.
+
+- JSON `Accept: application/json` (default) (this default can be changed as an option in the `fuego.Server` struct)
+- XML `Accept: application/xml`
+- YAML `Accept: application/yaml`
+- HTML `Accept: text/html`
+- Plain text `Accept: text/plain`
+
+```go
+package main
+
+import (
+	"github.com/go-fuego/fuego"
+)
+
+type MyReturnType struct {
+	Message string `json:"message"`
+}
+
+func main() {
+	s := fuego.NewServer()
+
+	fuego.Get(s, "/", helloWorld)
+
+	s.Run()
+}
+
+func helloWorld(c fuego.ContextNoBody) (MyReturnType, error) {
+	return MyReturnType{Message: "Hello, World!"}, nil
+}
+
+// curl request: curl -X GET http://localhost:8080/ -H "Accept: application/json"
+// response: {"message":"Hello, World!"}
+
+// curl request: curl -X GET http://localhost:8080/ -H "Accept: application/xml"
+// response: <MyReturnType><Message>Hello, World!</Message></MyReturnType>
+
+```
+
+## Deserialize data
+
+To deserialize data, use the `fuego.ContextWithBody` type in your controller.
+
+```go
+package main
+
+import (
+	"github.com/go-fuego/fuego"
+)
+
+type ReceivedType struct {
+	Message string `json:"message"`
+}
+
+func main() {
+	s := fuego.NewServer()
+
+	fuego.Post(s, "/", echo)
+
+	s.Run()
+}
+
+func echo(c fuego.ContextWithBody[ReceivedType]) (string, error) {
+	// Deserialize the HTTP Request body into ReceivedType,
+	// whether it's application/json, application/xml, application/x-www-form-urlencoded, etc.
+	received, err := c.Body() 
+	if err != nil {
+		return ReceivedType{}, err
+	}
+
+	return received.Message, nil
+}
+```
 
 ## Deserialize binary data
 
