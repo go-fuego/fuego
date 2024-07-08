@@ -29,14 +29,51 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
-@media only screen and (max-width: 1400px) {
-  .hidden-when-small {
+/*
+
+Mobile: <996px
+Small : 996px - 1159px
+Medium : 1160px - 1429px
+Large : >1430px
+
+*/
+
+.display-mobile {
+  display: block;
+}
+
+@media (min-width: 996px) {
+  .display-mobile {
     display: none;
   }
 }
 
-@media only screen and (min-width: 1400px) {
-  .hidden-when-large {
-    display: none;
+.display-small {
+  display: none;
+}
+
+@media (min-width: 996px) and (max-width: 1159px) {
+  .display-small {
+    display: block;
+  }
+}
+
+.display-medium {
+  display: none;
+}
+
+@media (min-width: 1161px) and (max-width: 1429px) {
+  .display-medium {
+    display: block;
+  }
+}
+
+.display-large {
+  display: none;
+}
+
+@media (min-width: 1430px) {
+  .display-large {
+    display: block;
   }
 }
