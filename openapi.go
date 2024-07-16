@@ -200,6 +200,7 @@ func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openap
 	return operation, nil
 }
 
+// schemaTag is a struct that holds the name of the struct and the associated openapi3.SchemaRef
 type schemaTag struct {
 	openapi3.SchemaRef
 	name string
