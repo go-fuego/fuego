@@ -13,6 +13,7 @@ func DefaultOpenAPIHandler(specURL string) http.Handler {
 	<meta charset="utf-8" />
 	<meta name="referrer" content="same-origin" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link rel="icon" type="image/svg+xml" href="https://go-fuego.github.io/fuego/img/logo.svg">
 	<title>OpenAPI specification</title>
 	<script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
 	<link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css" />
