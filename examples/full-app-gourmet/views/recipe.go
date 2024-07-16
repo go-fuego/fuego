@@ -111,12 +111,9 @@ func (rs Ressource) showRecipes(c fuego.ContextNoBody) (*fuego.DataOrTemplate[[]
 		return nil, err
 	}
 
-	return fuego.DataOrHTML(
-		recipes,
-		templa.SearchPage(templa.SearchProps{
-			Recipes: recipes,
-		}),
-	), nil
+	return fuego.DataOrHTML(recipes, templa.SearchPage(templa.SearchProps{
+		Recipes: recipes,
+	})), nil
 }
 
 func (rs Ressource) relatedRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {

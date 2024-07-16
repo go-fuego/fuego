@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/server"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/views"
@@ -99,4 +100,24 @@ func BenchmarkShowIndexExt(b *testing.B) {
 			b.Fail()
 		}
 	}
+}
+
+func TestShowRecipesOpenAPITypes(t *testing.T) {
+	s := fuego.NewServer()
+
+	type MyStruct struct {
+		A string
+		B string
+	}
+
+	route := fuego.Get(s, "/data", func(*fuego.ContextNoBody) (*fuego.DataOrTemplate[MyStruct], error) {
+		entity := MyStruct{}
+
+		return &fuego.DataOrTemplate[MyStruct]{
+			Data:     entity,
+			Template: nil,
+		}, nil
+	})
+
+	require.Equal(t, "#/components/schemas/MyStruct", route.Operation.Responses.Value("200").Value.Content["application/json"].Schema.Ref, "should have MyStruct schema instead of DataOrTemplate[MyStruct] schema")
 }

@@ -261,8 +261,12 @@ func dive(s *Server, t reflect.Type, tag schemaTag, maxDepth int) schemaTag {
 
 	default:
 		tag.name = t.Name()
+		if t.Kind() == reflect.Struct && strings.HasPrefix(tag.name, "DataOrTemplate") {
+			return dive(s, t.Field(0).Type, tag, maxDepth-1)
+		}
 		tag.Ref = "#/components/schemas/" + tag.name
 		tag.Value = s.getOrCreateSchema(tag.name, reflect.New(t).Interface())
+
 		return tag
 	}
 }
