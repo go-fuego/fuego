@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 <p align="center">
-  <img src="./data/fuego.svg" height="200" alt="Fuego Logo" />
+  <img src="./static/fuego.svg" height="200" alt="Fuego Logo" />
 </p>
 
 # Fuego 🔥
