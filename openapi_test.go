@@ -8,7 +8,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,9 +26,9 @@ type testCaseForTagType[V any] struct {
 	name        string
 	description string
 	inputType   V
-	s           *Server
 
-	expectedTagValue string
+	expectedTagValue     string
+	expectedTagValueType string
 }
 
 func Test_tagFromType(t *testing.T) {
@@ -39,102 +38,165 @@ func Test_tagFromType(t *testing.T) {
 
 	tcs := []testCaseForTagType[any]{
 		{
-			name:             "unknown_interface",
-			description:      "behind any interface",
-			inputType:        *new(any),
+			name:        "unknown_interface",
+			description: "behind any interface",
+			inputType:   *new(any),
+
 			expectedTagValue: "unknown-interface",
-			s:                s,
 		},
 		{
-			name:             "simple_struct",
-			description:      "basic struct",
-			inputType:        MyStruct{},
-			expectedTagValue: "MyStruct",
-			s:                s,
+			name:        "simple_struct",
+			description: "basic struct",
+			inputType:   MyStruct{},
+
+			expectedTagValue:     "MyStruct",
+			expectedTagValueType: "object",
 		},
 		{
-			name:             "is_pointer",
-			description:      "",
-			inputType:        &MyStruct{},
-			expectedTagValue: "MyStruct",
-			s:                s,
+			name:        "is_pointer",
+			description: "",
+			inputType:   &MyStruct{},
+
+			expectedTagValue:     "MyStruct",
+			expectedTagValueType: "object",
 		},
 		{
-			name:             "is_array",
-			description:      "",
-			inputType:        []MyStruct{},
-			expectedTagValue: "MyStruct",
-			s:                s,
+			name:        "is_array",
+			description: "",
+			inputType:   []MyStruct{},
+
+			expectedTagValue:     "MyStruct",
+			expectedTagValueType: "array",
 		},
 		{
-			name:             "is_reference_to_array",
-			description:      "",
-			inputType:        &[]MyStruct{},
-			expectedTagValue: "MyStruct",
-			s:                s,
+			name:        "is_reference_to_array",
+			description: "",
+			inputType:   &[]MyStruct{},
+
+			expectedTagValue:     "MyStruct",
+			expectedTagValueType: "array",
 		},
 		{
-			name:             "is_deeply_nested",
-			description:      "behind 4 pointers",
-			inputType:        new(DeeplyNested),
-			expectedTagValue: "MyStruct",
-			s:                s,
+			name:        "is_deeply_nested",
+			description: "behind 4 pointers",
+			inputType:   new(DeeplyNested),
+
+			expectedTagValue:     "MyStruct",
+			expectedTagValueType: "array",
 		},
 		{
-			name:             "5_pointers",
-			description:      "behind 5 pointers",
-			inputType:        *new(MoreDeeplyNested),
-			expectedTagValue: "MyStruct",
-			s:                s,
+			name:        "5_pointers",
+			description: "behind 5 pointers",
+			inputType:   *new(MoreDeeplyNested),
+
+			expectedTagValue:     "MyStruct",
+			expectedTagValueType: "array",
 		},
 		{
-			name:             "6_pointers",
-			description:      "behind 6 pointers",
-			inputType:        new(MoreDeeplyNested),
+			name:        "6_pointers",
+			description: "behind 6 pointers",
+			inputType:   new(MoreDeeplyNested),
+
+			expectedTagValue:     "default",
+			expectedTagValueType: "array",
+		},
+		{
+			name:        "7_pointers",
+			description: "behind 7 pointers",
+			inputType:   []*MoreDeeplyNested{},
+
 			expectedTagValue: "default",
-			s:                s,
 		},
 		{
-			name:             "7_pointers",
-			description:      "behind 7 pointers",
-			inputType:        []*MoreDeeplyNested{},
-			expectedTagValue: "default",
-			s:                s,
+			name:        "detecting_string",
+			description: "",
+			inputType:   "string",
+
+			expectedTagValue:     "string",
+			expectedTagValueType: "string",
 		},
 		{
-			name:             "detecting_string",
-			description:      "",
-			inputType:        "string",
-			expectedTagValue: "string",
-			s:                s,
+			name:        "new_string",
+			description: "",
+			inputType:   new(string),
+
+			expectedTagValue:     "string",
+			expectedTagValueType: "string",
 		},
 		{
-			name:             "new_string",
-			description:      "",
-			inputType:        new(string),
-			expectedTagValue: "string",
-			s:                s,
+			name:        "string_array",
+			description: "",
+			inputType:   []string{},
+
+			expectedTagValue:     "string",
+			expectedTagValueType: "array",
 		},
 		{
-			name:             "string_array",
-			description:      "",
-			inputType:        []string{},
-			expectedTagValue: "string",
-			s:                s,
+			name:        "pointer_string_array",
+			description: "",
+			inputType:   &[]string{},
+
+			expectedTagValue:     "string",
+			expectedTagValueType: "array",
 		},
 		{
-			name:             "pointer_string_array",
-			description:      "",
-			inputType:        &[]string{},
-			expectedTagValue: "string",
-			s:                s,
+			name:        "DataOrTemplate",
+			description: "",
+			inputType:   DataOrTemplate[MyStruct]{},
+
+			expectedTagValue:     "MyStruct",
+			expectedTagValueType: "object",
+		},
+		{
+			name:        "ptr to DataOrTemplate",
+			description: "",
+			inputType:   &DataOrTemplate[MyStruct]{},
+
+			expectedTagValue:     "MyStruct",
+			expectedTagValueType: "object",
+		},
+		{
+			name:        "DataOrTemplate of an array",
+			description: "",
+			inputType:   DataOrTemplate[[]MyStruct]{},
+
+			expectedTagValue:     "MyStruct",
+			expectedTagValueType: "array",
+		},
+		{
+			name:        "ptr to DataOrTemplate of an array of ptr",
+			description: "",
+			inputType:   &DataOrTemplate[[]*MyStruct]{},
+
+			expectedTagValue:     "MyStruct",
+			expectedTagValueType: "array",
+		},
+		{
+			name:        "ptr to DataOrTemplate of a ptr to an array",
+			description: "",
+			inputType:   &DataOrTemplate[*[]MyStruct]{},
+
+			expectedTagValue:     "MyStruct",
+			expectedTagValueType: "array",
+		},
+		{
+			name:        "ptr to DataOrTemplate of a ptr to an array of ptr",
+			description: "",
+			inputType:   &DataOrTemplate[*[]*MyStruct]{},
+
+			expectedTagValue:     "default",
+			expectedTagValueType: "array",
 		},
 	}
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			tag := schemaTagFromType(tc.s, tc.inputType)
-			assert.Equal(t, tc.expectedTagValue, tag.name, tc.description)
+			tag := schemaTagFromType(s, tc.inputType)
+			require.Equal(t, tc.expectedTagValue, tag.name, tc.description)
+			if tc.expectedTagValueType != "" {
+				require.NotNil(t, tag.Value)
+				require.Equal(t, tc.expectedTagValueType, tag.Value.Type, tc.description)
+			}
 		})
 	}
 }

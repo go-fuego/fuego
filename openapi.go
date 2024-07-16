@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3gen"
@@ -181,6 +182,7 @@ func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openap
 	}
 
 	responseSchema := schemaTagFromType(s, *new(T))
+	slog.Info("responseSchema", "responseSchema", fmt.Sprintf("%#v", responseSchema), "new", *new(T))
 	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json"})
 	response := openapi3.NewResponse().
 		WithDescription("OK").
@@ -253,8 +255,12 @@ func dive(s *Server, t reflect.Type, tag schemaTag, maxDepth int) schemaTag {
 
 	default:
 		tag.name = t.Name()
+		if t.Kind() == reflect.Struct && strings.HasPrefix(tag.name, "DataOrTemplate") {
+			return dive(s, t.Field(0).Type, tag, maxDepth-1)
+		}
 		tag.Ref = "#/components/schemas/" + tag.name
 		tag.Value = s.getOrCreateSchema(tag.name, reflect.New(t).Interface())
+
 		return tag
 	}
 }
