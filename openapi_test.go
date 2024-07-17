@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,7 +29,7 @@ type testCaseForTagType[V any] struct {
 	inputType   V
 
 	expectedTagValue     string
-	expectedTagValueType string
+	expectedTagValueType *openapi3.Types
 }
 
 func Test_tagFromType(t *testing.T) {
@@ -50,7 +51,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   MyStruct{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "object",
+			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
 			name:        "is_pointer",
@@ -58,7 +59,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &MyStruct{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "object",
+			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
 			name:        "is_array",
@@ -66,7 +67,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   []MyStruct{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "is_reference_to_array",
@@ -74,7 +75,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &[]MyStruct{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "is_deeply_nested",
@@ -82,7 +83,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   new(DeeplyNested),
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "5_pointers",
@@ -90,7 +91,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   *new(MoreDeeplyNested),
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "6_pointers",
@@ -98,7 +99,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   new(MoreDeeplyNested),
 
 			expectedTagValue:     "default",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "7_pointers",
@@ -113,7 +114,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   "string",
 
 			expectedTagValue:     "string",
-			expectedTagValueType: "string",
+			expectedTagValueType: &openapi3.Types{"string"},
 		},
 		{
 			name:        "new_string",
@@ -121,7 +122,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   new(string),
 
 			expectedTagValue:     "string",
-			expectedTagValueType: "string",
+			expectedTagValueType: &openapi3.Types{"string"},
 		},
 		{
 			name:        "string_array",
@@ -129,7 +130,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   []string{},
 
 			expectedTagValue:     "string",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "pointer_string_array",
@@ -137,7 +138,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &[]string{},
 
 			expectedTagValue:     "string",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "DataOrTemplate",
@@ -145,7 +146,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   DataOrTemplate[MyStruct]{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "object",
+			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
 			name:        "ptr to DataOrTemplate",
@@ -153,7 +154,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &DataOrTemplate[MyStruct]{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "object",
+			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
 			name:        "DataOrTemplate of an array",
@@ -161,7 +162,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   DataOrTemplate[[]MyStruct]{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "ptr to DataOrTemplate of an array of ptr",
@@ -169,7 +170,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &DataOrTemplate[[]*MyStruct]{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "ptr to DataOrTemplate of a ptr to an array",
@@ -177,7 +178,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &DataOrTemplate[*[]MyStruct]{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "ptr to DataOrTemplate of a ptr to an array of ptr",
@@ -185,7 +186,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &DataOrTemplate[*[]*MyStruct]{},
 
 			expectedTagValue:     "default",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 	}
 
@@ -193,7 +194,7 @@ func Test_tagFromType(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tag := schemaTagFromType(s, tc.inputType)
 			require.Equal(t, tc.expectedTagValue, tag.name, tc.description)
-			if tc.expectedTagValueType != "" {
+			if tc.expectedTagValueType != nil {
 				require.NotNil(t, tag.Value)
 				require.Equal(t, tc.expectedTagValueType, tag.Value.Type, tc.description)
 			}
@@ -217,12 +218,12 @@ func TestServer_generateOpenAPI(t *testing.T) {
 	require.NotNil(t, document.Paths.Find("/"))
 	require.Nil(t, document.Paths.Find("/unknown"))
 	require.NotNil(t, document.Paths.Find("/post"))
-	require.Equal(t, document.Paths.Find("/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Type, "array")
+	require.Equal(t, document.Paths.Find("/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Type, &openapi3.Types{"array"})
 	require.Equal(t, document.Paths.Find("/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Ref, "#/components/schemas/MyStruct")
 	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200"))
 	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"])
 	require.Nil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["unknown"])
-	require.Equal(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["quantity"].Value.Type, "integer")
+	require.Equal(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["quantity"].Value.Type, &openapi3.Types{"integer"})
 
 	t.Run("openapi doc is available through a route", func(t *testing.T) {
 		w := httptest.NewRecorder()
