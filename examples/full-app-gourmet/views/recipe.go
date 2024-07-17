@@ -13,6 +13,7 @@ import (
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/static"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa"
+	"github.com/go-fuego/fuego/extra/markdown"
 
 	"github.com/go-fuego/fuego"
 	"github.com/google/uuid"
@@ -274,7 +275,7 @@ func (rs Ressource) RecipePage(c fuego.ContextNoBody) (fuego.HTML, error) {
 	return c.Render("pages/recipe.page.html", fuego.H{
 		"Recipe":       recipe,
 		"Ingredients":  ingredients,
-		"Instructions": fuego.Markdown(recipe.Instructions),
+		"Instructions": markdown.Markdown(recipe.Instructions),
 	})
 }
 
