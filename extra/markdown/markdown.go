@@ -1,4 +1,4 @@
-package fuego
+package markdown
 
 import (
 	"html/template"

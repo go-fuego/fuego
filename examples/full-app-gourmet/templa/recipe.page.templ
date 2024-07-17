@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"context"
 	"io"
+	"github.com/go-fuego/fuego/extra/markdown"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa/components"
-	"github.com/go-fuego/fuego"
 )
 
 func Unsafe(html string) templ.Component {
@@ -144,7 +144,7 @@ templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
 				<div class="md:col-span-2 space-y-2">
 					<h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mt-0">Instructions</h2>
 					<p class="dark:text-gray-100">
-						@Unsafe(string(fuego.Markdown(props.Recipe.Instructions)))
+						@Unsafe(string(markdown.Markdown(props.Recipe.Instructions)))
 					</p>
 				</div>
 			</div>
