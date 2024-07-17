@@ -75,6 +75,6 @@ func main() {
 	// Run the server!
 	err = app.Run()
 	if err != nil {
-		slog.Error("Error running server: %s", err)
+		slog.Error("Error running server: %s", "err", err)
 	}
 }
