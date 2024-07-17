@@ -29,7 +29,7 @@ type testCaseForTagType[V any] struct {
 	inputType   V
 
 	expectedTagValue     string
-	expectedTagValueType string
+	expectedTagValueType *openapi3.Types
 }
 
 func Test_tagFromType(t *testing.T) {
@@ -51,7 +51,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   MyStruct{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "object",
+			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
 			name:        "is_pointer",
@@ -59,7 +59,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &MyStruct{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "object",
+			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
 			name:        "is_array",
@@ -67,7 +67,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   []MyStruct{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "is_reference_to_array",
@@ -75,7 +75,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &[]MyStruct{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "is_deeply_nested",
@@ -83,7 +83,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   new(DeeplyNested),
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "5_pointers",
@@ -91,7 +91,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   *new(MoreDeeplyNested),
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "6_pointers",
@@ -99,7 +99,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   new(MoreDeeplyNested),
 
 			expectedTagValue:     "default",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "7_pointers",
@@ -114,7 +114,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   "string",
 
 			expectedTagValue:     "string",
-			expectedTagValueType: "string",
+			expectedTagValueType: &openapi3.Types{"string"},
 		},
 		{
 			name:        "new_string",
@@ -122,7 +122,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   new(string),
 
 			expectedTagValue:     "string",
-			expectedTagValueType: "string",
+			expectedTagValueType: &openapi3.Types{"string"},
 		},
 		{
 			name:        "string_array",
@@ -130,7 +130,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   []string{},
 
 			expectedTagValue:     "string",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "pointer_string_array",
@@ -138,7 +138,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &[]string{},
 
 			expectedTagValue:     "string",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "DataOrTemplate",
@@ -146,7 +146,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   DataOrTemplate[MyStruct]{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "object",
+			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
 			name:        "ptr to DataOrTemplate",
@@ -154,7 +154,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &DataOrTemplate[MyStruct]{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "object",
+			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
 			name:        "DataOrTemplate of an array",
@@ -162,7 +162,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   DataOrTemplate[[]MyStruct]{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "ptr to DataOrTemplate of an array of ptr",
@@ -170,7 +170,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &DataOrTemplate[[]*MyStruct]{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "ptr to DataOrTemplate of a ptr to an array",
@@ -178,7 +178,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &DataOrTemplate[*[]MyStruct]{},
 
 			expectedTagValue:     "MyStruct",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
 			name:        "ptr to DataOrTemplate of a ptr to an array of ptr",
@@ -186,7 +186,7 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   &DataOrTemplate[*[]*MyStruct]{},
 
 			expectedTagValue:     "default",
-			expectedTagValueType: "array",
+			expectedTagValueType: &openapi3.Types{"array"},
 		},
 	}
 
@@ -194,7 +194,7 @@ func Test_tagFromType(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tag := schemaTagFromType(s, tc.inputType)
 			require.Equal(t, tc.expectedTagValue, tag.name, tc.description)
-			if tc.expectedTagValueType != "" {
+			if tc.expectedTagValueType != nil {
 				require.NotNil(t, tag.Value)
 				require.Equal(t, tc.expectedTagValueType, tag.Value.Type, tc.description)
 			}
