@@ -253,10 +253,8 @@ func dive(s *Server, t reflect.Type, tag schemaTag, maxDepth int) schemaTag {
 	case reflect.Slice, reflect.Array:
 		item := dive(s, t.Elem(), tag, maxDepth-1)
 		tag.name = item.name
-		tag.Value = &openapi3.Schema{
-			Type:  &openapi3.Types{"array"},
-			Items: &item.SchemaRef,
-		}
+		tag.Value = openapi3.NewArraySchema()
+		tag.Value.Items = &item.SchemaRef
 		return tag
 
 	default:
