@@ -2,10 +2,13 @@ default: ci
 
 ci: fmt lint cover
 
-ci-full: ci dependencies-analyze bench
+ci-full: ci dependencies-analyze openapi-check test-all-modules lint-markdown bench
 
 test: 
 	go test ./...
+
+test-all-modules:
+	./test.sh
 
 cover:
 	go test -coverprofile=coverage.out ./...
@@ -30,13 +33,25 @@ lint:
 	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run
 
 lint-markdown:
-	markdownlint --dot .
+	markdownlint --ignore documentation/node_modules --dot .
 
+# Update golden files
+golden-update:
+	(cd examples/petstore && go test -update)
+
+# Check OpenAPI spec generated for the Petstore example. Uses https://github.com/daveshanley/vacuum
+openapi-check:
+	vacuum lint -d examples/petstore/testdata/doc/openapi.json
+
+# Examples
 example:
 	( cd examples/full-app-gourmet && go run . -debug )
 
 example-watch:
 	( cd examples/full-app-gourmet && air -- -debug )
+
+petstore:
+	( cd examples/petstore && go run . -debug )
 
 # Documentation website
 docs:
@@ -46,4 +61,5 @@ docs-open:
 	go run golang.org/x/pkgsite/cmd/pkgsite@latest -http localhost:8084 -open
 
 .PHONY: docs-open docs example-watch example lint lint-markdown fmt ci ci-full
-.PHONY: dependencies-analyze build bench cover-web cover test
+.PHONY: dependencies-analyze build bench cover-web cover test petstore test-all-modules
+.PHONY: golden-update openapi-check
