@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3gen"
@@ -162,8 +163,8 @@ func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openap
 
 	// Request body
 	bodyTag := schemaTagFromType(s, *new(B))
-	if (method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch) && bodyTag.name != "unknown-interface" && bodyTag.name != "string" {
-		content := openapi3.NewContentWithSchemaRef(&bodyTag.SchemaRef, []string{"application/json"})
+	if bodyTag.name != "unknown-interface" {
+		content := openapi3.NewContentWithSchemaRef(&bodyTag.SchemaRef, []string{"application/json", "application/xml"})
 		requestBody := openapi3.NewRequestBody().
 			WithRequired(true).
 			WithDescription("Request body for " + reflect.TypeOf(*new(B)).String()).
@@ -181,7 +182,7 @@ func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openap
 	}
 
 	responseSchema := schemaTagFromType(s, *new(T))
-	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json"})
+	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
 	response := openapi3.NewResponse().
 		WithDescription("OK").
 		WithContent(content)
@@ -192,6 +193,10 @@ func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openap
 	for _, pathParam := range parsePathParams(path) {
 		parameter := openapi3.NewPathParameter(pathParam)
 		parameter.Schema = openapi3.NewStringSchema().NewRef()
+		if strings.HasSuffix(pathParam, "...") {
+			parameter.Description += " (might contain slashes)"
+		}
+
 		operation.AddParameter(parameter)
 	}
 
@@ -209,11 +214,12 @@ type schemaTag struct {
 func schemaTagFromType(s *Server, v any) schemaTag {
 	if v == nil {
 		// ensure we add unknown-interface to our schemas
-		s.getOrCreateSchema("unknown-interface", struct{}{})
+		schema := s.getOrCreateSchema("unknown-interface", struct{}{})
 		return schemaTag{
 			name: "unknown-interface",
 			SchemaRef: openapi3.SchemaRef{
-				Ref: "#/components/schemas/unknown-interface",
+				Ref:   "#/components/schemas/unknown-interface",
+				Value: schema,
 			},
 		}
 	}

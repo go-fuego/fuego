@@ -125,7 +125,7 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, m
 
 	route.Operation.Summary = route.NameFromNamespace(camelToHuman)
 	route.Operation.Description = "controller: `" + route.FullName + "`\n\n---\n\n"
-	route.Operation.OperationID = route.Method + " " + s.basePath + route.Path + ":" + route.NameFromNamespace()
+	route.Operation.OperationID = route.Method + "_" + s.basePath + strings.ReplaceAll(strings.ReplaceAll(route.Path, "{", ":"), "}", "")
 
 	return route
 }

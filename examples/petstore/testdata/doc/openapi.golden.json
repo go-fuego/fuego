@@ -1,0 +1,271 @@
+{
+	"openapi": "3.0.3",
+	"components": {
+		"requestBodies": {
+			"PetsCreate": {
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/PetsCreate"
+						}
+					},
+					"application/xml": {
+						"schema": {
+							"$ref": "#/components/schemas/PetsCreate"
+						}
+					}
+				},
+				"description": "Request body for controller.PetsCreate",
+				"required": true
+			},
+			"PetsUpdate": {
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/PetsUpdate"
+						}
+					},
+					"application/xml": {
+						"schema": {
+							"$ref": "#/components/schemas/PetsUpdate"
+						}
+					}
+				},
+				"description": "Request body for controller.PetsUpdate",
+				"required": true
+			}
+		},
+		"schemas": {
+			"Pets": {
+				"properties": {
+					"age": {
+						"type": "integer"
+					},
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"PetsCreate": {
+				"properties": {
+					"age": {
+						"type": "integer"
+					},
+					"name": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"PetsUpdate": {
+				"properties": {
+					"age": {
+						"type": "integer"
+					},
+					"name": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"unknown-interface": {}
+		}
+	},
+	"info": {
+		"description": "OpenAPI",
+		"title": "OpenAPI",
+		"version": "0.0.1"
+	},
+	"paths": {
+		"/pets/": {
+			"get": {
+				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsRessources.getAllPets`\n\n---\n\n",
+				"operationId": "GET_/pets/",
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Pets"
+									},
+									"type": "array"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Pets"
+									},
+									"type": "array"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"default": {
+						"description": ""
+					}
+				},
+				"summary": "get all pets",
+				"tags": [
+					"pets"
+				]
+			},
+			"post": {
+				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsRessources.postPets`\n\n---\n\n",
+				"operationId": "POST_/pets/",
+				"requestBody": {
+					"$ref": "#/components/requestBodies/PetsCreate"
+				},
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Pets"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/Pets"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"default": {
+						"description": ""
+					}
+				},
+				"summary": "post pets",
+				"tags": [
+					"pets"
+				]
+			}
+		},
+		"/pets/{id}": {
+			"delete": {
+				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsRessources.deletePets`\n\n---\n\n",
+				"operationId": "DELETE_/pets/:id",
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"default": {
+						"description": ""
+					}
+				},
+				"summary": "delete pets",
+				"tags": [
+					"pets"
+				]
+			},
+			"get": {
+				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsRessources.getPets`\n\n---\n\n",
+				"operationId": "GET_/pets/:id",
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Pets"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/Pets"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"default": {
+						"description": ""
+					}
+				},
+				"summary": "get pets",
+				"tags": [
+					"pets"
+				]
+			},
+			"put": {
+				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsRessources.putPets`\n\n---\n\n",
+				"operationId": "PUT_/pets/:id",
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"$ref": "#/components/requestBodies/PetsUpdate"
+				},
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Pets"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/Pets"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"default": {
+						"description": ""
+					}
+				},
+				"summary": "put pets",
+				"tags": [
+					"pets"
+				]
+			}
+		}
+	}
+}
