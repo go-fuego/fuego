@@ -19,7 +19,7 @@ import (
 func NewOpenApiSpec() openapi3.T {
 	info := &openapi3.Info{
 		Title:       "OpenAPI",
-		Description: "OpenAPI",
+		Description: openapiDescription,
 		Version:     "0.0.1",
 	}
 	spec := openapi3.T{
