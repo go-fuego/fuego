@@ -2,13 +2,13 @@ default: ci
 
 ci: fmt lint cover
 
-ci-full: ci dependencies-analyze openapi-check test-all-modules lint-markdown bench
+ci-full: ci dependencies-analyze openapi-check check-all-modules lint-markdown bench
 
 test: 
 	go test ./...
 
-test-all-modules:
-	./test.sh
+check-all-modules:
+	./check-all-modules.sh
 
 cover:
 	go test -coverprofile=coverage.out ./...
@@ -61,5 +61,5 @@ docs-open:
 	go run golang.org/x/pkgsite/cmd/pkgsite@latest -http localhost:8084 -open
 
 .PHONY: docs-open docs example-watch example lint lint-markdown fmt ci ci-full
-.PHONY: dependencies-analyze build bench cover-web cover test petstore test-all-modules
+.PHONY: dependencies-analyze build bench cover-web cover test petstore check-all-modules
 .PHONY: golden-update openapi-check
