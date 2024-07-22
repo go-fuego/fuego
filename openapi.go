@@ -24,9 +24,11 @@ func NewOpenApiSpec() openapi3.T {
 		Version:     "0.0.1",
 	}
 	spec := openapi3.T{
-		OpenAPI: "3.0.3",
-		Info:    info,
-		Paths:   &openapi3.Paths{},
+		OpenAPI:  "3.0.3",
+		Info:     info,
+		Paths:    &openapi3.Paths{},
+		Servers:  []*openapi3.Server{},
+		Security: openapi3.SecurityRequirements{},
 		Components: &openapi3.Components{
 			Schemas:       make(map[string]*openapi3.SchemaRef),
 			RequestBodies: make(map[string]*openapi3.RequestBodyRef),
@@ -269,7 +271,16 @@ func (s *Server) getOrCreateSchema(key string, v any) *openapi3.Schema {
 	schemaRef, ok := s.OpenApiSpec.Components.Schemas[key]
 	if !ok {
 		schemaRef, _ = generator.NewSchemaRefForValue(v, s.OpenApiSpec.Components.Schemas)
+		schemaRef.Value.Description = fmt.Sprintf("Schema for %s", key)
+		descriptionable, ok := v.(OpenAPIDescriptioner)
+		if ok {
+			schemaRef.Value.Description = descriptionable.Description()
+		}
 		s.OpenApiSpec.Components.Schemas[key] = schemaRef
 	}
 	return schemaRef.Value
+}
+
+type OpenAPIDescriptioner interface {
+	Description() string
 }
