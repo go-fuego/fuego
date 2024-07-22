@@ -331,11 +331,6 @@ func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
 		s.OpenAPIConfig.DisableLocalSave = openapiConfig.DisableLocalSave
 		s.OpenAPIConfig.PrettyFormatJson = openapiConfig.PrettyFormatJson
 
-		if !validateJsonSpecLocalPath(s.OpenAPIConfig.JsonFilePath) {
-			slog.Error("Error writing json spec. Value of 'jsonSpecLocalPath' option is not valid", "file", s.OpenAPIConfig.JsonFilePath)
-			return
-		}
-
 		if !validateJsonSpecUrl(s.OpenAPIConfig.JsonUrl) {
 			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIConfig.JsonSpecUrl' option is not valid", "url", s.OpenAPIConfig.JsonUrl)
 			return

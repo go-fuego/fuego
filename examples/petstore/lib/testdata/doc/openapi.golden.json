@@ -15,7 +15,7 @@
 						}
 					}
 				},
-				"description": "Request body for controller.PetsCreate",
+				"description": "Request body for models.PetsCreate",
 				"required": true
 			},
 			"PetsUpdate": {
@@ -31,7 +31,7 @@
 						}
 					}
 				},
-				"description": "Request body for controller.PetsUpdate",
+				"description": "Request body for models.PetsUpdate",
 				"required": true
 			}
 		},
@@ -66,6 +66,7 @@
 						"description": "Age of the pet, in years",
 						"example": 18,
 						"maximum": 100,
+						"minimum": 0,
 						"type": "integer"
 					},
 					"name": {
@@ -173,6 +174,47 @@
 					}
 				},
 				"summary": "post pets",
+				"tags": [
+					"pets"
+				]
+			}
+		},
+		"/pets/by-name/{name...}": {
+			"get": {
+				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsRessources.getPetByName`\n\n---\n\n",
+				"operationId": "GET_/pets/by-name/:name...",
+				"parameters": [
+					{
+						"description": " (might contain slashes)",
+						"in": "path",
+						"name": "name...",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Pets"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/Pets"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"default": {
+						"description": ""
+					}
+				},
+				"summary": "get pet by name",
 				"tags": [
 					"pets"
 				]
