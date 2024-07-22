@@ -13,7 +13,6 @@ check-all-modules:
 cover:
 	go test -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out
-	sed '/petstore/d' coverage.out > coverage.out
 
 cover-web: cover
 	go tool cover -html=coverage.out
