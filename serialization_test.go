@@ -2,7 +2,9 @@ package fuego
 
 import (
 	"context"
+	"errors"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -240,6 +242,51 @@ func TestSend(t *testing.T) {
 	SendText(w, "Hello World")
 
 	require.Equal(t, "Hello World", w.Body.String())
+}
+
+type errorWriter struct {
+	arg string
+}
+
+func (e *errorWriter) Write(p []byte) (n int, err error) {
+	e.arg = string(p)
+	return 0, errors.New("cannot write on an errorWriter")
+}
+
+func (errorWriter) WriteHeader(statusCode int) {}
+
+func (errorWriter) Header() http.Header {
+	return http.Header{}
+}
+
+func TestSendYaml(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendYAML(w, response{Message: "Hello World", Code: 200})
+
+		require.Equal(t, "message: Hello World\ncode: 200\n", w.Body.String())
+	})
+
+	t.Run("error", func(t *testing.T) {
+		errorWriter := &errorWriter{}
+		SendYAML(errorWriter, response{Message: "Hello World", Code: 200})
+		require.Contains(t, errorWriter.arg, "Cannot serialize YAML")
+	})
+}
+
+func TestSendJSON(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendJSON(w, response{Message: "Hello World", Code: 200})
+
+		require.Equal(t, crlf(`{"message":"Hello World","code":200}`), w.Body.String())
+	})
+
+	t.Run("error", func(t *testing.T) {
+		errorWriter := &errorWriter{}
+		SendJSON(errorWriter, response{Message: "Hello World", Code: 200})
+		require.Contains(t, errorWriter.arg, "Cannot serialize JSON")
+	})
 }
 
 type templateMock struct{}
