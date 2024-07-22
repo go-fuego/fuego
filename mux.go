@@ -35,6 +35,9 @@ func Group(s *Server, path string) *Server {
 	newServer := &ss
 	newServer.basePath += path
 	newServer.groupTag = strings.TrimLeft(path, "/")
+	if newServer.groupTag != "" {
+		s.OpenApiSpec.Tags = append(s.OpenApiSpec.Tags, &openapi3.Tag{Name: newServer.groupTag})
+	}
 
 	return newServer
 }
