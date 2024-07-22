@@ -1,5 +1,5 @@
 {
-	"openapi": "3.0.3",
+	"openapi": "3.1.0",
 	"components": {
 		"requestBodies": {
 			"PetsCreate": {
@@ -37,46 +37,71 @@
 		},
 		"schemas": {
 			"Pets": {
-				"description": "Schema for Pets",
+				"description": "Pets schema",
 				"properties": {
 					"age": {
+						"description": "Age of the pet, in years",
+						"example": 18,
 						"type": "integer"
 					},
 					"id": {
+						"example": "pet-123456",
 						"type": "string"
 					},
 					"name": {
+						"example": "Napoleon",
 						"type": "string"
 					}
 				},
+				"required": [
+					"id",
+					"name"
+				],
 				"type": "object"
 			},
 			"PetsCreate": {
-				"description": "Schema for PetsCreate",
+				"description": "PetsCreate schema",
 				"properties": {
 					"age": {
+						"description": "Age of the pet, in years",
+						"example": 18,
+						"maximum": 100,
 						"type": "integer"
 					},
 					"name": {
+						"example": "Napoleon",
+						"maxLength": 100,
+						"minLength": 1,
 						"type": "string"
 					}
 				},
+				"required": [
+					"name"
+				],
 				"type": "object"
 			},
 			"PetsUpdate": {
-				"description": "Schema for PetsUpdate",
+				"description": "PetsUpdate schema",
 				"properties": {
 					"age": {
+						"example": 18,
+						"maximum": 100,
+						"nullable": true,
 						"type": "integer"
 					},
 					"name": {
+						"description": "Name of the pet",
+						"example": "Napoleon",
+						"maxLength": 100,
+						"minLength": 1,
+						"nullable": true,
 						"type": "string"
 					}
 				},
 				"type": "object"
 			},
 			"unknown-interface": {
-				"description": "Schema for unknown-interface"
+				"description": "unknown-interface schema"
 			}
 		}
 	},
