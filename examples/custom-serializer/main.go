@@ -12,9 +12,9 @@ var json = jsoniter.ConfigCompatibleWithStandardLibrary
 func main() {
 	s := fuego.NewServer()
 
-	s.Serialize = func(w http.ResponseWriter, ans any) {
+	s.Serialize = func(w http.ResponseWriter, _ *http.Request, ans any) error {
 		w.Header().Set("Content-Type", "text/plain")
-		json.NewEncoder(w).Encode(ans)
+		return json.NewEncoder(w).Encode(ans)
 	}
 
 	fuego.Get(s, "/", helloWorld)
