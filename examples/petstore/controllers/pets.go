@@ -1,37 +1,12 @@
-//coverage:ignore
 package controller
 
 import (
-	"context"
-	"errors"
-
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/examples/petstore/models"
 )
 
 type PetsRessources struct {
 	PetsService PetsService
-}
-
-type Pets struct {
-	ID   string `json:"id" validate:"required" example:"pet-123456"`
-	Name string `json:"name" validate:"required" example:"Napoleon"`
-	Age  int    `json:"age" example:"18" description:"Age of the pet, in years"`
-}
-
-type PetsCreate struct {
-	Name string `json:"name" validate:"required,min=1,max=100" example:"Napoleon"`
-	Age  int    `json:"age" validate:"max=100" example:"18" description:"Age of the pet, in years"`
-}
-
-type PetsUpdate struct {
-	Name string `json:"name,omitempty" validate:"min=1,max=100" example:"Napoleon" description:"Name of the pet"`
-	Age  int    `json:"age,omitempty" validate:"max=100" example:"18"`
-}
-
-var _ fuego.InTransformer = &Pets{}
-
-func (*Pets) InTransform(context.Context) error {
-	return errors.New("pets must only be used as output")
 }
 
 func (rs PetsRessources) Routes(s *fuego.Server) {
@@ -41,48 +16,45 @@ func (rs PetsRessources) Routes(s *fuego.Server) {
 	fuego.Post(petsGroup, "/", rs.postPets)
 
 	fuego.Get(petsGroup, "/{id}", rs.getPets)
+	fuego.Get(petsGroup, "/by-name/{name...}", rs.getPetByName)
 	fuego.Put(petsGroup, "/{id}", rs.putPets)
 	fuego.Delete(petsGroup, "/{id}", rs.deletePets)
 }
 
-func (rs PetsRessources) getAllPets(c fuego.ContextNoBody) ([]Pets, error) {
+func (rs PetsRessources) getAllPets(c fuego.ContextNoBody) ([]models.Pets, error) {
 	return rs.PetsService.GetAllPets()
 }
 
-func (rs PetsRessources) postPets(c *fuego.ContextWithBody[PetsCreate]) (Pets, error) {
+func (rs PetsRessources) postPets(c *fuego.ContextWithBody[models.PetsCreate]) (models.Pets, error) {
 	body, err := c.Body()
 	if err != nil {
-		return Pets{}, err
+		return models.Pets{}, err
 	}
 
-	new, err := rs.PetsService.CreatePets(body)
-	if err != nil {
-		return Pets{}, err
-	}
-
-	return new, nil
+	return rs.PetsService.CreatePets(body)
 }
 
-func (rs PetsRessources) getPets(c fuego.ContextNoBody) (Pets, error) {
+func (rs PetsRessources) getPets(c fuego.ContextNoBody) (models.Pets, error) {
 	id := c.PathParam("id")
 
 	return rs.PetsService.GetPets(id)
 }
 
-func (rs PetsRessources) putPets(c *fuego.ContextWithBody[PetsUpdate]) (Pets, error) {
+func (rs PetsRessources) getPetByName(c fuego.ContextNoBody) (models.Pets, error) {
+	name := c.PathParam("name")
+
+	return rs.PetsService.GetPetByName(name)
+}
+
+func (rs PetsRessources) putPets(c *fuego.ContextWithBody[models.PetsUpdate]) (models.Pets, error) {
 	id := c.PathParam("id")
 
 	body, err := c.Body()
 	if err != nil {
-		return Pets{}, err
+		return models.Pets{}, err
 	}
 
-	new, err := rs.PetsService.UpdatePets(id, body)
-	if err != nil {
-		return Pets{}, err
-	}
-
-	return new, nil
+	return rs.PetsService.UpdatePets(id, body)
 }
 
 func (rs PetsRessources) deletePets(c *fuego.ContextNoBody) (any, error) {
@@ -90,9 +62,10 @@ func (rs PetsRessources) deletePets(c *fuego.ContextNoBody) (any, error) {
 }
 
 type PetsService interface {
-	GetPets(id string) (Pets, error)
-	CreatePets(PetsCreate) (Pets, error)
-	GetAllPets() ([]Pets, error)
-	UpdatePets(id string, input PetsUpdate) (Pets, error)
+	GetPets(id string) (models.Pets, error)
+	GetPetByName(name string) (models.Pets, error)
+	CreatePets(models.PetsCreate) (models.Pets, error)
+	GetAllPets() ([]models.Pets, error)
+	UpdatePets(id string, input models.PetsUpdate) (models.Pets, error)
 	DeletePets(id string) (any, error)
 }

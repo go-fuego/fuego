@@ -37,7 +37,7 @@ lint-markdown:
 
 # Update golden files
 golden-update:
-	(cd examples/petstore && go test -update)
+	(cd examples/petstore/lib && go test -update)
 
 # Check OpenAPI spec generated for the Petstore example. Uses https://github.com/daveshanley/vacuum
 openapi-check:

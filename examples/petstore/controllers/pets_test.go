@@ -1,0 +1,116 @@
+package controller_test
+
+import (
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	"github.com/go-fuego/fuego/examples/petstore/lib"
+	"github.com/stretchr/testify/require"
+)
+
+func TestGetAllPets(t *testing.T) {
+	t.Run("can get all pets", func(t *testing.T) {
+		s := lib.NewPetStoreServer()
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/pets/", nil)
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+	})
+}
+
+func TestPostPets(t *testing.T) {
+	t.Run("can create a pet", func(t *testing.T) {
+		s := lib.NewPetStoreServer()
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+	})
+}
+
+func TestGetPets(t *testing.T) {
+	t.Run("can get a pet by id", func(t *testing.T) {
+		s := lib.NewPetStoreServer()
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
+		s.Mux.ServeHTTP(w, r)
+		t.Log(w.Body.String())
+		require.Equal(t, 200, w.Code)
+
+		w = httptest.NewRecorder()
+		r = httptest.NewRequest("GET", "/pets/pet-1", nil)
+
+		s.Mux.ServeHTTP(w, r)
+
+		t.Log(w.Body.String())
+		require.Equal(t, 200, w.Code)
+	})
+}
+
+func TestGetPetsByName(t *testing.T) {
+	t.Run("can get a pet by name", func(t *testing.T) {
+		s := lib.NewPetStoreServer()
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
+		s.Mux.ServeHTTP(w, r)
+		t.Log(w.Body.String())
+		require.Equal(t, 200, w.Code)
+
+		w = httptest.NewRecorder()
+		r = httptest.NewRequest("GET", "/pets/by-name/kitkat", nil)
+
+		s.Mux.ServeHTTP(w, r)
+
+		t.Log(w.Body.String())
+		require.Equal(t, 200, w.Code)
+	})
+}
+
+func TestPutPets(t *testing.T) {
+	t.Run("can update a pet", func(t *testing.T) {
+		s := lib.NewPetStoreServer()
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
+		s.Mux.ServeHTTP(w, r)
+		t.Log(w.Body.String())
+		require.Equal(t, 200, w.Code)
+
+		w = httptest.NewRecorder()
+		r = httptest.NewRequest("PUT", "/pets/pet-1", strings.NewReader(`{"name": "snickers"}`))
+
+		s.Mux.ServeHTTP(w, r)
+
+		t.Log(w.Body.String())
+		require.Equal(t, 200, w.Code)
+	})
+}
+
+func TestDeletePets(t *testing.T) {
+	t.Run("can delete a pet", func(t *testing.T) {
+		s := lib.NewPetStoreServer()
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
+		s.Mux.ServeHTTP(w, r)
+		t.Log(w.Body.String())
+		require.Equal(t, 200, w.Code)
+
+		w = httptest.NewRecorder()
+		r = httptest.NewRequest("DELETE", "/pets/pet-1", nil)
+
+		s.Mux.ServeHTTP(w, r)
+
+		t.Log(w.Body.String())
+		require.Equal(t, 200, w.Code)
+	})
+}

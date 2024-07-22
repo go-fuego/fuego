@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 )
 
 func TestPetstoreOpenAPIGeneration(t *testing.T) {
-	server := newPetStoreServer(
+	server := NewPetStoreServer(
 		fuego.WithoutStartupMessages(),
 		fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
 			JsonFilePath:     "testdata/doc/openapi.json",

@@ -135,11 +135,6 @@ func (s *Server) printOpenAPIMessage(msg string) {
 	}
 }
 
-func validateJsonSpecLocalPath(jsonSpecLocalPath string) bool {
-	jsonSpecLocalPathRegexp := regexp.MustCompile(`^[^\/][\/a-zA-Z0-9\-\_]+(.json)$`)
-	return jsonSpecLocalPathRegexp.MatchString(jsonSpecLocalPath)
-}
-
 func validateJsonSpecUrl(jsonSpecUrl string) bool {
 	jsonSpecUrlRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_]+(.json)$`)
 	return jsonSpecUrlRegexp.MatchString(jsonSpecUrl)
