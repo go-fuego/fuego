@@ -16,19 +16,19 @@ type ErrorWithStatus interface {
 
 // HTTPError is the error response used by the serialization part of the framework.
 type HTTPError struct {
-	Err      error       `json:"-" xml:"-"`                               // Developer readable error message. Not shown to the user to avoid security leaks.
-	Type     string      `json:"type,omitempty" xml:"type,omitempty"`     // URL of the error type. Can be used to lookup the error in a documentation
-	Title    string      `json:"title,omitempty" xml:"title,omitempty"`   // Short title of the error
-	Status   int         `json:"status,omitempty" xml:"status,omitempty"` // HTTP status code. If using a different type than [HTTPError], for example [BadRequestError], this will be automatically overridden after Fuego error handling.
-	Detail   string      `json:"detail,omitempty" xml:"detail,omitempty"` // Human readable error message
+	Err      error       `json:"-" xml:"-"`                                                                                                                   // Developer readable error message. Not shown to the user to avoid security leaks.
+	Type     string      `json:"type,omitempty" xml:"type,omitempty" description:"URL of the error type. Can be used to lookup the error in a documentation"` // URL of the error type. Can be used to lookup the error in a documentation
+	Title    string      `json:"title,omitempty" xml:"title,omitempty" description:"Short title of the error"`                                                // Short title of the error
+	Status   int         `json:"status,omitempty" xml:"status,omitempty" description:"HTTP status code" example:"403"`                                        // HTTP status code. If using a different type than [HTTPError], for example [BadRequestError], this will be automatically overridden after Fuego error handling.
+	Detail   string      `json:"detail,omitempty" xml:"detail,omitempty" description:"Human readable error message"`                                          // Human readable error message
 	Instance string      `json:"instance,omitempty" xml:"instance,omitempty"`
 	Errors   []ErrorItem `json:"errors,omitempty" xml:"errors,omitempty"`
 }
 
 type ErrorItem struct {
-	Name   string         `json:"name"`
-	Reason string         `json:"reason"`
-	More   map[string]any `json:"more,omitempty"`
+	Name   string         `json:"name" xml:"name" description:"For example, name of the parameter that caused the error"`
+	Reason string         `json:"reason" xml:"reason" description:"Human readable error message"`
+	More   map[string]any `json:"more,omitempty" xml:"more,omitempty" description:"Additional information about the error"`
 }
 
 func (e HTTPError) Error() string {

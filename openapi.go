@@ -180,12 +180,15 @@ func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openap
 		}
 	}
 
+	// Response - globals
+	for _, openAPIGlobalResponse := range s.globalOpenAPIResponses {
+		addResponse(s, operation, openAPIGlobalResponse.Code, openAPIGlobalResponse.Description, openAPIGlobalResponse.ErrorType)
+	}
+
+	// Response - 200
 	responseSchema := schemaTagFromType(s, *new(T))
 	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
-	response := openapi3.NewResponse().
-		WithDescription("OK").
-		WithContent(content)
-
+	response := openapi3.NewResponse().WithDescription("OK").WithContent(content)
 	operation.AddResponse(200, response)
 
 	// Path parameters

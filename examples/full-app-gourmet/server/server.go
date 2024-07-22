@@ -23,12 +23,15 @@ func (rs Ressources) Setup(
 		fuego.WithAutoAuth(controller.LoginFunc),
 		fuego.WithTemplateFS(templates.FS),
 		fuego.WithTemplateGlobs("**/*.html", "**/**/*.html"),
+		fuego.WithGlobalResponseTypes(403, "Forbidden"),
 	}
 
 	options = append(serverOptions, options...)
 
 	// Create server with some options
 	app := fuego.NewServer(options...)
+
+	app.OpenApiSpec.Info.Title = "Gourmet API"
 
 	rs.API.Security = app.Security
 

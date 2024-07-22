@@ -82,6 +82,33 @@ func (r Route[ResponseBody, RequestBody]) AddTags(tags ...string) Route[Response
 	return r
 }
 
+// AddError adds an error to the route.
+func (r Route[ResponseBody, RequestBody]) AddError(code int, description string, errorType ...any) Route[ResponseBody, RequestBody] {
+	addResponse(r.mainRouter, r.Operation, code, description, errorType...)
+	return r
+}
+
+func addResponse(s *Server, operation *openapi3.Operation, code int, description string, errorType ...any) {
+	responseSchema := schemaTagFromType(s, HTTPError{})
+	if len(errorType) > 0 {
+		responseSchema = schemaTagFromType(s, errorType[0])
+	}
+	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json"})
+
+	response := openapi3.NewResponse().
+		WithDescription(description).
+		WithContent(content)
+
+	operation.AddResponse(code, response)
+}
+
+// openAPIError describes a response error in the OpenAPI spec.
+type openAPIError struct {
+	Code        int
+	Description string
+	ErrorType   any
+}
+
 // RemoveTags removes tags from the route.
 func (r Route[ResponseBody, RequestBody]) RemoveTags(tags ...string) Route[ResponseBody, RequestBody] {
 	for _, tag := range tags {
