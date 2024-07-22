@@ -87,7 +87,7 @@ func Send(w http.ResponseWriter, r *http.Request, ans any) error {
 		return SendText(w, ans)
 	case "application/json":
 		SendJSON(w, ans)
-	case "application/yaml":
+	case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
 		SendYAML(w, ans)
 	default:
 		return errors.New("unsupported Accept header")
@@ -125,12 +125,7 @@ var SendJSON = func(w http.ResponseWriter, ans any) {
 // SendError sends an error.
 // Declared as a variable to be able to override it for clients that need to customize serialization.
 var SendError = func(w http.ResponseWriter, r *http.Request, err error) {
-	accept := parseAcceptHeader(r.Header.Get("Accept"), nil)
-	if accept == "" {
-		accept = "application/json"
-	}
-
-	switch accept {
+	switch parseAcceptHeader(r.Header.Get("Accept"), nil) {
 	case "application/xml":
 		SendXMLError(w, r, err)
 	case "text/html":
@@ -139,6 +134,8 @@ var SendError = func(w http.ResponseWriter, r *http.Request, err error) {
 		_ = SendText(w, err)
 	case "application/json":
 		SendJSONError(w, err)
+	case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
+		SendYAML(w, err)
 	default:
 		SendJSONError(w, err)
 	}
