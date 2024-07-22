@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -24,7 +26,7 @@ func NewOpenApiSpec() openapi3.T {
 		Version:     "0.0.1",
 	}
 	spec := openapi3.T{
-		OpenAPI:  "3.0.3",
+		OpenAPI:  "3.1.0",
 		Info:     info,
 		Paths:    &openapi3.Paths{},
 		Servers:  []*openapi3.Server{},
@@ -269,18 +271,140 @@ func dive(s *Server, t reflect.Type, tag schemaTag, maxDepth int) schemaTag {
 	}
 }
 
+// getOrCreateSchema is used to get a schema from the OpenAPI spec.
+// If the schema does not exist, it will create a new schema and add it to the OpenAPI spec.
 func (s *Server) getOrCreateSchema(key string, v any) *openapi3.Schema {
 	schemaRef, ok := s.OpenApiSpec.Components.Schemas[key]
 	if !ok {
-		schemaRef, _ = generator.NewSchemaRefForValue(v, s.OpenApiSpec.Components.Schemas)
-		schemaRef.Value.Description = fmt.Sprintf("Schema for %s", key)
-		descriptionable, ok := v.(OpenAPIDescriptioner)
-		if ok {
-			schemaRef.Value.Description = descriptionable.Description()
-		}
-		s.OpenApiSpec.Components.Schemas[key] = schemaRef
+		schemaRef = s.createSchema(key, v)
 	}
 	return schemaRef.Value
+}
+
+// createSchema is used to create a new schema and add it to the OpenAPI spec.
+// Relies on the openapi3gen package to generate the schema, and adds custom struct tags.
+func (s *Server) createSchema(key string, v any) *openapi3.SchemaRef {
+	schemaRef, err := generator.NewSchemaRefForValue(v, s.OpenApiSpec.Components.Schemas)
+	if err != nil {
+		slog.Error("Error generating schema", "key", key, "error", err)
+	}
+	schemaRef.Value.Description = key + " schema"
+
+	descriptionable, ok := v.(OpenAPIDescriptioner)
+	if ok {
+		schemaRef.Value.Description = descriptionable.Description()
+	}
+
+	s.parseStructTags(reflect.TypeOf(v), schemaRef)
+
+	s.OpenApiSpec.Components.Schemas[key] = schemaRef
+
+	return schemaRef
+}
+
+// parseStructTags parses struct tags and modifies the schema accordingly.
+// t must be a struct type.
+// It adds the following struct tags (tag => OpenAPI schema field):
+// - description => description
+// - example => example
+// - json => nullable (if contains omitempty)
+// - validate:
+//   - required => required
+//   - min=1 => min=1 (for integers)
+//   - min=1 => minLength=1 (for strings)
+//   - max=100 => max=100 (for integers)
+//   - max=100 => maxLength=100 (for strings)
+func (s *Server) parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	if t.Kind() != reflect.Struct {
+		return
+	}
+
+	for i := range t.NumField() {
+		field := t.Field(i)
+		jsonFieldName := field.Tag.Get("json")
+		jsonFieldName = strings.Split(jsonFieldName, ",")[0] // remove omitempty, etc
+		if jsonFieldName == "-" {
+			continue
+		}
+		if jsonFieldName == "" {
+			jsonFieldName = field.Name
+		}
+
+		property := schemaRef.Value.Properties[jsonFieldName]
+		if property == nil {
+			slog.Warn("Property not found in schema", "property", jsonFieldName)
+			continue
+		}
+		propertyCopy := *property
+		propertyValue := *propertyCopy.Value
+
+		// Example
+		example, ok := field.Tag.Lookup("example")
+		if ok {
+			propertyValue.Example = example
+			if propertyValue.Type.Is(openapi3.TypeInteger) {
+				exNum, err := strconv.Atoi(example)
+				if err != nil {
+					slog.Warn("Example might be incorrect (should be integer)", "error", err)
+				}
+				propertyValue.Example = exNum
+			}
+		}
+
+		// Validation
+		validateTag, ok := field.Tag.Lookup("validate")
+		validateTags := strings.Split(validateTag, ",")
+		if ok && slices.Contains(validateTags, "required") {
+			schemaRef.Value.Required = append(schemaRef.Value.Required, jsonFieldName)
+		}
+		for _, validateTag := range validateTags {
+			if strings.HasPrefix(validateTag, "min=") {
+				min, err := strconv.Atoi(strings.Split(validateTag, "=")[1])
+				if err != nil {
+					slog.Warn("Min might be incorrect (should be integer)", "error", err)
+				}
+
+				if propertyValue.Type.Is(openapi3.TypeInteger) {
+					minPtr := float64(min)
+					propertyValue.Min = &minPtr
+				} else if propertyValue.Type.Is(openapi3.TypeString) {
+					propertyValue.MinLength = uint64(min)
+				}
+			}
+			if strings.HasPrefix(validateTag, "max=") {
+				max, err := strconv.Atoi(strings.Split(validateTag, "=")[1])
+				if err != nil {
+					slog.Warn("Max might be incorrect (should be integer)", "error", err)
+				}
+				if propertyValue.Type.Is(openapi3.TypeInteger) {
+					maxPtr := float64(max)
+					propertyValue.Max = &maxPtr
+				} else if propertyValue.Type.Is(openapi3.TypeString) {
+					maxPtr := uint64(max)
+					propertyValue.MaxLength = &maxPtr
+				}
+			}
+		}
+
+		// Description
+		description, ok := field.Tag.Lookup("description")
+		if ok {
+			propertyValue.Description = description
+		}
+		jsonTag, ok := field.Tag.Lookup("json")
+		if ok {
+			if strings.Contains(jsonTag, ",omitempty") {
+				propertyValue.Nullable = true
+			}
+		}
+		propertyCopy.Value = &propertyValue
+
+		schemaRef.Value.Properties[jsonFieldName] = &propertyCopy
+	}
 }
 
 type OpenAPIDescriptioner interface {
