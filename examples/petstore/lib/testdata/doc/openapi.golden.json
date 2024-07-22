@@ -36,6 +36,56 @@
 			}
 		},
 		"schemas": {
+			"HTTPError": {
+				"description": "HTTPError schema",
+				"properties": {
+					"detail": {
+						"description": "Human readable error message",
+						"nullable": true,
+						"type": "string"
+					},
+					"errors": {
+						"items": {
+							"properties": {
+								"more": {
+									"additionalProperties": {},
+									"type": "object"
+								},
+								"name": {
+									"type": "string"
+								},
+								"reason": {
+									"type": "string"
+								}
+							},
+							"type": "object"
+						},
+						"nullable": true,
+						"type": "array"
+					},
+					"instance": {
+						"nullable": true,
+						"type": "string"
+					},
+					"status": {
+						"description": "HTTP status code",
+						"example": 403,
+						"nullable": true,
+						"type": "integer"
+					},
+					"title": {
+						"description": "Short title of the error",
+						"nullable": true,
+						"type": "string"
+					},
+					"type": {
+						"description": "URL of the error type. Can be used to lookup the error in a documentation",
+						"nullable": true,
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
 			"Pets": {
 				"description": "Pets schema",
 				"properties": {
@@ -138,6 +188,26 @@
 						},
 						"description": "OK"
 					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
 					"default": {
 						"description": ""
 					}
@@ -168,6 +238,26 @@
 							}
 						},
 						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
 					},
 					"default": {
 						"description": ""
@@ -210,6 +300,26 @@
 						},
 						"description": "OK"
 					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
 					"default": {
 						"description": ""
 					}
@@ -250,6 +360,26 @@
 						},
 						"description": "OK"
 					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
 					"default": {
 						"description": ""
 					}
@@ -287,6 +417,26 @@
 							}
 						},
 						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
 					},
 					"default": {
 						"description": ""
@@ -328,6 +478,26 @@
 							}
 						},
 						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
 					},
 					"default": {
 						"description": ""

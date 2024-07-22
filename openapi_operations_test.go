@@ -61,6 +61,17 @@ func TestHeaderParams(t *testing.T) {
 	require.Equal(t, "my description", route.Operation.Parameters.GetByInAndName("header", "my-header").Description)
 }
 
+func TestCustomError(t *testing.T) {
+	type MyError struct {
+		Message string
+	}
+	s := NewServer()
+	route := Get(s, "/test", testController).
+		AddError(400, "My Validation Error", MyError{})
+
+	require.Equal(t, "My Validation Error", *route.Operation.Responses.Map()["400"].Value.Description)
+}
+
 func TestCookieParams(t *testing.T) {
 	t.Run("basic cookie", func(t *testing.T) {
 		s := NewServer()

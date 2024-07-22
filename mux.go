@@ -38,6 +38,7 @@ func Group(s *Server, path string) *Server {
 	if newServer.groupTag != "" {
 		s.OpenApiSpec.Tags = append(s.OpenApiSpec.Tags, &openapi3.Tag{Name: newServer.groupTag})
 	}
+	newServer.mainRouter = s
 
 	return newServer
 }
@@ -48,6 +49,8 @@ type Route[ResponseBody any, RequestBody any] struct {
 	Path      string       // URL path. Will be prefixed by the base path of the server and the group path if any
 	Handler   http.Handler // handler executed for this route
 	FullName  string       // namespace and name of the function to execute
+
+	mainRouter *Server // ref to the main router, used to register the route in the OpenAPI spec
 }
 
 // Capture all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
@@ -129,6 +132,7 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, m
 	route.Operation.Summary = route.NameFromNamespace(camelToHuman)
 	route.Operation.Description = "controller: `" + route.FullName + "`\n\n---\n\n"
 	route.Operation.OperationID = route.Method + "_" + s.basePath + strings.ReplaceAll(strings.ReplaceAll(route.Path, "{", ":"), "}", "")
+	route.mainRouter = s
 
 	return route
 }
