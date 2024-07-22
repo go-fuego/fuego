@@ -6,7 +6,7 @@ require (
 	github.com/a-h/templ v0.2.747
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-fuego/fuego v0.14.0-rc2
-	github.com/go-fuego/fuego/extra/markdown v0.0.0-00010101000000-000000000000
+	github.com/go-fuego/fuego/extra/markdown v0.0.0-20240722144449-601e82010fa6
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.17.1
 	github.com/google/uuid v1.6.0
@@ -15,7 +15,7 @@ require (
 	github.com/rs/cors v1.11.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/text v0.16.0
-	modernc.org/sqlite v1.31.0
+	modernc.org/sqlite v1.31.1
 )
 
 require (
