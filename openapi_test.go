@@ -213,6 +213,9 @@ func TestServer_generateOpenAPI(t *testing.T) {
 	Get(s, "/post/{id}", func(*ContextNoBody) (MyOutputStruct, error) {
 		return MyOutputStruct{}, nil
 	})
+	Post(s, "/multidimensional/post", func(*ContextWithBody[MyStruct]) ([][]MyStruct, error) {
+		return nil, nil
+	})
 	document := s.OutputOpenAPISpec()
 	require.NotNil(t, document)
 	require.NotNil(t, document.Paths.Find("/"))
@@ -220,6 +223,9 @@ func TestServer_generateOpenAPI(t *testing.T) {
 	require.NotNil(t, document.Paths.Find("/post"))
 	require.Equal(t, document.Paths.Find("/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Type, &openapi3.Types{"array"})
 	require.Equal(t, document.Paths.Find("/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Ref, "#/components/schemas/MyStruct")
+	require.Equal(t, document.Paths.Find("/multidimensional/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Type, &openapi3.Types{"array"})
+	require.Equal(t, document.Paths.Find("/multidimensional/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Value.Type, &openapi3.Types{"array"})
+	require.Equal(t, document.Paths.Find("/multidimensional/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Value.Items.Ref, "#/components/schemas/MyStruct")
 	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200"))
 	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"])
 	require.Nil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["unknown"])
