@@ -23,7 +23,7 @@ func (rs Ressources) Setup(
 		fuego.WithAutoAuth(controller.LoginFunc),
 		fuego.WithTemplateFS(templates.FS),
 		fuego.WithTemplateGlobs("**/*.html", "**/**/*.html"),
-		fuego.WithGlobalResponseTypes(403, "Forbidden"),
+		fuego.WithGlobalResponseTypes(http.StatusForbidden, "Forbidden"),
 	}
 
 	options = append(serverOptions, options...)

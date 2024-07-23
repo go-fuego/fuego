@@ -89,9 +89,12 @@ func (r Route[ResponseBody, RequestBody]) AddError(code int, description string,
 }
 
 func addResponse(s *Server, operation *openapi3.Operation, code int, description string, errorType ...any) {
-	responseSchema := schemaTagFromType(s, HTTPError{})
+	var responseSchema schemaTag
+
 	if len(errorType) > 0 {
 		responseSchema = schemaTagFromType(s, errorType[0])
+	} else {
+		responseSchema = schemaTagFromType(s, HTTPError{})
 	}
 	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json"})
 

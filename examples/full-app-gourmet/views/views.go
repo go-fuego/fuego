@@ -1,6 +1,7 @@
 package views
 
 import (
+	"net/http"
 	"os"
 
 	"github.com/go-fuego/fuego"
@@ -24,7 +25,7 @@ func (rs Ressource) Routes(s *fuego.Server) {
 
 	// Public Chunks
 	fuego.Get(s, "/recipes-list", rs.showRecipesList)
-	fuego.Get(s, "/search", rs.searchRecipes).AddError(401, "Authorization Error").AddError(500, "My Server Error")
+	fuego.Get(s, "/search", rs.searchRecipes).AddError(http.StatusUnauthorized, "Authorization Error").AddError(500, "My Server Error")
 	fuego.Get(s, "/ingredients/preselect-unit", rs.unitPreselected).QueryParam("id", "")
 
 	// Admin Pages

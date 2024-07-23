@@ -115,8 +115,8 @@ func NewServer(options ...func(*Server)) *Server {
 		WithSerializer(Send),
 		WithErrorSerializer(SendError),
 		WithErrorHandler(ErrorHandler),
-		WithGlobalResponseTypes(400, "Bad Request _(validation or deserialization error)_", HTTPError{}),
-		WithGlobalResponseTypes(500, "Internal Server Error _(panics)_", HTTPError{}),
+		WithGlobalResponseTypes(http.StatusBadRequest, "Bad Request _(validation or deserialization error)_", HTTPError{}),
+		WithGlobalResponseTypes(http.StatusInternalServerError, "Internal Server Error _(panics)_", HTTPError{}),
 	}
 
 	for _, option := range append(defaultOptions[:], options...) {

@@ -15,6 +15,7 @@ linters:
     - ineffassign
     - staticcheck
     - unused
+    - usestdlibvars
 
 linters-settings:
   gofumpt:
