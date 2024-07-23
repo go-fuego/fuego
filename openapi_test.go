@@ -449,3 +449,35 @@ func TestAutoGroupTags(t *testing.T) {
 	require.Equal(t, []string{"subgroup"}, document.Paths.Find("/group/subgroup/c").Get.Tags)
 	require.Equal(t, []string{"other"}, document.Paths.Find("/other/d").Get.Tags)
 }
+
+func TestValidationTags(t *testing.T) {
+	type MyType struct {
+		Name string `json:"name" validate:"required,min=3,max=10" description:"Name of the user" example:"John"`
+		Age  int    `json:"age" validate:"min=18,max=100" description:"Age of the user" example:"25"`
+	}
+
+	s := NewServer()
+	Get(s, "/data", func(ContextNoBody) (MyType, error) {
+		return MyType{}, nil
+	})
+
+	document := s.OutputOpenAPISpec()
+	require.NotNil(t, document)
+	require.NotNil(t, document.Paths.Find("/data").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["name"].Value.Description)
+	require.Equal(t, "Name of the user", document.Paths.Find("/data").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["name"].Value.Description)
+
+	myTypeValue := document.Components.Schemas["MyType"].Value
+	t.Logf("myType: %+v", myTypeValue)
+	t.Logf("name: %+v", myTypeValue.Properties["name"])
+	t.Logf("age: %+v", myTypeValue.Properties["age"])
+
+	require.NotNil(t, myTypeValue.Properties["name"].Value.Description)
+	require.Equal(t, "John", myTypeValue.Properties["name"].Value.Example)
+	require.Equal(t, "Name of the user", myTypeValue.Properties["name"].Value.Description)
+	var expected *float64
+	require.Equal(t, expected, myTypeValue.Properties["name"].Value.Min)
+	require.Equal(t, uint64(3), myTypeValue.Properties["name"].Value.MinLength)
+	require.Equal(t, uint64(10), *myTypeValue.Properties["name"].Value.MaxLength)
+	require.Equal(t, float64(18.0), *myTypeValue.Properties["age"].Value.Min)
+	require.Equal(t, float64(100), *myTypeValue.Properties["age"].Value.Max)
+}
