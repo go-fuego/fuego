@@ -32,7 +32,7 @@ func TestRecursiveJSON(t *testing.T) {
 		value.Rec = &value
 		SendJSON(w, value)
 
-		require.Equal(t, `{"error":"Cannot serialize JSON"}`, w.Body.String())
+		require.Equal(t, `{"error":"Cannot serialize returned response to JSON"}`, w.Body.String())
 	})
 }
 
@@ -270,7 +270,7 @@ func TestSendYaml(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		errorWriter := &errorWriter{}
 		SendYAML(errorWriter, response{Message: "Hello World", Code: 200})
-		require.Contains(t, errorWriter.arg, "Cannot serialize YAML")
+		require.Contains(t, errorWriter.arg, "Cannot serialize returned response to YAML")
 	})
 }
 
@@ -285,7 +285,7 @@ func TestSendJSON(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		errorWriter := &errorWriter{}
 		SendJSON(errorWriter, response{Message: "Hello World", Code: 200})
-		require.Contains(t, errorWriter.arg, "Cannot serialize JSON")
+		require.Contains(t, errorWriter.arg, "Cannot serialize returned response to JSON")
 	})
 }
 

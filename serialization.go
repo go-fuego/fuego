@@ -103,8 +103,8 @@ var SendYAML = func(w http.ResponseWriter, ans any) {
 	err := yaml.NewEncoder(w).Encode(ans)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		slog.Error("Cannot serialize YAML", "error", err)
-		_, _ = w.Write([]byte(`{"error":"Cannot serialize YAML"}`))
+		slog.Error("Cannot serialize returned response to YAML", "error", err)
+		_, _ = w.Write([]byte(`{"error":"Cannot serialize returned response to YAML"}`))
 		return
 	}
 }
@@ -116,8 +116,8 @@ var SendJSON = func(w http.ResponseWriter, ans any) {
 	err := json.NewEncoder(w).Encode(ans)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		slog.Error("Cannot serialize JSON", "error", err)
-		_, _ = w.Write([]byte(`{"error":"Cannot serialize JSON"}`))
+		slog.Error("Cannot serialize returned response to JSON", "error", err)
+		_, _ = w.Write([]byte(`{"error":"Cannot serialize returned response to JSON"}`))
 		return
 	}
 }
@@ -180,8 +180,8 @@ func SendXMLError(w http.ResponseWriter, r *http.Request, err error) {
 	w.WriteHeader(status)
 	err = SendXML(w, r, err)
 	if err != nil {
-		slog.Error("Cannot serialize XML", "error", err)
-		_, _ = w.Write([]byte(`{"error":"Cannot serialize XML"}`))
+		slog.Error("Cannot serialize returned response to XML", "error", err)
+		_, _ = w.Write([]byte(`{"error":"Cannot serialize returned response to XML"}`))
 	}
 }
 
