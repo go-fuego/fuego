@@ -37,7 +37,7 @@ func main() {
 
 		// read the request header test
 		if c.Request().Header.Get("test") != "test" {
-			return MyResponse{}, errors.New("test header not found")
+			return MyResponse{}, errors.New("test header not equal to 'test'")
 		}
 
 		c.Response().Header().Set("X-Hello", "World")

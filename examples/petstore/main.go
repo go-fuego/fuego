@@ -3,5 +3,8 @@ package main
 import "github.com/go-fuego/fuego/examples/petstore/lib"
 
 func main() {
-	lib.NewPetStoreServer().Run()
+	err := lib.NewPetStoreServer().Run()
+	if err != nil {
+		panic(err)
+	}
 }

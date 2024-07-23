@@ -24,13 +24,16 @@ build:
 	go build -v ./...
 
 dependencies-analyze:
-	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+	which govulncheck || go install golang.org/x/vuln/cmd/govulncheck@latest
+	govulncheck ./...
 
 fmt:
-	go run mvdan.cc/gofumpt@latest -l -w -extra .
+	which gofumpt || go install mvdan.cc/gofumpt@latest
+	gofumpt -l -w -extra .
 
 lint:
-	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run
+	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	golangci-lint run
 
 lint-markdown:
 	markdownlint --ignore documentation/node_modules --dot .

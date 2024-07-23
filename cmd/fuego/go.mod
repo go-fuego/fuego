@@ -1,9 +1,11 @@
 module github.com/go-fuego/fuego/cmd/fuego
 
-go 1.22.0
+go 1.22.2
+
+toolchain go1.22.5
 
 require (
-	github.com/go-fuego/fuego v0.13.4
+	github.com/go-fuego/fuego v0.14.0
 	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli/v2 v2.27.2
 	golang.org/x/text v0.16.0
@@ -20,7 +22,6 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.22.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
-	github.com/gomarkdown/markdown v0.0.0-20240626202925-2eda941fd024 // indirect
 	github.com/gorilla/schema v1.4.1 // indirect
 	github.com/invopop/yaml v0.3.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect

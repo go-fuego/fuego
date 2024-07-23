@@ -5,8 +5,8 @@ go 1.22.5
 require (
 	github.com/a-h/templ v0.2.747
 	github.com/go-chi/chi/v5 v5.1.0
-	github.com/go-fuego/fuego v0.14.0-rc2
-	github.com/go-fuego/fuego/extra/markdown v0.0.0-20240722144449-601e82010fa6
+	github.com/go-fuego/fuego v0.14.0
+	github.com/go-fuego/fuego/extra/markdown v0.0.0-20240723095238-80b6f1da3b7d
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.17.1
 	github.com/google/uuid v1.6.0
@@ -49,7 +49,7 @@ require (
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/tools v0.23.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	modernc.org/gc/v3 v3.0.0-20240304020402-f0dba7c97c2b // indirect
+	modernc.org/gc/v3 v3.0.0-20240722195230-4a140ff9c08e // indirect
 	modernc.org/libc v1.55.3 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
 	modernc.org/memory v1.8.0 // indirect
