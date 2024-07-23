@@ -72,6 +72,33 @@ func TestCustomError(t *testing.T) {
 	require.Equal(t, "My Validation Error", *route.Operation.Responses.Map()["400"].Value.Description)
 }
 
+func TestCustomErrorGlobalAndOnRoute(t *testing.T) {
+	type MyGlobalError struct {
+		Message string
+	}
+	s := NewServer(
+		WithGlobalResponseTypes(400, "My Global Error", MyGlobalError{}),
+		WithGlobalResponseTypes(501, "Another Global Error", MyGlobalError{}),
+	)
+
+	type MyLocalError struct {
+		Message string
+	}
+
+	routeGlobal := Get(s, "/test-global", testController)
+	routeCustom := Get(s, "/test-custom", testController).
+		AddError(400, "My Local Error", MyLocalError{}).
+		AddError(419, "My Local Teapot")
+
+	require.Equal(t, "My Global Error", *routeGlobal.Operation.Responses.Map()["400"].Value.Description, "Overrides Fuego's default 400 error")
+	require.Equal(t, "Another Global Error", *routeGlobal.Operation.Responses.Map()["501"].Value.Description)
+
+	require.Equal(t, "My Local Error", *routeCustom.Operation.Responses.Map()["400"].Value.Description, "Local error overrides global error")
+	require.Equal(t, "My Local Teapot", *routeCustom.Operation.Responses.Map()["419"].Value.Description)
+	require.Equal(t, "Internal Server Error _(panics)_", *routeCustom.Operation.Responses.Map()["500"].Value.Description, "Global error set by default by Fuego")
+	require.Equal(t, "Another Global Error", *routeCustom.Operation.Responses.Map()["501"].Value.Description, "Global error is still available")
+}
+
 func TestCookieParams(t *testing.T) {
 	t.Run("basic cookie", func(t *testing.T) {
 		s := NewServer()
