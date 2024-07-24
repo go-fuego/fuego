@@ -18,6 +18,7 @@ import (
 
 type OpenAPIConfig struct {
 	DisableSwagger   bool                              // If true, the server will not serve the swagger ui nor the openapi json spec
+	DisableSwaggerUI bool                              // If true, the server will not serve the swagger ui
 	DisableLocalSave bool                              // If true, the server will not save the openapi json spec locally
 	SwaggerUrl       string                            // URL to serve the swagger ui
 	UIHandler        func(specURL string) http.Handler // Handler to serve the openapi ui from spec url
@@ -348,6 +349,7 @@ func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
 		}
 
 		s.OpenAPIConfig.DisableSwagger = openapiConfig.DisableSwagger
+		s.OpenAPIConfig.DisableSwaggerUI = openapiConfig.DisableSwaggerUI
 		s.OpenAPIConfig.DisableLocalSave = openapiConfig.DisableLocalSave
 		s.OpenAPIConfig.PrettyFormatJson = openapiConfig.PrettyFormatJson
 
