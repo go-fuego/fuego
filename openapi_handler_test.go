@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDefaultOpenAPIHandler(t *testing.T) {
+func TestUIHandler(t *testing.T) {
 	t.Run("works with DefaultOpenAPIHandler", func(t *testing.T) {
 		s := NewServer()
 
@@ -46,5 +46,24 @@ func TestDefaultOpenAPIHandler(t *testing.T) {
 		require.Equal(t, 200, w.Code)
 		require.Contains(t, w.Body.String(), "OpenAPI specification")
 		require.Equal(t, "response", w.Header().Get("X-Test-Response"))
+	})
+
+	t.Run("disabling UI", func(t *testing.T) {
+		s := NewServer(
+			WithOpenAPIConfig(OpenAPIConfig{
+				DisableSwaggerUI: true,
+			}),
+		)
+
+		s.OutputOpenAPISpec()
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/swagger/index.html", nil)
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 404, w.Code)
+		require.Contains(t, w.Body.String(), "404 page not found")
+		require.Equal(t, "", w.Header().Get("X-Test-Response"))
 	})
 }
