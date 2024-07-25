@@ -22,9 +22,9 @@ func helloWorld(c fuego.ContextNoBody) (string, error) {
 }
 ```
 
-Result for this simple example:
+Result for this simple example at [http://localhost:9999/swagger/index.html](http://localhost:9999/swagger/index.html):
 
-![Swagger UI](../../static/img/hello-world-openapi.png)
+![Swagger UI](../../static/img/hello-world-openapi.jpeg)
 
 The core idea of Fuego is to generate the OpenAPI specification automatically,
 so you don't have to worry about it. However, you can customize it if you want.
