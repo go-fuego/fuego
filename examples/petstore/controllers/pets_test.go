@@ -1,6 +1,7 @@
 package controller_test
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -18,7 +19,7 @@ func TestGetAllPets(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 	})
 }
 
@@ -31,7 +32,7 @@ func TestPostPets(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 	})
 }
 
@@ -43,7 +44,7 @@ func TestGetPets(t *testing.T) {
 		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
 		s.Mux.ServeHTTP(w, r)
 		t.Log(w.Body.String())
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 
 		w = httptest.NewRecorder()
 		r = httptest.NewRequest("GET", "/pets/pet-1", nil)
@@ -51,7 +52,7 @@ func TestGetPets(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		t.Log(w.Body.String())
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 	})
 }
 
@@ -63,7 +64,7 @@ func TestGetAllPestByAge(t *testing.T) {
 		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
 		s.Mux.ServeHTTP(w, r)
 		t.Log(w.Body.String())
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 
 		w = httptest.NewRecorder()
 		r = httptest.NewRequest("GET", "/pets/by-age", nil)
@@ -71,7 +72,7 @@ func TestGetAllPestByAge(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		t.Log(w.Body.String())
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 	})
 }
 
@@ -83,7 +84,7 @@ func TestGetPetsByName(t *testing.T) {
 		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
 		s.Mux.ServeHTTP(w, r)
 		t.Log(w.Body.String())
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 
 		w = httptest.NewRecorder()
 		r = httptest.NewRequest("GET", "/pets/by-name/kitkat", nil)
@@ -91,7 +92,7 @@ func TestGetPetsByName(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		t.Log(w.Body.String())
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 	})
 }
 
@@ -103,7 +104,7 @@ func TestPutPets(t *testing.T) {
 		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
 		s.Mux.ServeHTTP(w, r)
 		t.Log(w.Body.String())
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 
 		w = httptest.NewRecorder()
 		r = httptest.NewRequest("PUT", "/pets/pet-1", strings.NewReader(`{"name": "snickers"}`))
@@ -111,7 +112,7 @@ func TestPutPets(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		t.Log(w.Body.String())
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 	})
 }
 
@@ -123,7 +124,7 @@ func TestDeletePets(t *testing.T) {
 		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
 		s.Mux.ServeHTTP(w, r)
 		t.Log(w.Body.String())
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 
 		w = httptest.NewRecorder()
 		r = httptest.NewRequest("DELETE", "/pets/pet-1", nil)
@@ -131,6 +132,6 @@ func TestDeletePets(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		t.Log(w.Body.String())
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 	})
 }

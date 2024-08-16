@@ -47,6 +47,7 @@ func TestInMemoryPets(t *testing.T) {
 	t.Run("can get all pets by age", func(t *testing.T) {
 		pets, err := service.GetAllPetsByAge()
 		require.NoError(t, err)
+		require.Len(t, pets, 4)
 		require.Equal(t, "kitkat", pets[1][0].Name)
 		require.Equal(t, "payday", pets[3][0].Name)
 	})
