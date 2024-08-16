@@ -46,16 +46,17 @@ to develop APIs and web applications.
 
 - **OpenAPI**: Fuego automatically generates OpenAPI documentation
   from **code** - _not from comments nor yaml files!_
-- **`net/http` compatible**: Fuego is built on top of `net/http`,
+- **100% `net/http` compatible** (no lock-in): Fuego is built on top of `net/http`,
   so you can use any `http.Handler` middleware or handler! Fuego also supports
-  `log/slog`, `context` and `html/template`
-- **Routing**: Fuego provides a simple API for the Go 1.22 `net/http`
+  `log/slog`, `context` and `html/template`.
+- **Routing**: Fuego router is based on Go 1.22 `net/http`, with grouping and
+  middleware support
 - **Serialization/Deserialization**: Fuego automatically serializes and
   deserializes JSON, XML and HTML Forms based on user-provided structs
   (or not, if you want to do it yourself)
 - **Validation**: Fuego provides a simple and fast validator based on `go-playground/validator`
 - **Transformation**: easily transform your data by implementing the
-  `fuego.InTransform` and `fuego.OutTransform` interfaces - also useful for **validation**
+  `fuego.InTransform` and `fuego.OutTransform` interfaces - also useful for custom **validation**
 - **Middlewares**: easily add a custom `net/http` middleware
   or use the provided middlewares.
 - **Error handling**: Fuego provides centralized error handling with
@@ -188,6 +189,13 @@ func main() {
 	s.Run()
 }
 ```
+
+### Real-world examples
+
+Please see the [`/examples` folder](./examples/) for more examples.
+
+- [Simple CRUD with OpenAPI](./examples/petstore)
+- [Full app with HTML rendering](./examples/full-app-gourmet)
 
 <details>
 <summary>All features</summary>

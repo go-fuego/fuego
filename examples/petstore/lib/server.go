@@ -2,7 +2,7 @@ package lib
 
 import (
 	"github.com/go-fuego/fuego"
-	"github.com/go-fuego/fuego/examples/petstore/controllers"
+	controller "github.com/go-fuego/fuego/examples/petstore/controllers"
 	"github.com/go-fuego/fuego/examples/petstore/services"
 )
 
