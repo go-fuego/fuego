@@ -55,6 +55,26 @@ func TestGetPets(t *testing.T) {
 	})
 }
 
+func TestGetAllPestByAge(t *testing.T) {
+	t.Run("can get a pet by id", func(t *testing.T) {
+		s := lib.NewPetStoreServer()
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
+		s.Mux.ServeHTTP(w, r)
+		t.Log(w.Body.String())
+		require.Equal(t, 200, w.Code)
+
+		w = httptest.NewRecorder()
+		r = httptest.NewRequest("GET", "/pets/by-age", nil)
+
+		s.Mux.ServeHTTP(w, r)
+
+		t.Log(w.Body.String())
+		require.Equal(t, 200, w.Code)
+	})
+}
+
 func TestGetPetsByName(t *testing.T) {
 	t.Run("can get a pet by name", func(t *testing.T) {
 		s := lib.NewPetStoreServer()

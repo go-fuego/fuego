@@ -269,6 +269,68 @@
 				]
 			}
 		},
+		"/pets/by-age": {
+			"get": {
+				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsRessources.getAllPetsByAge`\n\n---\n\n",
+				"operationId": "GET_/pets/by-age",
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"items": {
+											"$ref": "#/components/schemas/Pets"
+										},
+										"type": "array"
+									},
+									"type": "array"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"items": {
+										"items": {
+											"$ref": "#/components/schemas/Pets"
+										},
+										"type": "array"
+									},
+									"type": "array"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"description": ""
+					}
+				},
+				"summary": "get all pets by age",
+				"tags": [
+					"pets"
+				]
+			}
+		},
 		"/pets/by-name/{name...}": {
 			"get": {
 				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsRessources.getPetByName`\n\n---\n\n",

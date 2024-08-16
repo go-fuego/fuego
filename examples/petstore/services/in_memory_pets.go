@@ -61,6 +61,21 @@ func (petService *InMemoryPetsService) GetAllPets() ([]models.Pets, error) {
 	return petService.Pets, nil
 }
 
+// GetAllPetsByAge implements controller.PetsService.
+func (petService *InMemoryPetsService) GetAllPetsByAge() ([][]models.Pets, error) {
+	maxAge := 0
+	for _, p := range petService.Pets {
+		if maxAge < p.Age {
+			maxAge = p.Age
+		}
+	}
+	pets := make([][]models.Pets, maxAge+1)
+	for _, p := range petService.Pets {
+		pets[p.Age] = append(pets[p.Age], p)
+	}
+	return pets, nil
+}
+
 // GetPets implements controller.PetsService.
 func (petService *InMemoryPetsService) GetPets(id string) (models.Pets, error) {
 	for _, p := range petService.Pets {
