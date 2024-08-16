@@ -13,6 +13,7 @@ func (rs PetsRessources) Routes(s *fuego.Server) {
 	petsGroup := fuego.Group(s, "/pets")
 
 	fuego.Get(petsGroup, "/", rs.getAllPets)
+	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge)
 	fuego.Post(petsGroup, "/", rs.postPets)
 
 	fuego.Get(petsGroup, "/{id}", rs.getPets)
@@ -23,6 +24,10 @@ func (rs PetsRessources) Routes(s *fuego.Server) {
 
 func (rs PetsRessources) getAllPets(c fuego.ContextNoBody) ([]models.Pets, error) {
 	return rs.PetsService.GetAllPets()
+}
+
+func (rs PetsRessources) getAllPetsByAge(c fuego.ContextNoBody) ([][]models.Pets, error) {
+	return rs.PetsService.GetAllPetsByAge()
 }
 
 func (rs PetsRessources) postPets(c *fuego.ContextWithBody[models.PetsCreate]) (models.Pets, error) {
@@ -66,6 +71,7 @@ type PetsService interface {
 	GetPetByName(name string) (models.Pets, error)
 	CreatePets(models.PetsCreate) (models.Pets, error)
 	GetAllPets() ([]models.Pets, error)
+	GetAllPetsByAge() ([][]models.Pets, error)
 	UpdatePets(id string, input models.PetsUpdate) (models.Pets, error)
 	DeletePets(id string) (any, error)
 }

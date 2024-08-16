@@ -13,7 +13,10 @@ func TestInMemoryPets(t *testing.T) {
 	t.Run("can create a pet", func(t *testing.T) {
 		newPet, err := service.CreatePets(models.PetsCreate{Name: "kitkat", Age: 1})
 		require.NoError(t, err)
+		newPet2, err := service.CreatePets(models.PetsCreate{Name: "payday", Age: 3})
+		require.NoError(t, err)
 		require.Equal(t, "pet-1", newPet.ID)
+		require.Equal(t, "pet-2", newPet2.ID)
 	})
 
 	t.Run("can get a pet by name", func(t *testing.T) {
@@ -38,7 +41,14 @@ func TestInMemoryPets(t *testing.T) {
 	t.Run("can get all pets", func(t *testing.T) {
 		pets, err := service.GetAllPets()
 		require.NoError(t, err)
-		require.Len(t, pets, 1)
+		require.Len(t, pets, 2)
+	})
+
+	t.Run("can get all pets by age", func(t *testing.T) {
+		pets, err := service.GetAllPetsByAge()
+		require.NoError(t, err)
+		require.Equal(t, "kitkat", pets[1][0].Name)
+		require.Equal(t, "payday", pets[3][0].Name)
 	})
 
 	t.Run("can update a pet", func(t *testing.T) {
