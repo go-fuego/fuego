@@ -28,14 +28,14 @@ var ReadOptions = readOptions{
 }
 
 // ReadJSON reads the request body as JSON.
-// Can be used independantly from Fuego framework.
+// Can be used independently from Fuego framework.
 // Customisable by modifying ReadOptions.
 func ReadJSON[B any](context context.Context, input io.Reader) (B, error) {
 	return readJSON[B](context, input, ReadOptions)
 }
 
 // readJSON reads the request body as JSON.
-// Can be used independantly from framework using ReadJSON,
+// Can be used independently from framework using ReadJSON,
 // or as a method of Context.
 // It will also read strings.
 func readJSON[B any](context context.Context, input io.Reader, options readOptions) (B, error) {
@@ -49,14 +49,14 @@ func readJSON[B any](context context.Context, input io.Reader, options readOptio
 }
 
 // ReadXML reads the request body as XML.
-// Can be used independantly from Fuego framework.
+// Can be used independently from Fuego framework.
 // Customisable by modifying ReadOptions.
 func ReadXML[B any](context context.Context, input io.Reader) (B, error) {
 	return readXML[B](context, input, ReadOptions)
 }
 
 // readXML reads the request body as XML.
-// Can be used independantly from framework using ReadYAML,
+// Can be used independently from framework using readXML,
 // or as a method of Context.
 func readXML[B any](context context.Context, input io.Reader, options readOptions) (B, error) {
 	dec := xml.NewDecoder(input)
@@ -68,14 +68,14 @@ func readXML[B any](context context.Context, input io.Reader, options readOption
 }
 
 // ReadYAML reads the request body as YAML.
-// Can be used independantly from Fuego framework.
+// Can be used independently from Fuego framework.
 // Customisable by modifying ReadOptions.
 func ReadYAML[B any](context context.Context, input io.Reader) (B, error) {
 	return readYAML[B](context, input, ReadOptions)
 }
 
 // readYAML reads the request body as YAML.
-// Can be used independantly from framework using ReadYAML,
+// Can be used independently from framework using ReadYAML,
 // or as a method of Context.
 func readYAML[B any](context context.Context, input io.Reader, options readOptions) (B, error) {
 	dec := yaml.NewDecoder(input)
@@ -122,7 +122,7 @@ func read[B any](context context.Context, dec decoder) (B, error) {
 
 // ReadString reads the request body as string.
 // Can be used independantly from Fuego framework.
-// Customisable by modifying ReadOptions.
+// Customizable  by modifying ReadOptions.
 func ReadString[B ~string](context context.Context, input io.Reader) (B, error) {
 	return readString[B](context, input, ReadOptions)
 }
