@@ -12,11 +12,13 @@ type OpenAPIParam struct {
 	Type     string // "query", "header", "cookie"
 }
 
+// Overrides the description for the route.
 func (r Route[ResponseBody, RequestBody]) Description(description string) Route[ResponseBody, RequestBody] {
 	r.Operation.Description = description
 	return r
 }
 
+// Overrides the summary for the route.
 func (r Route[ResponseBody, RequestBody]) Summary(summary string) Route[ResponseBody, RequestBody] {
 	r.Operation.Summary = summary
 	return r

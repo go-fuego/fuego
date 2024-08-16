@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/require"
 )
 
@@ -376,6 +377,65 @@ func TestDeleteStd(t *testing.T) {
 
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Equal(t, w.Body.String(), "test successful")
+}
+
+func TestRegister(t *testing.T) {
+	t.Run("register route", func(t *testing.T) {
+		s := NewServer()
+
+		route := Register(s, Route[any, any]{
+			Path:   "/test",
+			Method: http.MethodGet,
+		}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+
+		require.NotNil(t, route)
+	})
+
+	t.Run("register route with operation pre-created", func(t *testing.T) {
+		s := NewServer()
+
+		route := Register(s, Route[any, any]{
+			Path:   "/test",
+			Method: http.MethodGet,
+			Operation: &openapi3.Operation{
+				Tags:        []string{"my-tag"},
+				Summary:     "my-summary",
+				Description: "my-description",
+				OperationID: "my-operation-id",
+			},
+		}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+
+		require.NotNil(t, route)
+		require.Equal(t, []string{"my-tag"}, route.Operation.Tags)
+		require.Equal(t, "my-summary", route.Operation.Summary)
+		require.Equal(t, "my-description", route.Operation.Description)
+		require.Equal(t, "my-operation-id", route.Operation.OperationID)
+	})
+
+	t.Run("register route with operation pre-created but with overrides", func(t *testing.T) {
+		s := NewServer()
+
+		route := Register(s, Route[any, any]{
+			Path:   "/test",
+			Method: http.MethodGet,
+			Operation: &openapi3.Operation{
+				Tags:        []string{"my-tag"},
+				Summary:     "my-summary",
+				Description: "my-description",
+				OperationID: "my-operation-id",
+			},
+		}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})).
+			OperationID("new-operation-id").
+			Summary("new-summary").
+			Description("new-description").
+			Tags("new-tag")
+
+		require.NotNil(t, route)
+		require.Equal(t, []string{"new-tag"}, route.Operation.Tags)
+		require.Equal(t, "new-summary", route.Operation.Summary)
+		require.Equal(t, "new-description", route.Operation.Description)
+		require.Equal(t, "new-operation-id", route.Operation.OperationID)
+	})
 }
 
 func TestGroupTagsOnRoute(t *testing.T) {
