@@ -56,7 +56,8 @@ to develop APIs and web applications.
   (or not, if you want to do it yourself)
 - **Validation**: Fuego provides a simple and fast validator based on `go-playground/validator`
 - **Transformation**: easily transform your data by implementing the
-  `fuego.InTransform` and `fuego.OutTransform` interfaces - also useful for custom **validation**
+  `fuego.InTransform` and `fuego.OutTransform` interfaces - also useful for
+  custom **validation**
 - **Middlewares**: easily add a custom `net/http` middleware
   or use the provided middlewares.
 - **Error handling**: Fuego provides centralized error handling with

@@ -119,8 +119,10 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, m
 		return route
 	}
 
+	route.Path = s.basePath + route.Path
+
 	var err error
-	route.Operation, err = RegisterOpenAPIOperation[T, B](s, route.Method, s.basePath+route.Path)
+	route.Operation, err = RegisterOpenAPIOperation(s, route)
 	if err != nil {
 		slog.Warn("error documenting openapi operation", "error", err)
 	}
@@ -129,9 +131,15 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, m
 		route.FullName = route.Path
 	}
 
-	route.Operation.Summary = route.NameFromNamespace(camelToHuman)
-	route.Operation.Description = "controller: `" + route.FullName + "`\n\n---\n\n"
-	route.Operation.OperationID = route.Method + "_" + s.basePath + strings.ReplaceAll(strings.ReplaceAll(route.Path, "{", ":"), "}", "")
+	if route.Operation.Summary == "" {
+		route.Operation.Summary = route.NameFromNamespace(camelToHuman)
+	}
+	if route.Operation.Description == "" {
+		route.Operation.Description = "controller: `" + route.FullName + "`\n\n---\n\n"
+	}
+	if route.Operation.OperationID == "" {
+		route.Operation.OperationID = route.Method + "_" + strings.ReplaceAll(strings.ReplaceAll(route.Path, "{", ":"), "}", "")
+	}
 	route.mainRouter = s
 
 	return route

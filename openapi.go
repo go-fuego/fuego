@@ -151,14 +151,18 @@ var generator = openapi3gen.NewGenerator(
 )
 
 // RegisterOpenAPIOperation registers an OpenAPI operation.
-func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openapi3.Operation, error) {
-	operation := openapi3.NewOperation()
+func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3.Operation, error) {
+	if route.Operation == nil {
+		route.Operation = openapi3.NewOperation()
+	}
 
-	operation.Tags = s.tags
+	if s.tags != nil {
+		route.Operation.Tags = append(route.Operation.Tags, s.tags...)
+	}
 
 	// Tags
 	if !s.disableAutoGroupTags && s.groupTag != "" {
-		operation.Tags = append(operation.Tags, s.groupTag)
+		route.Operation.Tags = append(route.Operation.Tags, s.groupTag)
 	}
 
 	// Request body
@@ -175,7 +179,7 @@ func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openap
 		}
 
 		// add request body to operation
-		operation.RequestBody = &openapi3.RequestBodyRef{
+		route.Operation.RequestBody = &openapi3.RequestBodyRef{
 			Ref:   "#/components/requestBodies/" + bodyTag.name,
 			Value: requestBody,
 		}
@@ -183,29 +187,29 @@ func RegisterOpenAPIOperation[T, B any](s *Server, method, path string) (*openap
 
 	// Response - globals
 	for _, openAPIGlobalResponse := range s.globalOpenAPIResponses {
-		addResponse(s, operation, openAPIGlobalResponse.Code, openAPIGlobalResponse.Description, openAPIGlobalResponse.ErrorType)
+		addResponse(s, route.Operation, openAPIGlobalResponse.Code, openAPIGlobalResponse.Description, openAPIGlobalResponse.ErrorType)
 	}
 
 	// Response - 200
 	responseSchema := schemaTagFromType(s, *new(T))
 	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
 	response := openapi3.NewResponse().WithDescription("OK").WithContent(content)
-	operation.AddResponse(200, response)
+	route.Operation.AddResponse(200, response)
 
 	// Path parameters
-	for _, pathParam := range parsePathParams(path) {
+	for _, pathParam := range parsePathParams(route.Path) {
 		parameter := openapi3.NewPathParameter(pathParam)
 		parameter.Schema = openapi3.NewStringSchema().NewRef()
 		if strings.HasSuffix(pathParam, "...") {
 			parameter.Description += " (might contain slashes)"
 		}
 
-		operation.AddParameter(parameter)
+		route.Operation.AddParameter(parameter)
 	}
 
-	s.OpenApiSpec.AddOperation(path, method, operation)
+	s.OpenApiSpec.AddOperation(route.Path, route.Method, route.Operation)
 
-	return operation, nil
+	return route.Operation, nil
 }
 
 // schemaTag is a struct that holds the name of the struct and the associated openapi3.SchemaRef
