@@ -74,9 +74,9 @@ type Server struct {
 	DisableOpenapi        bool // If true, the routes within the server will not generate an openapi spec.
 	maxBodySize           int64
 
-	Serialize      func(w http.ResponseWriter, r *http.Request, ans any) error // Custom serializer that overrides the default one.
-	SerializeError func(w http.ResponseWriter, r *http.Request, err error)     // Used to serialize the error response. Defaults to [SendError].
-	ErrorHandler   func(err error) error                                       // Used to transform any error into a unified error type structure with status code. Defaults to [ErrorHandler]
+	Serialize      Sender                // Custom serializer that overrides the default one.
+	SerializeError ErrorSender           // Used to serialize the error response. Defaults to [SendError].
+	ErrorHandler   func(err error) error // Used to transform any error into a unified error type structure with status code. Defaults to [ErrorHandler]
 	startTime      time.Time
 
 	OpenAPIConfig OpenAPIConfig
@@ -304,13 +304,15 @@ func WithLogHandler(handler slog.Handler) func(*Server) {
 	}
 }
 
-// WithSerializer sets a custom serializer that overrides the default one.
+// WithSerializer sets a custom serializer of type Sender that overrides the default one.
 // Please send a PR if you think the default serializer should be improved, instead of jumping to this option.
-func WithSerializer(serializer func(w http.ResponseWriter, r *http.Request, ans any) error) func(*Server) {
+func WithSerializer(serializer Sender) func(*Server) {
 	return func(c *Server) { c.Serialize = serializer }
 }
 
-func WithErrorSerializer(serializer func(w http.ResponseWriter, r *http.Request, err error)) func(*Server) {
+// WithErrorSerializer sets a custom serializer of type ErrorSender that overrides the default one.
+// Please send a PR if you think the default serializer should be improved, instead of jumping to this option.
+func WithErrorSerializer(serializer ErrorSender) func(*Server) {
 	return func(c *Server) { c.SerializeError = serializer }
 }
 

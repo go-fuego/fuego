@@ -16,7 +16,7 @@ func TestContentType(t *testing.T) {
 
 	t.Run("Sends application/problem+json when return type is HTTPError", func(t *testing.T) {
 		GetStd(server, "/json-problems", func(w http.ResponseWriter, r *http.Request) {
-			SendJSONError(w, UnauthorizedError{
+			SendJSONError(w, nil, UnauthorizedError{
 				Title: "Unauthorized",
 			})
 		})
@@ -32,7 +32,7 @@ func TestContentType(t *testing.T) {
 
 	t.Run("Sends application/json when return type is not HTTPError", func(t *testing.T) {
 		GetStd(server, "/json", func(w http.ResponseWriter, r *http.Request) {
-			SendJSONError(w, errors.New("error"))
+			SendJSONError(w, nil, errors.New("error"))
 		})
 
 		req := httptest.NewRequest("GET", "/json", nil)
