@@ -262,14 +262,14 @@ func (errorWriter) Header() http.Header {
 func TestSendYaml(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendYAML(w, nil, response{Message: "Hello World", Code: 200})
+		SendYAML(w, nil, response{Message: "Hello World", Code: http.StatusOK})
 
 		require.Equal(t, "message: Hello World\ncode: 200\n", w.Body.String())
 	})
 
 	t.Run("error", func(t *testing.T) {
 		errorWriter := &errorWriter{}
-		SendYAML(errorWriter, nil, response{Message: "Hello World", Code: 200})
+		SendYAML(errorWriter, nil, response{Message: "Hello World", Code: http.StatusOK})
 		require.Contains(t, errorWriter.arg, "Cannot serialize returned response to YAML")
 	})
 }
@@ -277,14 +277,14 @@ func TestSendYaml(t *testing.T) {
 func TestSendJSON(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendJSON(w, nil, response{Message: "Hello World", Code: 200})
+		SendJSON(w, nil, response{Message: "Hello World", Code: http.StatusOK})
 
 		require.Equal(t, crlf(`{"message":"Hello World","code":200}`), w.Body.String())
 	})
 
 	t.Run("error", func(t *testing.T) {
 		errorWriter := &errorWriter{}
-		SendJSON(errorWriter, nil, response{Message: "Hello World", Code: 200})
+		SendJSON(errorWriter, nil, response{Message: "Hello World", Code: http.StatusOK})
 		require.Contains(t, errorWriter.arg, "Cannot serialize returned response to JSON")
 	})
 }

@@ -381,7 +381,7 @@ func (security Security) StdLoginHandler(verifyUserInfo func(r *http.Request) (j
 		}
 
 		// Send the token to the response
-		// no need to check err as SendJson
+		// no need to check err as SendJSON
 		// responds with a 500 on error to the client
 		_ = SendJSON(
 			w,
@@ -476,7 +476,7 @@ func (security Security) RefreshHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Send the token to the response
-	// no need to check err as SendJson
+	// no need to check err as SendJSON
 	// responds with a 500 on error to the client
 	_ = SendJSON(
 		w,
