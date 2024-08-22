@@ -108,6 +108,19 @@ var SendYAML = func(w http.ResponseWriter, _ *http.Request, ans any) error {
 	return err
 }
 
+// SendYAMLError sends a YAML error response.
+// If the error implements ErrorWithStatus, the status code will be set.
+func SendYAMLError(w http.ResponseWriter, _ *http.Request, err error) {
+	status := http.StatusInternalServerError
+	var errorStatus ErrorWithStatus
+	if errors.As(err, &errorStatus) {
+		status = errorStatus.StatusCode()
+	}
+
+	w.WriteHeader(status)
+	_ = SendYAML(w, nil, err.Error())
+}
+
 // SendJSON sends a JSON response.
 // Declared as a variable to be able to override it for clients that need to customize serialization.
 var SendJSON = func(w http.ResponseWriter, _ *http.Request, ans any) error {
@@ -130,16 +143,13 @@ var SendError = func(w http.ResponseWriter, r *http.Request, err error) {
 	case "application/xml":
 		SendXMLError(w, nil, err)
 	case "text/html":
-		//nolint:errcheck
 		SendHTMLError(w, nil, err)
 	case "text/plain":
-		//nolint:errcheck
-		SendText(w, r, err)
+		SendTextError(w, r, err)
 	case "application/json":
 		SendJSONError(w, nil, err)
 	case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
-		//nolint:errcheck
-		SendYAML(w, nil, err)
+		SendYAMLError(w, nil, err)
 	default:
 		SendJSONError(w, r, err)
 	}
@@ -162,8 +172,7 @@ func SendJSONError(w http.ResponseWriter, _ *http.Request, err error) {
 	}
 
 	w.WriteHeader(status)
-	//nolint:errcheck
-	SendJSON(w, nil, err)
+	_ = SendJSON(w, nil, err)
 }
 
 // SendXML sends a XML response.
@@ -188,18 +197,6 @@ func SendXMLError(w http.ResponseWriter, _ *http.Request, err error) {
 		slog.Error("Cannot serialize returned response to XML", "error", err)
 		_, _ = w.Write([]byte(`{"error":"Cannot serialize returned response to XML"}`))
 	}
-}
-
-func SendHTMLError(w http.ResponseWriter, _ *http.Request, err error) error {
-	status := http.StatusInternalServerError
-	var errorStatus ErrorWithStatus
-	if errors.As(err, &errorStatus) {
-		status = errorStatus.StatusCode()
-	}
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-	return SendHTML(w, nil, err.Error())
 }
 
 // SendHTML sends a HTML response.
@@ -233,6 +230,21 @@ var SendHTML = func(w http.ResponseWriter, r *http.Request, ans any) error {
 	return fmt.Errorf("cannot serialize HTML from type %T (not string, fuego.HTML and does not implement fuego.CtxRenderer or fuego.Renderer)", ans)
 }
 
+// SendHTMLError sends a HTML response.
+// If the error implements ErrorWithStatus, the status code will be set.
+func SendHTMLError(w http.ResponseWriter, _ *http.Request, err error) {
+	status := http.StatusInternalServerError
+	var errorStatus ErrorWithStatus
+	if errors.As(err, &errorStatus) {
+		status = errorStatus.StatusCode()
+	}
+
+	w.WriteHeader(status)
+	_ = SendHTML(w, nil, err.Error())
+}
+
+// SendText sends a HTML response.
+// Declared as a variable to be able to override it for clients that need to customize serialization.
 func SendText(w http.ResponseWriter, _ *http.Request, ans any) error {
 	var err error
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -248,6 +260,19 @@ func SendText(w http.ResponseWriter, _ *http.Request, ans any) error {
 	_, err = w.Write([]byte(stringToWrite))
 
 	return err
+}
+
+// SendTextError sends a Text response.
+// If the error implements ErrorWithStatus, the status code will be set.
+func SendTextError(w http.ResponseWriter, _ *http.Request, err error) {
+	status := http.StatusInternalServerError
+	var errorStatus ErrorWithStatus
+	if errors.As(err, &errorStatus) {
+		status = errorStatus.StatusCode()
+	}
+
+	w.WriteHeader(status)
+	_ = SendText(w, nil, err.Error())
 }
 
 func InferAcceptHeaderFromType(ans any) string {

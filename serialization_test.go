@@ -170,6 +170,7 @@ func TestJSONError(t *testing.T) {
 	w := httptest.NewRecorder()
 	err = ErrorHandler(err)
 	SendJSONError(w, nil, err)
+	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 
 	require.JSONEq(t, `
 	{
@@ -244,6 +245,24 @@ func TestSend(t *testing.T) {
 	require.Equal(t, "Hello World", w.Body.String())
 }
 
+func TestSendTextError(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendTextError(w, nil, errors.New("Hello World"))
+
+		require.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
+		require.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
+	})
+	t.Run("error with status", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendTextError(w, nil, BadRequestError{Err: errors.New("Hello World")})
+		require.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+		require.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
+	})
+}
+
 type errorWriter struct {
 	arg string
 }
@@ -259,11 +278,11 @@ func (errorWriter) Header() http.Header {
 	return http.Header{}
 }
 
-func TestSendYaml(t *testing.T) {
+func TestSendYAML(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		SendYAML(w, nil, response{Message: "Hello World", Code: http.StatusOK})
-
+		require.Equal(t, "application/x-yaml", w.Header().Get("Content-Type"))
 		require.Equal(t, "message: Hello World\ncode: 200\n", w.Body.String())
 	})
 
@@ -274,11 +293,29 @@ func TestSendYaml(t *testing.T) {
 	})
 }
 
+func TestSendYAMLError(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendYAMLError(w, nil, errors.New("Hello World"))
+
+		require.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
+		require.Equal(t, "application/x-yaml", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World\n", w.Body.String())
+	})
+	t.Run("error with status", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendYAMLError(w, nil, BadRequestError{Err: errors.New("Hello World")})
+		require.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+		require.Equal(t, "application/x-yaml", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World\n", w.Body.String())
+	})
+}
+
 func TestSendJSON(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		SendJSON(w, nil, response{Message: "Hello World", Code: http.StatusOK})
-
+		require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 		require.Equal(t, crlf(`{"message":"Hello World","code":200}`), w.Body.String())
 	})
 
@@ -286,6 +323,24 @@ func TestSendJSON(t *testing.T) {
 		errorWriter := &errorWriter{}
 		SendJSON(errorWriter, nil, response{Message: "Hello World", Code: http.StatusOK})
 		require.Contains(t, errorWriter.arg, "Cannot serialize returned response to JSON")
+	})
+}
+
+func TestSendHTMLError(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendHTMLError(w, nil, errors.New("Hello World"))
+
+		require.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
+	})
+	t.Run("error with status", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendHTMLError(w, nil, BadRequestError{Err: errors.New("Hello World")})
+		require.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
 	})
 }
 
@@ -349,4 +404,59 @@ func TestParseAcceptHeader(t *testing.T) {
 		accept := parseAcceptHeader("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "<h1>Hello World</h1>")
 		require.Equal(t, "text/html", accept)
 	})
+}
+
+func TestSendError(t *testing.T) {
+	tcs := []struct {
+		name         string
+		accpetHeader string
+
+		expectedContentType string
+	}{
+		{
+			name: "base",
+
+			expectedContentType: "application/json",
+		},
+		{
+			name:         "xml",
+			accpetHeader: "application/xml",
+
+			expectedContentType: "application/xml",
+		},
+		{
+			name:         "html",
+			accpetHeader: "text/html",
+
+			expectedContentType: "text/html; charset=utf-8",
+		},
+		{
+			name:         "text",
+			accpetHeader: "text/plain",
+
+			expectedContentType: "text/plain; charset=utf-8",
+		},
+		{
+			name:         "json",
+			accpetHeader: "application/json",
+
+			expectedContentType: "application/json",
+		},
+		{
+			name:         "yaml",
+			accpetHeader: "application/x-yaml",
+
+			expectedContentType: "application/x-yaml",
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, "/test", nil)
+			r.Header.Add("Accept", tc.accpetHeader)
+			SendError(w, r, errors.New("myerr"))
+			require.Equal(t, tc.expectedContentType, w.Header().Get("Content-Type"))
+		})
+	}
 }
