@@ -30,7 +30,7 @@ func TestRecursiveJSON(t *testing.T) {
 		w := httptest.NewRecorder()
 		value := rec{}
 		value.Rec = &value
-		SendJSON(w, value)
+		SendJSON(w, nil, value)
 
 		require.Equal(t, `{"error":"Cannot serialize returned response to JSON"}`, w.Body.String())
 	})
@@ -39,7 +39,7 @@ func TestRecursiveJSON(t *testing.T) {
 func TestJSON(t *testing.T) {
 	t.Run("can serialize json", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendJSON(w, response{Message: "Hello World", Code: 200})
+		SendJSON(w, nil, response{Message: "Hello World", Code: 200})
 		body := w.Body.String()
 
 		require.Equal(t, crlf(`{"message":"Hello World","code":200}`), body)
@@ -169,7 +169,7 @@ func TestJSONError(t *testing.T) {
 	err := validate(me)
 	w := httptest.NewRecorder()
 	err = ErrorHandler(err)
-	SendJSONError(w, err)
+	SendJSONError(w, nil, err)
 
 	require.JSONEq(t, `
 	{
@@ -239,7 +239,7 @@ func TestJSONError(t *testing.T) {
 
 func TestSend(t *testing.T) {
 	w := httptest.NewRecorder()
-	SendText(w, "Hello World")
+	SendText(w, nil, "Hello World")
 
 	require.Equal(t, "Hello World", w.Body.String())
 }
@@ -262,14 +262,14 @@ func (errorWriter) Header() http.Header {
 func TestSendYaml(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendYAML(w, response{Message: "Hello World", Code: 200})
+		SendYAML(w, nil, response{Message: "Hello World", Code: 200})
 
 		require.Equal(t, "message: Hello World\ncode: 200\n", w.Body.String())
 	})
 
 	t.Run("error", func(t *testing.T) {
 		errorWriter := &errorWriter{}
-		SendYAML(errorWriter, response{Message: "Hello World", Code: 200})
+		SendYAML(errorWriter, nil, response{Message: "Hello World", Code: 200})
 		require.Contains(t, errorWriter.arg, "Cannot serialize returned response to YAML")
 	})
 }
@@ -277,14 +277,14 @@ func TestSendYaml(t *testing.T) {
 func TestSendJSON(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendJSON(w, response{Message: "Hello World", Code: 200})
+		SendJSON(w, nil, response{Message: "Hello World", Code: 200})
 
 		require.Equal(t, crlf(`{"message":"Hello World","code":200}`), w.Body.String())
 	})
 
 	t.Run("error", func(t *testing.T) {
 		errorWriter := &errorWriter{}
-		SendJSON(errorWriter, response{Message: "Hello World", Code: 200})
+		SendJSON(errorWriter, nil, response{Message: "Hello World", Code: 200})
 		require.Contains(t, errorWriter.arg, "Cannot serialize returned response to JSON")
 	})
 }
