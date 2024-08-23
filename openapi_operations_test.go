@@ -111,7 +111,7 @@ func TestCookieParams(t *testing.T) {
 	t.Run("with more parameters", func(t *testing.T) {
 		s := NewServer()
 		route := Get(s, "/test", testController).
-			Cookie("my-cookie", "my description", OpenAPIParam{Required: true, Example: "my-example"})
+			Cookie("my-cookie", "my description", OpenAPIParamOption{Required: true, Example: "my-example"})
 
 		require.Equal(t, "my description", route.Operation.Parameters.GetByInAndName("cookie", "my-cookie").Description)
 		require.Equal(t, true, route.Operation.Parameters.GetByInAndName("cookie", "my-cookie").Required)

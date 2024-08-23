@@ -165,6 +165,10 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 		route.Operation.Tags = append(route.Operation.Tags, s.groupTag)
 	}
 
+	for _, param := range s.params {
+		route.Param(param.Type, param.Name, param.Description, param.OpenAPIParamOption)
+	}
+
 	// Request body
 	bodyTag := schemaTagFromType(s, *new(B))
 	if bodyTag.name != "unknown-interface" {

@@ -52,6 +52,9 @@ type Server struct {
 	// These tags will be inherited by child Routes/Groups
 	tags []string
 
+	// OpenAPI documentation parameters used for all server routes
+	params []OpenAPIParam
+
 	middlewares []func(http.Handler) http.Handler
 
 	disableStartupMessages bool
@@ -414,5 +417,44 @@ func (s *Server) RemoveTags(tags ...string) *Server {
 			}
 		}
 	}
+	return s
+}
+
+// Registers a param for all server routes.
+func (s *Server) Param(name, description string, params ...OpenAPIParamOption) *Server {
+	param := OpenAPIParam{Name: name, Description: description}
+
+	for _, p := range params {
+		if p.Required {
+			param.Required = p.Required
+		}
+		if p.Example != "" {
+			param.Example = p.Example
+		}
+		if p.Type != "" {
+			param.Type = p.Type
+		}
+	}
+
+	s.params = append(s.params, param)
+
+	return s
+}
+
+// Registers a header param for all server routes.
+func (s *Server) Header(name, description string, params ...OpenAPIParamOption) *Server {
+	s.Param(name, description, append(params, OpenAPIParamOption{Type: "header"})...)
+	return s
+}
+
+// Registers a cookie param for all server routes.
+func (s *Server) Cookie(name, description string, params ...OpenAPIParamOption) *Server {
+	s.Param(name, description, append(params, OpenAPIParamOption{Type: "cookie"})...)
+	return s
+}
+
+// Registers a query param for all server routes.
+func (s *Server) Query(name, description string, params ...OpenAPIParamOption) *Server {
+	s.Param(name, description, append(params, OpenAPIParamOption{Type: "query"})...)
 	return s
 }
