@@ -10,7 +10,7 @@ type PetsRessources struct {
 }
 
 func (rs PetsRessources) Routes(s *fuego.Server) {
-	petsGroup := fuego.Group(s, "/pets")
+	petsGroup := fuego.Group(s, "/pets").Header("X-Header", "header description")
 
 	fuego.Get(petsGroup, "/", rs.getAllPets)
 	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge)

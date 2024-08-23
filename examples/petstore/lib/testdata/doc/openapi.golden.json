@@ -166,6 +166,16 @@
 			"get": {
 				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsRessources.getAllPets`\n\n---\n\n",
 				"operationId": "GET_/pets/",
+				"parameters": [
+					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
 				"responses": {
 					"200": {
 						"content": {
@@ -220,6 +230,16 @@
 			"post": {
 				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsRessources.postPets`\n\n---\n\n",
 				"operationId": "POST_/pets/",
+				"parameters": [
+					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
 				"requestBody": {
 					"$ref": "#/components/requestBodies/PetsCreate"
 				},
@@ -273,6 +293,16 @@
 			"get": {
 				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsRessources.getAllPetsByAge`\n\n---\n\n",
 				"operationId": "GET_/pets/by-age",
+				"parameters": [
+					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
 				"responses": {
 					"200": {
 						"content": {
@@ -337,6 +367,14 @@
 				"operationId": "GET_/pets/by-name/:name...",
 				"parameters": [
 					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
 						"description": " (might contain slashes)",
 						"in": "path",
 						"name": "name...",
@@ -398,6 +436,14 @@
 				"operationId": "DELETE_/pets/:id",
 				"parameters": [
 					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -456,6 +502,14 @@
 				"operationId": "GET_/pets/:id",
 				"parameters": [
 					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -513,6 +567,14 @@
 				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsRessources.putPets`\n\n---\n\n",
 				"operationId": "PUT_/pets/:id",
 				"parameters": [
+					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					},
 					{
 						"in": "path",
 						"name": "id",

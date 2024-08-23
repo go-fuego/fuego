@@ -7,9 +7,15 @@ import (
 )
 
 type OpenAPIParam struct {
+	Name        string
+	Description string
+	OpenAPIParamOption
+}
+
+type OpenAPIParamOption struct {
 	Required bool
 	Example  string
-	Type     string // "query", "header", "cookie"
+	Type     string
 }
 
 // Overrides the description for the route.
@@ -33,7 +39,7 @@ func (r Route[ResponseBody, RequestBody]) OperationID(operationID string) Route[
 // Param registers a parameter for the route.
 // The paramType can be "query", "header" or "cookie".
 // [Cookie], [Header], [QueryParam] are shortcuts for Param.
-func (r Route[ResponseBody, RequestBody]) Param(paramType, name, description string, params ...OpenAPIParam) Route[ResponseBody, RequestBody] {
+func (r Route[ResponseBody, RequestBody]) Param(paramType, name, description string, params ...OpenAPIParamOption) Route[ResponseBody, RequestBody] {
 	openapiParam := openapi3.NewHeaderParameter(name)
 	openapiParam.Description = description
 	openapiParam.Schema = openapi3.NewStringSchema().NewRef()
@@ -54,19 +60,19 @@ func (r Route[ResponseBody, RequestBody]) Param(paramType, name, description str
 }
 
 // Header registers a header parameter for the route.
-func (r Route[ResponseBody, RequestBody]) Header(name, description string, params ...OpenAPIParam) Route[ResponseBody, RequestBody] {
+func (r Route[ResponseBody, RequestBody]) Header(name, description string, params ...OpenAPIParamOption) Route[ResponseBody, RequestBody] {
 	r.Param("header", name, description, params...)
 	return r
 }
 
 // Cookie registers a cookie parameter for the route.
-func (r Route[ResponseBody, RequestBody]) Cookie(name, description string, params ...OpenAPIParam) Route[ResponseBody, RequestBody] {
+func (r Route[ResponseBody, RequestBody]) Cookie(name, description string, params ...OpenAPIParamOption) Route[ResponseBody, RequestBody] {
 	r.Param("cookie", name, description, params...)
 	return r
 }
 
 // QueryParam registers a query parameter for the route.
-func (r Route[ResponseBody, RequestBody]) QueryParam(name, description string, params ...OpenAPIParam) Route[ResponseBody, RequestBody] {
+func (r Route[ResponseBody, RequestBody]) QueryParam(name, description string, params ...OpenAPIParamOption) Route[ResponseBody, RequestBody] {
 	r.Param("query", name, description, params...)
 	return r
 }
