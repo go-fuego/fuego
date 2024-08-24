@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -39,11 +40,12 @@ type ctx[B any] interface {
 	PathParam(name string) string
 
 	QueryParam(name string) string
+	QueryParamArr(name string) []string
 	QueryParamInt(name string, defaultValue int) int // If the query parameter does not exist or is not an int, it returns the default given value. Use [Ctx.QueryParamIntErr] if you want to know if the query parameter is erroneous.
 	QueryParamIntErr(name string) (int, error)
 	QueryParamBool(name string, defaultValue bool) bool // If the query parameter does not exist or is not a bool, it returns the default given value. Use [Ctx.QueryParamBoolErr] if you want to know if the query parameter is erroneous.
 	QueryParamBoolErr(name string) (bool, error)
-	QueryParams() map[string]string
+	QueryParams() url.Values
 
 	MainLang() string   // ex: fr. MainLang returns the main language of the request. It is the first language of the Accept-Language header. To get the main locale (ex: fr-CA), use [Ctx.MainLocale].
 	MainLocale() string // ex: en-US. MainLocale returns the main locale of the request. It is the first locale of the Accept-Language header. To get the main language (ex: en), use [Ctx.MainLang].
@@ -256,14 +258,14 @@ func (e QueryParamInvalidTypeError) Error() string {
 	return fmt.Errorf("param %s=%s is not of type %s: %w", e.ParamName, e.ParamValue, e.ExpectedType, e.Err).Error()
 }
 
-// QueryParams returns the query parameters of the request.
-func (c ContextNoBody) QueryParams() map[string]string {
-	queryParams := c.Req.URL.Query()
-	params := make(map[string]string)
-	for k, v := range queryParams {
-		params[k] = v[0]
-	}
-	return params
+// QueryParams returns the query parameters of the request. It is a shortcut for c.Req.URL.Query().
+func (c ContextNoBody) QueryParams() url.Values {
+	return c.Req.URL.Query()
+}
+
+// QueryParamsArr returns an slice of string from the given query parameter.
+func (c ContextNoBody) QueryParamArr(name string) []string {
+	return c.Req.URL.Query()[name]
 }
 
 // QueryParam returns the query parameter with the given name.
