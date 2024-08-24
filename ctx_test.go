@@ -43,7 +43,7 @@ func TestContext_PathParam(t *testing.T) {
 }
 
 func TestContext_QueryParam(t *testing.T) {
-	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello&boo=true", nil)
+	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello&boo=true&name=jhon&name=doe", nil)
 	w := httptest.NewRecorder()
 
 	c := NewContext[any](w, r, readOptions{})
@@ -112,6 +112,15 @@ func TestContext_QueryParam(t *testing.T) {
 		require.Error(t, err)
 		require.Equal(t, false, paramBool)
 	})
+
+	t.Run("slice", func(t *testing.T) {
+		name := c.QueryParamArr("name")
+		require.NotEmpty(t, name)
+		require.Equal(t, []string{"jhon", "doe"}, name)
+
+		notFound := c.QueryParamArr("notfound")
+		require.Empty(t, notFound)
+	})
 }
 
 func TestContext_QueryParams(t *testing.T) {
@@ -122,8 +131,8 @@ func TestContext_QueryParams(t *testing.T) {
 
 	params := c.QueryParams()
 	require.NotEmpty(t, params)
-	require.Equal(t, params["id"], "456")
-	require.Equal(t, params["other"], "hello")
+	require.Equal(t, params["id"], []string{"456"})
+	require.Equal(t, params["other"], []string{"hello"})
 	require.Empty(t, params["notfound"])
 }
 
