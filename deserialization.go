@@ -94,7 +94,7 @@ func read[B any](context context.Context, dec decoder) (B, error) {
 	var body B
 
 	err := dec.Decode(&body)
-	if err != nil {
+	if err != nil && err != io.EOF {
 		return body, BadRequestError{
 			Title:  "Decoding Failed",
 			Err:    err,
@@ -127,7 +127,7 @@ func ReadString[B ~string](context context.Context, input io.Reader) (B, error) 
 	return readString[B](context, input, ReadOptions)
 }
 
-func readString[B ~string](context context.Context, input io.Reader, options readOptions) (B, error) {
+func readString[B ~string](context context.Context, input io.Reader, _ readOptions) (B, error) {
 	// Read the request body.
 	readBody, err := io.ReadAll(input)
 	if err != nil {
