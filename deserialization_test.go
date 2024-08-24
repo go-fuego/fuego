@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/xml"
 	"errors"
+	"io"
 	"net/http/httptest"
 	"reflect"
 	"strings"
@@ -27,6 +28,12 @@ type WrongBody struct {
 	B       int      `yaml:"B" xml:"B"`
 }
 
+type EOFReader struct{}
+
+func (r *EOFReader) Read(b []byte) (int, error) {
+	return 0, io.EOF
+}
+
 func TestReadJSON(t *testing.T) {
 	inputStr := `{"A":"a","B":1,"C":true}`
 
@@ -34,6 +41,12 @@ func TestReadJSON(t *testing.T) {
 		body, err := ReadJSON[BodyTest](context.Background(), strings.NewReader(inputStr))
 		require.NoError(t, err)
 		require.Equal(t, BodyTest{A: "a", B: 1, C: true}, body)
+	})
+
+	t.Run("error is EOF", func(t *testing.T) {
+		body, err := ReadJSON[BodyTest](context.Background(), &EOFReader{})
+		require.NoError(t, err)
+		require.Equal(t, BodyTest{A: "", B: 0, C: false}, body)
 	})
 
 	t.Run("cannot read invalid JSON", func(t *testing.T) {
