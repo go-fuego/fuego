@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -94,7 +95,7 @@ func read[B any](context context.Context, dec decoder) (B, error) {
 	var body B
 
 	err := dec.Decode(&body)
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return body, BadRequestError{
 			Title:  "Decoding Failed",
 			Err:    err,
