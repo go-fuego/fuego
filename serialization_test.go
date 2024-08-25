@@ -3,6 +3,7 @@ package fuego
 import (
 	"context"
 	"errors"
+	"html/template"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -326,6 +327,65 @@ func TestSendJSON(t *testing.T) {
 	})
 }
 
+func TestSendHTML(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		err := SendHTML(w, nil, "Hello World")
+		require.NoError(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
+	})
+
+	t.Run("CtxRenderer", func(t *testing.T) {
+		const templateName = "template"
+		template, err := template.New(templateName).Parse("Hello World")
+		require.NoError(t, err)
+		w := httptest.NewRecorder()
+		err = SendHTML(
+			w,
+			httptest.NewRequest(http.MethodGet, "/", nil),
+			&StdRenderer{
+				templates:         template,
+				templateToExecute: templateName,
+			},
+		)
+		require.NoError(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
+	})
+
+	t.Run("Renderer", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		err := SendHTML(w, nil, &testRenderer{})
+		require.NoError(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "hello", w.Body.String())
+	})
+
+	t.Run("HTML", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		err := SendHTML(w, nil, HTML("hello"))
+		require.NoError(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "hello", w.Body.String())
+	})
+
+	t.Run("string", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		err := SendHTML(w, nil, "hello")
+		require.NoError(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "hello", w.Body.String())
+	})
+
+	t.Run("error", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		err := SendHTML(w, nil, struct{}{})
+		require.Error(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+	})
+}
+
 func TestSendHTMLError(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -409,7 +469,7 @@ func TestParseAcceptHeader(t *testing.T) {
 func TestSendError(t *testing.T) {
 	tcs := []struct {
 		name         string
-		accpetHeader string
+		acceptHeader string
 
 		expectedContentType string
 	}{
@@ -420,33 +480,39 @@ func TestSendError(t *testing.T) {
 		},
 		{
 			name:         "xml",
-			accpetHeader: "application/xml",
+			acceptHeader: "application/xml",
 
 			expectedContentType: "application/xml",
 		},
 		{
 			name:         "html",
-			accpetHeader: "text/html",
+			acceptHeader: "text/html",
 
 			expectedContentType: "text/html; charset=utf-8",
 		},
 		{
 			name:         "text",
-			accpetHeader: "text/plain",
+			acceptHeader: "text/plain",
 
 			expectedContentType: "text/plain; charset=utf-8",
 		},
 		{
 			name:         "json",
-			accpetHeader: "application/json",
+			acceptHeader: "application/json",
 
 			expectedContentType: "application/json",
 		},
 		{
 			name:         "yaml",
-			accpetHeader: "application/x-yaml",
+			acceptHeader: "application/x-yaml",
 
 			expectedContentType: "application/x-yaml",
+		},
+		{
+			name:         "no case header",
+			acceptHeader: "application/foo",
+
+			expectedContentType: "application/json",
 		},
 	}
 
@@ -454,7 +520,7 @@ func TestSendError(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "/test", nil)
-			r.Header.Add("Accept", tc.accpetHeader)
+			r.Header.Add("Accept", tc.acceptHeader)
 			SendError(w, r, errors.New("myerr"))
 			require.Equal(t, tc.expectedContentType, w.Header().Get("Content-Type"))
 		})

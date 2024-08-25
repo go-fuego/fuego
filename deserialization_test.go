@@ -28,9 +28,9 @@ type WrongBody struct {
 	B       int      `yaml:"B" xml:"B"`
 }
 
-type EOFReader struct{}
+type eofReader struct{}
 
-func (r *EOFReader) Read(b []byte) (int, error) {
+func (r *eofReader) Read(b []byte) (int, error) {
 	return 0, io.EOF
 }
 
@@ -44,7 +44,7 @@ func TestReadJSON(t *testing.T) {
 	})
 
 	t.Run("error is EOF", func(t *testing.T) {
-		body, err := ReadJSON[BodyTest](context.Background(), &EOFReader{})
+		body, err := ReadJSON[BodyTest](context.Background(), &eofReader{})
 		require.NoError(t, err)
 		require.Equal(t, BodyTest{A: "", B: 0, C: false}, body)
 	})
