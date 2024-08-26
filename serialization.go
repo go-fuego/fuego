@@ -79,19 +79,30 @@ type Sender func(http.ResponseWriter, *http.Request, any) error
 
 // Send sends a response.
 // The format is determined by the Accept header.
+// If Accept header `*/*` is found Send will Attempt to send
+// HTML, and the JSON.
 func Send(w http.ResponseWriter, r *http.Request, ans any) error {
-	switch parseAcceptHeader(r.Header.Get("Accept"), ans) {
-	case "application/xml":
-		return SendXML(w, nil, ans)
-	case "text/html":
-		return SendHTML(w, r, ans)
-	case "text/plain":
-		return SendText(w, nil, ans)
-	case "application/json":
-		return SendJSON(w, nil, ans)
-	case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
-		return SendYAML(w, nil, ans)
+	for _, header := range r.Header.Values("Accept") {
+		switch header {
+		case "application/xml":
+			return SendXML(w, nil, ans)
+		case "text/html":
+			return SendHTML(w, r, ans)
+		case "text/plain":
+			return SendText(w, nil, ans)
+		case "application/json":
+			return SendJSON(w, nil, ans)
+		case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
+			return SendYAML(w, nil, ans)
+		case "*/*":
+			// attempt to return html or default to json
+			if SendHTML(w, r, ans) == nil {
+				return nil
+			}
+			return SendJSON(w, nil, ans)
+		}
 	}
+
 	return errors.New("unsupported Accept header")
 }
 
