@@ -443,18 +443,18 @@ func (s *Server) Param(name, description string, params ...OpenAPIParamOption) *
 
 // Registers a header param for all server routes.
 func (s *Server) Header(name, description string, params ...OpenAPIParamOption) *Server {
-	s.Param(name, description, append(params, OpenAPIParamOption{Type: "header"})...)
+	s.Param(name, description, append(params, OpenAPIParamOption{Type: HeaderParamType})...)
 	return s
 }
 
 // Registers a cookie param for all server routes.
 func (s *Server) Cookie(name, description string, params ...OpenAPIParamOption) *Server {
-	s.Param(name, description, append(params, OpenAPIParamOption{Type: "cookie"})...)
+	s.Param(name, description, append(params, OpenAPIParamOption{Type: CookieParamType})...)
 	return s
 }
 
 // Registers a query param for all server routes.
 func (s *Server) Query(name, description string, params ...OpenAPIParamOption) *Server {
-	s.Param(name, description, append(params, OpenAPIParamOption{Type: "query"})...)
+	s.Param(name, description, append(params, OpenAPIParamOption{Type: QueryParamType})...)
 	return s
 }

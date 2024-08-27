@@ -6,6 +6,14 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
+type ParamType string
+
+const (
+	QueryParamType  ParamType = "query"
+	HeaderParamType ParamType = "header"
+	CookieParamType ParamType = "cookie"
+)
+
 type OpenAPIParam struct {
 	Name        string
 	Description string
@@ -15,7 +23,7 @@ type OpenAPIParam struct {
 type OpenAPIParamOption struct {
 	Required bool
 	Example  string
-	Type     string
+	Type     ParamType
 }
 
 // Overrides the description for the route.
@@ -37,13 +45,13 @@ func (r Route[ResponseBody, RequestBody]) OperationID(operationID string) Route[
 }
 
 // Param registers a parameter for the route.
-// The paramType can be "query", "header" or "cookie".
+// The paramType can be "query", "header" or "cookie" as defined in [ParamType].
 // [Cookie], [Header], [QueryParam] are shortcuts for Param.
-func (r Route[ResponseBody, RequestBody]) Param(paramType, name, description string, params ...OpenAPIParamOption) Route[ResponseBody, RequestBody] {
+func (r Route[ResponseBody, RequestBody]) Param(paramType ParamType, name, description string, params ...OpenAPIParamOption) Route[ResponseBody, RequestBody] {
 	openapiParam := openapi3.NewHeaderParameter(name)
 	openapiParam.Description = description
 	openapiParam.Schema = openapi3.NewStringSchema().NewRef()
-	openapiParam.In = paramType
+	openapiParam.In = string(paramType)
 
 	for _, param := range params {
 		if param.Required {
@@ -61,19 +69,19 @@ func (r Route[ResponseBody, RequestBody]) Param(paramType, name, description str
 
 // Header registers a header parameter for the route.
 func (r Route[ResponseBody, RequestBody]) Header(name, description string, params ...OpenAPIParamOption) Route[ResponseBody, RequestBody] {
-	r.Param("header", name, description, params...)
+	r.Param(HeaderParamType, name, description, params...)
 	return r
 }
 
 // Cookie registers a cookie parameter for the route.
 func (r Route[ResponseBody, RequestBody]) Cookie(name, description string, params ...OpenAPIParamOption) Route[ResponseBody, RequestBody] {
-	r.Param("cookie", name, description, params...)
+	r.Param(CookieParamType, name, description, params...)
 	return r
 }
 
 // QueryParam registers a query parameter for the route.
 func (r Route[ResponseBody, RequestBody]) QueryParam(name, description string, params ...OpenAPIParamOption) Route[ResponseBody, RequestBody] {
-	r.Param("query", name, description, params...)
+	r.Param(QueryParamType, name, description, params...)
 	return r
 }
 

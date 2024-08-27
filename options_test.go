@@ -418,7 +418,7 @@ func TestGroupHeaderParams(t *testing.T) {
 
 	Get(group, "/test", controller)
 
-	require.Equal(t, group.params, []OpenAPIParam{{Name: "X-Test-Header", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: "header"}}})
+	require.Equal(t, group.params, []OpenAPIParam{{Name: "X-Test-Header", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: HeaderParamType}}})
 
 	document := s.OutputOpenAPISpec()
 	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "X-Test-Header")
@@ -430,7 +430,7 @@ func TestGroupCookieParams(t *testing.T) {
 
 	Get(group, "/test", controller)
 
-	require.Equal(t, group.params, []OpenAPIParam{{Name: "X-Test-Cookie", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: "cookie"}}})
+	require.Equal(t, group.params, []OpenAPIParam{{Name: "X-Test-Cookie", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: CookieParamType}}})
 
 	document := s.OutputOpenAPISpec()
 	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "X-Test-Cookie")
@@ -442,7 +442,7 @@ func TestGroupQueryParam(t *testing.T) {
 
 	Get(group, "/test", controller)
 
-	require.Equal(t, group.params, []OpenAPIParam{{Name: "X-Test-Query", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: "query"}}})
+	require.Equal(t, group.params, []OpenAPIParam{{Name: "X-Test-Query", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: QueryParamType}}})
 
 	document := s.OutputOpenAPISpec()
 	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "X-Test-Query")
