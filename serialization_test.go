@@ -460,8 +460,18 @@ func TestParseAcceptHeader(t *testing.T) {
 		require.Equal(t, "application/json", accept)
 	})
 
-	t.Run("can infer text/html from a real browser", func(t *testing.T) {
+	t.Run("can infer text/plain from a real browser", func(t *testing.T) {
 		accept := parseAcceptHeader("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "<h1>Hello World</h1>")
+		require.Equal(t, "text/plain", accept)
+	})
+
+	t.Run("can infer application/json from a real browser", func(t *testing.T) {
+		accept := parseAcceptHeader("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", response{})
+		require.Equal(t, "application/json", accept)
+	})
+
+	t.Run("can infer text/html from a real browser", func(t *testing.T) {
+		accept := parseAcceptHeader("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", HTML("Hello World"))
 		require.Equal(t, "text/html", accept)
 	})
 }

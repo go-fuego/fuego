@@ -315,14 +315,19 @@ func InferAcceptHeaderFromType(ans any) string {
 }
 
 func parseAcceptHeader(accept string, ans any) string {
-	if strings.Index(accept, ",") > 0 {
-		accept = accept[:strings.Index(accept, ",")]
-	}
-	if accept == "*/*" {
-		accept = ""
-	}
 	if accept == "" {
-		accept = InferAcceptHeaderFromType(ans)
+		return InferAcceptHeaderFromType(ans)
 	}
-	return accept
+
+	vals := strings.Split(accept, ",")
+	// if the string contains `*/*` try to infer
+	// the header from the type
+	for _, v := range vals {
+		if strings.Contains(v, "*/*") {
+			return InferAcceptHeaderFromType(ans)
+		}
+	}
+
+	// assume the caller wants the first value
+	return vals[0]
 }
