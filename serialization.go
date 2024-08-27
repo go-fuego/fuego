@@ -80,30 +80,35 @@ type Sender func(http.ResponseWriter, *http.Request, any) error
 // Send sends a response.
 // The format is determined by the Accept header.
 // If Accept header `*/*` is found Send will Attempt to send
-// HTML, and the JSON.
-func Send(w http.ResponseWriter, r *http.Request, ans any) error {
-	for _, header := range r.Header.Values("Accept") {
-		switch header {
+// HTML, and then JSON.
+func Send(w http.ResponseWriter, r *http.Request, ans any) (err error) {
+	for _, header := range parseAcceptHeader(r.Header) {
+		switch inferAcceptHeader(header, ans) {
 		case "application/xml":
-			return SendXML(w, nil, ans)
+			err = SendXML(w, nil, ans)
 		case "text/html":
-			return SendHTML(w, r, ans)
+			err = SendHTML(w, r, ans)
 		case "text/plain":
-			return SendText(w, nil, ans)
+			err = SendText(w, nil, ans)
 		case "application/json":
-			return SendJSON(w, nil, ans)
+			err = SendJSON(w, nil, ans)
 		case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
-			return SendYAML(w, nil, ans)
-		case "*/*":
-			// attempt to return html or default to json
-			if SendHTML(w, r, ans) == nil {
-				return nil
-			}
-			return SendJSON(w, nil, ans)
+			err = SendYAML(w, nil, ans)
 		}
+
+		if err != nil {
+			continue
+			// should we log and continue?
+			// or
+			// if err == nil we just return?
+		}
+		return nil
 	}
 
-	return errors.New("unsupported Accept header")
+	if err != nil {
+		return err
+	}
+	return errors.New("no supported Accept header was not provided from: " + r.Header.Get("Accept"))
 }
 
 // SendYAML sends a YAML response.
@@ -150,19 +155,21 @@ type ErrorSender = func(http.ResponseWriter, *http.Request, error)
 // SendError sends an error.
 // Declared as a variable to be able to override it for clients that need to customize serialization.
 var SendError = func(w http.ResponseWriter, r *http.Request, err error) {
-	switch parseAcceptHeader(r.Header.Get("Accept"), nil) {
-	case "application/xml":
-		SendXMLError(w, nil, err)
-	case "text/html":
-		SendHTMLError(w, nil, err)
-	case "text/plain":
-		SendTextError(w, r, err)
-	case "application/json":
-		SendJSONError(w, nil, err)
-	case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
-		SendYAMLError(w, nil, err)
-	default:
-		SendJSONError(w, r, err)
+	for _, header := range parseAcceptHeader(r.Header) {
+		switch inferAcceptHeader(header, nil) {
+		case "application/xml":
+			SendXMLError(w, nil, err)
+		case "text/html":
+			SendHTMLError(w, nil, err)
+		case "text/plain":
+			SendTextError(w, r, err)
+		case "application/json":
+			SendJSONError(w, nil, err)
+		case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
+			SendYAMLError(w, nil, err)
+		default:
+			SendJSONError(w, r, err)
+		}
 	}
 }
 
@@ -325,15 +332,25 @@ func InferAcceptHeaderFromType(ans any) string {
 	return "application/json"
 }
 
-func parseAcceptHeader(accept string, ans any) string {
-	if strings.Index(accept, ",") > 0 {
-		accept = accept[:strings.Index(accept, ",")]
-	}
-	if accept == "*/*" {
-		accept = ""
-	}
-	if accept == "" {
-		accept = InferAcceptHeaderFromType(ans)
+func inferAcceptHeader(accept string, ans any) string {
+	if accept == "" || accept == "*/*" {
+		return InferAcceptHeaderFromType(ans)
 	}
 	return accept
+}
+
+func parseAcceptHeader(header http.Header) []string {
+	accept := header.Get("Accept")
+	if accept == "" {
+		return []string{""}
+	}
+	vals := strings.Split(accept, ",")
+	for i, v := range vals {
+		// ignore quality parameters if they exist
+		index := strings.Index(v, ";")
+		if index > 0 {
+			vals[i] = v[:index]
+		}
+	}
+	return vals
 }
