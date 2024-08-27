@@ -22,6 +22,23 @@ type response struct {
 	Code    int    `json:"code"`
 }
 
+func TestSend(t *testing.T) {
+	const templateName = "template"
+	template, err := template.New(templateName).Parse("Hello World")
+	require.NoError(t, err)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	r.Header.Set("Accept", "application/json")
+	Send(w, r, &StdRenderer{
+		templates:         template,
+		templateToExecute: templateName,
+	})
+	body := w.Body.String()
+	require.Equal(t, "{}\n", body)
+	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
+}
+
 func TestRecursiveJSON(t *testing.T) {
 	type rec struct {
 		Rec *rec `json:"rec"`
@@ -239,7 +256,7 @@ func TestJSONError(t *testing.T) {
 	  `, w.Body.String())
 }
 
-func TestSend(t *testing.T) {
+func TestSendText(t *testing.T) {
 	w := httptest.NewRecorder()
 	SendText(w, nil, "Hello World")
 
@@ -429,40 +446,73 @@ func TestInferAcceptHeaderFromType(t *testing.T) {
 	})
 }
 
-func TestParseAcceptHeader(t *testing.T) {
+func TestInferAcceptHeader(t *testing.T) {
 	t.Run("can parse text/plain", func(t *testing.T) {
-		accept := parseAcceptHeader("text/plain", "Hello World")
+		accept := inferAcceptHeader("text/plain", "Hello World")
 		require.Equal(t, "text/plain", accept)
 	})
 
 	t.Run("can parse text/html", func(t *testing.T) {
-		accept := parseAcceptHeader("text/html", "<h1>Hello World</h1>")
+		accept := inferAcceptHeader("text/html", "<h1>Hello World</h1>")
 		require.Equal(t, "text/html", accept)
 	})
 
 	t.Run("can parse text/html from multiple options", func(t *testing.T) {
-		accept := parseAcceptHeader("text/html, text/plain", "<h1>Hello World</h1>")
+		accept := inferAcceptHeader("text/html", "<h1>Hello World</h1>")
 		require.Equal(t, "text/html", accept)
 	})
 
 	t.Run("can parse application/json", func(t *testing.T) {
-		accept := parseAcceptHeader("application/json", ans{})
+		accept := inferAcceptHeader("application/json", ans{})
 		require.Equal(t, "application/json", accept)
 	})
 
 	t.Run("can infer json", func(t *testing.T) {
-		accept := parseAcceptHeader("", response{})
+		accept := inferAcceptHeader("", response{})
 		require.Equal(t, "application/json", accept)
 	})
 
 	t.Run("can infer json", func(t *testing.T) {
-		accept := parseAcceptHeader("*/*", response{})
+		accept := inferAcceptHeader("*/*", response{})
 		require.Equal(t, "application/json", accept)
 	})
 
-	t.Run("can infer text/html from a real browser", func(t *testing.T) {
-		accept := parseAcceptHeader("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "<h1>Hello World</h1>")
+	t.Run("can infer text/plain", func(t *testing.T) {
+		accept := inferAcceptHeader("*/*", "Hello World")
+		require.Equal(t, "text/plain", accept)
+	})
+
+	t.Run("can infer text/html", func(t *testing.T) {
+		accept := inferAcceptHeader("*/*", HTML("Hello World"))
 		require.Equal(t, "text/html", accept)
+	})
+}
+
+func TestParseAcceptHeader(t *testing.T) {
+	t.Run("empty header", func(t *testing.T) {
+		accept := parseAcceptHeader(http.Header{})
+		require.Equal(t, []string{""}, accept)
+	})
+
+	t.Run("one value", func(t *testing.T) {
+		header := http.Header{}
+		header.Set("Accept", "text/html")
+		accept := parseAcceptHeader(header)
+		require.Equal(t, []string{"text/html"}, accept)
+	})
+
+	t.Run("two values", func(t *testing.T) {
+		header := http.Header{}
+		header.Set("Accept", "text/html,text/plain")
+		accept := parseAcceptHeader(header)
+		require.Equal(t, []string{"text/html", "text/plain"}, accept)
+	})
+
+	t.Run("can parse string from real browser", func(t *testing.T) {
+		header := http.Header{}
+		header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+		accept := parseAcceptHeader(header)
+		require.Equal(t, []string{"text/html", "application/xhtml+xml", "application/xml", "*/*"}, accept)
 	})
 }
 
