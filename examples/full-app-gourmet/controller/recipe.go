@@ -31,11 +31,11 @@ func (rs recipeRessource) MountRoutes(s *fuego.Server) {
 func (rs recipeRessource) getAllRecipesStandardWithHelpers(w http.ResponseWriter, r *http.Request) {
 	recipes, err := rs.RecipeRepository.GetRecipes(r.Context())
 	if err != nil {
-		fuego.SendJSONError(w, err)
+		fuego.SendJSONError(w, r, err)
 		return
 	}
 
-	fuego.SendJSON(w, recipes)
+	fuego.SendJSON(w, r, recipes)
 }
 
 func (rs recipeRessource) getAllRecipes(c fuego.ContextNoBody) ([]store.Recipe, error) {

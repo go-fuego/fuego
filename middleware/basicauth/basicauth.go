@@ -42,7 +42,7 @@ func New(config Config) func(http.Handler) http.Handler {
 			}
 
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			fuego.SendJSONError(w, err)
+			fuego.SendJSONError(w, nil, err)
 		})
 	}
 }

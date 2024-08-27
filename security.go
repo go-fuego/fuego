@@ -212,7 +212,7 @@ func (security Security) TokenToContext(searchFunc ...func(*http.Request) string
 			// Validate the token
 			t, err := security.ValidateToken(token)
 			if err != nil {
-				SendJSONError(w, err)
+				SendJSONError(w, nil, err)
 				return
 			}
 
@@ -306,20 +306,20 @@ func authWall(authorizeFunc func(userRoles ...string) bool) func(next http.Handl
 			// Get the authorizationHeader from the context (set by TokenToContext)
 			claims, err := TokenFromContext(r.Context())
 			if err != nil {
-				SendJSONError(w, ErrUnauthorized)
+				SendJSONError(w, nil, ErrUnauthorized)
 				return
 			}
 
 			// Get the subject and userRoles from the claims
 			userRoles, ok := claims.(jwt.MapClaims)["roles"].([]string)
 			if !ok {
-				SendJSONError(w, ErrInvalidTokenType)
+				SendJSONError(w, nil, ErrInvalidTokenType)
 				return
 			}
 
 			// Check if the user is authorized
 			if !authorizeFunc(userRoles...) {
-				SendJSONError(w, ErrUnauthorized)
+				SendJSONError(w, nil, ErrUnauthorized)
 				return
 			}
 
@@ -369,21 +369,27 @@ func (security Security) StdLoginHandler(verifyUserInfo func(r *http.Request) (j
 	return func(w http.ResponseWriter, r *http.Request) {
 		claims, err := verifyUserInfo(r)
 		if err != nil {
-			SendJSONError(w, err)
+			SendJSONError(w, nil, err)
 			return
 		}
 
 		// Send the token to the cookies
 		token, err := security.GenerateTokenToCookies(claims, w)
 		if err != nil {
-			SendJSONError(w, err)
+			SendJSONError(w, nil, err)
 			return
 		}
 
 		// Send the token to the response
-		SendJSON(w, tokenResponse{
-			Token: token,
-		})
+		// no need to check err as SendJSON
+		// responds with a 500 on error to the client
+		_ = SendJSON(
+			w,
+			r,
+			tokenResponse{
+				Token: token,
+			},
+		)
 	}
 }
 
@@ -458,21 +464,27 @@ func (security Security) LoginHandler(verifyUserInfo func(user, password string)
 func (security Security) RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	claims, err := TokenFromContext(r.Context())
 	if err != nil {
-		SendJSONError(w, ErrUnauthorized)
+		SendJSONError(w, nil, ErrUnauthorized)
 		return
 	}
 
 	// Send the token to the cookies
 	token, err := security.GenerateTokenToCookies(claims, w)
 	if err != nil {
-		SendJSONError(w, err)
+		SendJSONError(w, nil, err)
 		return
 	}
 
 	// Send the token to the response
-	SendJSON(w, tokenResponse{
-		Token: token,
-	})
+	// no need to check err as SendJSON
+	// responds with a 500 on error to the client
+	_ = SendJSON(
+		w,
+		nil,
+		tokenResponse{
+			Token: token,
+		},
+	)
 }
 
 // RemoveTokenFromCookies generates a JWT token with the given claims and writes it to the cookies.

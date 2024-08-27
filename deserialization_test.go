@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/xml"
 	"errors"
+	"io"
 	"net/http/httptest"
 	"reflect"
 	"strings"
@@ -27,61 +28,73 @@ type WrongBody struct {
 	B       int      `yaml:"B" xml:"B"`
 }
 
+type eofReader struct{}
+
+func (r *eofReader) Read(b []byte) (int, error) {
+	return 0, io.EOF
+}
+
 func TestReadJSON(t *testing.T) {
-	input := strings.NewReader(`{"A":"a","B":1,"C":true}`)
+	inputStr := `{"A":"a","B":1,"C":true}`
 
 	t.Run("ReadJSON", func(t *testing.T) {
-		body, err := ReadJSON[BodyTest](context.Background(), input)
+		body, err := ReadJSON[BodyTest](context.Background(), strings.NewReader(inputStr))
 		require.NoError(t, err)
 		require.Equal(t, BodyTest{A: "a", B: 1, C: true}, body)
 	})
 
+	t.Run("error is EOF", func(t *testing.T) {
+		body, err := ReadJSON[BodyTest](context.Background(), &eofReader{})
+		require.NoError(t, err)
+		require.Equal(t, BodyTest{A: "", B: 0, C: false}, body)
+	})
+
 	t.Run("cannot read invalid JSON", func(t *testing.T) {
-		_, err := ReadJSON[BodyTest](context.Background(), input)
+		_, err := ReadJSON[BodyTest](context.Background(), strings.NewReader(`{`))
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 	})
 
 	t.Run("cannot deserialize JSON to wrong struct", func(t *testing.T) {
-		_, err := ReadJSON[WrongBody](context.Background(), input)
+		_, err := ReadJSON[WrongBody](context.Background(), strings.NewReader(inputStr))
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 	})
 }
 
 func TestReadYAML(t *testing.T) {
-	input := bytes.NewReader([]byte(`
+	inputStr := `
 A: a
 B: 1
 C: true
-`))
+`
 
 	t.Run("ReadYAML", func(t *testing.T) {
-		body, err := ReadYAML[BodyTest](context.Background(), input)
+		body, err := ReadYAML[BodyTest](context.Background(), bytes.NewReader([]byte(inputStr)))
 		require.NoError(t, err)
 		require.Equal(t, BodyTest{A: "a", B: 1, C: true}, body)
 	})
 
 	t.Run("cannot read invalid YAML", func(t *testing.T) {
-		_, err := ReadYAML[BodyTest](context.Background(), input)
+		_, err := ReadYAML[BodyTest](context.Background(), bytes.NewReader([]byte(`a`)))
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 	})
 
 	t.Run("cannot deserialize YAML to wrong struct", func(t *testing.T) {
-		_, err := ReadYAML[WrongBody](context.Background(), input)
+		_, err := ReadYAML[WrongBody](context.Background(), bytes.NewReader([]byte(inputStr)))
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 	})
 }
 
 func TestReadXML(t *testing.T) {
-	input := bytes.NewReader([]byte(`
+	inputStr := `
 <BodyTest>
 	<A>a</A>
 	<B>1</B>
 	<C>true</C>
 </BodyTest>
-`))
+`
 
 	t.Run("ReadXML", func(t *testing.T) {
-		body, err := ReadXML[BodyTest](context.Background(), input)
+		body, err := ReadXML[BodyTest](context.Background(), bytes.NewReader([]byte(inputStr)))
 		require.NoError(t, err)
 		require.Equal(t, BodyTest{
 			XMLName: xml.Name{Local: "BodyTest"},
@@ -92,14 +105,20 @@ func TestReadXML(t *testing.T) {
 	})
 
 	t.Run("cannot read invalid XML", func(t *testing.T) {
-		_, err := ReadXML[BodyTest](context.Background(), input)
+		_, err := ReadXML[BodyTest](context.Background(), bytes.NewReader([]byte("<")))
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 	})
 
 	t.Run("cannot deserialize XML to wrong struct", func(t *testing.T) {
-		_, err := ReadXML[WrongBody](context.Background(), input)
+		_, err := ReadXML[WrongBody](context.Background(), bytes.NewReader([]byte(inputStr)))
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 	})
+}
+
+type errorReader int
+
+func (errorReader) Read(_ []byte) (int, error) {
+	return 0, errors.New("error")
 }
 
 func TestReadString(t *testing.T) {
@@ -114,6 +133,13 @@ func TestReadString(t *testing.T) {
 		input := strings.NewReader(`string decoded as is`)
 		_, err := ReadString[StringAlias](context.Background(), input)
 		require.NoError(t, err)
+	})
+
+	t.Run("should return error if io.ReadAll return an error", func(t *testing.T) {
+		type StringAlias string
+		input := errorReader(0)
+		_, err := ReadString[StringAlias](context.Background(), input)
+		require.Error(t, err)
 	})
 }
 
@@ -232,6 +258,14 @@ func TestReadURLEncoded(t *testing.T) {
 		require.Error(t, err)
 		require.ErrorAs(t, err, &BadRequestError{}, "Expected a BadRequestError")
 		require.Equal(t, BodyTestWithInTransformerError{"a", 9}, res)
+	})
+
+	t.Run("read invalid semicolon separator in query", func(t *testing.T) {
+		r := httptest.NewRequest("POST", "/", nil)
+		r.URL.RawQuery = ";invalid;"
+		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		_, err := ReadURLEncoded[any](r)
+		require.Error(t, err)
 	})
 }
 

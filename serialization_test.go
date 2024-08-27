@@ -3,6 +3,7 @@ package fuego
 import (
 	"context"
 	"errors"
+	"html/template"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -30,7 +31,7 @@ func TestRecursiveJSON(t *testing.T) {
 		w := httptest.NewRecorder()
 		value := rec{}
 		value.Rec = &value
-		SendJSON(w, value)
+		SendJSON(w, nil, value)
 
 		require.Equal(t, `{"error":"Cannot serialize returned response to JSON"}`, w.Body.String())
 	})
@@ -39,7 +40,7 @@ func TestRecursiveJSON(t *testing.T) {
 func TestJSON(t *testing.T) {
 	t.Run("can serialize json", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendJSON(w, response{Message: "Hello World", Code: 200})
+		SendJSON(w, nil, response{Message: "Hello World", Code: 200})
 		body := w.Body.String()
 
 		require.Equal(t, crlf(`{"message":"Hello World","code":200}`), body)
@@ -169,7 +170,8 @@ func TestJSONError(t *testing.T) {
 	err := validate(me)
 	w := httptest.NewRecorder()
 	err = ErrorHandler(err)
-	SendJSONError(w, err)
+	SendJSONError(w, nil, err)
+	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 
 	require.JSONEq(t, `
 	{
@@ -239,9 +241,27 @@ func TestJSONError(t *testing.T) {
 
 func TestSend(t *testing.T) {
 	w := httptest.NewRecorder()
-	SendText(w, "Hello World")
+	SendText(w, nil, "Hello World")
 
 	require.Equal(t, "Hello World", w.Body.String())
+}
+
+func TestSendTextError(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendTextError(w, nil, errors.New("Hello World"))
+
+		require.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
+		require.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
+	})
+	t.Run("error with status", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendTextError(w, nil, BadRequestError{Err: errors.New("Hello World")})
+		require.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+		require.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
+	})
 }
 
 type errorWriter struct {
@@ -259,33 +279,128 @@ func (errorWriter) Header() http.Header {
 	return http.Header{}
 }
 
-func TestSendYaml(t *testing.T) {
+func TestSendYAML(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendYAML(w, response{Message: "Hello World", Code: 200})
-
+		SendYAML(w, nil, response{Message: "Hello World", Code: http.StatusOK})
+		require.Equal(t, "application/x-yaml", w.Header().Get("Content-Type"))
 		require.Equal(t, "message: Hello World\ncode: 200\n", w.Body.String())
 	})
 
 	t.Run("error", func(t *testing.T) {
 		errorWriter := &errorWriter{}
-		SendYAML(errorWriter, response{Message: "Hello World", Code: 200})
+		SendYAML(errorWriter, nil, response{Message: "Hello World", Code: http.StatusOK})
 		require.Contains(t, errorWriter.arg, "Cannot serialize returned response to YAML")
+	})
+}
+
+func TestSendYAMLError(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendYAMLError(w, nil, errors.New("Hello World"))
+
+		require.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
+		require.Equal(t, "application/x-yaml", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World\n", w.Body.String())
+	})
+	t.Run("error with status", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendYAMLError(w, nil, BadRequestError{Err: errors.New("Hello World")})
+		require.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+		require.Equal(t, "application/x-yaml", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World\n", w.Body.String())
 	})
 }
 
 func TestSendJSON(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendJSON(w, response{Message: "Hello World", Code: 200})
-
+		SendJSON(w, nil, response{Message: "Hello World", Code: http.StatusOK})
+		require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 		require.Equal(t, crlf(`{"message":"Hello World","code":200}`), w.Body.String())
 	})
 
 	t.Run("error", func(t *testing.T) {
 		errorWriter := &errorWriter{}
-		SendJSON(errorWriter, response{Message: "Hello World", Code: 200})
+		SendJSON(errorWriter, nil, response{Message: "Hello World", Code: http.StatusOK})
 		require.Contains(t, errorWriter.arg, "Cannot serialize returned response to JSON")
+	})
+}
+
+func TestSendHTML(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		err := SendHTML(w, nil, "Hello World")
+		require.NoError(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
+	})
+
+	t.Run("CtxRenderer", func(t *testing.T) {
+		const templateName = "template"
+		template, err := template.New(templateName).Parse("Hello World")
+		require.NoError(t, err)
+		w := httptest.NewRecorder()
+		err = SendHTML(
+			w,
+			httptest.NewRequest(http.MethodGet, "/", nil),
+			&StdRenderer{
+				templates:         template,
+				templateToExecute: templateName,
+			},
+		)
+		require.NoError(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
+	})
+
+	t.Run("Renderer", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		err := SendHTML(w, nil, &testRenderer{})
+		require.NoError(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "hello", w.Body.String())
+	})
+
+	t.Run("HTML", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		err := SendHTML(w, nil, HTML("hello"))
+		require.NoError(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "hello", w.Body.String())
+	})
+
+	t.Run("string", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		err := SendHTML(w, nil, "hello")
+		require.NoError(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "hello", w.Body.String())
+	})
+
+	t.Run("error", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		err := SendHTML(w, nil, struct{}{})
+		require.Error(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+	})
+}
+
+func TestSendHTMLError(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendHTMLError(w, nil, errors.New("Hello World"))
+
+		require.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
+	})
+	t.Run("error with status", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		SendHTMLError(w, nil, BadRequestError{Err: errors.New("Hello World")})
+		require.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
 	})
 }
 
@@ -349,4 +464,65 @@ func TestParseAcceptHeader(t *testing.T) {
 		accept := parseAcceptHeader("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "<h1>Hello World</h1>")
 		require.Equal(t, "text/html", accept)
 	})
+}
+
+func TestSendError(t *testing.T) {
+	tcs := []struct {
+		name         string
+		acceptHeader string
+
+		expectedContentType string
+	}{
+		{
+			name: "base",
+
+			expectedContentType: "application/json",
+		},
+		{
+			name:         "xml",
+			acceptHeader: "application/xml",
+
+			expectedContentType: "application/xml",
+		},
+		{
+			name:         "html",
+			acceptHeader: "text/html",
+
+			expectedContentType: "text/html; charset=utf-8",
+		},
+		{
+			name:         "text",
+			acceptHeader: "text/plain",
+
+			expectedContentType: "text/plain; charset=utf-8",
+		},
+		{
+			name:         "json",
+			acceptHeader: "application/json",
+
+			expectedContentType: "application/json",
+		},
+		{
+			name:         "yaml",
+			acceptHeader: "application/x-yaml",
+
+			expectedContentType: "application/x-yaml",
+		},
+		{
+			name:         "no case header",
+			acceptHeader: "application/foo",
+
+			expectedContentType: "application/json",
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, "/test", nil)
+			r.Header.Add("Accept", tc.acceptHeader)
+			SendError(w, r, errors.New("myerr"))
+			require.Equal(t, tc.expectedContentType, w.Header().Get("Content-Type"))
+		})
+	}
 }
