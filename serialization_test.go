@@ -39,6 +39,19 @@ func TestSend(t *testing.T) {
 	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 }
 
+func TestSendWhenError(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	r.Header.Set("Accept", "text/junk,application/json,text/html")
+	errorWriter := &errorWriter{}
+	err := Send(errorWriter, r, response{})
+	require.Error(t, err)
+	SendError(w, r, err)
+	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
+	body := w.Body.String()
+	require.Equal(t, "{}\n", body)
+}
+
 func TestRecursiveJSON(t *testing.T) {
 	type rec struct {
 		Rec *rec `json:"rec"`
@@ -282,11 +295,11 @@ func TestSendTextError(t *testing.T) {
 }
 
 type errorWriter struct {
-	arg string
+	Arg string `json:"arg"`
 }
 
 func (e *errorWriter) Write(p []byte) (n int, err error) {
-	e.arg = string(p)
+	e.Arg = string(p)
 	return 0, errors.New("cannot write on an errorWriter")
 }
 
@@ -307,7 +320,7 @@ func TestSendYAML(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		errorWriter := &errorWriter{}
 		SendYAML(errorWriter, nil, response{Message: "Hello World", Code: http.StatusOK})
-		require.Contains(t, errorWriter.arg, "Cannot serialize returned response to YAML")
+		require.Contains(t, errorWriter.Arg, "Cannot serialize returned response to YAML")
 	})
 }
 
@@ -340,7 +353,7 @@ func TestSendJSON(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		errorWriter := &errorWriter{}
 		SendJSON(errorWriter, nil, response{Message: "Hello World", Code: http.StatusOK})
-		require.Contains(t, errorWriter.arg, "Cannot serialize returned response to JSON")
+		require.Contains(t, errorWriter.Arg, "Cannot serialize returned response to JSON")
 	})
 }
 
