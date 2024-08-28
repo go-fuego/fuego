@@ -94,6 +94,10 @@ func Send(w http.ResponseWriter, r *http.Request, ans any) (err error) {
 			err = SendJSON(w, nil, ans)
 		case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
 			err = SendYAML(w, nil, ans)
+		default:
+			// if we don't support the header
+			// keep iterating
+			continue
 		}
 
 		if err != nil {
@@ -159,18 +163,22 @@ var SendError = func(w http.ResponseWriter, r *http.Request, err error) {
 		switch inferAcceptHeader(header, nil) {
 		case "application/xml":
 			SendXMLError(w, nil, err)
+			return
 		case "text/html":
 			SendHTMLError(w, nil, err)
+			return
 		case "text/plain":
 			SendTextError(w, r, err)
+			return
 		case "application/json":
 			SendJSONError(w, nil, err)
+			return
 		case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
 			SendYAMLError(w, nil, err)
-		default:
-			SendJSONError(w, r, err)
+			return
 		}
 	}
+	SendJSONError(w, r, err)
 }
 
 // SendJSONError sends a JSON error response.
