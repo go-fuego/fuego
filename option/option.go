@@ -51,7 +51,7 @@ func Query(name, description string, options ...func(*fuego.OpenAPIParam)) func(
 // The query parameter is transmitted as a string in the URL, but it is parsed as an integer.
 // Example:
 //
-//	Query("age", "Filter by age (in years)", param.Example("3 years old", 3), param.Nullable())
+//	QueryInt("age", "Filter by age (in years)", param.Example("3 years old", 3), param.Nullable())
 //
 // The list of options is in the param package.
 func QueryInt(name, description string, options ...func(*fuego.OpenAPIParam)) func(*fuego.BaseRoute) {
