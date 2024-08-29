@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/param"
 	"github.com/stretchr/testify/require"
 	"github.com/thejerf/slogassert"
 )
@@ -18,6 +19,10 @@ func dummyMiddleware(handler http.Handler) http.Handler {
 		w.Header().Set("X-Test-Response", "response")
 		handler.ServeHTTP(w, r)
 	})
+}
+
+func helloWorld(ctx *fuego.ContextNoBody) (string, error) {
+	return "hello world", nil
 }
 
 // orderMiddleware sets the X-Test-Order Header on the request and
@@ -152,7 +157,11 @@ func TestParam(t *testing.T) {
 		fuego.Get(s, "/correct", func(c fuego.ContextNoBody) (ans, error) {
 			c.QueryParam("quantity")
 			return ans{}, nil
-		}, Query("quantity", "some description"))
+		},
+			Query("quantity", "some description"),
+			QueryInt("number", "some description", param.Example("3", 3)),
+			QueryBool("is_active", "some description"),
+		)
 
 		fuego.Get(s, "/typo", func(c fuego.ContextNoBody) (ans, error) {
 			c.QueryParam("quantityy-with-a-typo")
@@ -179,6 +188,93 @@ func TestParam(t *testing.T) {
 
 			// all log messages have been accounted for
 			handler.AssertEmpty()
+		})
+	})
+}
+
+func TestHeader(t *testing.T) {
+	t.Run("Declare a header parameter for the route", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		fuego.Get(s, "/test", helloWorld,
+			Header("X-Test", "test header", param.Required(), param.Example("test", "My Header"), param.Default("test")),
+		)
+
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, "hello world", w.Body.String())
+	})
+}
+
+func TestOpenAPI(t *testing.T) {
+	t.Run("Declare a openapi parameters for the route", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		fuego.Get(s, "/test", helloWorld,
+			Summary("test summary"),
+			Description("test description"),
+			Tags("first-tag", "second-tag"),
+			Deprecated(),
+			OperationID("test-operation-id"),
+		)
+
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, "hello world", w.Body.String())
+	})
+}
+
+func TestGroup(t *testing.T) {
+	paramsGroup := Group(
+		Header("X-Test", "test header", param.Required(), param.Example("test", "My Header"), param.Default("test")),
+		Query("name", "Filter by name", param.Example("cat name", "felix"), param.Nullable()),
+		Cookie("session", "Session cookie", param.Example("session", "1234"), param.Nullable()),
+	)
+
+	t.Run("Declare a group parameter for the route", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		fuego.Get(s, "/test", helloWorld, paramsGroup)
+
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, "hello world", w.Body.String())
+	})
+}
+
+func TestQuery(t *testing.T) {
+	t.Run("panics if example is not the correct type", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		require.Panics(t, func() {
+			fuego.Get(s, "/test", helloWorld,
+				QueryInt("age", "Filter by age (in years)", param.Example("3 years old", "3 but string"), param.Nullable()),
+			)
+		})
+
+		require.Panics(t, func() {
+			fuego.Get(s, "/test", helloWorld,
+				QueryBool("is_active", "Filter by active status", param.Example("true", 3), param.Nullable()),
+			)
+		})
+	})
+
+	t.Run("panics if default value is not the correct type", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		require.Panics(t, func() {
+			fuego.Get(s, "/test", helloWorld,
+				Query("name", "Filter by name", param.Default(3), param.Nullable()),
+			)
 		})
 	})
 }
