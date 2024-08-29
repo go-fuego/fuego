@@ -110,6 +110,31 @@ func paramType(paramType fuego.ParamType) func(*fuego.OpenAPIParam) {
 	}
 }
 
+func panicsIfNotCorrectType(openapiParam *openapi3.Parameter, exampleValue any) any {
+	if exampleValue == nil {
+		return nil
+	}
+	if openapiParam.Schema.Value.Type.Is("integer") {
+		_, ok := exampleValue.(int)
+		if !ok {
+			panic("example value must be an integer")
+		}
+	}
+	if openapiParam.Schema.Value.Type.Is("boolean") {
+		_, ok := exampleValue.(bool)
+		if !ok {
+			panic("example value must be a boolean")
+		}
+	}
+	if openapiParam.Schema.Value.Type.Is("string") {
+		_, ok := exampleValue.(string)
+		if !ok {
+			panic("example value must be a string")
+		}
+	}
+	return exampleValue
+}
+
 // Registers a parameter for the route. Prefer using the [Query], [QueryInt], [Header], [Cookie] shortcuts.
 func Param(name string, options ...func(*fuego.OpenAPIParam)) func(*fuego.BaseRoute) {
 	param := fuego.OpenAPIParam{
@@ -124,29 +149,28 @@ func Param(name string, options ...func(*fuego.OpenAPIParam)) func(*fuego.BaseRo
 	// Why not use openapi3.NewHeaderParameter(name) directly?
 	// Because we might change the openapi3 library in the future,
 	// and we want to keep the flexibility to change the implementation without changing the API.
-	openapiParam := openapi3.NewHeaderParameter(param.Name)
-	openapiParam.Description = param.Description
-	openapiParam.Schema = openapi3.NewStringSchema().NewRef()
-	openapiParam.In = string(param.Type)
-	openapiParam.Schema.Value.Default = param.Default
+	openapiParam := &openapi3.Parameter{
+		Name:        name,
+		In:          string(param.Type),
+		Description: param.Description,
+		Schema:      openapi3.NewStringSchema().NewRef(),
+	}
+	if param.GoType != "" {
+		openapiParam.Schema.Value.Type = &openapi3.Types{param.GoType}
+	}
 	openapiParam.Schema.Value.Nullable = param.Nullable
+	openapiParam.Schema.Value.Default = panicsIfNotCorrectType(openapiParam, param.Default)
 
 	if param.Required {
 		openapiParam.Required = param.Required
-	}
-	if param.Example != "" {
-		openapiParam.Example = param.Example
 	}
 	for name, exampleValue := range param.Examples {
 		if openapiParam.Examples == nil {
 			openapiParam.Examples = make(openapi3.Examples)
 		}
 		exampleOpenAPI := openapi3.NewExample(name)
-		exampleOpenAPI.Value = exampleValue
+		exampleOpenAPI.Value = panicsIfNotCorrectType(openapiParam, exampleValue)
 		openapiParam.Examples[name] = &openapi3.ExampleRef{Value: exampleOpenAPI}
-	}
-	if param.GoType != "" {
-		openapiParam.Schema.Value.Type = &openapi3.Types{param.GoType}
 	}
 
 	return func(r *fuego.BaseRoute) {
@@ -181,3 +205,34 @@ func OperationID(operationID string) func(*fuego.BaseRoute) {
 		r.Operation.OperationID = operationID
 	}
 }
+
+// Deprecated marks the route as deprecated.
+func Deprecated() func(*fuego.BaseRoute) {
+	return func(r *fuego.BaseRoute) {
+		r.Operation.Deprecated = true
+	}
+}
+
+// // AddError adds an error to the route.
+// func AddError(code int, description string, errorType ...any) func(*fuego.BaseRoute) {
+// 	return func(r *fuego.BaseRoute) {
+// 		addResponse(r.mainRouter, r.Operation, code, description, errorType...)
+// 	}
+// }
+
+// func addResponse(s *fuego.Server, operation *openapi3.Operation, code int, description string, errorType ...any) {
+// 	var responseSchema schemaTag
+
+// 	if len(errorType) > 0 {
+// 		responseSchema = schemaTagFromType(s, errorType[0])
+// 	} else {
+// 		responseSchema = schemaTagFromType(s, fuego.HTTPError{})
+// 	}
+// 	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json"})
+
+// 	response := openapi3.NewResponse().
+// 		WithDescription(description).
+// 		WithContent(content)
+
+// 	operation.AddResponse(code, response)
+// }
