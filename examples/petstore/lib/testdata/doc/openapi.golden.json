@@ -632,6 +632,85 @@
 					"pets"
 				]
 			}
+		},
+		"/pets/{id}/json": {
+			"put": {
+				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsRessources.putPets`\n\n---\n\n",
+				"operationId": "PUT_/pets/:id/json",
+				"parameters": [
+					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PetsUpdate"
+							}
+						}
+					},
+					"description": "Request body for models.PetsUpdate",
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Pets"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/Pets"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"description": ""
+					}
+				},
+				"summary": "put pets",
+				"tags": [
+					"pets"
+				]
+			}
 		}
 	},
 	"servers": [

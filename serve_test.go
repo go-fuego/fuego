@@ -72,6 +72,23 @@ func testControllerReturningPtrToString(c *ContextNoBody) (*string, error) {
 	return &s, nil
 }
 
+type TestRequestBody struct {
+	A string
+	B int
+}
+
+type TestResponseBody struct {
+	TestRequestBody
+}
+
+func testControllerWithBody(c *ContextWithBody[TestRequestBody]) (*TestResponseBody, error) {
+	body, err := c.Body()
+	if err != nil {
+		return nil, err
+	}
+	return &TestResponseBody{TestRequestBody: body}, nil
+}
+
 func TestHttpHandler(t *testing.T) {
 	s := NewServer()
 

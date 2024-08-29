@@ -92,6 +92,23 @@ func (r Route[ResponseBody, RequestBody]) Tags(tags ...string) Route[ResponseBod
 	return r
 }
 
+// Replace the available request Content-Types for the route.
+// By default, the request Content-Types are `application/json` and `application/xml`
+func (r Route[ResponseBody, RequestBody]) RequestContentType(consumes ...string) Route[ResponseBody, RequestBody] {
+	bodyTag := schemaTagFromType(r.mainRouter, *new(RequestBody))
+
+	if bodyTag.name != "unknown-interface" {
+		requestBody := newRequestBody[RequestBody](bodyTag, consumes)
+
+		// set just Value as we do not want to reference
+		// a global requestBody
+		r.Operation.RequestBody = &openapi3.RequestBodyRef{
+			Value: requestBody,
+		}
+	}
+	return r
+}
+
 // AddTags adds tags to the route.
 func (r Route[ResponseBody, RequestBody]) AddTags(tags ...string) Route[ResponseBody, RequestBody] {
 	r.Operation.Tags = append(r.Operation.Tags, tags...)
