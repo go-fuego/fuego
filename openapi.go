@@ -169,23 +169,21 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 		route.Param(param.Type, param.Name, param.Description, param.OpenAPIParamOption)
 	}
 
-	// Request body
-	bodyTag := schemaTagFromType(s, *new(B))
-	if bodyTag.name != "unknown-interface" {
-		content := openapi3.NewContentWithSchemaRef(&bodyTag.SchemaRef, []string{"application/json", "application/xml"})
-		requestBody := openapi3.NewRequestBody().
-			WithRequired(true).
-			WithDescription("Request body for " + reflect.TypeOf(*new(B)).String()).
-			WithContent(content)
+	// Request Body
+	if route.Operation.RequestBody == nil {
+		bodyTag := schemaTagFromType(s, *new(B))
 
-		s.OpenApiSpec.Components.RequestBodies[bodyTag.name] = &openapi3.RequestBodyRef{
-			Value: requestBody,
-		}
+		if bodyTag.name != "unknown-interface" {
+			requestBody := newRequestBody[B](bodyTag, []string{"application/json", "application/xml"})
+			s.OpenApiSpec.Components.RequestBodies[bodyTag.name] = &openapi3.RequestBodyRef{
+				Value: requestBody,
+			}
 
-		// add request body to operation
-		route.Operation.RequestBody = &openapi3.RequestBodyRef{
-			Ref:   "#/components/requestBodies/" + bodyTag.name,
-			Value: requestBody,
+			// add request body to operation
+			route.Operation.RequestBody = &openapi3.RequestBodyRef{
+				Ref:   "#/components/requestBodies/" + bodyTag.name,
+				Value: requestBody,
+			}
 		}
 	}
 
@@ -214,6 +212,14 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 	s.OpenApiSpec.AddOperation(route.Path, route.Method, route.Operation)
 
 	return route.Operation, nil
+}
+
+func newRequestBody[RequestBody any](tag schemaTag, consumes []string) *openapi3.RequestBody {
+	content := openapi3.NewContentWithSchemaRef(&tag.SchemaRef, consumes)
+	return openapi3.NewRequestBody().
+		WithRequired(true).
+		WithDescription("Request body for " + reflect.TypeOf(*new(RequestBody)).String()).
+		WithContent(content)
 }
 
 // schemaTag is a struct that holds the name of the struct and the associated openapi3.SchemaRef

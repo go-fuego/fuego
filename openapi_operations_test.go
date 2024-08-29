@@ -61,6 +61,35 @@ func TestHeaderParams(t *testing.T) {
 	require.Equal(t, "my description", route.Operation.Parameters.GetByInAndName("header", "my-header").Description)
 }
 
+func TestRequestContentType(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		s := NewServer()
+		route := Post(s, "/test", testControllerWithBody).
+			RequestContentType("application/json")
+
+		content := route.Operation.RequestBody.Value.Content
+		require.NotNil(t, content.Get("application/json"))
+		require.Nil(t, content.Get("application/xml"))
+		require.Equal(t, "#/components/schemas/TestRequestBody", content.Get("application/json").Schema.Ref)
+		_, ok := s.OpenApiSpec.Components.RequestBodies["TestRequestBody"]
+		require.True(t, ok)
+	})
+
+	t.Run("variadic", func(t *testing.T) {
+		s := NewServer()
+		route := Post(s, "/test", testControllerWithBody).
+			RequestContentType("application/json", "my/content-type")
+
+		content := route.Operation.RequestBody.Value.Content
+		require.NotNil(t, content.Get("application/json"))
+		require.NotNil(t, content.Get("my/content-type"))
+		require.Nil(t, content.Get("application/xml"))
+		require.Equal(t, "#/components/schemas/TestRequestBody", content.Get("application/json").Schema.Ref)
+		_, ok := s.OpenApiSpec.Components.RequestBodies["TestRequestBody"]
+		require.True(t, ok)
+	})
+}
+
 func TestCustomError(t *testing.T) {
 	type MyError struct {
 		Message string

@@ -19,6 +19,8 @@ func (rs PetsRessources) Routes(s *fuego.Server) {
 	fuego.Get(petsGroup, "/{id}", rs.getPets)
 	fuego.Get(petsGroup, "/by-name/{name...}", rs.getPetByName)
 	fuego.Put(petsGroup, "/{id}", rs.putPets)
+	fuego.Put(petsGroup, "/{id}/json", rs.putPets).
+		RequestContentType("application/json")
 	fuego.Delete(petsGroup, "/{id}", rs.deletePets)
 }
 
