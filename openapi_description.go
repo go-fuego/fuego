@@ -67,18 +67,15 @@ fuego.Get(petsGroup, "/", rs.getAllPets,
 Then, in the controller
 
 ` + "```go" + `
-type MyBody struct {
-	Name string ` + "`json:\"name\" validate:\"required,max=30\"`" + `
-}
-
 type MyResponse struct {
 	Answer string ` + "`json:\"answer\"`" + `
 }
 
 func getAllPets(ctx *fuego.ContextNoBody) (*MyResponse, error) {
 	name := ctx.QueryParam("name")
-	perPage := ctx.QueryParamInt("per_page", 100) // Should be same as the declared default value. If not, a warning will be sent at runtime.
-	return &MyResponse{Answer: "Hello " + body.Name}, nil
+	perPage, _ := ctx.QueryParamIntErr("per_page")
+
+	return &MyResponse{Answer: "Hello " + name}, nil
 }
 ` + "```" + `
 `
