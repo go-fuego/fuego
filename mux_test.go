@@ -421,7 +421,7 @@ func TestRegister(t *testing.T) {
 func TestGroupTagsOnRoute(t *testing.T) {
 	t.Run("route tag inheritance", func(t *testing.T) {
 		s := NewServer().
-			SetTags("my-server-tag")
+			Tags("my-server-tag")
 		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
 		})
@@ -430,7 +430,7 @@ func TestGroupTagsOnRoute(t *testing.T) {
 
 	t.Run("route tag override", func(t *testing.T) {
 		s := NewServer().
-			SetTags("my-server-tag")
+			Tags("my-server-tag")
 
 		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
@@ -441,7 +441,7 @@ func TestGroupTagsOnRoute(t *testing.T) {
 
 	t.Run("route tag add", func(t *testing.T) {
 		s := NewServer().
-			SetTags("my-server-tag")
+			Tags("my-server-tag")
 
 		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
@@ -452,7 +452,7 @@ func TestGroupTagsOnRoute(t *testing.T) {
 
 	t.Run("route tag removal", func(t *testing.T) {
 		s := NewServer().
-			SetTags("my-server-tag")
+			Tags("my-server-tag")
 
 		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
@@ -680,22 +680,22 @@ func TestGroup(t *testing.T) {
 func TestGroupTags(t *testing.T) {
 	t.Run("inherit tags", func(t *testing.T) {
 		s := NewServer().
-			SetTags("my-server-tag")
+			Tags("my-server-tag")
 		group := Group(s, "/slash")
 
 		require.Equal(t, []string{"my-server-tag"}, group.tags)
 	})
 	t.Run("override parent tags", func(t *testing.T) {
 		s := NewServer().
-			SetTags("my-server-tag")
+			Tags("my-server-tag")
 		group := Group(s, "/slash").
-			SetTags("my-group-tag")
+			Tags("my-group-tag")
 
 		require.Equal(t, []string{"my-group-tag"}, group.tags)
 	})
 	t.Run("add child group tag", func(t *testing.T) {
 		s := NewServer().
-			SetTags("my-server-tag")
+			Tags("my-server-tag")
 		group := Group(s, "/slash").
 			AddTags("my-group-tag")
 
@@ -703,7 +703,7 @@ func TestGroupTags(t *testing.T) {
 	})
 	t.Run("remove server tag", func(t *testing.T) {
 		s := NewServer().
-			SetTags("my-server-tag", "my-other-server-tag")
+			Tags("my-server-tag", "my-other-server-tag")
 		group := Group(s, "/slash").
 			RemoveTags("my-server-tag")
 
@@ -711,7 +711,7 @@ func TestGroupTags(t *testing.T) {
 	})
 	t.Run("multiple groups inheritance", func(t *testing.T) {
 		s := NewServer().
-			SetTags("my-server-tag")
+			Tags("my-server-tag")
 		group := Group(s, "/slash").
 			AddTags("my-group-tag")
 		childGroup := Group(group, "/slash").
