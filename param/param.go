@@ -14,6 +14,12 @@ func Nullable() func(param *fuego.OpenAPIParam) {
 	}
 }
 
+func String() func(param *fuego.OpenAPIParam) {
+	return func(param *fuego.OpenAPIParam) {
+		param.GoType = "string"
+	}
+}
+
 func Integer() func(param *fuego.OpenAPIParam) {
 	return func(param *fuego.OpenAPIParam) {
 		param.GoType = "integer"

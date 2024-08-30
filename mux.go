@@ -48,12 +48,12 @@ type Route[ResponseBody any, RequestBody any] struct {
 }
 
 type BaseRoute struct {
-	Operation *openapi3.Operation // GENERATED OpenAPI operation, do not set manually in Register function. You can change it after the route is registered.
-	Method    string              // HTTP method (GET, POST, PUT, PATCH, DELETE)
-	Path      string              // URL path. Will be prefixed by the base path of the server and the group path if any
-	Handler   http.Handler        // handler executed for this route
-	FullName  string              // namespace and name of the function to execute
-
+	Operation   *openapi3.Operation // GENERATED OpenAPI operation, do not set manually in Register function. You can change it after the route is registered.
+	Method      string              // HTTP method (GET, POST, PUT, PATCH, DELETE)
+	Path        string              // URL path. Will be prefixed by the base path of the server and the group path if any
+	Handler     http.Handler        // handler executed for this route
+	FullName    string              // namespace and name of the function to execute
+	Params      map[string]OpenAPIParam
 	Middlewares []func(http.Handler) http.Handler
 
 	mainRouter *Server // ref to the main router, used to register the route in the OpenAPI spec

@@ -40,7 +40,7 @@ func Middleware(middleware ...func(http.Handler) http.Handler) func(*fuego.BaseR
 //
 // The list of options is in the param package.
 func Query(name, description string, options ...func(*fuego.OpenAPIParam)) func(*fuego.BaseRoute) {
-	options = append(options, param.Description(description), paramType(fuego.QueryParamType))
+	options = append(options, param.Description(description), paramType(fuego.QueryParamType), param.String())
 	return func(r *fuego.BaseRoute) {
 		Param(name, options...)(r)
 	}
@@ -175,6 +175,10 @@ func Param(name string, options ...func(*fuego.OpenAPIParam)) func(*fuego.BaseRo
 
 	return func(r *fuego.BaseRoute) {
 		r.Operation.AddParameter(openapiParam)
+		if r.Params == nil {
+			r.Params = make(map[string]fuego.OpenAPIParam)
+		}
+		r.Params[name] = param
 	}
 }
 

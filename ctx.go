@@ -9,7 +9,6 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -42,9 +41,9 @@ type ctx[B any] interface {
 
 	QueryParam(name string) string
 	QueryParamArr(name string) []string
-	QueryParamInt(name string, defaultValue int) int // If the query parameter does not exist or is not an int, it returns the default given value. Use [Ctx.QueryParamIntErr] if you want to know if the query parameter is erroneous.
+	QueryParamInt(name string) int // If the query parameter is not provided or is not an int, it returns the default given value. Use [Ctx.QueryParamIntErr] if you want to know if the query parameter is erroneous.
 	QueryParamIntErr(name string) (int, error)
-	QueryParamBool(name string, defaultValue bool) bool // If the query parameter does not exist or is not a bool, it returns the default given value. Use [Ctx.QueryParamBoolErr] if you want to know if the query parameter is erroneous.
+	QueryParamBool(name string) bool // If the query parameter is not provided or is not a bool, it returns the default given value. Use [Ctx.QueryParamBoolErr] if you want to know if the query parameter is erroneous.
 	QueryParamBoolErr(name string) (bool, error)
 	QueryParams() url.Values
 
@@ -125,7 +124,7 @@ type ContextNoBody struct {
 	fs        fs.FS
 	templates *template.Template
 
-	expectedParams []string // list of expected query parameters (declared in the OpenAPI spec)
+	params map[string]OpenAPIParam // list of expected query parameters (declared in the OpenAPI spec)
 
 	readOptions readOptions
 }
@@ -268,7 +267,8 @@ func (c ContextNoBody) QueryParams() url.Values {
 
 // QueryParamsArr returns an slice of string from the given query parameter.
 func (c ContextNoBody) QueryParamArr(name string) []string {
-	if !slices.Contains(c.expectedParams, name) {
+	_, ok := c.params[name]
+	if !ok {
 		slog.Warn("query parameter not expected in OpenAPI spec", "param", name)
 	}
 	return c.Req.URL.Query()[name]
@@ -276,8 +276,15 @@ func (c ContextNoBody) QueryParamArr(name string) []string {
 
 // QueryParam returns the query parameter with the given name.
 func (c ContextNoBody) QueryParam(name string) string {
-	if !slices.Contains(c.expectedParams, name) {
-		slog.Warn("query parameter not expected in OpenAPI spec", "param", name, "expected_one_of", c.expectedParams)
+	_, ok := c.params[name]
+	if !ok {
+		slog.Warn("query parameter not expected in OpenAPI spec", "param", name, "expected_one_of", c.params)
+	}
+
+	_, found := c.Req.URL.Query()[name]
+	if !found && c.params[name].Default != nil {
+		defaultValue, _ := c.params[name].Default.(string)
+		return defaultValue
 	}
 	return c.Req.URL.Query().Get(name)
 }
@@ -285,6 +292,12 @@ func (c ContextNoBody) QueryParam(name string) string {
 func (c ContextNoBody) QueryParamIntErr(name string) (int, error) {
 	param := c.QueryParam(name)
 	if param == "" {
+		if c.params[name].Default != nil {
+			defaultValue, ok := c.params[name].Default.(int)
+			if ok {
+				return defaultValue, nil
+			}
+		}
 		return 0, QueryParamNotFoundError{ParamName: name}
 	}
 
@@ -301,10 +314,18 @@ func (c ContextNoBody) QueryParamIntErr(name string) (int, error) {
 	return i, nil
 }
 
-func (c ContextNoBody) QueryParamInt(name string, defaultValue int) int {
+// QueryParamInt returns the query parameter with the given name as an int.
+// If it does not exist, it returns the default value declared in the OpenAPI spec.
+// For example, if the query parameter is declared as:
+//
+//	QueryInt("page", "Page number", param.Default(1))
+//
+// and the query parameter does not exist, it will return 1.
+// If the query parameter does not exist and there is no default value, or if it is not an int, it returns 0.
+func (c ContextNoBody) QueryParamInt(name string) int {
 	param, err := c.QueryParamIntErr(name)
 	if err != nil {
-		return defaultValue
+		return 0
 	}
 
 	return param
@@ -316,6 +337,12 @@ func (c ContextNoBody) QueryParamInt(name string, defaultValue int) int {
 func (c ContextNoBody) QueryParamBoolErr(name string) (bool, error) {
 	param := c.QueryParam(name)
 	if param == "" {
+		if c.params[name].Default != nil {
+			defaultValue, ok := c.params[name].Default.(bool)
+			if ok {
+				return defaultValue, nil
+			}
+		}
 		return false, QueryParamNotFoundError{ParamName: name}
 	}
 
@@ -331,10 +358,10 @@ func (c ContextNoBody) QueryParamBoolErr(name string) (bool, error) {
 	return b, nil
 }
 
-func (c ContextNoBody) QueryParamBool(name string, defaultValue bool) bool {
+func (c ContextNoBody) QueryParamBool(name string) bool {
 	param, err := c.QueryParamBoolErr(name)
 	if err != nil {
-		return defaultValue
+		return false
 	}
 
 	return param
