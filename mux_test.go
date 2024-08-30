@@ -795,7 +795,7 @@ func TestNameFromNamespace(t *testing.T) {
 				},
 			},
 			opts: []func(string) string{
-				CamelToHuman,
+				camelToHuman,
 			},
 			expectedOutput: "my func1",
 		},
@@ -808,7 +808,7 @@ func TestNameFromNamespace(t *testing.T) {
 				},
 			},
 			opts: []func(string) string{
-				CamelToHuman,
+				camelToHuman,
 				func(s string) string {
 					return s + " foo"
 				},
@@ -825,7 +825,7 @@ func TestNameFromNamespace(t *testing.T) {
 			},
 			opts: []func(string) string{
 				wrappedFunc("Foo"),
-				CamelToHuman,
+				camelToHuman,
 			},
 			expectedOutput: "my func1 foo",
 		},
@@ -842,7 +842,7 @@ func TestNameFromNamespace(t *testing.T) {
 func BenchmarkCamelToHuman(b *testing.B) {
 	b.Run("camelToHuman", func(b *testing.B) {
 		for range b.N {
-			CamelToHuman("listAllRecipes")
+			camelToHuman("listAllRecipes")
 		}
 	})
 }
@@ -861,7 +861,7 @@ func TestCamelToHuman(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.input, func(t *testing.T) {
-			require.Equal(t, tc.output, CamelToHuman(tc.input))
+			require.Equal(t, tc.output, camelToHuman(tc.input))
 		})
 	}
 }

@@ -77,7 +77,7 @@ func initContext[Contextable ctx[Body], Body any](baseContext ContextNoBody) Con
 // HTTPHandler converts a Fuego controller into a http.HandlerFunc.
 // Uses Server for configuration.
 // Uses Route for route configuration. Optional.
-func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error), route *Route[ReturnType, Body]) http.HandlerFunc {
+func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error), route *BaseRoute) http.HandlerFunc {
 	// Just a check, not used at request time
 	baseContext := *new(Contextable)
 	if reflect.TypeOf(baseContext) == nil {
