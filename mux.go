@@ -64,23 +64,6 @@ func All[ReturnType, Body any, Contexted ctx[Body]](s *Server, path string, cont
 	return registerFuegoController(s, "", path, controller, options...)
 }
 
-func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path string, controller func(Contexted) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
-	route := Route[T, B]{
-		BaseRoute: BaseRoute{
-			Method:    method,
-			Path:      path,
-			FullName:  FuncName(controller),
-			Operation: openapi3.NewOperation(),
-		},
-	}
-
-	for _, o := range options {
-		o(&route.BaseRoute)
-	}
-
-	return Register(s, route, HTTPHandler(s, controller, &route))
-}
-
 func Get[T, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
 	return registerFuegoController(s, http.MethodGet, path, controller, options...)
 }
@@ -103,6 +86,9 @@ func Patch[T, B any, Contexted ctx[B]](s *Server, path string, controller func(C
 
 // Register registers a controller into the default mux and documents it in the OpenAPI spec.
 func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, options ...func(*BaseRoute)) *Route[T, B] {
+	for _, o := range options {
+		o(&route.BaseRoute)
+	}
 	route.Handler = controller
 
 	fullPath := s.basePath + route.Path
@@ -131,7 +117,7 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 	}
 
 	if route.Operation.Summary == "" {
-		route.Operation.Summary = route.NameFromNamespace(CamelToHuman)
+		route.Operation.Summary = route.NameFromNamespace(camelToHuman)
 	}
 
 	route.Operation.Description = "controller: `" + route.FullName + "`\n\n---\n\n" + route.Operation.Description
@@ -164,62 +150,57 @@ func Handle(s *Server, path string, controller http.Handler, options ...func(*Ba
 }
 
 func AllStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
-	return Register(s, Route[any, any]{
-		BaseRoute: BaseRoute{
-			Path:     path,
-			FullName: FuncName(controller),
-		},
-	}, http.HandlerFunc(controller))
+	return registerStdController(s, "", path, controller, options...)
 }
 
 func GetStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
-	return Register(s, Route[any, any]{
-		BaseRoute: BaseRoute{
-			Method:   http.MethodGet,
-			Path:     path,
-			FullName: FuncName(controller),
-		},
-	}, http.HandlerFunc(controller))
+	return registerStdController(s, http.MethodGet, path, controller, options...)
 }
 
 func PostStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
-	return Register(s, Route[any, any]{
-		BaseRoute: BaseRoute{
-			Method:   http.MethodPost,
-			Path:     path,
-			FullName: FuncName(controller),
-		},
-	}, http.HandlerFunc(controller))
+	return registerStdController(s, http.MethodPost, path, controller, options...)
 }
 
 func DeleteStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
-	return Register(s, Route[any, any]{
-		BaseRoute: BaseRoute{
-			Method:   http.MethodDelete,
-			Path:     path,
-			FullName: FuncName(controller),
-		},
-	}, http.HandlerFunc(controller))
+	return registerStdController(s, http.MethodDelete, path, controller, options...)
 }
 
 func PutStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
-	return Register(s, Route[any, any]{
-		BaseRoute: BaseRoute{
-			Method:   http.MethodPut,
-			Path:     path,
-			FullName: FuncName(controller),
-		},
-	}, http.HandlerFunc(controller))
+	return registerStdController(s, http.MethodPut, path, controller, options...)
 }
 
 func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
-	return Register(s, Route[any, any]{
-		BaseRoute: BaseRoute{
-			Method:   http.MethodPatch,
-			Path:     path,
-			FullName: FuncName(controller),
-		},
-	}, http.HandlerFunc(controller))
+	return registerStdController(s, http.MethodPatch, path, controller, options...)
+}
+
+func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path string, controller func(Contexted) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
+	route := BaseRoute{
+		Method:    method,
+		Path:      path,
+		FullName:  FuncName(controller),
+		Operation: openapi3.NewOperation(),
+	}
+
+	for _, o := range options {
+		o(&route)
+	}
+
+	return Register(s, Route[T, B]{BaseRoute: route}, HTTPHandler(s, controller, &route))
+}
+
+func registerStdController(s *Server, method, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
+	route := BaseRoute{
+		Method:    method,
+		Path:      path,
+		FullName:  FuncName(controller),
+		Operation: openapi3.NewOperation(),
+	}
+
+	for _, o := range options {
+		o(&route)
+	}
+
+	return Register(s, Route[any, any]{BaseRoute: route}, http.HandlerFunc(controller))
 }
 
 func withMiddlewares(controller http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
@@ -250,7 +231,7 @@ func (r Route[T, B]) NameFromNamespace(opts ...func(string) string) string {
 }
 
 // transform camelCase to human-readable string
-func CamelToHuman(s string) string {
+func camelToHuman(s string) string {
 	result := strings.Builder{}
 	for i, r := range s {
 		if 'A' <= r && r <= 'Z' {
