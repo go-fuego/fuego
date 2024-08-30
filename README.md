@@ -150,14 +150,29 @@ import "github.com/go-fuego/fuego"
 func main() {
 	s := fuego.NewServer()
 
-	// Custom OpenAPI options that cannot be deduced by the controller signature
-	fuego.Post(s, "/", myController).
-		Description("This route does something").
-		Summary("This is my summary").
-		Tags("MyTag"). // A tag is set by default according to the return type (can be deactivated)
-		Deprecated()
+	// Custom OpenAPI options
+	fuego.Post(s, "/", myController
+		option.Description("This route does something..."),
+		option.Summary("This is my summary"),
+		option.Tags("MyTag"), // A tag is set by default according to the return type (can be deactivated)
+		option.Deprecated(), // Marks the route as deprecated in the OpenAPI spec
+
+		option.Query("name", "Declares a query parameter with default value", param.Default("Carmack")),
+		option.Header("Authorization", "Bearer token", param.Required()),
+		optionPagination,
+		optionCustomBehavior,
+	)
 
 	s.Run()
+}
+
+var optionPagination = option.Group(
+	option.QueryInt("page", "Page number", param.Default(1), param.Example("1st page", 1), param.Example("42nd page", 42)),
+	option.QueryInt("perPage", "Number of items per page"),
+)
+
+var optionCustomBehavior = func(r *fuego.BaseRoute) {
+	r.XXX = "YYY"
 }
 ```
 
