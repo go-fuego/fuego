@@ -47,8 +47,8 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 }
 
 func (rs PetsResources) getAllPets(c fuego.ContextNoBody) ([]models.Pets, error) {
-	page := c.QueryParamInt("page", 1)
-	pageWithTypo := c.QueryParamInt("page-with-typo", 1) // this shows a warning in the logs because "page-with-typo" is not a declared query param
+	page := c.QueryParamInt("page")
+	pageWithTypo := c.QueryParamInt("page-with-typo") // this shows a warning in the logs because "page-with-typo" is not a declared query param
 	slog.Info("query params", "page", page, "page-with-typo", pageWithTypo)
 	return rs.PetsService.GetAllPets()
 }
@@ -56,7 +56,7 @@ func (rs PetsResources) getAllPets(c fuego.ContextNoBody) ([]models.Pets, error)
 func (rs PetsResources) filterPets(c fuego.ContextNoBody) ([]models.Pets, error) {
 	return rs.PetsService.FilterPets(PetsFilter{
 		Name:        c.QueryParam("name"),
-		YoungerThan: c.QueryParamInt("younger_than", 3), // if the default value is not set as the same as the declared value, it will be overwritten and a warning will be logged
+		YoungerThan: c.QueryParamInt("younger_than"),
 	})
 }
 

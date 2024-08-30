@@ -85,11 +85,8 @@ func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, control
 		panic("ctx must be provided as concrete type (not interface). ContextNoBody, ContextWithBody[any], ContextFull[any, any], ContextWithQueryParams[any] are supported")
 	}
 
-	expectedParams := make([]string, 0)
-	if route != nil {
-		for _, p := range route.Operation.Parameters {
-			expectedParams = append(expectedParams, p.Value.Name)
-		}
+	if route == nil {
+		route = &BaseRoute{}
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -109,9 +106,9 @@ func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, control
 				DisallowUnknownFields: s.DisallowUnknownFields,
 				MaxBodySize:           s.maxBodySize,
 			},
-			fs:             s.fs,
-			templates:      templates,
-			expectedParams: expectedParams,
+			fs:        s.fs,
+			templates: templates,
+			params:    route.Params,
 		})
 
 		timeController := time.Now()
