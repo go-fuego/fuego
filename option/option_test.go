@@ -166,7 +166,9 @@ func TestParam(t *testing.T) {
 		fuego.Get(s, "/typo", func(c fuego.ContextNoBody) (ans, error) {
 			c.QueryParam("quantityy-with-a-typo")
 			return ans{}, nil
-		}).QueryParam("quantity", "some description")
+		},
+			Query("quantity", "some description"),
+		)
 
 		t.Run("correct param", func(t *testing.T) {
 			r := httptest.NewRequest("GET", "/correct", nil)
@@ -213,7 +215,7 @@ func TestOpenAPI(t *testing.T) {
 	t.Run("Declare a openapi parameters for the route", func(t *testing.T) {
 		s := fuego.NewServer()
 
-		fuego.Get(s, "/test", helloWorld,
+		route := fuego.Get(s, "/test", helloWorld,
 			Summary("test summary"),
 			Description("test description"),
 			Tags("first-tag", "second-tag"),
@@ -221,12 +223,10 @@ func TestOpenAPI(t *testing.T) {
 			OperationID("test-operation-id"),
 		)
 
-		r := httptest.NewRequest(http.MethodGet, "/test", nil)
-		w := httptest.NewRecorder()
-
-		s.Mux.ServeHTTP(w, r)
-
-		require.Equal(t, "hello world", w.Body.String())
+		require.Equal(t, "test summary", route.Operation.Summary)
+		require.Equal(t, "controller: `github.com/go-fuego/fuego/option.helloWorld`\n\n---\n\ntest description", route.Operation.Description)
+		require.Equal(t, []string{"first-tag", "second-tag"}, route.Operation.Tags)
+		require.True(t, route.Operation.Deprecated)
 	})
 }
 
@@ -240,14 +240,13 @@ func TestGroup(t *testing.T) {
 	t.Run("Declare a group parameter for the route", func(t *testing.T) {
 		s := fuego.NewServer()
 
-		fuego.Get(s, "/test", helloWorld, paramsGroup)
+		route := fuego.Get(s, "/test", helloWorld, paramsGroup)
 
-		r := httptest.NewRequest(http.MethodGet, "/test", nil)
-		w := httptest.NewRecorder()
-
-		s.Mux.ServeHTTP(w, r)
-
-		require.Equal(t, "hello world", w.Body.String())
+		require.NotNil(t, route)
+		require.NotNil(t, route.Params)
+		require.Len(t, route.Params, 3)
+		require.Equal(t, "test header", route.Params["X-Test"].Description)
+		require.Equal(t, "My Header", route.Operation.Parameters.GetByInAndName("header", "X-Test").Examples["test"].Value.Value)
 	})
 }
 

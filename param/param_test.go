@@ -1,7 +1,6 @@
 package param_test
 
 import (
-	"net/http/httptest"
 	"strconv"
 	"testing"
 
@@ -15,7 +14,7 @@ func TestParam(t *testing.T) {
 	t.Run("All options", func(t *testing.T) {
 		s := fuego.NewServer()
 
-		fuego.Get(s, "/test", func(c fuego.ContextNoBody) (string, error) {
+		route := fuego.Get(s, "/test", func(c fuego.ContextNoBody) (string, error) {
 			name := c.QueryParam("name")
 			age := c.QueryParamInt("age")
 			isok := c.QueryParamBool("is_ok")
@@ -27,13 +26,18 @@ func TestParam(t *testing.T) {
 			option.QueryBool("is_ok", "Is OK?", param.Default(true), param.Example("example1", true)),
 		)
 
-		t.Run("Default should correctly set parameter in controller", func(t *testing.T) {
-			r := httptest.NewRequest("GET", "/test", nil)
-			w := httptest.NewRecorder()
-			s.Mux.ServeHTTP(w, r)
+		require.NotNil(t, route)
+		require.NotNil(t, route.Params)
+		require.Len(t, route.Params, 3)
+		require.Equal(t, "Name", route.Params["name"].Description)
+		require.True(t, route.Params["name"].Required)
+		require.Equal(t, "hey", route.Params["name"].Default)
+		require.Equal(t, "you", route.Params["name"].Examples["example1"])
+		require.Equal(t, "string", route.Params["name"].GoType)
 
-			require.Equal(t, 200, w.Code)
-			require.Equal(t, "hey18true", w.Body.String())
-		})
+		require.Equal(t, "Age", route.Params["age"].Description)
+		require.True(t, route.Params["age"].Nullable)
+		require.Equal(t, 18, route.Params["age"].Default)
+		require.Equal(t, "integer", route.Params["age"].GoType)
 	})
 }
