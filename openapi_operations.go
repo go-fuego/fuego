@@ -31,18 +31,33 @@ type OpenAPIParamOption struct {
 }
 
 // Overrides the description for the route.
+//
+// Deprecated: Use `option.Description` from github.com/go-fuego/fuego/option instead.
+// Example:
+//
+//	fuego.Get(s, "/test", testController, option.Description("my description"))
 func (r Route[ResponseBody, RequestBody]) Description(description string) Route[ResponseBody, RequestBody] {
 	r.Operation.Description = description
 	return r
 }
 
 // Overrides the summary for the route.
+//
+// Deprecated: Use `option.Summary` from github.com/go-fuego/fuego/option instead.
+// Example:
+//
+//	fuego.Get(s, "/test", testController, option.Summary("my summary"))
 func (r Route[ResponseBody, RequestBody]) Summary(summary string) Route[ResponseBody, RequestBody] {
 	r.Operation.Summary = summary
 	return r
 }
 
 // Overrides the operationID for the route.
+//
+// Deprecated: Use `option.OperationID` from github.com/go-fuego/fuego/option instead.
+// Example:
+//
+//	fuego.Get(s, "/test", testController, option.OperationID("my-operation-id"))
 func (r Route[ResponseBody, RequestBody]) OperationID(operationID string) Route[ResponseBody, RequestBody] {
 	r.Operation.OperationID = operationID
 	return r
