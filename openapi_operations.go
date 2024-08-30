@@ -72,18 +72,33 @@ func (r Route[ResponseBody, RequestBody]) Param(paramType ParamType, name, descr
 }
 
 // Header registers a header parameter for the route.
+//
+// Deprecated: Use `option.Header` from github.com/go-fuego/fuego/option instead.
+// Example:
+//
+//	fuego.Get(s, "/test", testController, option.Header("my-header", "my description"))
 func (r Route[ResponseBody, RequestBody]) Header(name, description string, params ...OpenAPIParamOption) Route[ResponseBody, RequestBody] {
 	r.Param(HeaderParamType, name, description, params...)
 	return r
 }
 
 // Cookie registers a cookie parameter for the route.
+//
+// Deprecated: Use `option.Cookie` from github.com/go-fuego/fuego/option instead.
+// Example:
+//
+//	fuego.Get(s, "/test", testController, option.Cookie("my-cookie", "my description"))
 func (r Route[ResponseBody, RequestBody]) Cookie(name, description string, params ...OpenAPIParamOption) Route[ResponseBody, RequestBody] {
 	r.Param(CookieParamType, name, description, params...)
 	return r
 }
 
 // QueryParam registers a query parameter for the route.
+//
+// Deprecated: Use `option.Query` from github.com/go-fuego/fuego/option instead.
+// Example:
+//
+//	fuego.Get(s, "/test", testController, option.Query("my-param", "my description"))
 func (r Route[ResponseBody, RequestBody]) QueryParam(name, description string, params ...OpenAPIParamOption) Route[ResponseBody, RequestBody] {
 	r.Param(QueryParamType, name, description, params...)
 	return r
@@ -91,6 +106,11 @@ func (r Route[ResponseBody, RequestBody]) QueryParam(name, description string, p
 
 // Replace the tags for the route.
 // By default, the tag is the type of the response body.
+//
+// Deprecated: Use `option.Tags` from github.com/go-fuego/fuego/option instead.
+// Example:
+//
+//	fuego.Get(s, "/test", testController, option.Tags("my-tag"))
 func (r Route[ResponseBody, RequestBody]) Tags(tags ...string) Route[ResponseBody, RequestBody] {
 	r.Operation.Tags = tags
 	return r
@@ -162,6 +182,12 @@ func (r Route[ResponseBody, RequestBody]) RemoveTags(tags ...string) Route[Respo
 	return r
 }
 
+// Deprecated marks the route as deprecated.
+//
+// Deprecated: Use `option.Deprecated` from github.com/go-fuego/fuego/option instead.
+// Example:
+//
+//	fuego.Get(s, "/test", testController, option.Deprecated())
 func (r Route[ResponseBody, RequestBody]) Deprecated() Route[ResponseBody, RequestBody] {
 	r.Operation.Deprecated = true
 	return r
