@@ -4,8 +4,8 @@ import (
 	"github.com/go-fuego/fuego"
 )
 
-type NewControllerRessources struct {
-	// TODO add ressources
+type NewControllerResources struct {
+	// TODO add resources
 	NewControllerService NewControllerService
 }
 
@@ -22,7 +22,7 @@ type NewControllerUpdate struct {
 	Name string `json:"name"`
 }
 
-func (rs NewControllerRessources) Routes(s *fuego.Server) {
+func (rs NewControllerResources) Routes(s *fuego.Server) {
 	newControllerGroup := fuego.Group(s, "/newController")
 
 	fuego.Get(newControllerGroup, "/", rs.getAllNewController)
@@ -33,11 +33,11 @@ func (rs NewControllerRessources) Routes(s *fuego.Server) {
 	fuego.Delete(newControllerGroup, "/{id}", rs.deleteNewController)
 }
 
-func (rs NewControllerRessources) getAllNewController(c fuego.ContextNoBody) ([]NewController, error) {
+func (rs NewControllerResources) getAllNewController(c fuego.ContextNoBody) ([]NewController, error) {
 	return rs.NewControllerService.GetAllNewController()
 }
 
-func (rs NewControllerRessources) postNewController(c *fuego.ContextWithBody[NewControllerCreate]) (NewController, error) {
+func (rs NewControllerResources) postNewController(c *fuego.ContextWithBody[NewControllerCreate]) (NewController, error) {
 	body, err := c.Body()
 	if err != nil {
 		return NewController{}, err
@@ -51,13 +51,13 @@ func (rs NewControllerRessources) postNewController(c *fuego.ContextWithBody[New
 	return new, nil
 }
 
-func (rs NewControllerRessources) getNewController(c fuego.ContextNoBody) (NewController, error) {
+func (rs NewControllerResources) getNewController(c fuego.ContextNoBody) (NewController, error) {
 	id := c.PathParam("id")
 
 	return rs.NewControllerService.GetNewController(id)
 }
 
-func (rs NewControllerRessources) putNewController(c *fuego.ContextWithBody[NewControllerUpdate]) (NewController, error) {
+func (rs NewControllerResources) putNewController(c *fuego.ContextWithBody[NewControllerUpdate]) (NewController, error) {
 	id := c.PathParam("id")
 
 	body, err := c.Body()
@@ -73,7 +73,7 @@ func (rs NewControllerRessources) putNewController(c *fuego.ContextWithBody[NewC
 	return new, nil
 }
 
-func (rs NewControllerRessources) deleteNewController(c *fuego.ContextNoBody) (any, error) {
+func (rs NewControllerResources) deleteNewController(c *fuego.ContextNoBody) (any, error) {
 	return rs.NewControllerService.DeleteNewController(c.PathParam("id"))
 }
 
