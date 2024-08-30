@@ -123,32 +123,6 @@ func TestContext_QueryParam(t *testing.T) {
 	})
 }
 
-// type recordLogHandler struct {
-// 	slog.JSONHandler
-// 	logs []slog.Record
-// }
-
-// var _ slog.Handler = (*recordLogHandler)(nil)
-
-// // Enabled implements slog.Handler.
-// func (r *recordLogHandler) Enabled(context.Context, slog.Level) bool { return true }
-
-// // Handle implements slog.Handler.
-// func (r *recordLogHandler) Handle(c context.Context, log slog.Record) error {
-// 	r.logs = append(r.logs, log)
-// 	return nil
-// }
-
-// // WithAttrs implements slog.Handler.
-// func (r *recordLogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-// 	return r
-// }
-
-// // WithGroup implements slog.Handler.
-// func (r *recordLogHandler) WithGroup(name string) slog.Handler {
-// 	return r
-// }
-
 func TestContext_QueryParams(t *testing.T) {
 	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello", nil)
 	w := httptest.NewRecorder()
