@@ -130,7 +130,7 @@ func ErrorHandler(err error) error {
 		errResponse.Title = http.StatusText(errResponse.Status)
 	}
 
-	slog.Error("Error "+errResponse.Title, "status", errResponse.StatusCode, "detail", errResponse.Detail, "error", errResponse.Err)
+	slog.Error("Error "+errResponse.Title, "status", errResponse.StatusCode(), "detail", errResponse.Detail, "error", errResponse.Err)
 
 	return errResponse
 }
