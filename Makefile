@@ -33,7 +33,7 @@ fmt:
 
 lint:
 	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	golangci-lint run
+	golangci-lint run --fix ./...
 
 lint-markdown:
 	markdownlint --ignore documentation/node_modules --dot .

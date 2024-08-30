@@ -145,7 +145,11 @@ func (r *MyInput) InTransform(context.Context) error {
 ```go
 package main
 
-import "github.com/go-fuego/fuego"
+import (
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
+	"github.com/go-fuego/fuego/param"
+)
 
 func main() {
 	s := fuego.NewServer()

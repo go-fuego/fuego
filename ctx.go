@@ -290,7 +290,7 @@ func (c ContextNoBody) QueryParam(name string) string {
 	}
 
 	_, found := c.Req.URL.Query()[name]
-	if !found && c.params[name].Default != nil {
+	if !found {
 		defaultValue, _ := c.params[name].Default.(string)
 		return defaultValue
 	}
@@ -300,12 +300,11 @@ func (c ContextNoBody) QueryParam(name string) string {
 func (c ContextNoBody) QueryParamIntErr(name string) (int, error) {
 	param := c.QueryParam(name)
 	if param == "" {
-		if c.params[name].Default != nil {
-			defaultValue, ok := c.params[name].Default.(int)
-			if ok {
-				return defaultValue, nil
-			}
+		defaultValue, ok := c.params[name].Default.(int)
+		if ok {
+			return defaultValue, nil
 		}
+
 		return 0, QueryParamNotFoundError{ParamName: name}
 	}
 
@@ -347,12 +346,11 @@ func (c ContextNoBody) QueryParamInt(name string) int {
 func (c ContextNoBody) QueryParamBoolErr(name string) (bool, error) {
 	param := c.QueryParam(name)
 	if param == "" {
-		if c.params[name].Default != nil {
-			defaultValue, ok := c.params[name].Default.(bool)
-			if ok {
-				return defaultValue, nil
-			}
+		defaultValue, ok := c.params[name].Default.(bool)
+		if ok {
+			return defaultValue, nil
 		}
+
 		return false, QueryParamNotFoundError{ParamName: name}
 	}
 

@@ -54,14 +54,39 @@ func hello(ctx *fuego.ContextWithBody[MyBody]) (*MyResponse, error) {
 ### Add openAPI information to the route
 
 ` + "```go" + `
-fuego.Get(petsGroup, "/", rs.getAllPets,
-	option.Query("name", "Filter by name", param.Example("cat name", "felix"), param.Nullable()),
-	option.QueryInt("per_page", "Number of items per page", param.Required()),
-	option.QueryInt("page", "Page number", param.Default(1), param.Example("first page", 1), param.Example("100th page", 100)),
-	option.QueryBool("is_adopted", "Filter by adoption status"),
-	option.Tags("coucou", "my-tag"),
-	option.AddDescription("Get all pets"),
+import (
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
+	"github.com/go-fuego/fuego/param"
 )
+
+func main() {
+	s := fuego.NewServer()
+
+	// Custom OpenAPI options
+	fuego.Post(s, "/", myController
+		option.Description("This route does something..."),
+		option.Summary("This is my summary"),
+		option.Tags("MyTag"), // A tag is set by default according to the return type (can be deactivated)
+		option.Deprecated(), // Marks the route as deprecated in the OpenAPI spec
+
+		option.Query("name", "Declares a query parameter with default value", param.Default("Carmack")),
+		option.Header("Authorization", "Bearer token", param.Required()),
+		optionPagination,
+		optionCustomBehavior,
+	)
+
+	s.Run()
+}
+
+var optionPagination = option.Group(
+	option.QueryInt("page", "Page number", param.Default(1), param.Example("1st page", 1), param.Example("42nd page", 42)),
+	option.QueryInt("perPage", "Number of items per page"),
+)
+
+var optionCustomBehavior = func(r *fuego.BaseRoute) {
+	r.XXX = "YYY"
+}
 ` + "```" + `
 
 Then, in the controller
