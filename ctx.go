@@ -275,6 +275,14 @@ func (c ContextNoBody) QueryParamArr(name string) []string {
 }
 
 // QueryParam returns the query parameter with the given name.
+// If it does not exist, it returns an empty string.
+// If it does not exist and there is a default value declared in the OpenAPI spec, it returns the default value.
+//
+// Example:
+//
+//	fuego.Get(s, "/test", myController,
+//	  option.Query("name", "Name", param.Default("hey"))
+//	)
 func (c ContextNoBody) QueryParam(name string) string {
 	_, ok := c.params[name]
 	if !ok {
@@ -318,7 +326,9 @@ func (c ContextNoBody) QueryParamIntErr(name string) (int, error) {
 // If it does not exist, it returns the default value declared in the OpenAPI spec.
 // For example, if the query parameter is declared as:
 //
-//	QueryInt("page", "Page number", param.Default(1))
+//	fuego.Get(s, "/test", myController,
+//	  option.QueryInt("page", "Page number", param.Default(1))
+//	)
 //
 // and the query parameter does not exist, it will return 1.
 // If the query parameter does not exist and there is no default value, or if it is not an int, it returns 0.
