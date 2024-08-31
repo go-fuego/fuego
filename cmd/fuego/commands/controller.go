@@ -53,8 +53,7 @@ func createController(controllerName string) (string, error) {
 	t := language.English
 	titler := cases.Title(t)
 
-	newContent := strings.ReplaceAll(string(templateContent), "package controller", "package controllers")
-	newContent = strings.ReplaceAll(newContent, "newController", controllerName)
+	newContent := strings.ReplaceAll(string(templateContent), "newController", controllerName)
 	newContent = strings.ReplaceAll(newContent, "NewController", titler.String(controllerName))
 
 	controllerPath := fmt.Sprintf("%s%s.go", controllerDir, controllerName)
