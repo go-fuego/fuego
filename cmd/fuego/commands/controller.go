@@ -37,7 +37,7 @@ func Controller() *cli.Command {
 
 // createController creates a new controller file
 func createController(controllerName string) (string, error) {
-	controllerDir := "./controllers/"
+	controllerDir := "./controller/"
 	if _, err := os.Stat(controllerDir); os.IsNotExist(err) {
 		err = os.Mkdir(controllerDir, 0o755)
 		if err != nil {
