@@ -1,4 +1,4 @@
-package controller
+package controllers
 
 import (
 	"github.com/go-fuego/fuego"
