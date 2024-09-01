@@ -30,7 +30,7 @@ func (rs Ressource) adminIngredients(c fuego.ContextNoBody) (fuego.Gomponent, er
 		return nil, err
 	}
 
-// highlight-next-line
+	// highlight-next-line
 	return admin.IngredientList(ingredients, searchParams), nil
 }
 ```

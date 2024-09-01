@@ -56,7 +56,6 @@ func main() {
 func helloWorld(c fuego.ContextNoBody) (string, error) {
 	return "Hello, World!", nil
 }
-
 ```
 
 ## Output
@@ -81,12 +80,12 @@ import (
 
 func main() {
 	s := fuego.NewServer(fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
-		DisableSwagger   : false, // If true, the server will not serve the swagger ui nor the openapi json spec
-		DisableLocalSave : false, // If true, the server will not save the openapi json spec locally
-		SwaggerUrl       : "/swagger", // URL to serve the swagger ui
-		JsonUrl          : "/swagger/openapi.json", // URL to serve the openapi json spec
-		JsonFilePath     : "doc/openapi.json", // Local path to save the openapi json spec
-		UIHandler        : DefaultOpenAPIHandler, // Custom UI handler
+		DisableSwagger:   false,                   // If true, the server will not serve the swagger ui nor the openapi json spec
+		DisableLocalSave: false,                   // If true, the server will not save the openapi json spec locally
+		SwaggerUrl:       "/swagger",              // URL to serve the swagger ui
+		JsonUrl:          "/swagger/openapi.json", // URL to serve the openapi json spec
+		JsonFilePath:     "doc/openapi.json",      // Local path to save the openapi json spec
+		UIHandler:        DefaultOpenAPIHandler,   // Custom UI handler
 	}))
 
 	fuego.Get(s, "/", func(c fuego.ContextNoBody) (string, error) {

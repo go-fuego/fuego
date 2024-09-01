@@ -75,7 +75,6 @@ func main() {
 	// Requests to / will NOT! go through the middleware
 	fuego.Get(s, "/", myController)
 
-
 	s.Run()
 }
 ```
@@ -90,7 +89,6 @@ package main
 
 import (
 	"github.com/go-fuego/fuego"
-	"net/http"
 )
 
 func main() {

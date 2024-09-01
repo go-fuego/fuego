@@ -49,7 +49,7 @@ type ReceivedType struct {
 func echo(c fuego.ContextWithBody[ReceivedType]) (string, error) {
 	// Deserialize the HTTP Request body into ReceivedType,
 	// whether it's application/json, application/xml, application/x-www-form-urlencoded, etc.
-	received, err := c.Body() 
+	received, err := c.Body()
 	if err != nil {
 		return ReceivedType{}, err
 	}
@@ -62,7 +62,7 @@ func echo(c fuego.ContextWithBody[ReceivedType]) (string, error) {
 
 If you just want to read the body of the request as a byte slice, you can use the `[]byte` receiver type.
 
-Don't forget to set the request `Content-Type` header to `application/octet-stream`. 
+Don't forget to set the request `Content-Type` header to `application/octet-stream`.
 
 ```go
 fuego.Put(s, "/blob", func(c *fuego.ContextWithBody[[]byte]) (any, error) {
@@ -83,7 +83,7 @@ If you want to bypass the automatic serialization, you can directly write to the
 func helloWorld(c fuego.ContextNoBody) (any, error) {
 	w := c.Response()
 	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte("Hello, World!")) // Write directly to the response writer. 
+	w.Write([]byte("Hello, World!")) // Write directly to the response writer.
 	_ = json.NewEncoder(w).Encode(MyReturnType{Message: "Hello, World!"}) // You can also use json.NewEncoder(w).Encode to serialize data directly into JSON
 	fuego.SendJSON(w, MyReturnType{Message: "Hello, World!"}) // Or use fuego.SendJSON to serialize data directly into JSON
 

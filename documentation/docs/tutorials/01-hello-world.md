@@ -26,7 +26,6 @@ cd hello-fuego
 Then, create a `go.mod` file:
 
 ```bash
-
 go mod init hello-fuego
 ```
 
