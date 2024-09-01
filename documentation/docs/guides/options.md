@@ -13,7 +13,7 @@ func main() {
 	s := fuego.NewServer(
 		fuego.WithAddr("localhost:8080"),
 		fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
-			DisableSwagger   : true,
+			DisableSwagger: true,
 		}),
 	)
 

@@ -25,11 +25,11 @@ func (rs Ressource) unitPreselected(c fuego.ContextNoBody) (fuego.HTML, error) {
 		return "", err
 	}
 
-// highlight-start
+	// highlight-start
 	return c.Render("preselected-unit.partial.html", fuego.H{
 		"Units":        types.UnitValues,
 		"SelectedUnit": ingredient.DefaultUnit,
 	})
-// highlight-end
+	// highlight-end
 }
 ```
