@@ -19,7 +19,7 @@ const (
 )
 
 // ctx is the context of the request.
-// It contains the request body, the path parameters, the query parameters, and the http request.
+// It contains the request body, the path parameters, the query parameters, and the HTTP request.
 // Please do not use a pointer type as parameter.
 type ctx[B any] interface {
 	// Body returns the body of the request.
@@ -75,8 +75,8 @@ type ctx[B any] interface {
 
 	Context() context.Context
 
-	Request() *http.Request        // Request returns the underlying http request.
-	Response() http.ResponseWriter // Response returns the underlying http response writer.
+	Request() *http.Request        // Request returns the underlying HTTP request.
+	Response() http.ResponseWriter // Response returns the underlying HTTP response writer.
 
 	// SetStatus sets the status code of the response.
 	// Alias to http.ResponseWriter.WriteHeader.
@@ -111,7 +111,7 @@ func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptio
 // has a Body. The Body type parameter repesents the expected data type
 // from http.Request.Body. Please do not use a pointer as a type parameter.
 type ContextWithBody[Body any] struct {
-	body *Body // Cache the body in request context, because it is not possible to read an http request body multiple times.
+	body *Body // Cache the body in request context, because it is not possible to read an HTTP request body multiple times.
 	ContextNoBody
 }
 
@@ -339,12 +339,12 @@ func (c ContextNoBody) MainLocale() string {
 	return strings.Split(c.Req.Header.Get("Accept-Language"), ",")[0]
 }
 
-// Request returns the http request.
+// Request returns the HTTP request.
 func (c ContextNoBody) Request() *http.Request {
 	return c.Req
 }
 
-// Response returns the http response writer.
+// Response returns the HTTP response writer.
 func (c ContextNoBody) Response() http.ResponseWriter {
 	return c.Res
 }
@@ -361,7 +361,7 @@ func (c *ContextWithBody[B]) MustBody() B {
 // Body returns the body of the request.
 // If (*B) implements [InTransformer], it will be transformed after deserialization.
 // It caches the result, so it can be called multiple times.
-// The reason why the body is cached is because it is not possible to read an http request body multiple times, not because of performance.
+// The reason why the body is cached is because it is not possible to read an HTTP request body multiple times, not because of performance.
 // For decoding, it uses the Content-Type header. If it is not set, defaults to application/json.
 func (c *ContextWithBody[B]) Body() (B, error) {
 	if c.body != nil {

@@ -102,7 +102,7 @@ func main() {
 Fuego `Server` exposes a `UIHandler` field that enables you
 to implement your custom UI.
 
-Example with http swagger:
+Example with http-swagger:
 
 ```go
 import (
@@ -132,9 +132,9 @@ func main() {
 }
 ```
 
-The default spec url reference Element Stoplight swagger ui.
+The default spec URL reference Element Stoplight Swagger UI.
 
-Please note that if you embed swagger ui in your build it will increase its size
+Please note that if you embed swagger UI in your build it will increase its size
 by more than 10Mb.
 
 |               | StopLight Elements | Swagger        | Disabled |
@@ -142,9 +142,9 @@ by more than 10Mb.
 | Works offline | No ❌              | Yes ✅         | -        |
 | Binary Size   | Smaller            | Larger (+10Mb) | Smaller  |
 
-## Hide From Openapi Spec
+## Hide From OpenAPI Spec
 
-Certain routes such as web routes you may not want to be part of the openapi spec.
+Certain routes such as web routes you may not want to be part of the OpenAPI spec.
 
 You can prevent them from being added with the server.Hide().
 

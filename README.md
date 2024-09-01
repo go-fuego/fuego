@@ -45,7 +45,7 @@ to develop APIs and web applications.
 ## Features
 
 - **OpenAPI**: Fuego automatically generates OpenAPI documentation
-  from **code** - _not from comments nor yaml files!_
+  from **code** - _not from comments nor YAML files!_
 - **100% `net/http` compatible** (no lock-in): Fuego is built on top of `net/http`,
   so you can use any `http.Handler` middleware or handler! Fuego also supports
   `log/slog`, `context` and `html/template`.
