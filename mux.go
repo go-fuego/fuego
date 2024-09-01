@@ -153,8 +153,8 @@ func Use(s *Server, middlewares ...func(http.Handler) http.Handler) {
 	s.middlewares = append(s.middlewares, middlewares...)
 }
 
-// Handle registers a standard http handler into the default mux.
-// Use this function if you want to use a standard http handler instead of a fuego controller.
+// Handle registers a standard HTTP handler into the default mux.
+// Use this function if you want to use a standard HTTP handler instead of a Fuego controller.
 func Handle(s *Server, path string, controller http.Handler, middlewares ...func(http.Handler) http.Handler) Route[any, any] {
 	return Register(s, Route[any, any]{
 		Path:     path,

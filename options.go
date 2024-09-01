@@ -17,14 +17,14 @@ import (
 )
 
 type OpenAPIConfig struct {
-	DisableSwagger   bool                              // If true, the server will not serve the swagger ui nor the openapi json spec
-	DisableSwaggerUI bool                              // If true, the server will not serve the swagger ui
-	DisableLocalSave bool                              // If true, the server will not save the openapi json spec locally
-	SwaggerUrl       string                            // URL to serve the swagger ui
-	UIHandler        func(specURL string) http.Handler // Handler to serve the openapi ui from spec url
-	JsonUrl          string                            // URL to serve the openapi json spec
-	JsonFilePath     string                            // Local path to save the openapi json spec
-	PrettyFormatJson bool                              // Pretty prints the open api spec with proper json indentation
+	DisableSwagger   bool                              // If true, the server will not serve the Swagger UI nor the OpenAPI JSON spec
+	DisableSwaggerUI bool                              // If true, the server will not serve the Swagger UI
+	DisableLocalSave bool                              // If true, the server will not save the OpenAPI JSON spec locally
+	SwaggerUrl       string                            // URL to serve the swagger UI
+	UIHandler        func(specURL string) http.Handler // Handler to serve the OpenAPI UI from spec URL
+	JsonUrl          string                            // URL to serve the OpenAPI JSON spec
+	JsonFilePath     string                            // Local path to save the OpenAPI JSON spec
+	PrettyFormatJson bool                              // Pretty prints the OpenAPI spec with proper JSON indentation
 }
 
 var defaultOpenAPIConfig = OpenAPIConfig{
@@ -35,7 +35,7 @@ var defaultOpenAPIConfig = OpenAPIConfig{
 }
 
 type Server struct {
-	// The underlying http server
+	// The underlying HTTP server
 	*http.Server
 
 	// Will be plugged into the Server field.
@@ -74,7 +74,7 @@ type Server struct {
 	template *template.Template // TODO: use preparsed templates
 
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
-	DisableOpenapi        bool // If true, the routes within the server will not generate an openapi spec.
+	DisableOpenapi        bool // If true, the routes within the server will not generate an OpenAPI spec.
 	maxBodySize           int64
 
 	Serialize      Sender                // Custom serializer that overrides the default one.
@@ -227,7 +227,7 @@ func WithTemplates(templates *template.Template) func(*Server) {
 }
 
 // WithTemplateGlobs loads templates matching the given patterns from the server filesystem.
-// If the server filesystem is not set, it will use the os filesystem, at folder "./templates".
+// If the server filesystem is not set, it will use the OS filesystem, at folder "./templates".
 // For example:
 //
 //	WithTemplateGlobs("*.html, */*.html", "*/*/*.html")
