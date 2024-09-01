@@ -7,8 +7,9 @@ import (
 	"strings"
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
-	"github.com/go-fuego/fuego"
 	"github.com/rs/cors"
+
+	"github.com/go-fuego/fuego"
 )
 
 type Received struct {

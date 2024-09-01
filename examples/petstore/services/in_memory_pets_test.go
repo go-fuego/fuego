@@ -3,8 +3,9 @@ package services
 import (
 	"testing"
 
-	"github.com/go-fuego/fuego/examples/petstore/models"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-fuego/fuego/examples/petstore/models"
 )
 
 func TestInMemoryPets(t *testing.T) {

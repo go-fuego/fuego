@@ -4,11 +4,10 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa/admin"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa/components"
-
-	"github.com/go-fuego/fuego"
 )
 
 func (rs Ressource) adminDeleteRecipe(c fuego.ContextNoBody) (any, error) {

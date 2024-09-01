@@ -3,8 +3,9 @@ package controller
 import (
 	"time"
 
-	"github.com/go-fuego/fuego"
 	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/go-fuego/fuego"
 )
 
 // MyCustomToken is a custom token that contains the standard claims and some custom claims.

@@ -5,8 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-fuego/fuego/middleware/basicauth"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-fuego/fuego/middleware/basicauth"
 )
 
 func TestNew(t *testing.T) {
