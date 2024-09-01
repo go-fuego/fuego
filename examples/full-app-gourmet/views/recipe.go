@@ -10,13 +10,13 @@ import (
 	"path"
 	"time"
 
+	"github.com/google/uuid"
+
+	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/static"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa"
 	"github.com/go-fuego/fuego/extra/markdown"
-
-	"github.com/go-fuego/fuego"
-	"github.com/google/uuid"
 )
 
 // Ressource is the struct that holds useful sources of informations available for the controllers.

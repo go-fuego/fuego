@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/controller"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/static"

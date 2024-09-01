@@ -3,10 +3,9 @@ package views
 import (
 	"context"
 
+	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa"
-
-	"github.com/go-fuego/fuego"
 )
 
 func (rs Ressource) showIngredients(c fuego.ContextNoBody) (fuego.Templ, error) {

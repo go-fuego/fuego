@@ -6,8 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-fuego/fuego/examples/petstore/lib"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-fuego/fuego/examples/petstore/lib"
 )
 
 func TestGetAllPets(t *testing.T) {

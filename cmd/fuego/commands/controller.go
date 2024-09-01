@@ -5,10 +5,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-fuego/fuego/cmd/fuego/templates"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+
+	"github.com/go-fuego/fuego/cmd/fuego/templates"
 )
 
 func Controller() *cli.Command {

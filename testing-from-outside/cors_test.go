@@ -4,9 +4,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-fuego/fuego"
 	"github.com/rs/cors"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-fuego/fuego"
 )
 
 func TestCors(t *testing.T) {

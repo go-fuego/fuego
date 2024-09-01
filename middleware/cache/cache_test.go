@@ -6,8 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-fuego/fuego"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-fuego/fuego"
 )
 
 type testStruct struct {
