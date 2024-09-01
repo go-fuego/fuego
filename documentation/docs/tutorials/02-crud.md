@@ -66,9 +66,9 @@ func (s RealBooksService) GetBooks(id string) (Books, error) {
 package main
 
 import (
-	// ADD NEXT LINE
-	"hello-fuego/controllers"
-	"github.com/go-fuego/fuego"
+"github.com/go-fuego/fuego"
+// ADD NEXT LINE
+"hello-fuego/controllers"
 )
 
 func main() {
@@ -105,8 +105,8 @@ that can generates CRUD routes and controllers for you!
 package main
 
 import (
-	"hello-fuego/controllers"
 	"github.com/go-fuego/fuego"
+	"hello-fuego/controllers"
 )
 
 func main() {

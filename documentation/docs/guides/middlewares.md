@@ -16,8 +16,10 @@ You can add middlewares to the whole server using the `Use` method:
 package main
 
 import (
-	"github.com/go-fuego/fuego"
-	"net/http"
+"net/http"
+
+"github.com/go-fuego/fuego"
+
 )
 
 func main() {
@@ -48,8 +50,10 @@ You can also add middlewares to a group of routes using the `Group` method:
 package main
 
 import (
-	"github.com/go-fuego/fuego"
-	"net/http"
+"net/http"
+
+"github.com/go-fuego/fuego"
+
 )
 
 func main() {
@@ -87,8 +91,9 @@ Simply add the middlewares as the last arguments of the route handler:
 package main
 
 import (
-	"github.com/go-fuego/fuego"
 	"net/http"
+
+	"github.com/go-fuego/fuego"
 )
 
 func main() {

@@ -3,8 +3,9 @@ package main
 import (
 	"net/http"
 
-	"github.com/go-fuego/fuego"
 	jsoniter "github.com/json-iterator/go"
+
+	"github.com/go-fuego/fuego"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

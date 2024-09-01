@@ -7,11 +7,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/server"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/views"
-	"github.com/stretchr/testify/require"
 )
 
 func TestShowIndex(t *testing.T) {

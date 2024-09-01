@@ -15,8 +15,9 @@ import (
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa"
 	"github.com/go-fuego/fuego/extra/markdown"
 
-	"github.com/go-fuego/fuego"
 	"github.com/google/uuid"
+
+	"github.com/go-fuego/fuego"
 )
 
 // Ressource is the struct that holds useful sources of informations available for the controllers.

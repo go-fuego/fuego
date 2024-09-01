@@ -5,8 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/go-fuego/fuego/cmd/fuego/commands"
 	"github.com/urfave/cli/v2"
+
+	"github.com/go-fuego/fuego/cmd/fuego/commands"
 )
 
 func main() {

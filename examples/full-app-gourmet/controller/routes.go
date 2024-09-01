@@ -4,9 +4,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/rs/cors"
+
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/middleware/basicauth"
-	"github.com/rs/cors"
 )
 
 // Ressource is the global struct that holds useful sources of informations available for the controllers.

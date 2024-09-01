@@ -5,9 +5,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-fuego/fuego"
 	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/golden"
+
+	"github.com/go-fuego/fuego"
 )
 
 func TestPetstoreOpenAPIGeneration(t *testing.T) {

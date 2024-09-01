@@ -167,27 +167,28 @@ func main() {
 package main
 
 import (
-	"net/http"
-	"github.com/go-fuego/fuego"
+  "net/http"
+
+  "github.com/go-fuego/fuego"
 )
 
 func main() {
-	s := fuego.NewServer()
+  s := fuego.NewServer()
 
-	// Standard net/http middleware
-	fuego.Use(s, func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("X-Hello", "World")
-			next.ServeHTTP(w, r)
-		})
-	})
+  // Standard net/http middleware
+  fuego.Use(s, func(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+      w.Header().Set("X-Hello", "World")
+      next.ServeHTTP(w, r)
+    })
+  })
 
-	// Standard net/http handler with automatic OpenAPI route declaration
-	fuego.GetStd(s, "/std", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, World!"))
-	})
+  // Standard net/http handler with automatic OpenAPI route declaration
+  fuego.GetStd(s, "/std", func(w http.ResponseWriter, r *http.Request) {
+    w.Write([]byte("Hello, World!"))
+  })
 
-	s.Run()
+  s.Run()
 }
 ```
 
