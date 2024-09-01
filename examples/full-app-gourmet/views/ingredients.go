@@ -8,7 +8,7 @@ import (
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa"
 )
 
-func (rs Ressource) showIngredients(c fuego.ContextNoBody) (fuego.Templ, error) {
+func (rs Resource) showIngredients(c fuego.ContextNoBody) (fuego.Templ, error) {
 	ingredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
 	if err != nil {
 		return nil, err

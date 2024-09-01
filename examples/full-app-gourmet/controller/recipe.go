@@ -8,12 +8,12 @@ import (
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 )
 
-type recipeRessource struct {
+type recipeResource struct {
 	RecipeRepository     RecipeRepository
 	IngredientRepository IngredientRepository
 }
 
-func (rs recipeRessource) MountRoutes(s *fuego.Server) {
+func (rs recipeResource) MountRoutes(s *fuego.Server) {
 	fuego.GetStd(s, "/recipes-standard-with-helpers", rs.getAllRecipesStandardWithHelpers).
 		AddTags("Recipe")
 
@@ -28,7 +28,7 @@ func (rs recipeRessource) MountRoutes(s *fuego.Server) {
 	fuego.Get(recipeGroup, "/{id}", rs.getRecipeWithIngredients)
 }
 
-func (rs recipeRessource) getAllRecipesStandardWithHelpers(w http.ResponseWriter, r *http.Request) {
+func (rs recipeResource) getAllRecipesStandardWithHelpers(w http.ResponseWriter, r *http.Request) {
 	recipes, err := rs.RecipeRepository.GetRecipes(r.Context())
 	if err != nil {
 		fuego.SendJSONError(w, r, err)
@@ -38,7 +38,7 @@ func (rs recipeRessource) getAllRecipesStandardWithHelpers(w http.ResponseWriter
 	fuego.SendJSON(w, r, recipes)
 }
 
-func (rs recipeRessource) getAllRecipes(c fuego.ContextNoBody) ([]store.Recipe, error) {
+func (rs recipeResource) getAllRecipes(c fuego.ContextNoBody) ([]store.Recipe, error) {
 	recipes, err := rs.RecipeRepository.GetRecipes(c.Context())
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (rs recipeRessource) getAllRecipes(c fuego.ContextNoBody) ([]store.Recipe, 
 	return recipes, nil
 }
 
-func (rs recipeRessource) newRecipe(c *fuego.ContextWithBody[store.CreateRecipeParams]) (store.Recipe, error) {
+func (rs recipeResource) newRecipe(c *fuego.ContextWithBody[store.CreateRecipeParams]) (store.Recipe, error) {
 	body, err := c.Body()
 	if err != nil {
 		return store.Recipe{}, err
@@ -61,7 +61,7 @@ func (rs recipeRessource) newRecipe(c *fuego.ContextWithBody[store.CreateRecipeP
 	return recipe, nil
 }
 
-func (rs recipeRessource) getRecipeWithIngredients(c fuego.ContextNoBody) ([]store.GetIngredientsOfRecipeRow, error) {
+func (rs recipeResource) getRecipeWithIngredients(c fuego.ContextNoBody) ([]store.GetIngredientsOfRecipeRow, error) {
 	recipe, err := rs.IngredientRepository.GetIngredientsOfRecipe(c.Context(), c.PathParam("id"))
 	if err != nil {
 		return nil, err

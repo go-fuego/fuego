@@ -24,7 +24,7 @@ import (
 	"github.com/go-fuego/fuego"
 )
 
-type BooksRessources struct {
+type BooksResources struct {
 	// CHANGE NEXT LINE (BooksService -> RealBooksService)
 	BooksService RealBooksService
 }
@@ -77,7 +77,7 @@ func main() {
 	// ....
 
 	// ADD NEXT LINE
-	controllers.BooksRessources{}.Routes(s)
+	controllers.BooksResources{}.Routes(s)
 	s.Run()
 }
 ```

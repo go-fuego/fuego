@@ -17,7 +17,7 @@ import (
 )
 
 // highlight-next-line
-func (rs Ressource) unitPreselected(c fuego.ContextNoBody) (fuego.HTML, error) {
+func (rs Resource) unitPreselected(c fuego.ContextNoBody) (fuego.HTML, error) {
 	id := c.QueryParam("IngredientID")
 
 	ingredient, err := rs.IngredientsQueries.GetIngredient(c.Context(), id)

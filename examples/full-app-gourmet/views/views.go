@@ -9,7 +9,7 @@ import (
 	"github.com/go-fuego/fuego/middleware/cache"
 )
 
-func (rs Ressource) Routes(s *fuego.Server) {
+func (rs Resource) Routes(s *fuego.Server) {
 	// Public Pages
 	fuego.GetStd(s, "/recipes-std", rs.showRecipesStd)
 	fuego.All(s, "/", rs.showIndex, cache.New())

@@ -5,11 +5,11 @@ import (
 	"github.com/go-fuego/fuego/examples/petstore/models"
 )
 
-type PetsRessources struct {
+type PetsResources struct {
 	PetsService PetsService
 }
 
-func (rs PetsRessources) Routes(s *fuego.Server) {
+func (rs PetsResources) Routes(s *fuego.Server) {
 	petsGroup := fuego.Group(s, "/pets").Header("X-Header", "header description")
 
 	fuego.Get(petsGroup, "/", rs.getAllPets)
@@ -24,15 +24,15 @@ func (rs PetsRessources) Routes(s *fuego.Server) {
 	fuego.Delete(petsGroup, "/{id}", rs.deletePets)
 }
 
-func (rs PetsRessources) getAllPets(c fuego.ContextNoBody) ([]models.Pets, error) {
+func (rs PetsResources) getAllPets(c fuego.ContextNoBody) ([]models.Pets, error) {
 	return rs.PetsService.GetAllPets()
 }
 
-func (rs PetsRessources) getAllPetsByAge(c fuego.ContextNoBody) ([][]models.Pets, error) {
+func (rs PetsResources) getAllPetsByAge(c fuego.ContextNoBody) ([][]models.Pets, error) {
 	return rs.PetsService.GetAllPetsByAge()
 }
 
-func (rs PetsRessources) postPets(c *fuego.ContextWithBody[models.PetsCreate]) (models.Pets, error) {
+func (rs PetsResources) postPets(c *fuego.ContextWithBody[models.PetsCreate]) (models.Pets, error) {
 	body, err := c.Body()
 	if err != nil {
 		return models.Pets{}, err
@@ -41,19 +41,19 @@ func (rs PetsRessources) postPets(c *fuego.ContextWithBody[models.PetsCreate]) (
 	return rs.PetsService.CreatePets(body)
 }
 
-func (rs PetsRessources) getPets(c fuego.ContextNoBody) (models.Pets, error) {
+func (rs PetsResources) getPets(c fuego.ContextNoBody) (models.Pets, error) {
 	id := c.PathParam("id")
 
 	return rs.PetsService.GetPets(id)
 }
 
-func (rs PetsRessources) getPetByName(c fuego.ContextNoBody) (models.Pets, error) {
+func (rs PetsResources) getPetByName(c fuego.ContextNoBody) (models.Pets, error) {
 	name := c.PathParam("name")
 
 	return rs.PetsService.GetPetByName(name)
 }
 
-func (rs PetsRessources) putPets(c *fuego.ContextWithBody[models.PetsUpdate]) (models.Pets, error) {
+func (rs PetsResources) putPets(c *fuego.ContextWithBody[models.PetsUpdate]) (models.Pets, error) {
 	id := c.PathParam("id")
 
 	body, err := c.Body()
@@ -64,7 +64,7 @@ func (rs PetsRessources) putPets(c *fuego.ContextWithBody[models.PetsUpdate]) (m
 	return rs.PetsService.UpdatePets(id, body)
 }
 
-func (rs PetsRessources) deletePets(c *fuego.ContextNoBody) (any, error) {
+func (rs PetsResources) deletePets(c *fuego.ContextNoBody) (any, error) {
 	return rs.PetsService.DeletePets(c.PathParam("id"))
 }
 

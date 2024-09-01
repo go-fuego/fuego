@@ -12,7 +12,7 @@ import (
 )
 
 // highlight-next-line
-func (rs Ressource) adminIngredients(c fuego.ContextNoBody) (fuego.Gomponent, error) {
+func (rs Resource) adminIngredients(c fuego.ContextNoBody) (fuego.Gomponent, error) {
 	searchParams := components.SearchParams{
 		Name:    c.QueryParam("name"),
 		PerPage: c.QueryParamInt("perPage", 20),

@@ -12,12 +12,12 @@ import (
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/views"
 )
 
-type Ressources struct {
-	Views views.Ressource
-	API   controller.Ressource
+type Resources struct {
+	Views views.Resource
+	API   controller.Resource
 }
 
-func (rs Ressources) Setup(
+func (rs Resources) Setup(
 	options ...func(*fuego.Server),
 ) *fuego.Server {
 	serverOptions := []func(*fuego.Server){

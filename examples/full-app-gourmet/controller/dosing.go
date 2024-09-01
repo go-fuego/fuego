@@ -7,16 +7,16 @@ import (
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 )
 
-type dosingRessource struct {
+type dosingResource struct {
 	Queries DosingRepository
 }
 
-func (rs dosingRessource) MountRoutes(s *fuego.Server) {
+func (rs dosingResource) MountRoutes(s *fuego.Server) {
 	dosingGroup := fuego.Group(s, "/dosings")
 	fuego.Post(dosingGroup, "/new", rs.newDosing)
 }
 
-func (rs dosingRessource) newDosing(c *fuego.ContextWithBody[store.CreateDosingParams]) (store.Dosing, error) {
+func (rs dosingResource) newDosing(c *fuego.ContextWithBody[store.CreateDosingParams]) (store.Dosing, error) {
 	body, err := c.Body()
 	if err != nil {
 		return store.Dosing{}, err

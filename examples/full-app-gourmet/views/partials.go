@@ -5,7 +5,7 @@ import (
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store/types"
 )
 
-func (rs Ressource) unitPreselected(c fuego.ContextNoBody) (fuego.CtxRenderer, error) {
+func (rs Resource) unitPreselected(c fuego.ContextNoBody) (fuego.CtxRenderer, error) {
 	id := c.QueryParam("IngredientID")
 
 	ingredient, err := rs.IngredientsQueries.GetIngredient(c.Context(), id)

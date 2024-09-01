@@ -10,9 +10,9 @@ import (
 	"github.com/go-fuego/fuego/middleware/basicauth"
 )
 
-// Ressource is the global struct that holds useful sources of informations available for the controllers.
+// Resource is the global struct that holds useful sources of informations available for the controllers.
 // Usually not used directly, but passed to the controllers.
-type Ressource struct {
+type Resource struct {
 	DosingQueries      DosingRepository
 	RecipesQueries     RecipeRepository
 	IngredientsQueries IngredientRepository
@@ -23,7 +23,7 @@ type Ressource struct {
 	Security    fuego.Security         // Security configuration
 }
 
-func (rs Ressource) MountRoutes(s *fuego.Server) {
+func (rs Resource) MountRoutes(s *fuego.Server) {
 	fuego.Use(s, cors.Default().Handler)
 	fuego.UseStd(s, basicauth.New(basicauth.Config{
 		Username: os.Getenv("ADMIN_USER"),
@@ -31,16 +31,16 @@ func (rs Ressource) MountRoutes(s *fuego.Server) {
 		AllowGet: true,
 	}))
 
-	recipeRessource{
+	recipeResource{
 		RecipeRepository:     rs.RecipesQueries,
 		IngredientRepository: rs.IngredientsQueries,
 	}.MountRoutes(s)
 
-	ingredientRessource{
+	ingredientResource{
 		IngredientRepository: rs.IngredientsQueries,
 	}.MountRoutes(s)
 
-	dosingRessource{
+	dosingResource{
 		Queries: rs.DosingQueries,
 	}.MountRoutes(s)
 

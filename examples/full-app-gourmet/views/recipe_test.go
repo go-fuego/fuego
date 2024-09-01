@@ -16,7 +16,7 @@ import (
 )
 
 func TestShowIndex(t *testing.T) {
-	// rs := views.Ressource{
+	// rs := views.Resource{
 	// 	RecipesQueries:     nil,
 	// 	IngredientsQueries: nil,
 	// 	DosingQueries:      nil,
@@ -54,19 +54,19 @@ func (r IngredientRepositoryMock) GetIngredients(ctx context.Context) ([]store.I
 }
 
 func TestShowIndexExt(t *testing.T) {
-	viewsRessources := views.Ressource{
+	viewsResources := views.Resource{
 		RecipesQueries:     RecipeRepositoryMock{},
 		IngredientsQueries: IngredientRepositoryMock{},
 	}
 
-	serverRessources := server.Ressources{
-		Views: viewsRessources,
+	serverResources := server.Resources{
+		Views: viewsResources,
 	}
 
 	os.Setenv("ADMIN_USER", "admin")
 	os.Setenv("ADMIN_PASSWORD", "admin")
 
-	app := serverRessources.Setup()
+	app := serverResources.Setup()
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/", nil)
@@ -77,19 +77,19 @@ func TestShowIndexExt(t *testing.T) {
 }
 
 func BenchmarkShowIndexExt(b *testing.B) {
-	viewsRessources := views.Ressource{
+	viewsResources := views.Resource{
 		RecipesQueries:     RecipeRepositoryMock{},
 		IngredientsQueries: IngredientRepositoryMock{},
 	}
 
-	serverRessources := server.Ressources{
-		Views: viewsRessources,
+	serverResources := server.Resources{
+		Views: viewsResources,
 	}
 
 	os.Setenv("ADMIN_USER", "admin")
 	os.Setenv("ADMIN_PASSWORD", "admin")
 
-	app := serverRessources.Setup()
+	app := serverResources.Setup()
 
 	for range b.N {
 		w := httptest.NewRecorder()
