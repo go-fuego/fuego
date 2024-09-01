@@ -62,7 +62,7 @@ type ctx[B any] interface {
 	// [templateGlobsToOverride] is a list of templates to override.
 	// For example, if you have 2 conflicting templates
 	//   - with the same name "partials/aaa/nav.partial.html" and "partials/bbb/nav.partial.html"
-	//   - or two templates with different names but that define the same block "page" for example,
+	//   - or two templates with different names, but that define the same block "page" for example,
 	// and you want to override one above the other, you can do:
 	//   c.Render("admin.page.html", recipes, "partials/aaa/nav.partial.html")
 	// By default, [templateToExecute] is added to the list of templates to override.
@@ -108,7 +108,7 @@ func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptio
 }
 
 // ContextWithBody is the same as fuego.ContextNoBody, but
-// has a Body. The Body type parameter repesents the expected data type
+// has a Body. The Body type parameter represents the expected data type
 // from http.Request.Body. Please do not use a pointer as a type parameter.
 type ContextWithBody[Body any] struct {
 	body *Body // Cache the body in request context, because it is not possible to read an HTTP request body multiple times.
@@ -220,7 +220,7 @@ func (c ContextNoBody) SetCookie(cookie http.Cookie) {
 // It returns just an empty string, because the response is written directly to the http.ResponseWriter.
 //
 // Init templates if not already done.
-// This have the side effect of making the Render method static, meaning
+// This has the side effect of making the Render method static, meaning
 // that the templates will be parsed only once, removing
 // the need to parse the templates on each request but also preventing
 // to dynamically use new templates.
@@ -361,7 +361,7 @@ func (c *ContextWithBody[B]) MustBody() B {
 // Body returns the body of the request.
 // If (*B) implements [InTransformer], it will be transformed after deserialization.
 // It caches the result, so it can be called multiple times.
-// The reason why the body is cached is because it is not possible to read an HTTP request body multiple times, not because of performance.
+// The reason the body is cached is that it is impossible to read an HTTP request body multiple times, not because of performance.
 // For decoding, it uses the Content-Type header. If it is not set, defaults to application/json.
 func (c *ContextWithBody[B]) Body() (B, error) {
 	if c.body != nil {

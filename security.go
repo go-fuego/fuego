@@ -354,7 +354,7 @@ type tokenResponse struct {
 //		// ...
 //		// Return the claims
 //		return &MyCustomToken{
-//			It is recommanded to embed jwt.RegisteredClaims in your custom struct that will define your JWT.
+//			It is recommended to embed jwt.RegisteredClaims in your custom struct that will define your JWT.
 //			RegisteredClaims: jwt.RegisteredClaims{
 //				Issuer:    username,
 //				Subject:   username,
@@ -419,7 +419,7 @@ type LoginPayload struct {
 //		// ...
 //		// Return the claims
 //		return &MyCustomToken{
-//			It is recommanded to embed jwt.RegisteredClaims in your custom struct that will define your JWT.
+//			It is recommended to embed jwt.RegisteredClaims in your custom struct that will define your JWT.
 //			RegisteredClaims: jwt.RegisteredClaims{
 //				Issuer:    username,
 //				Subject:   username,
@@ -492,7 +492,7 @@ func (security Security) RefreshHandler(w http.ResponseWriter, r *http.Request) 
 //
 //	fuego.PostStd(s, "/auth/logout", security.CookieLogoutHandler)
 //
-// Dependancy to [Security] is for symmetry with [RefreshHandler].
+// Dependency to [Security] is for symmetry with [RefreshHandler].
 func (security Security) CookieLogoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:    JWTCookieName,

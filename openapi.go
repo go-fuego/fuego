@@ -46,8 +46,8 @@ func (s *Server) Hide() *Server {
 	return s
 }
 
-// Show allows to display the routes. Activated by default so useless in most cases,
-// but this can be useful if you desactivated the parent group.
+// Show allows displaying the routes. Activated by default so useless in most cases,
+// but this can be useful if you deactivated the parent group.
 func (s *Server) Show() *Server {
 	s.DisableOpenapi = false
 	return s

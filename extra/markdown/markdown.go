@@ -10,7 +10,7 @@ import (
 
 // Markdown converts a markdown string to HTML.
 // Note: fuego does not protect against malicious content
-// sanitation is up the caller of this funtion.
+// sanitation is up the caller of this function.
 func Markdown(content string) template.HTML {
 	if content == "" {
 		return template.HTML("")
