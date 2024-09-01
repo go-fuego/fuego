@@ -32,9 +32,13 @@ func main() {
 You can change the address of the server with the `WithAddr` option.
 
 ```go
-s := fuego.NewServer(
-	fuego.WithAddr("localhost:8080"),
-)
+import "github.com/go-fuego/fuego"
+
+func main() {
+	s := fuego.NewServer(
+		fuego.WithAddr("localhost:8080"),
+	)
+}
 ```
 
 ### Port (Deprecated)
@@ -44,9 +48,13 @@ s := fuego.NewServer(
 You can change the port of the server with the `WithPort` option.
 
 ```go
-s := fuego.NewServer(
-	fuego.WithPort(8080),
-)
+import "github.com/go-fuego/fuego"
+
+func main() {
+	s := fuego.NewServer(
+		fuego.WithPort(8080),
+	)
+}
 ```
 
 ### CORS
@@ -58,12 +66,18 @@ because it applies on routes that aren't registered. For example,
 but it's a request that needs to be handled by the CORS middleware.
 
 ```go
-import "github.com/rs/cors"
+import (
+	"github.com/rs/cors"
 
-s := fuego.NewServer(
-	fuego.WithCorsMiddleware(cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
-	}).Handler),
+	"github.com/go-fuego/fuego"
 )
+
+func main() {
+	s := fuego.NewServer(
+		fuego.WithCorsMiddleware(cors.New(cors.Options{
+			AllowedOrigins: []string{"*"},
+			AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		}).Handler),
+	)
+}
 ```
