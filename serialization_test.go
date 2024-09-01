@@ -108,7 +108,7 @@ func (t *tbt) OutTransform(context.Context) error {
 
 var _ OutTransformer = &tbt{}
 
-func TestOutTranform(t *testing.T) {
+func TestOutTransform(t *testing.T) {
 	t.Run("can outTransform a value", func(t *testing.T) {
 		value := tbt{Name: "John"}
 		valueTransformed, err := transformOut(context.Background(), value)

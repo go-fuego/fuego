@@ -21,7 +21,7 @@ import (
 func InitDB(path string) *sql.DB {
 	db, err := sql.Open("sqlite", path)
 	if err != nil {
-		slog.Error("cannot open db connexion", "err", err)
+		slog.Error("cannot open db connection", "err", err)
 	}
 
 	err = db.Ping()

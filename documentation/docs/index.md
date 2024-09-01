@@ -18,7 +18,7 @@ Try our [Hello World](./tutorials/01-hello-world.md)!
 go run github.com/go-fuego/fuego/examples/hello-world@latest
 ```
 
-Or **try Fuego immediately** by cloning **[one of our exemples](https://github.com/go-fuego/fuego/tree/main/examples)**.
+Or **try Fuego immediately** by cloning **[one of our examples](https://github.com/go-fuego/fuego/tree/main/examples)**.
 
 ### What you'll need
 

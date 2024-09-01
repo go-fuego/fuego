@@ -10,7 +10,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
-// Group allows to group routes under a common path.
+// Group allows grouping routes under a common path.
 // Middlewares are scoped to the group.
 // For example:
 //
@@ -236,7 +236,7 @@ func (r Route[T, B]) NameFromNamespace(opts ...func(string) string) string {
 	return name
 }
 
-// transform camelCase to human readable string
+// transform camelCase to human-readable string
 func camelToHuman(s string) string {
 	result := strings.Builder{}
 	for i, r := range s {

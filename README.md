@@ -308,7 +308,7 @@ curl http://localhost:8088 -X POST -d '{"name": "Fuego"}' -H 'Content-Type: appl
 
 - Never forget to return after an error
 - OpenAPI schema generated, listing all the routes
-- Deserialization and validation are more easy
+- Deserialization and validation are easier
 - Transition to Fuego is easy and fast
 
 </details>

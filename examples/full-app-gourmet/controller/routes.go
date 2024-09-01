@@ -10,7 +10,7 @@ import (
 	"github.com/go-fuego/fuego/middleware/basicauth"
 )
 
-// Resource is the global struct that holds useful sources of informations available for the controllers.
+// Resource is the global struct that holds useful sources of information available for the controllers.
 // Usually not used directly, but passed to the controllers.
 type Resource struct {
 	DosingQueries      DosingRepository
