@@ -7,6 +7,7 @@ linters:
   disable-all: false
   enable:
     - errcheck
+    - gci
     - gofumpt
     - gosec
     - gosimple
@@ -21,4 +22,11 @@ linters-settings:
     extra-rules: true
   staticcheck:
     checks: ["all"]
-
+  gci:
+    sections:
+      # Standard section: captures all standard packages.
+      - standard
+      # Default section: catchall that is not standard or custom
+      - default
+      # linters that related to fuego, so they should be separated
+      - localmodule
