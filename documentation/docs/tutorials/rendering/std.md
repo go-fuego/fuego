@@ -11,6 +11,11 @@ Just use the `fuego.HTML` type as a return type for your handler, and return
 `c.Render()` with the template name and data.
 
 ```go
+import (
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/store/types"
+)
+
 // highlight-next-line
 func (rs Ressource) unitPreselected(c fuego.ContextNoBody) (fuego.HTML, error) {
 	id := c.QueryParam("IngredientID")

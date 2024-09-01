@@ -109,6 +109,8 @@ import (
 	"net/http"
 
 	httpSwagger "github.com/swaggo/http-swagger"
+
+	"github.com/go-fuego/fuego"
 )
 
 func openApiHandler(specURL string) http.Handler {

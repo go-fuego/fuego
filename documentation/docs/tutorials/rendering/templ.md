@@ -8,6 +8,11 @@ with the `fuego.Templ` return type.
 Example from [a recipe app](https://github.com/go-fuego/fuego/tree/main/examples/full-app-gourmet):
 
 ```go
+import (
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
+)
+
 // highlight-next-line
 func (rs Ressource) adminIngredients(c fuego.ContextNoBody) (fuego.Templ, error) {
 	searchParams := components.SearchParams{

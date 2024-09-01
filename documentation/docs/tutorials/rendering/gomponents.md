@@ -6,6 +6,11 @@ Just use the `fuego.Gomponent` type as a return type for your handler,
 and return the gomponent.
 
 ```go
+import (
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
+)
+
 // highlight-next-line
 func (rs Ressource) adminIngredients(c fuego.ContextNoBody) (fuego.Gomponent, error) {
 	searchParams := components.SearchParams{
