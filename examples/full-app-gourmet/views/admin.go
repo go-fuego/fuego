@@ -4,12 +4,12 @@ import (
 	"github.com/go-fuego/fuego"
 )
 
-type AdminRessource struct {
+type AdminResource struct {
 	DosingQueries      DosingRepository
 	RecipesQueries     RecipeRepository
 	IngredientsQueries IngredientRepository
 }
 
-func (rs Ressource) pageAdmin(c fuego.ContextNoBody) (fuego.Templ, error) {
+func (rs Resource) pageAdmin(c fuego.ContextNoBody) (fuego.Templ, error) {
 	return rs.adminRecipes(c)
 }

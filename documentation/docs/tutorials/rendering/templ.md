@@ -9,7 +9,7 @@ Example from [a recipe app](https://github.com/go-fuego/fuego/tree/main/examples
 
 ```go
 // highlight-next-line
-func (rs Ressource) adminIngredients(c fuego.ContextNoBody) (fuego.Templ, error) {
+func (rs Resource) adminIngredients(c fuego.ContextNoBody) (fuego.Templ, error) {
 	searchParams := components.SearchParams{
 		Name:    c.QueryParam("name"),
 		PerPage: c.QueryParamInt("perPage", 20),

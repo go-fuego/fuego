@@ -8,17 +8,17 @@ import (
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 )
 
-type ingredientRessource struct {
+type ingredientResource struct {
 	IngredientRepository IngredientRepository
 }
 
-func (rs ingredientRessource) MountRoutes(s *fuego.Server) {
+func (rs ingredientResource) MountRoutes(s *fuego.Server) {
 	ingredientsGroup := fuego.Group(s, "/ingredients")
 	fuego.Get(ingredientsGroup, "/ingredients", rs.getAllIngredients)
 	fuego.Post(ingredientsGroup, "/ingredients/new", rs.newIngredient)
 }
 
-func (rs ingredientRessource) getAllIngredients(c fuego.ContextNoBody) ([]store.Ingredient, error) {
+func (rs ingredientResource) getAllIngredients(c fuego.ContextNoBody) ([]store.Ingredient, error) {
 	ingredients, err := rs.IngredientRepository.GetIngredients(c.Context())
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (ci *CreateIngredient) InTransform(context.Context) error {
 	return nil
 }
 
-func (rs ingredientRessource) newIngredient(c *fuego.ContextWithBody[CreateIngredient]) (store.Ingredient, error) {
+func (rs ingredientResource) newIngredient(c *fuego.ContextWithBody[CreateIngredient]) (store.Ingredient, error) {
 	body, err := c.Body()
 	if err != nil {
 		return store.Ingredient{}, err

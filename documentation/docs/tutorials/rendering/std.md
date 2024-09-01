@@ -12,7 +12,7 @@ Just use the `fuego.HTML` type as a return type for your handler, and return
 
 ```go
 // highlight-next-line
-func (rs Ressource) unitPreselected(c fuego.ContextNoBody) (fuego.HTML, error) {
+func (rs Resource) unitPreselected(c fuego.ContextNoBody) (fuego.HTML, error) {
 	id := c.QueryParam("IngredientID")
 
 	ingredient, err := rs.IngredientsQueries.GetIngredient(c.Context(), id)

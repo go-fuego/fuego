@@ -51,23 +51,23 @@ func main() {
 
 	store := store.New(db)
 
-	// Create ressources that will be available in API controllers
-	apiRessources := controller.Ressource{
+	// Create resources that will be available in API controllers
+	apiResources := controller.Resource{
 		RecipesQueries:     store,
 		IngredientsQueries: store,
 		DosingQueries:      store,
 	}
 
-	// Create ressources that will be available in HTML controllers
-	viewsRessources := views.Ressource{
+	// Create resources that will be available in HTML controllers
+	viewsResources := views.Resource{
 		RecipesQueries:     store,
 		IngredientsQueries: store,
 		DosingQueries:      store,
 	}
 
-	rs := server.Ressources{
-		API:   apiRessources,
-		Views: viewsRessources,
+	rs := server.Resources{
+		API:   apiResources,
+		Views: viewsResources,
 	}
 
 	app := rs.Setup(fuego.WithAddr(fmt.Sprintf("localhost:%d", *port)))

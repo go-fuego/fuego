@@ -9,10 +9,10 @@ import (
 func NewPetStoreServer(options ...func(*fuego.Server)) *fuego.Server {
 	s := fuego.NewServer(options...)
 
-	petsRessources := controller.PetsRessources{
+	petsResources := controller.PetsResources{
 		PetsService: services.NewInMemoryPetsService(), // Dependency injection: we can pass a service here (for example a database service)
 	}
-	petsRessources.Routes(s)
+	petsResources.Routes(s)
 
 	return s
 }
