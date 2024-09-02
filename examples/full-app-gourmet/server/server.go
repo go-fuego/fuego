@@ -10,11 +10,20 @@ import (
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/static"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templates"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/views"
+	"github.com/go-fuego/fuego/option"
 )
 
 type Resources struct {
 	Views views.Resource
 	API   controller.Resource
+}
+
+func cache(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "public, max-age=600")
+
+		h.ServeHTTP(w, r)
+	})
 }
 
 func (rs Resources) Setup(
@@ -41,16 +50,12 @@ func (rs Resources) Setup(
 	fuego.Use(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
 	fuego.Register(app, fuego.Route[any, any]{
-		Path:     "/static/",
-		Method:   http.MethodGet,
-		FullName: "static handler",
-	}, http.StripPrefix("/static", static.Handler()), func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Cache-Control", "public, max-age=600")
-
-			h.ServeHTTP(w, r)
-		})
-	})
+		BaseRoute: fuego.BaseRoute{
+			Path:     "/static/",
+			Method:   http.MethodGet,
+			FullName: "static handler",
+		},
+	}, http.StripPrefix("/static", static.Handler()), option.Middleware(cache))
 
 	// Register views (controllers that return HTML pages)
 	rs.Views.Routes(fuego.Group(app, "/"))

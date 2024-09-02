@@ -9,6 +9,7 @@ require (
 	github.com/gorilla/schema v1.4.1
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/stretchr/testify v1.9.0
+	github.com/thejerf/slogassert v0.3.4
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools/v3 v3.5.1
 )

@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -123,6 +124,8 @@ type ContextNoBody struct {
 
 	fs        fs.FS
 	templates *template.Template
+
+	expectedParams []string // list of expected query parameters (declared in the OpenAPI spec)
 
 	readOptions readOptions
 }
@@ -265,11 +268,17 @@ func (c ContextNoBody) QueryParams() url.Values {
 
 // QueryParamsArr returns an slice of string from the given query parameter.
 func (c ContextNoBody) QueryParamArr(name string) []string {
+	if !slices.Contains(c.expectedParams, name) {
+		slog.Warn("query parameter not expected in OpenAPI spec", "param", name)
+	}
 	return c.Req.URL.Query()[name]
 }
 
 // QueryParam returns the query parameter with the given name.
 func (c ContextNoBody) QueryParam(name string) string {
+	if !slices.Contains(c.expectedParams, name) {
+		slog.Warn("query parameter not expected in OpenAPI spec", "param", name, "expected_one_of", c.expectedParams)
+	}
 	return c.Req.URL.Query().Get(name)
 }
 

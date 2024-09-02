@@ -93,14 +93,14 @@ func TestHttpHandler(t *testing.T) {
 	s := NewServer()
 
 	t.Run("can create std http handler from fuego controller", func(t *testing.T) {
-		handler := HTTPHandler[ans, any](s, testController)
+		handler := HTTPHandler(s, testController, nil)
 		if handler == nil {
 			t.Error("handler is nil")
 		}
 	})
 
 	t.Run("can run http handler from fuego controller", func(t *testing.T) {
-		handler := HTTPHandler(s, testController)
+		handler := HTTPHandler(s, testController, nil)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -111,7 +111,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can handle errors in http handler from fuego controller", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerWithError)
+		handler := HTTPHandler(s, testControllerWithError, nil)
 		if handler == nil {
 			t.Error("handler is nil")
 		}
@@ -125,7 +125,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can outTransform before serializing a value", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerWithOutTransformer)
+		handler := HTTPHandler(s, testControllerWithOutTransformer, nil)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -136,7 +136,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can outTransform before serializing a pointer value", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerWithOutTransformerStar)
+		handler := HTTPHandler(s, testControllerWithOutTransformerStar, nil)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -147,7 +147,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can handle errors in outTransform", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerWithOutTransformerStarError)
+		handler := HTTPHandler(s, testControllerWithOutTransformerStarError, nil)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -158,7 +158,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can handle nil in outTransform", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerWithOutTransformerStarNil)
+		handler := HTTPHandler(s, testControllerWithOutTransformerStarNil, nil)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -169,7 +169,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("returns correct content-type when returning string", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerReturningString)
+		handler := HTTPHandler(s, testControllerReturningString, nil)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -179,7 +179,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("returns correct content-type when returning ptr to string", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerReturningPtrToString)
+		handler := HTTPHandler(s, testControllerReturningPtrToString, nil)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		req.Header.Set("Accept", "text/plain")
@@ -197,7 +197,7 @@ func TestSetStatusBeforeSend(t *testing.T) {
 		handler := HTTPHandler(s, func(c *ContextNoBody) (ans, error) {
 			c.Response().WriteHeader(201)
 			return ans{Ans: "Hello World"}, nil
-		})
+		}, nil)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -213,7 +213,7 @@ func TestSetStatusBeforeSend(t *testing.T) {
 		handler := HTTPHandler(s, func(c *ContextNoBody) (ans, error) {
 			c.SetStatus(202)
 			return ans{Ans: "Hello World"}, nil
-		})
+		}, nil)
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()

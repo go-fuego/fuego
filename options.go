@@ -394,7 +394,7 @@ func WithValidator(newValidator *validator.Validate) func(*Server) {
 
 // Replaces Tags for the Server (i.e Group)
 // By default, the tag is the type of the response body.
-func (s *Server) Tags(tags ...string) *Server {
+func (s *Server) SetTags(tags ...string) *Server {
 	s.tags = tags
 	return s
 }
