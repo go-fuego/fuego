@@ -416,7 +416,7 @@ func TestSecurity_LoginHandler(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		s := NewServer()
-		truc := HTTPHandler(s, loginHandler)
+		truc := HTTPHandler(s, loginHandler, nil)
 		truc.ServeHTTP(w, r)
 
 		cookies := w.Result().Cookies()
@@ -429,7 +429,7 @@ func TestSecurity_LoginHandler(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		s := NewServer()
-		truc := HTTPHandler(s, loginHandler)
+		truc := HTTPHandler(s, loginHandler, nil)
 		truc.ServeHTTP(w, r)
 
 		cookies := w.Result().Cookies()
@@ -442,7 +442,7 @@ func TestSecurity_LoginHandler(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		s := NewServer()
-		truc := HTTPHandler(s, loginHandler)
+		truc := HTTPHandler(s, loginHandler, nil)
 		truc.ServeHTTP(w, r)
 
 		cookies := w.Result().Cookies()

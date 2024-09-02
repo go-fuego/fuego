@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	controller "github.com/go-fuego/fuego/examples/petstore/controllers"
 	"github.com/go-fuego/fuego/examples/petstore/models"
@@ -19,6 +20,22 @@ func NewInMemoryPetsService() *InMemoryPetsService {
 type InMemoryPetsService struct {
 	Pets []models.Pets
 	Incr *int
+}
+
+// FilterPets implements controller.PetsService.
+func (petService *InMemoryPetsService) FilterPets(filter controller.PetsFilter) ([]models.Pets, error) {
+	pets := []models.Pets{}
+	for _, p := range petService.Pets {
+		if filter.Name != "" && !strings.Contains(p.Name, filter.Name) {
+			continue
+		}
+		if filter.YoungerThan != 0 && p.Age >= filter.YoungerThan {
+			continue
+		}
+
+		pets = append(pets, p)
+	}
+	return pets, nil
 }
 
 // GetPetByName implements controller.PetsService.

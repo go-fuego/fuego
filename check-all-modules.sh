@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 mods=$(go list -f '{{.Dir}}' -m)
 for mod in $mods; do
 	cd "$mod"

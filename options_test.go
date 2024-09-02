@@ -302,7 +302,7 @@ func TestWithoutAutoGroupTags(t *testing.T) {
 func TestServerTags(t *testing.T) {
 	t.Run("set tags", func(t *testing.T) {
 		s := NewServer().
-			Tags("my-server-tag")
+			SetTags("my-server-tag")
 
 		require.Equal(t, s.tags, []string{"my-server-tag"})
 	})
@@ -317,7 +317,7 @@ func TestServerTags(t *testing.T) {
 
 	t.Run("remove tags", func(t *testing.T) {
 		s := NewServer().
-			Tags("my-server-tag").
+			SetTags("my-server-tag").
 			AddTags("my-other-server-tag").
 			RemoveTags("my-other-server-tag")
 
@@ -326,22 +326,22 @@ func TestServerTags(t *testing.T) {
 
 	t.Run("inherit tags from group, replace", func(t *testing.T) {
 		s := NewServer().
-			Tags("my-server-tag")
+			SetTags("my-server-tag")
 
 		group := Group(s, "/api").
-			Tags("my-group-tag")
+			SetTags("my-group-tag")
 
 		require.Equal(t, group.tags, []string{"my-group-tag"})
 
 		subGroup := Group(group, "/users").
-			Tags("my-sub-group-tag")
+			SetTags("my-sub-group-tag")
 
 		require.Equal(t, subGroup.tags, []string{"my-sub-group-tag"})
 	})
 
 	t.Run("inherit tags from group, add", func(t *testing.T) {
 		s := NewServer().
-			Tags("my-server-tag")
+			SetTags("my-server-tag")
 
 		group := Group(s, "/api").
 			AddTags("my-group-tag")
@@ -356,7 +356,7 @@ func TestServerTags(t *testing.T) {
 
 	t.Run("inherit tags from group, remove", func(t *testing.T) {
 		s := NewServer().
-			Tags("my-server-tag")
+			SetTags("my-server-tag")
 
 		group := Group(s, "/api").
 			AddTags("my-group-tag")

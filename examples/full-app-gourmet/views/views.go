@@ -7,13 +7,14 @@ import (
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/middleware/basicauth"
 	"github.com/go-fuego/fuego/middleware/cache"
+	"github.com/go-fuego/fuego/option"
 )
 
 func (rs Resource) Routes(s *fuego.Server) {
 	// Public Pages
 	fuego.GetStd(s, "/recipes-std", rs.showRecipesStd)
-	fuego.All(s, "/", rs.showIndex, cache.New())
-	fuego.GetStd(s, "/robots.txt", rs.robots, cache.New())
+	fuego.All(s, "/", rs.showIndex, option.Middleware(cache.New()))
+	fuego.GetStd(s, "/robots.txt", rs.robots, option.Middleware(cache.New()))
 	fuego.Get(s, "/recipes", rs.showRecipes)
 	fuego.Get(s, "/planner", rs.planner)
 	fuego.Get(s, "/recipes/{id}", rs.showSingleRecipes2)

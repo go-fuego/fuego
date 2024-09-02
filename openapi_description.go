@@ -51,11 +51,34 @@ func hello(ctx *fuego.ContextWithBody[MyBody]) (*MyResponse, error) {
 }
 ` + "```" + `
 
-### Add more details to the route
+### Add openAPI information to the route
 
 ` + "```go" + `
-fuego.Get(s, "/hello", myController).
-	Description("This is a route that says hello").
-	Summary("Say hello").
+fuego.Get(petsGroup, "/", rs.getAllPets,
+	option.Query("name", "Filter by name", param.Example("cat name", "felix"), param.Nullable()),
+	option.QueryInt("per_page", "Number of items per page", param.Required()),
+	option.QueryInt("page", "Page number", param.Default(1), param.Example("first page", 1), param.Example("100th page", 100)),
+	option.QueryBool("is_adopted", "Filter by adoption status"),
+	option.Tags("coucou", "my-tag"),
+	option.AddDescription("Get all pets"),
+)
+` + "```" + `
+
+Then, in the controller
+
+` + "```go" + `
+type MyBody struct {
+	Name string ` + "`json:\"name\" validate:\"required,max=30\"`" + `
+}
+
+type MyResponse struct {
+	Answer string ` + "`json:\"answer\"`" + `
+}
+
+func getAllPets(ctx *fuego.ContextNoBody) (*MyResponse, error) {
+	name := ctx.QueryParam("name")
+	perPage := ctx.QueryParamInt("per_page", 100) // Should be same as the declared default value. If not, a warning will be sent at runtime.
+	return &MyResponse{Answer: "Hello " + body.Name}, nil
+}
 ` + "```" + `
 `

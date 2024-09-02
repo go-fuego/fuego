@@ -123,8 +123,10 @@ func (s *Server) registerOpenAPIRoutes(jsonSpec []byte) {
 
 	if !s.OpenAPIConfig.DisableSwaggerUI {
 		Register(s, Route[any, any]{
-			Method: http.MethodGet,
-			Path:   s.OpenAPIConfig.SwaggerUrl + "/",
+			BaseRoute: BaseRoute{
+				Method: http.MethodGet,
+				Path:   s.OpenAPIConfig.SwaggerUrl + "/",
+			},
 		}, s.OpenAPIConfig.UIHandler(s.OpenAPIConfig.JsonUrl))
 		s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s://%s%s/index.html", s.proto(), s.Server.Addr, s.OpenAPIConfig.SwaggerUrl))
 	}

@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-fuego/fuego/option"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-fuego/fuego"
@@ -106,7 +107,7 @@ func TestCache(t *testing.T) {
 
 		t.Run("Do not store to cache when Cache-Control: no-store", func(t *testing.T) {
 			s := fuego.NewServer()
-			fuego.Get(s, "/with-cache", baseController, New(Config{}))
+			fuego.Get(s, "/with-cache", baseController, option.Middleware(New(Config{})))
 
 			r := httptest.NewRequest("GET", "/with-cache", nil)
 			r.Header.Set("Cache-Control", "no-store") // The response will not be stored

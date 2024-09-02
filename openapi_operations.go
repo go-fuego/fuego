@@ -6,7 +6,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
-type ParamType string
+type ParamType string // Query, Header, Cookie
 
 const (
 	QueryParamType  ParamType = "query"
@@ -22,8 +22,12 @@ type OpenAPIParam struct {
 
 type OpenAPIParamOption struct {
 	Required bool
+	Nullable bool
+	Default  any // Default value for the parameter
 	Example  string
+	Examples map[string]any
 	Type     ParamType
+	GoType   string // integer, string, bool
 }
 
 // Overrides the description for the route.
