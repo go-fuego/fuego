@@ -66,7 +66,7 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 	// Marshal spec to JSON
 	jsonSpec, err := s.marshalSpec()
 	if err != nil {
-		slog.Error("Error marshalling spec to JSON", "error", err)
+		slog.Error("Error marshaling spec to JSON", "error", err)
 	}
 
 	if !s.OpenAPIConfig.DisableSwagger {

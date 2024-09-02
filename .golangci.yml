@@ -16,8 +16,13 @@ linters:
     - staticcheck
     - unused
     - usestdlibvars
+    - misspell
 
 linters-settings:
+  misspell:
+    locale: "US"
+    error: true
+
   gofumpt:
     extra-rules: true
   staticcheck:
