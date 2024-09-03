@@ -32,7 +32,7 @@ func TestParam(t *testing.T) {
 			w := httptest.NewRecorder()
 			s.Mux.ServeHTTP(w, r)
 
-			require.Equal(t, 200, w.Code)
+			require.Equal(t, http.StatusOK, w.Code)
 			require.Equal(t, "hey18true", w.Body.String())
 		})
 	})
