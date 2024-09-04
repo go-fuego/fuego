@@ -1,0 +1,8 @@
+[default]
+locale = "en-us"
+
+[files]
+# excluded file
+extend-exclude = [
+   "go.sum", "go.mod", # these files are specific to Go, they shouldn't get parsed for typos
+]
