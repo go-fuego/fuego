@@ -5,8 +5,8 @@ export default function HomepageFeatures(): JSX.Element {
   return (
     <div className={styles.features} style={{}}>
       <div id="simple" className={clsx(styles.block, styles.block_odd)}>
-        <h2 className="">Serialisation</h2>
-        <p>Simple serialisation of data structures to JSON and back.</p>
+        <h2 className="">Serialization</h2>
+        <p>Simple serialization of data structures to JSON and back.</p>
       </div>
       <div id="openapi" className={clsx(styles.block)}>
         <h2 className="">OpenAPI generation</h2>
