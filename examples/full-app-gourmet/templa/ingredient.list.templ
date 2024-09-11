@@ -1,25 +1,34 @@
 package templa
 
 import (
-	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa/components"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa/components"
 )
+
+type IngredientPageProps struct {
+	Ingredients []store.Ingredient
+	Header      string
+}
+
+templ IngredientPage(props IngredientPageProps) {
+	@page("Ingredients") {
+		<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 my-2 md:my-6">
+			@IngredientList(IngredientListProps{Ingredients: props.Ingredients})
+		</div>
+	}
+}
 
 type IngredientListProps struct {
 	Ingredients []store.Ingredient
 }
 
 templ IngredientList(props IngredientListProps) {
-	@page("Ingredients") {
-		<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 my-2 md:my-6">
-			for _, ingredient := range props.Ingredients {
-				@components.Card(components.CardProps{
-					Title: ingredient.Name,
-					Link: "/ingredients/" + ingredient.ID,
-					ImageURL: "",
-					Body: ingredient.Description,
-				})
-			}
-		</div>
+	for _, ingredient := range props.Ingredients {
+		@components.Card(components.CardProps{
+			Title:    ingredient.Name,
+			Link:     "/ingredients/" + ingredient.ID,
+			ImageURL: "",
+			Body:     ingredient.Description,
+		})
 	}
 }

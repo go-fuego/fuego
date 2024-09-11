@@ -341,7 +341,14 @@ func (c ContextNoBody) QueryParamInt(name string) int {
 }
 
 // QueryParamBool returns the query parameter with the given name as a bool.
-// If the query parameter does not exist or is not a bool, it returns nil.
+// If the query parameter does not exist or is not a bool, it returns the default value declared in the OpenAPI spec.
+// For example, if the query parameter is declared as:
+//
+//	fuego.Get(s, "/test", myController,
+//	  option.QueryBool("is_ok", "Is OK?", param.Default(true))
+//	)
+//
+// and the query parameter does not exist in the HTTP request, it will return true.
 // Accepted values are defined as [strconv.ParseBool]
 func (c ContextNoBody) QueryParamBoolErr(name string) (bool, error) {
 	param := c.QueryParam(name)
@@ -366,6 +373,16 @@ func (c ContextNoBody) QueryParamBoolErr(name string) (bool, error) {
 	return b, nil
 }
 
+// QueryParamBool returns the query parameter with the given name as a bool.
+// If the query parameter does not exist or is not a bool, it returns false.
+// Accepted values are defined as [strconv.ParseBool]
+// Example:
+//
+//	fuego.Get(s, "/test", myController,
+//	  option.QueryBool("is_ok", "Is OK?", param.Default(true))
+//	)
+//
+// and the query parameter does not exist in the HTTP request, it will return true.
 func (c ContextNoBody) QueryParamBool(name string) bool {
 	param, err := c.QueryParamBoolErr(name)
 	if err != nil {

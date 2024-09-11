@@ -133,10 +133,15 @@ func (r Route[ResponseBody, RequestBody]) Tags(tags ...string) Route[ResponseBod
 
 // Replace the available request Content-Types for the route.
 // By default, the request Content-Types are `application/json` and `application/xml`
+//
+// Deprecated: Use `option.RequestContentType` from github.com/go-fuego/fuego/option instead.
+// Example:
+//
+//	fuego.Post(s, "/test", testControllerWithBody, option.RequestContentType("application/json"))
 func (r Route[ResponseBody, RequestBody]) RequestContentType(consumes ...string) Route[ResponseBody, RequestBody] {
-	bodyTag := schemaTagFromType(r.mainRouter, *new(RequestBody))
+	bodyTag := SchemaTagFromType(r.MainRouter, *new(RequestBody))
 
-	if bodyTag.name != "unknown-interface" {
+	if bodyTag.Name != "unknown-interface" {
 		requestBody := newRequestBody[RequestBody](bodyTag, consumes)
 
 		// set just Value as we do not want to reference
@@ -155,18 +160,20 @@ func (r Route[ResponseBody, RequestBody]) AddTags(tags ...string) Route[Response
 }
 
 // AddError adds an error to the route.
+//
+// Deprecated: Use `option.AddError` from github.com/go-fuego/fuego/option instead.
 func (r Route[ResponseBody, RequestBody]) AddError(code int, description string, errorType ...any) Route[ResponseBody, RequestBody] {
-	addResponse(r.mainRouter, r.Operation, code, description, errorType...)
+	addResponse(r.MainRouter, r.Operation, code, description, errorType...)
 	return r
 }
 
 func addResponse(s *Server, operation *openapi3.Operation, code int, description string, errorType ...any) {
-	var responseSchema schemaTag
+	var responseSchema SchemaTag
 
 	if len(errorType) > 0 {
-		responseSchema = schemaTagFromType(s, errorType[0])
+		responseSchema = SchemaTagFromType(s, errorType[0])
 	} else {
-		responseSchema = schemaTagFromType(s, HTTPError{})
+		responseSchema = SchemaTagFromType(s, HTTPError{})
 	}
 	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json"})
 

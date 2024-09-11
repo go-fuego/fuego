@@ -24,6 +24,7 @@ type Resource struct {
 	DosingQueries      DosingRepository
 	RecipesQueries     RecipeRepository
 	IngredientsQueries IngredientRepository
+	MetaQueries        MetaRepository
 }
 
 func (rs Resource) showRecipesStd(w http.ResponseWriter, r *http.Request) {

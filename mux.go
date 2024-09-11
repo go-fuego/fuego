@@ -48,15 +48,16 @@ type Route[ResponseBody any, RequestBody any] struct {
 }
 
 type BaseRoute struct {
-	Operation   *openapi3.Operation // GENERATED OpenAPI operation, do not set manually in Register function. You can change it after the route is registered.
-	Method      string              // HTTP method (GET, POST, PUT, PATCH, DELETE)
-	Path        string              // URL path. Will be prefixed by the base path of the server and the group path if any
-	Handler     http.Handler        // handler executed for this route
-	FullName    string              // namespace and name of the function to execute
-	Params      map[string]OpenAPIParam
-	Middlewares []func(http.Handler) http.Handler
+	Operation            *openapi3.Operation // GENERATED OpenAPI operation, do not set manually in Register function. You can change it after the route is registered.
+	Method               string              // HTTP method (GET, POST, PUT, PATCH, DELETE)
+	Path                 string              // URL path. Will be prefixed by the base path of the server and the group path if any
+	Handler              http.Handler        // handler executed for this route
+	FullName             string              // namespace and name of the function to execute
+	Params               map[string]OpenAPIParam
+	Middlewares          []func(http.Handler) http.Handler
+	AcceptedContentTypes []string // Content types accepted for the request body. If nil, all content types (*/*) are accepted.
 
-	mainRouter *Server // ref to the main router, used to register the route in the OpenAPI spec
+	MainRouter *Server // PRIVATE ref to the main router, used to register the route in the OpenAPI spec
 }
 
 // Capture all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
@@ -125,7 +126,7 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 	if route.Operation.OperationID == "" {
 		route.Operation.OperationID = route.Method + "_" + strings.ReplaceAll(strings.ReplaceAll(route.Path, "{", ":"), "}", "")
 	}
-	route.mainRouter = s
+	route.MainRouter = s
 
 	return &route
 }
@@ -175,10 +176,11 @@ func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http
 
 func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path string, controller func(Contexted) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
 	route := BaseRoute{
-		Method:    method,
-		Path:      path,
-		FullName:  FuncName(controller),
-		Operation: openapi3.NewOperation(),
+		Method:     method,
+		Path:       path,
+		FullName:   FuncName(controller),
+		Operation:  openapi3.NewOperation(),
+		MainRouter: s.mainRouter,
 	}
 
 	for _, o := range options {

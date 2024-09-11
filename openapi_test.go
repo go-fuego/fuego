@@ -192,8 +192,8 @@ func Test_tagFromType(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			tag := schemaTagFromType(s, tc.inputType)
-			require.Equal(t, tc.expectedTagValue, tag.name, tc.description)
+			tag := SchemaTagFromType(s, tc.inputType)
+			require.Equal(t, tc.expectedTagValue, tag.Name, tc.description)
 			if tc.expectedTagValueType != nil {
 				require.NotNil(t, tag.Value)
 				require.Equal(t, tc.expectedTagValueType, tag.Value.Type, tc.description)
