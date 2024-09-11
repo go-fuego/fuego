@@ -217,26 +217,34 @@ func Deprecated() func(*fuego.BaseRoute) {
 	}
 }
 
-// // AddError adds an error to the route.
-// func AddError(code int, description string, errorType ...any) func(*fuego.BaseRoute) {
-// 	return func(r *fuego.BaseRoute) {
-// 		addResponse(r.mainRouter, r.Operation, code, description, errorType...)
-// 	}
-// }
+// AddError adds an error to the route.
+func AddError(code int, description string, errorType ...any) func(*fuego.BaseRoute) {
+	return func(r *fuego.BaseRoute) {
+		addResponse(r.MainRouter, r.Operation, code, description, errorType...)
+	}
+}
 
-// func addResponse(s *fuego.Server, operation *openapi3.Operation, code int, description string, errorType ...any) {
-// 	var responseSchema schemaTag
+func addResponse(s *fuego.Server, operation *openapi3.Operation, code int, description string, errorType ...any) {
+	var responseSchema fuego.SchemaTag
 
-// 	if len(errorType) > 0 {
-// 		responseSchema = schemaTagFromType(s, errorType[0])
-// 	} else {
-// 		responseSchema = schemaTagFromType(s, fuego.HTTPError{})
-// 	}
-// 	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json"})
+	if len(errorType) > 0 {
+		responseSchema = fuego.SchemaTagFromType(s, errorType[0])
+	} else {
+		responseSchema = fuego.SchemaTagFromType(s, fuego.HTTPError{})
+	}
+	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json"})
 
-// 	response := openapi3.NewResponse().
-// 		WithDescription(description).
-// 		WithContent(content)
+	response := openapi3.NewResponse().
+		WithDescription(description).
+		WithContent(content)
 
-// 	operation.AddResponse(code, response)
-// }
+	operation.AddResponse(code, response)
+}
+
+// RequestContentType sets the accepted content types for the route.
+// By default, the accepted content types is */*.
+func RequestContentType(consumes ...string) func(*fuego.BaseRoute) {
+	return func(r *fuego.BaseRoute) {
+		r.AcceptedContentTypes = consumes
+	}
+}

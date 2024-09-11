@@ -173,17 +173,17 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 
 	// Request Body
 	if route.Operation.RequestBody == nil {
-		bodyTag := schemaTagFromType(s, *new(B))
+		bodyTag := SchemaTagFromType(s, *new(B))
 
-		if bodyTag.name != "unknown-interface" {
-			requestBody := newRequestBody[B](bodyTag, []string{"application/json", "application/xml"})
-			s.OpenApiSpec.Components.RequestBodies[bodyTag.name] = &openapi3.RequestBodyRef{
+		if bodyTag.Name != "unknown-interface" {
+			requestBody := newRequestBody[B](bodyTag, route.AcceptedContentTypes)
+			s.OpenApiSpec.Components.RequestBodies[bodyTag.Name] = &openapi3.RequestBodyRef{
 				Value: requestBody,
 			}
 
 			// add request body to operation
 			route.Operation.RequestBody = &openapi3.RequestBodyRef{
-				Ref:   "#/components/requestBodies/" + bodyTag.name,
+				Ref:   "#/components/requestBodies/" + bodyTag.Name,
 				Value: requestBody,
 			}
 		}
@@ -195,7 +195,7 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 	}
 
 	// Response - 200
-	responseSchema := schemaTagFromType(s, *new(T))
+	responseSchema := SchemaTagFromType(s, *new(T))
 	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
 	response := openapi3.NewResponse().WithDescription("OK").WithContent(content)
 	route.Operation.AddResponse(200, response)
@@ -216,7 +216,7 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 	return route.Operation, nil
 }
 
-func newRequestBody[RequestBody any](tag schemaTag, consumes []string) *openapi3.RequestBody {
+func newRequestBody[RequestBody any](tag SchemaTag, consumes []string) *openapi3.RequestBody {
 	content := openapi3.NewContentWithSchemaRef(&tag.SchemaRef, consumes)
 	return openapi3.NewRequestBody().
 		WithRequired(true).
@@ -224,18 +224,18 @@ func newRequestBody[RequestBody any](tag schemaTag, consumes []string) *openapi3
 		WithContent(content)
 }
 
-// schemaTag is a struct that holds the name of the struct and the associated openapi3.SchemaRef
-type schemaTag struct {
+// SchemaTag is a struct that holds the name of the struct and the associated openapi3.SchemaRef
+type SchemaTag struct {
 	openapi3.SchemaRef
-	name string
+	Name string
 }
 
-func schemaTagFromType(s *Server, v any) schemaTag {
+func SchemaTagFromType(s *Server, v any) SchemaTag {
 	if v == nil {
 		// ensure we add unknown-interface to our schemas
 		schema := s.getOrCreateSchema("unknown-interface", struct{}{})
-		return schemaTag{
-			name: "unknown-interface",
+		return SchemaTag{
+			Name: "unknown-interface",
 			SchemaRef: openapi3.SchemaRef{
 				Ref:   "#/components/schemas/unknown-interface",
 				Value: schema,
@@ -243,7 +243,7 @@ func schemaTagFromType(s *Server, v any) schemaTag {
 		}
 	}
 
-	return dive(s, reflect.TypeOf(v), schemaTag{}, 5)
+	return dive(s, reflect.TypeOf(v), SchemaTag{}, 5)
 }
 
 // dive returns a schemaTag which includes the generated openapi3.SchemaRef and
@@ -253,10 +253,10 @@ func schemaTagFromType(s *Server, v any) schemaTag {
 // If the type is a slice or array type it will dive into the type as well as
 // build and openapi3.Schema where Type is array and Ref is set to the proper
 // components Schema
-func dive(s *Server, t reflect.Type, tag schemaTag, maxDepth int) schemaTag {
+func dive(s *Server, t reflect.Type, tag SchemaTag, maxDepth int) SchemaTag {
 	if maxDepth == 0 {
-		return schemaTag{
-			name: "default",
+		return SchemaTag{
+			Name: "default",
 			SchemaRef: openapi3.SchemaRef{
 				Ref: "#/components/schemas/default",
 			},
@@ -269,18 +269,18 @@ func dive(s *Server, t reflect.Type, tag schemaTag, maxDepth int) schemaTag {
 
 	case reflect.Slice, reflect.Array:
 		item := dive(s, t.Elem(), tag, maxDepth-1)
-		tag.name = item.name
+		tag.Name = item.Name
 		tag.Value = openapi3.NewArraySchema()
 		tag.Value.Items = &item.SchemaRef
 		return tag
 
 	default:
-		tag.name = t.Name()
-		if t.Kind() == reflect.Struct && strings.HasPrefix(tag.name, "DataOrTemplate") {
+		tag.Name = t.Name()
+		if t.Kind() == reflect.Struct && strings.HasPrefix(tag.Name, "DataOrTemplate") {
 			return dive(s, t.Field(0).Type, tag, maxDepth-1)
 		}
-		tag.Ref = "#/components/schemas/" + tag.name
-		tag.Value = s.getOrCreateSchema(tag.name, reflect.New(t).Interface())
+		tag.Ref = "#/components/schemas/" + tag.Name
+		tag.Value = s.getOrCreateSchema(tag.Name, reflect.New(t).Interface())
 
 		return tag
 	}
@@ -387,6 +387,7 @@ func (s *Server) parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) 
 					minPtr := float64(min)
 					propertyValue.Min = &minPtr
 				} else if propertyValue.Type.Is(openapi3.TypeString) {
+					//nolint:gosec // disable G115
 					propertyValue.MinLength = uint64(min)
 				}
 			}
@@ -399,6 +400,7 @@ func (s *Server) parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) 
 					maxPtr := float64(max)
 					propertyValue.Max = &maxPtr
 				} else if propertyValue.Type.Is(openapi3.TypeString) {
+					//nolint:gosec // disable G115
 					maxPtr := uint64(max)
 					propertyValue.MaxLength = &maxPtr
 				}

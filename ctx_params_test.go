@@ -1,14 +1,16 @@
 package fuego_test
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/option"
 	"github.com/go-fuego/fuego/param"
-	"github.com/stretchr/testify/require"
 )
 
 func TestParam(t *testing.T) {

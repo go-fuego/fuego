@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-fuego/fuego/option"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
 )
 
 type testStruct struct {

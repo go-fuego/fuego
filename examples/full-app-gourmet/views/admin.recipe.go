@@ -26,7 +26,7 @@ func (rs Resource) adminRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 		Name:    c.QueryParam("name"),
 		PerPage: c.QueryParamInt("perPage"),
 		Page:    c.QueryParamInt("page"),
-		URL:     "/admin/ingredients",
+		URL:     "/admin/recipes",
 		Lang:    c.MainLang(),
 	}
 	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())

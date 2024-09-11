@@ -8,11 +8,6 @@
 						"schema": {
 							"$ref": "#/components/schemas/PetsCreate"
 						}
-					},
-					"application/xml": {
-						"schema": {
-							"$ref": "#/components/schemas/PetsCreate"
-						}
 					}
 				},
 				"description": "Request body for models.PetsCreate",
@@ -20,12 +15,7 @@
 			},
 			"PetsUpdate": {
 				"content": {
-					"application/json": {
-						"schema": {
-							"$ref": "#/components/schemas/PetsUpdate"
-						}
-					},
-					"application/xml": {
+					"*/*": {
 						"schema": {
 							"$ref": "#/components/schemas/PetsUpdate"
 						}
@@ -333,6 +323,16 @@
 							}
 						},
 						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"409": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Conflict: Pet with the same name already exists"
 					},
 					"500": {
 						"content": {

@@ -9,13 +9,19 @@ import (
 )
 
 func (rs Resource) showIngredients(c fuego.ContextNoBody) (fuego.Templ, error) {
-	ingredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
-	if err != nil {
-		return nil, err
+	ingredients, _ := rs.IngredientsQueries.GetIngredients(c.Context())
+
+	if c.Header("HX-Request") == "true" && c.Header("HX-Target") == "#page" {
+		return templa.IngredientList(templa.IngredientListProps{
+			Ingredients: ingredients,
+		}), nil
 	}
 
-	return templa.IngredientList(templa.IngredientListProps{
+	headerInfo, _ := rs.MetaQueries.GetHeaderInfo(c.Context())
+
+	return templa.IngredientPage(templa.IngredientPageProps{
 		Ingredients: ingredients,
+		Header:      headerInfo,
 	}), nil
 }
 
@@ -26,6 +32,10 @@ type IngredientRepository interface {
 	GetIngredientsOfRecipe(ctx context.Context, recipeID string) ([]store.GetIngredientsOfRecipeRow, error)
 	UpdateIngredient(ctx context.Context, arg store.UpdateIngredientParams) (store.Ingredient, error)
 	SearchIngredients(ctx context.Context, arg store.SearchIngredientsParams) ([]store.Ingredient, error)
+}
+
+type MetaRepository interface {
+	GetHeaderInfo(ctx context.Context) (string, error)
 }
 
 var _ IngredientRepository = (*store.Queries)(nil)
