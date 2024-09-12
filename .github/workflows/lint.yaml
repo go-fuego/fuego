@@ -6,7 +6,7 @@ on:
     branches: ["main"]
 
 jobs:
-  markdownlint:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,3 +17,6 @@ jobs:
           files: .
           config_file: .markdownlint.yaml
           dot: true
+
+      - name: typos-action spellchecker
+        uses: crate-ci/typos@v1.24.5
