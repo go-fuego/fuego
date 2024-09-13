@@ -15,7 +15,12 @@
 			},
 			"PetsUpdate": {
 				"content": {
-					"*/*": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/PetsUpdate"
+						}
+					},
+					"application/xml": {
 						"schema": {
 							"$ref": "#/components/schemas/PetsUpdate"
 						}
@@ -817,15 +822,7 @@
 					}
 				],
 				"requestBody": {
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/PetsUpdate"
-							}
-						}
-					},
-					"description": "Request body for models.PetsUpdate",
-					"required": true
+					"$ref": "#/components/requestBodies/PetsUpdate"
 				},
 				"responses": {
 					"200": {
