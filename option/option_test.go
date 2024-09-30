@@ -6,10 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-fuego/fuego"
-	"github.com/go-fuego/fuego/param"
 	"github.com/stretchr/testify/require"
 	"github.com/thejerf/slogassert"
+
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/param"
 )
 
 // dummyMiddleware sets the X-Test header on the request and the X-Test-Response header on the response.
@@ -275,5 +276,36 @@ func TestQuery(t *testing.T) {
 				Query("name", "Filter by name", param.Default(3), param.Nullable()),
 			)
 		})
+	})
+}
+
+func TestRequestContentType(t *testing.T) {
+	t.Run("Declare a request content type for the route", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld, RequestContentType("application/json"))
+
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, "hello world", w.Body.String())
+		require.Len(t, route.AcceptedContentTypes, 1)
+		require.Equal(t, "application/json", route.AcceptedContentTypes[0])
+	})
+}
+
+func TestAddError(t *testing.T) {
+	t.Run("Declare an error for the route", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld, AddError(409, "Conflict: Pet with the same name already exists"))
+
+		t.Log("route.Operation.Responses", route.Operation.Responses)
+		require.Equal(t, 5, route.Operation.Responses.Len()) // 200, 400, 409, 500, default
+		resp := route.Operation.Responses.Value("409")
+		require.NotNil(t, resp)
+		require.Equal(t, "Conflict: Pet with the same name already exists", *route.Operation.Responses.Value("409").Value.Description)
 	})
 }

@@ -182,6 +182,9 @@ func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path
 		Operation:  openapi3.NewOperation(),
 		MainRouter: s.mainRouter,
 	}
+	if route.MainRouter == nil {
+		route.MainRouter = s
+	}
 
 	for _, o := range options {
 		o(&route)

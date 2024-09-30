@@ -38,14 +38,15 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge, option.Description("Returns an array of pets grouped by age"))
 	fuego.Post(petsGroup, "/", rs.postPets,
 		option.AddError(409, "Conflict: Pet with the same name already exists"),
-		option.RequestContentType("application/json"),
 	)
 
 	fuego.Get(petsGroup, "/{id}", rs.getPets)
 	fuego.Get(petsGroup, "/by-name/{name...}", rs.getPetByName)
 	fuego.Put(petsGroup, "/{id}", rs.putPets)
-	fuego.Put(petsGroup, "/{id}/json", rs.putPets).
-		RequestContentType("application/json")
+	fuego.Put(petsGroup, "/{id}/json", rs.putPets,
+		option.Summary("Update a pet with JSON-only body"),
+		option.RequestContentType("application/json"),
+	)
 	fuego.Delete(petsGroup, "/{id}", rs.deletePets)
 }
 

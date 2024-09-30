@@ -275,8 +275,7 @@ func (c ContextNoBody) QueryParamArr(name string) []string {
 }
 
 // QueryParam returns the query parameter with the given name.
-// If it does not exist, it returns an empty string.
-// If it does not exist and there is a default value declared in the OpenAPI spec, it returns the default value.
+// If it does not exist, it returns an empty string, unless there is a default value declared in the OpenAPI spec.
 //
 // Example:
 //
