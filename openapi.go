@@ -177,13 +177,9 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 
 		if bodyTag.Name != "unknown-interface" {
 			requestBody := newRequestBody[B](bodyTag, route.AcceptedContentTypes)
-			s.OpenApiSpec.Components.RequestBodies[bodyTag.Name] = &openapi3.RequestBodyRef{
-				Value: requestBody,
-			}
 
 			// add request body to operation
 			route.Operation.RequestBody = &openapi3.RequestBodyRef{
-				Ref:   "#/components/requestBodies/" + bodyTag.Name,
 				Value: requestBody,
 			}
 		}
