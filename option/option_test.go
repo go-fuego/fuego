@@ -294,6 +294,36 @@ func TestRequestContentType(t *testing.T) {
 		require.Len(t, route.AcceptedContentTypes, 1)
 		require.Equal(t, "application/json", route.AcceptedContentTypes[0])
 	})
+
+	t.Run("base", func(t *testing.T) {
+		s := fuego.NewServer()
+		route := fuego.Post(s, "/test", helloWorld,
+			RequestContentType("application/json"),
+		)
+
+		content := route.Operation.RequestBody.Value.Content
+		require.NotNil(t, content.Get("application/json"))
+		require.Nil(t, content.Get("application/xml"))
+		require.Equal(t, "#/components/schemas/TestRequestBody", content.Get("application/json").Schema.Ref)
+		_, ok := s.OpenApiSpec.Components.RequestBodies["TestRequestBody"]
+		require.False(t, ok)
+	})
+
+	t.Run("variadic", func(t *testing.T) {
+		s := fuego.NewServer()
+		route := fuego.Post(s, "/test", helloWorld,
+			RequestContentType("application/json", "my/content-type"),
+		)
+
+		content := route.Operation.RequestBody.Value.Content
+		require.NotNil(t, content.Get("application/json"))
+		require.NotNil(t, content.Get("my/content-type"))
+		require.Nil(t, content.Get("application/xml"))
+		require.Equal(t, "#/components/schemas/TestRequestBody", content.Get("application/json").Schema.Ref)
+		require.Equal(t, "#/components/schemas/TestRequestBody", content.Get("my/content-type").Schema.Ref)
+		_, ok := s.OpenApiSpec.Components.RequestBodies["TestRequestBody"]
+		require.False(t, ok)
+	})
 }
 
 func TestAddError(t *testing.T) {
