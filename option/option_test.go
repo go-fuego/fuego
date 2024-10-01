@@ -26,6 +26,19 @@ func helloWorld(ctx *fuego.ContextNoBody) (string, error) {
 	return "hello world", nil
 }
 
+type ReqBody struct {
+	A string
+	B int
+}
+
+type Resp struct {
+	Message string `json:"message"`
+}
+
+func dummyController(_ *fuego.ContextWithBody[ReqBody]) (Resp, error) {
+	return Resp{Message: "hello world"}, nil
+}
+
 // orderMiddleware sets the X-Test-Order Header on the request and
 // X-Test-Response header on the response. It is
 // used to test the order execution of our middleware
@@ -283,35 +296,36 @@ func TestRequestContentType(t *testing.T) {
 	t.Run("Declare a request content type for the route", func(t *testing.T) {
 		s := fuego.NewServer()
 
-		route := fuego.Get(s, "/test", helloWorld, RequestContentType("application/json"))
+		route := fuego.Get(s, "/test", dummyController, RequestContentType("application/json"))
 
 		r := httptest.NewRequest(http.MethodGet, "/test", nil)
 		w := httptest.NewRecorder()
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, "hello world", w.Body.String())
+		require.Equal(t, "{\"message\":\"hello world\"}\n", w.Body.String())
 		require.Len(t, route.AcceptedContentTypes, 1)
 		require.Equal(t, "application/json", route.AcceptedContentTypes[0])
 	})
 
 	t.Run("base", func(t *testing.T) {
 		s := fuego.NewServer()
-		route := fuego.Post(s, "/test", helloWorld,
+		route := fuego.Post(s, "/base", dummyController,
 			RequestContentType("application/json"),
 		)
 
+		t.Log("route.Operation", route.Operation)
 		content := route.Operation.RequestBody.Value.Content
 		require.NotNil(t, content.Get("application/json"))
 		require.Nil(t, content.Get("application/xml"))
-		require.Equal(t, "#/components/schemas/TestRequestBody", content.Get("application/json").Schema.Ref)
-		_, ok := s.OpenApiSpec.Components.RequestBodies["TestRequestBody"]
+		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/json").Schema.Ref)
+		_, ok := s.OpenApiSpec.Components.RequestBodies["ReqBody"]
 		require.False(t, ok)
 	})
 
 	t.Run("variadic", func(t *testing.T) {
 		s := fuego.NewServer()
-		route := fuego.Post(s, "/test", helloWorld,
+		route := fuego.Post(s, "/test", dummyController,
 			RequestContentType("application/json", "my/content-type"),
 		)
 
@@ -319,9 +333,9 @@ func TestRequestContentType(t *testing.T) {
 		require.NotNil(t, content.Get("application/json"))
 		require.NotNil(t, content.Get("my/content-type"))
 		require.Nil(t, content.Get("application/xml"))
-		require.Equal(t, "#/components/schemas/TestRequestBody", content.Get("application/json").Schema.Ref)
-		require.Equal(t, "#/components/schemas/TestRequestBody", content.Get("my/content-type").Schema.Ref)
-		_, ok := s.OpenApiSpec.Components.RequestBodies["TestRequestBody"]
+		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/json").Schema.Ref)
+		require.Equal(t, "#/components/schemas/ReqBody", content.Get("my/content-type").Schema.Ref)
+		_, ok := s.OpenApiSpec.Components.RequestBodies["ReqBody"]
 		require.False(t, ok)
 	})
 }
