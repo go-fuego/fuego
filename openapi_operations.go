@@ -154,6 +154,11 @@ func (r Route[ResponseBody, RequestBody]) RequestContentType(consumes ...string)
 }
 
 // AddTags adds tags to the route.
+//
+// Deprecated: Use `option.Tags` from github.com/go-fuego/fuego/option instead.
+// Example:
+//
+//	fuego.Get(s, "/test", testController, option.Tags("my-tag"))
 func (r Route[ResponseBody, RequestBody]) AddTags(tags ...string) Route[ResponseBody, RequestBody] {
 	r.Operation.Tags = append(r.Operation.Tags, tags...)
 	return r
