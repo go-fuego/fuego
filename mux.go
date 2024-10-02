@@ -56,6 +56,7 @@ type BaseRoute struct {
 	Params               map[string]OpenAPIParam
 	Middlewares          []func(http.Handler) http.Handler
 	AcceptedContentTypes []string // Content types accepted for the request body. If nil, all content types (*/*) are accepted.
+	Hidden               bool     // If true, the route will not be documented in the OpenAPI spec
 
 	MainRouter *Server // PRIVATE ref to the main router, used to register the route in the OpenAPI spec
 }
@@ -101,7 +102,7 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 	allMiddlewares := append(s.middlewares, route.Middlewares...)
 	s.Mux.Handle(fullPath, withMiddlewares(route.Handler, allMiddlewares...))
 
-	if s.DisableOpenapi || route.Method == "" {
+	if s.DisableOpenapi || route.Hidden || route.Method == "" {
 		return &route
 	}
 
