@@ -106,6 +106,17 @@ func (e ConflictError) StatusCode() int { return http.StatusConflict }
 
 func (e ConflictError) Unwrap() error { return HTTPError(e) }
 
+// InternalServerError is an error used to return a 500 status code.
+type InternalServerError HTTPError
+
+var _ ErrorWithStatus = InternalServerError{}
+
+func (e InternalServerError) Error() string { return e.Err.Error() }
+
+func (e InternalServerError) StatusCode() int { return http.StatusInternalServerError }
+
+func (e InternalServerError) Unwrap() error { return HTTPError(e) }
+
 // ErrorHandler is the default error handler used by the framework.
 // It transforms any error into the unified error type [HTTPError],
 // Using the [ErrorWithStatus] and [ErrorWithInfo] interfaces.
