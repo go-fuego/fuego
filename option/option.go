@@ -242,3 +242,10 @@ func RequestContentType(consumes ...string) func(*fuego.BaseRoute) {
 		r.AcceptedContentTypes = consumes
 	}
 }
+
+// Hide hides the route from the OpenAPI spec.
+func Hide() func(*fuego.BaseRoute) {
+	return func(r *fuego.BaseRoute) {
+		r.Hidden = true
+	}
+}

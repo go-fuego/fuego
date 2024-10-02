@@ -353,3 +353,36 @@ func TestAddError(t *testing.T) {
 		require.Equal(t, "Conflict: Pet with the same name already exists", *route.Operation.Responses.Value("409").Value.Description)
 	})
 }
+
+func TestHide(t *testing.T) {
+	s := fuego.NewServer()
+
+	fuego.Get(s, "/hidden", helloWorld, Hide())
+	fuego.Get(s, "/visible", helloWorld)
+
+	spec := s.OutputOpenAPISpec()
+	pathItemVisible := spec.Paths.Find("/visible")
+	require.NotNil(t, pathItemVisible)
+	pathItemHidden := spec.Paths.Find("/hidden")
+	require.Nil(t, pathItemHidden)
+
+	t.Run("visible route works normally", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/visible", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+		require.Equal(t, "hello world", w.Body.String())
+	})
+
+	t.Run("hidden route still accessible even if not in openAPI spec", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/hidden", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+		require.Equal(t, "hello world", w.Body.String())
+	})
+}
