@@ -112,9 +112,20 @@ func Send(w http.ResponseWriter, r *http.Request, ans any) (err error) {
 
 // SendYAML sends a YAML response.
 // Declared as a variable to be able to override it for clients that need to customize serialization.
-var SendYAML = func(w http.ResponseWriter, _ *http.Request, ans any) error {
+// If serialization fails, it does NOT write to the response writer. It has to be passed to SendJSONError.
+var SendYAML = func(w http.ResponseWriter, _ *http.Request, ans any) (err error) {
+	// Recovers if the serialization fails
+	defer func() {
+		if r := recover(); r != nil {
+			err = HTTPError{
+				Err:    fmt.Errorf("cannot serialize to YAML: %v", r),
+				Detail: "Cannot serialize returned response to YAML",
+			}
+		}
+	}()
+
 	w.Header().Set("Content-Type", "application/x-yaml")
-	err := yaml.NewEncoder(w).Encode(ans)
+	err = yaml.NewEncoder(w).Encode(ans)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		slog.Error("Cannot serialize returned response to YAML", "error", err)
@@ -138,13 +149,19 @@ func SendYAMLError(w http.ResponseWriter, _ *http.Request, err error) {
 
 // SendJSON sends a JSON response.
 // Declared as a variable to be able to override it for clients that need to customize serialization.
+// If serialization fails, it does NOT write to the response writer. It has to be passed to SendJSONError.
 var SendJSON = func(w http.ResponseWriter, _ *http.Request, ans any) error {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(ans)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		slog.Error("Cannot serialize returned response to JSON", "error", err)
-		_, _ = w.Write([]byte(`{"error":"Cannot serialize returned response to JSON"}`))
+		slog.Error("Cannot serialize returned response to JSON", "error", err, "errtype", fmt.Sprintf("%T", err))
+		var unsupportedType *json.UnsupportedTypeError
+		if errors.As(err, &unsupportedType) {
+			return NotAcceptableError{
+				Err:    err,
+				Detail: fmt.Sprintf("Cannot serialize type %s to JSON", unsupportedType.Type),
+			}
+		}
 	}
 	return err
 }
