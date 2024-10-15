@@ -15,39 +15,48 @@ var optionPagination = option.Group(
 	option.QueryInt("page", "Page number", param.Default(1), param.Example("1st page", 1), param.Example("42nd page", 42), param.Example("100th page", 100)),
 )
 
+var optionPets = option.Header("X-Header", "header description")
+
 type PetsResources struct {
 	PetsService PetsService
 }
 
 func (rs PetsResources) Routes(s *fuego.Server) {
-	petsGroup := fuego.Group(s, "/pets").Header("X-Header", "header description")
+	petsGroup := fuego.Group(s, "/pets")
 
 	fuego.Get(petsGroup, "/", rs.filterPets,
 		optionPagination,
 		option.Query("name", "Filter by name", param.Example("cat name", "felix"), param.Nullable()),
 		option.QueryInt("younger_than", "Only get pets younger than given age in years", param.Default(3)),
+		optionPets,
 		option.Description("Filter pets"),
 	)
 
 	fuego.Get(petsGroup, "/all", rs.getAllPets,
 		optionPagination,
+		optionPets,
 		option.Tags("my-tag"),
 		option.Description("Get all pets"),
 	)
 
-	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge, option.Description("Returns an array of pets grouped by age"))
+	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge,
+		optionPets,
+		option.Description("Returns an array of pets grouped by age"),
+	)
 	fuego.Post(petsGroup, "/", rs.postPets,
+		optionPets,
 		option.AddError(409, "Conflict: Pet with the same name already exists"),
 	)
 
-	fuego.Get(petsGroup, "/{id}", rs.getPets)
-	fuego.Get(petsGroup, "/by-name/{name...}", rs.getPetByName)
-	fuego.Put(petsGroup, "/{id}", rs.putPets)
+	fuego.Get(petsGroup, "/{id}", rs.getPets, optionPets)
+	fuego.Get(petsGroup, "/by-name/{name...}", rs.getPetByName, optionPets)
+	fuego.Put(petsGroup, "/{id}", rs.putPets, optionPets)
 	fuego.Put(petsGroup, "/{id}/json", rs.putPets,
+		optionPets,
 		option.Summary("Update a pet with JSON-only body"),
 		option.RequestContentType("application/json"),
 	)
-	fuego.Delete(petsGroup, "/{id}", rs.deletePets)
+	fuego.Delete(petsGroup, "/{id}", rs.deletePets, optionPets)
 }
 
 func (rs PetsResources) getAllPets(c fuego.ContextNoBody) ([]models.Pets, error) {
