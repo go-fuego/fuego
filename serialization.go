@@ -159,7 +159,7 @@ var SendJSON = func(w http.ResponseWriter, _ *http.Request, ans any) error {
 		if errors.As(err, &unsupportedType) {
 			return NotAcceptableError{
 				Err:    err,
-				Detail: fmt.Sprintf("Cannot serialize type %s to JSON", unsupportedType.Type),
+				Detail: fmt.Sprintf("Cannot serialize type %T to JSON", ans),
 			}
 		}
 	}
