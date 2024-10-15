@@ -2,6 +2,7 @@ package fuego
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"html/template"
 	"io"
@@ -64,6 +65,8 @@ func TestRecursiveJSON(t *testing.T) {
 		err := SendJSON(w, nil, value)
 
 		require.Error(t, err)
+		var unsupportedValueError *json.UnsupportedValueError
+		require.ErrorAs(t, err, &unsupportedValueError)
 	})
 }
 

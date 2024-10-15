@@ -1,0 +1,7 @@
+examples
+doc*
+extra
+middleware
+cmd
+assets
+*_test.go
