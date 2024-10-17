@@ -13,10 +13,11 @@ linters:
     - gosimple
     - govet
     - ineffassign
+    - misspell
     - staticcheck
     - unused
     - usestdlibvars
-    - misspell
+    - whitespace
 
 linters-settings:
   misspell:
