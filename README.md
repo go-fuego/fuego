@@ -31,7 +31,7 @@ that provides [a Fuego integration](https://zuplo.link/fuego-gh)!
 </div>
 
 > Zuplo allows you to secure your Fuego API, scale it globally,
-generate documentation from your OpenAPI, and monetize your users.
+> generate documentation from your OpenAPI, and monetize your users.
 
 ## Why Fuego?
 
@@ -336,6 +336,12 @@ curl http://localhost:8088 -X POST -d '{"name": "Fuego"}' -H 'Content-Type: appl
 
 See the [contributing guide](CONTRIBUTING.md).
 Thanks to [everyone who has contributed][contributors-url] to this project! ❤️
+
+<a href="https://github.com/go-fuego/fuego/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=go-fuego/fuego" />
+</a>
+
+<small>Made with [contrib.rocks](https://contrib.rocks)</small>
 
 ## Roadmap
 
