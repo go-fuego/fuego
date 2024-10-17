@@ -73,6 +73,8 @@ type Server struct {
 	fs       fs.FS
 	template *template.Template // TODO: use preparsed templates
 
+	acceptedContentTypes []string
+
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
 	DisableOpenapi        bool // If true, the routes within the server will not generate an OpenAPI spec.
 	maxBodySize           int64
@@ -305,6 +307,12 @@ func WithLogHandler(handler slog.Handler) func(*Server) {
 			slog.SetDefault(slog.New(handler))
 		}
 	}
+}
+
+// WithRequestContentType sets the accepted content types for the server.
+// By default, the accepted content types is */*.
+func WithRequestContentType(consumes ...string) func(*Server) {
+	return func(s *Server) { s.acceptedContentTypes = consumes }
 }
 
 // WithSerializer sets a custom serializer of type Sender that overrides the default one.

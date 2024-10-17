@@ -375,6 +375,45 @@ func TestServerTags(t *testing.T) {
 	})
 }
 
+type ReqBody struct {
+	A string
+	B int
+}
+
+type Resp struct {
+	Message string `json:"message"`
+}
+
+func dummyController(_ *ContextWithBody[ReqBody]) (Resp, error) {
+	return Resp{Message: "hello world"}, nil
+}
+
+func TestWithRequestContentType(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		s := NewServer()
+		require.Nil(t, s.acceptedContentTypes)
+	})
+
+	t.Run("input", func(t *testing.T) {
+		arr := []string{"application/json", "application/xml"}
+		s := NewServer(WithRequestContentType("application/json", "application/xml"))
+		require.ElementsMatch(t, arr, s.acceptedContentTypes)
+	})
+
+	t.Run("ensure applied to route", func(t *testing.T) {
+		s := NewServer(WithRequestContentType("application/json", "application/xml"))
+		route := Post(s, "/test", dummyController)
+
+		content := route.Operation.RequestBody.Value.Content
+		require.NotNil(t, content.Get("application/json"))
+		require.NotNil(t, content.Get("application/xml"))
+		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/json").Schema.Ref)
+		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/xml").Schema.Ref)
+		_, ok := s.OpenApiSpec.Components.RequestBodies["ReqBody"]
+		require.False(t, ok)
+	})
+}
+
 func TestCustomSerialization(t *testing.T) {
 	s := NewServer(
 		WithSerializer(func(w http.ResponseWriter, r *http.Request, a any) error {
