@@ -186,6 +186,7 @@ func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path
 	if route.MainRouter == nil {
 		route.MainRouter = s
 	}
+	route.AcceptedContentTypes = route.MainRouter.acceptedContentTypes
 
 	for _, o := range options {
 		o(&route)

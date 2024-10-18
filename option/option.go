@@ -237,6 +237,7 @@ func AddError(code int, description string, errorType ...any) func(*fuego.BaseRo
 
 // RequestContentType sets the accepted content types for the route.
 // By default, the accepted content types is */*.
+// This will override any options set at the server level.
 func RequestContentType(consumes ...string) func(*fuego.BaseRoute) {
 	return func(r *fuego.BaseRoute) {
 		r.AcceptedContentTypes = consumes

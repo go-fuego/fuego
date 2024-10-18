@@ -338,6 +338,22 @@ func TestRequestContentType(t *testing.T) {
 		_, ok := s.OpenApiSpec.Components.RequestBodies["ReqBody"]
 		require.False(t, ok)
 	})
+
+	t.Run("override server", func(t *testing.T) {
+		s := fuego.NewServer(fuego.WithRequestContentType("application/json", "application/xml"))
+		route := fuego.Post(
+			s, "/test", dummyController,
+			RequestContentType("my/content-type"),
+		)
+
+		content := route.Operation.RequestBody.Value.Content
+		require.Nil(t, content.Get("application/json"))
+		require.Nil(t, content.Get("application/xml"))
+		require.NotNil(t, content.Get("my/content-type"))
+		require.Equal(t, "#/components/schemas/ReqBody", content.Get("my/content-type").Schema.Ref)
+		_, ok := s.OpenApiSpec.Components.RequestBodies["ReqBody"]
+		require.False(t, ok)
+	})
 }
 
 func TestAddError(t *testing.T) {
