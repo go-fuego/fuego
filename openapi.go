@@ -336,6 +336,13 @@ func (s *Server) parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) 
 
 	for i := range t.NumField() {
 		field := t.Field(i)
+		fieldType := field.Type
+
+		if field.Anonymous {
+			s.parseStructTags(fieldType, schemaRef)
+			continue
+		}
+
 		jsonFieldName := field.Tag.Get("json")
 		jsonFieldName = strings.Split(jsonFieldName, ",")[0] // remove omitempty, etc
 		if jsonFieldName == "-" {
