@@ -12,10 +12,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type MyStruct struct {
+type embeddedStruct struct {
 	B string `json:"b"`
-	C int    `json:"c"`
-	D bool   `json:"d"`
+}
+
+type MyStruct struct {
+	embeddedStruct
+	C int  `json:"c"`
+	D bool `json:"d"`
 }
 
 type MyOutputStruct struct {
