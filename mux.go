@@ -188,6 +188,10 @@ func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path
 	}
 	route.AcceptedContentTypes = route.MainRouter.acceptedContentTypes
 
+	acceptHeaderParameter := openapi3.NewHeaderParameter("Accept")
+	acceptHeaderParameter.Schema = openapi3.NewStringSchema().NewRef()
+	route.Operation.AddParameter(acceptHeaderParameter)
+
 	for _, o := range options {
 		o(&route)
 	}
