@@ -351,7 +351,7 @@ func TestServeError(t *testing.T) {
 		s.Mux.ServeHTTP(w, req)
 
 		require.Equal(t, 500, w.Code)
-		require.Equal(t, "Internal Server Error (500): ", w.Body.String())
+		require.Equal(t, "500 Internal Server Error: ", w.Body.String())
 	})
 }
 
