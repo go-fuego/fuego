@@ -119,7 +119,7 @@ func (e NotAcceptableError) Unwrap() error { return HTTPError(e) }
 
 // ErrorHandler is the default error handler used by the framework.
 // It transforms any error into the unified error type [HTTPError],
-// Using the [ErrorWithStatus] and [ErrorWithInfo] interfaces.
+// Using the [ErrorWithStatus] interface.
 func ErrorHandler(err error) error {
 	errResponse := HTTPError{
 		Err: err,
