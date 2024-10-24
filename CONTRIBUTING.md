@@ -26,4 +26,4 @@ or writing code which can be incorporated into the project itself.
 
 Thanks to [everyone who have contributed][contributors-url] to this project!
 
-[contributors-url]: https://github.com/go-fuego/fuego/graphs/contributors>
+[contributors-url]: https://github.com/go-fuego/fuego/graphs/contributors

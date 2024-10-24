@@ -33,13 +33,14 @@ type ErrorItem struct {
 
 func (e HTTPError) Error() string {
 	title := e.Title
+	code := e.StatusCode()
 	if title == "" {
-		title = http.StatusText(e.Status)
+		title = http.StatusText(code)
 		if title == "" {
 			title = "HTTP Error"
 		}
 	}
-	return fmt.Sprintf("%s (%d): %s", title, e.Status, e.Detail)
+	return fmt.Sprintf("%d %s: %s", code, title, e.Detail)
 }
 
 func (e HTTPError) StatusCode() int {
@@ -105,6 +106,9 @@ func (e ConflictError) Error() string { return e.Err.Error() }
 func (e ConflictError) StatusCode() int { return http.StatusConflict }
 
 func (e ConflictError) Unwrap() error { return HTTPError(e) }
+
+// InternalServerError is an error used to return a 500 status code.
+type InternalServerError = HTTPError
 
 // NotAcceptableError is an error used to return a 406 status code.
 type NotAcceptableError HTTPError
