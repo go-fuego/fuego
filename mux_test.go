@@ -3,6 +3,7 @@ package fuego
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/require"
+	"github.com/thejerf/slogassert"
 )
 
 // orderMiddleware sets the X-Test-Order Header on the request and
@@ -672,8 +674,16 @@ func TestGroup(t *testing.T) {
 	})
 
 	t.Run("group path can end with a slash (but with a warning)", func(t *testing.T) {
-		s := NewServer()
-		Group(s, "/slash/")
+		handler := slogassert.New(t, slog.LevelWarn, nil)
+
+		s := NewServer(
+			WithLogHandler(handler),
+		)
+
+		g := Group(s, "/slash/")
+		require.Equal(t, "/slash/", g.basePath)
+
+		handler.AssertMessage("Group path should not end with a slash.")
 	})
 }
 

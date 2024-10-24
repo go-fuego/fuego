@@ -31,9 +31,12 @@ fmt:
 	which gofumpt || go install mvdan.cc/gofumpt@latest
 	gofumpt -l -w -extra .
 
+lint-ci: lint
+
+FIX := "--fix"
 lint:
 	which golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	golangci-lint run --fix ./...
+	golangci-lint run ${FIX} ./...
 
 lint-markdown:
 	markdownlint --ignore documentation/node_modules --dot .
