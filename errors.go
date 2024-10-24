@@ -106,6 +106,17 @@ func (e ConflictError) StatusCode() int { return http.StatusConflict }
 
 func (e ConflictError) Unwrap() error { return HTTPError(e) }
 
+// InternalServerError is an error used to return a 500 status code.
+type InternalServerError HTTPError
+
+var _ ErrorWithStatus = InternalServerError{}
+
+func (e InternalServerError) Error() string { return e.Err.Error() }
+
+func (e InternalServerError) StatusCode() int { return http.StatusInternalServerError }
+
+func (e InternalServerError) Unwrap() error { return HTTPError(e) }
+
 // NotAcceptableError is an error used to return a 406 status code.
 type NotAcceptableError HTTPError
 
