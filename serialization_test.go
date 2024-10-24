@@ -61,9 +61,9 @@ func TestRecursiveJSON(t *testing.T) {
 		w := httptest.NewRecorder()
 		value := rec{}
 		value.Rec = &value
-		SendJSON(w, nil, value)
+		err := SendJSON(w, nil, value)
 
-		require.Equal(t, `{"error":"Cannot serialize returned response to JSON"}`, w.Body.String())
+		require.Error(t, err)
 	})
 }
 
@@ -75,6 +75,16 @@ func TestJSON(t *testing.T) {
 
 		require.Equal(t, crlf(`{"message":"Hello World","code":200}`), body)
 	})
+
+	t.Run("cannot serialize functions", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		err := SendJSON(w, nil, func() {})
+		require.Error(t, err)
+		require.ErrorAs(t, err, &NotAcceptableError{})
+
+		body := w.Body.String()
+		require.Equal(t, "", body)
+	})
 }
 
 func TestXML(t *testing.T) {
@@ -85,6 +95,16 @@ func TestXML(t *testing.T) {
 		body := w.Body.String()
 
 		require.Equal(t, `<response><Message>Hello World</Message><Code>200</Code></response>`, body)
+	})
+
+	t.Run("cannot serialize functions", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		err := SendXML(w, nil, func() {})
+		require.Error(t, err)
+		require.ErrorAs(t, err, &NotAcceptableError{})
+
+		body := w.Body.String()
+		require.Equal(t, "", body)
 	})
 
 	t.Run("can serialize xml error", func(t *testing.T) {
@@ -352,8 +372,10 @@ func TestSendJSON(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		errorWriter := &errorWriter{}
-		SendJSON(errorWriter, nil, response{Message: "Hello World", Code: http.StatusOK})
-		require.Contains(t, errorWriter.Arg, "Cannot serialize returned response to JSON")
+		err := SendJSON(errorWriter, nil, response{Message: "Hello World", Code: http.StatusOK})
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "cannot write on an errorWriter")
+		require.Equal(t, "{\"message\":\"Hello World\",\"code\":200}\n", errorWriter.Arg)
 	})
 }
 
