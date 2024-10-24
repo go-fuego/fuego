@@ -117,9 +117,20 @@ func (e InternalServerError) StatusCode() int { return http.StatusInternalServer
 
 func (e InternalServerError) Unwrap() error { return HTTPError(e) }
 
+// NotAcceptableError is an error used to return a 406 status code.
+type NotAcceptableError HTTPError
+
+var _ ErrorWithStatus = NotAcceptableError{}
+
+func (e NotAcceptableError) Error() string { return e.Err.Error() }
+
+func (e NotAcceptableError) StatusCode() int { return http.StatusNotAcceptable }
+
+func (e NotAcceptableError) Unwrap() error { return HTTPError(e) }
+
 // ErrorHandler is the default error handler used by the framework.
 // It transforms any error into the unified error type [HTTPError],
-// Using the [ErrorWithStatus] and [ErrorWithInfo] interfaces.
+// Using the [ErrorWithStatus] interface.
 func ErrorHandler(err error) error {
 	errResponse := HTTPError{
 		Err: err,

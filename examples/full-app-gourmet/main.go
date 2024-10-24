@@ -23,7 +23,7 @@ func main() {
 	err := godotenv.Load(".env.local", ".env")
 	if err != nil {
 		wd, _ := os.Getwd()
-		slog.Error("Error loading .env files: %s in dir %s", err, wd)
+		slog.Error(fmt.Sprintf("Error loading .env files: %s in dir %s", err, wd))
 		return
 	}
 

@@ -40,15 +40,20 @@ package main
 
 import (
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
+	"github.com/go-fuego/fuego/param"
 )
 
 func main() {
 	s := fuego.NewServer()
 
-	fuego.Get(s, "/", helloWorld).
-		Summary("A simple hello world").
-		Description("This is a simple hello world").
-		Deprecated()
+	fuego.Get(s, "/", helloWorld,
+		option.Summary("A simple hello world"),
+		option.Description("This is a simple hello world example"),
+		option.Query("name", "Name to greet", param.Required(), param.Default("World")),
+		option.Tags("Hello"),
+		option.Deprecated(),
+	)
 
 	s.Run()
 }

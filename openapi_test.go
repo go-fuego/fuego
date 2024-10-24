@@ -192,8 +192,8 @@ func Test_tagFromType(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			tag := schemaTagFromType(s, tc.inputType)
-			require.Equal(t, tc.expectedTagValue, tag.name, tc.description)
+			tag := SchemaTagFromType(s, tc.inputType)
+			require.Equal(t, tc.expectedTagValue, tag.Name, tc.description)
 			if tc.expectedTagValueType != nil {
 				require.NotNil(t, tag.Value)
 				require.Equal(t, tc.expectedTagValueType, tag.Value.Type, tc.description)
@@ -486,4 +486,43 @@ func TestValidationTags(t *testing.T) {
 	require.Equal(t, uint64(10), *myTypeValue.Properties["name"].Value.MaxLength)
 	require.Equal(t, float64(18.0), *myTypeValue.Properties["age"].Value.Min)
 	require.Equal(t, float64(100), *myTypeValue.Properties["age"].Value.Max)
+}
+
+func TestEmbeddedStructHandling(t *testing.T) {
+	s := NewServer()
+
+	// Define a struct with an embedded struct
+	type InnerStruct struct {
+		FieldA string `json:"field_a" example:"Value A" description:"A field in the inner struct"`
+	}
+
+	type OuterStruct struct {
+		InnerStruct
+		FieldB int `json:"field_b" example:"100" description:"B field in the outer struct"`
+	}
+
+	// Register a route that returns OuterStruct
+	Get(s, "/embedded", func(*ContextNoBody) (OuterStruct, error) {
+		return OuterStruct{}, nil
+	})
+
+	// Generate OpenAPI spec
+	document := s.OutputOpenAPISpec()
+	require.NotNil(t, document)
+
+	// Ensure that both the embedded and non-embedded fields are present in the schema
+	outerSchema := document.Components.Schemas["OuterStruct"].Value
+	require.NotNil(t, outerSchema)
+
+	// Check if embedded struct fields are included
+	require.NotNil(t, outerSchema.Properties["field_a"])
+	require.Equal(t, &openapi3.Types{"string"}, outerSchema.Properties["field_a"].Value.Type)
+	require.Equal(t, "Value A", outerSchema.Properties["field_a"].Value.Example)
+	require.Equal(t, "A field in the inner struct", outerSchema.Properties["field_a"].Value.Description)
+
+	// Check if non-embedded struct fields are included
+	require.NotNil(t, outerSchema.Properties["field_b"])
+	require.Equal(t, &openapi3.Types{"integer"}, outerSchema.Properties["field_b"].Value.Type)
+	require.Equal(t, 100, outerSchema.Properties["field_b"].Value.Example)
+	require.Equal(t, "B field in the outer struct", outerSchema.Properties["field_b"].Value.Description)
 }

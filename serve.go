@@ -75,12 +75,18 @@ func initContext[Contextable ctx[Body], Body any](baseContext ContextNoBody) Con
 }
 
 // HTTPHandler converts a Fuego controller into a http.HandlerFunc.
-func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error)) http.HandlerFunc {
+// Uses Server for configuration.
+// Uses Route for route configuration. Optional.
+func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error), route *BaseRoute) http.HandlerFunc {
 	// Just a check, not used at request time
 	baseContext := *new(Contextable)
 	if reflect.TypeOf(baseContext) == nil {
 		slog.Info(fmt.Sprintf("context is nil: %v %T", baseContext, baseContext))
 		panic("ctx must be provided as concrete type (not interface). ContextNoBody, ContextWithBody[any], ContextFull[any, any], ContextWithQueryParams[any] are supported")
+	}
+
+	if route == nil {
+		route = &BaseRoute{}
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -102,6 +108,7 @@ func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, control
 			},
 			fs:        s.fs,
 			templates: templates,
+			params:    route.Params,
 		})
 
 		timeController := time.Now()

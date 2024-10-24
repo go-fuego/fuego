@@ -62,14 +62,14 @@ func TestContext_QueryParam(t *testing.T) {
 		require.NotEmpty(t, param)
 		require.Equal(t, "456", param)
 
-		paramInt := c.QueryParamInt("id", 0)
+		paramInt := c.QueryParamInt("id")
 		require.Equal(t, 456, paramInt)
 
-		paramInt = c.QueryParamInt("notfound", 42)
-		require.Equal(t, 42, paramInt)
+		paramInt = c.QueryParamInt("notfound")
+		require.Equal(t, 0, paramInt)
 
-		paramInt = c.QueryParamInt("other", 42)
-		require.Equal(t, 42, paramInt)
+		paramInt = c.QueryParamInt("other")
+		require.Equal(t, 0, paramInt)
 
 		paramInt, err := c.QueryParamIntErr("id")
 		require.NoError(t, err)
@@ -91,14 +91,11 @@ func TestContext_QueryParam(t *testing.T) {
 		require.NotEmpty(t, param)
 		require.Equal(t, "true", param)
 
-		paramBool := c.QueryParamBool("boo", false)
+		paramBool := c.QueryParamBool("boo")
 		require.Equal(t, true, paramBool)
 
-		paramBool = c.QueryParamBool("notfound", true)
-		require.Equal(t, true, paramBool)
-
-		paramBool = c.QueryParamBool("other", true)
-		require.Equal(t, true, paramBool)
+		paramBool = c.QueryParamBool("notfound")
+		require.Equal(t, false, paramBool)
 
 		paramBool, err := c.QueryParamBoolErr("boo")
 		require.NoError(t, err)

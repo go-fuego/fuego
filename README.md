@@ -31,7 +31,7 @@ that provides [a Fuego integration](https://zuplo.link/fuego-gh)!
 </div>
 
 > Zuplo allows you to secure your Fuego API, scale it globally,
-generate documentation from your OpenAPI, and monetize your users.
+> generate documentation from your OpenAPI, and monetize your users.
 
 ## Why Fuego?
 
@@ -145,19 +145,38 @@ func (r *MyInput) InTransform(context.Context) error {
 ```go
 package main
 
-import "github.com/go-fuego/fuego"
+import (
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
+	"github.com/go-fuego/fuego/param"
+)
 
 func main() {
 	s := fuego.NewServer()
 
-	// Custom OpenAPI options that cannot be deduced by the controller signature
-	fuego.Post(s, "/", myController).
-		Description("This route does something").
-		Summary("This is my summary").
-		Tags("MyTag"). // A tag is set by default according to the return type (can be deactivated)
-		Deprecated()
+	// Custom OpenAPI options
+	fuego.Post(s, "/", myController
+		option.Description("This route does something..."),
+		option.Summary("This is my summary"),
+		option.Tags("MyTag"), // A tag is set by default according to the return type (can be deactivated)
+		option.Deprecated(), // Marks the route as deprecated in the OpenAPI spec
+
+		option.Query("name", "Declares a query parameter with default value", param.Default("Carmack")),
+		option.Header("Authorization", "Bearer token", param.Required()),
+		optionPagination,
+		optionCustomBehavior,
+	)
 
 	s.Run()
+}
+
+var optionPagination = option.Group(
+	option.QueryInt("page", "Page number", param.Default(1), param.Example("1st page", 1), param.Example("42nd page", 42)),
+	option.QueryInt("perPage", "Number of items per page"),
+)
+
+var optionCustomBehavior = func(r *fuego.BaseRoute) {
+	r.XXX = "YYY"
 }
 ```
 
@@ -317,6 +336,12 @@ curl http://localhost:8088 -X POST -d '{"name": "Fuego"}' -H 'Content-Type: appl
 
 See the [contributing guide](CONTRIBUTING.md).
 Thanks to [everyone who has contributed][contributors-url] to this project! ❤️
+
+<a href="https://github.com/go-fuego/fuego/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=go-fuego/fuego" />
+</a>
+
+<small>Made with [contrib.rocks](https://contrib.rocks)</small>
 
 ## Roadmap
 

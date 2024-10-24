@@ -68,7 +68,6 @@ var _ CtxRenderer = StdRenderer{}
 
 func (s StdRenderer) Render(ctx context.Context, w io.Writer) error {
 	if strings.Contains(s.templateToExecute, "/") || strings.Contains(s.templateToExecute, "*") {
-
 		s.layoutsGlobs = append(s.layoutsGlobs, s.templateToExecute) // To override all blocks defined in the main template
 		cloned := template.Must(s.templates.Clone())
 		tmpl, err := cloned.ParseFS(s.fs, s.layoutsGlobs...)

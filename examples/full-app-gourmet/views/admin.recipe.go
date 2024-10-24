@@ -24,9 +24,9 @@ func (rs Resource) adminDeleteRecipe(c fuego.ContextNoBody) (any, error) {
 func (rs Resource) adminRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 	searchParams := components.SearchParams{
 		Name:    c.QueryParam("name"),
-		PerPage: c.QueryParamInt("perPage", 20),
-		Page:    c.QueryParamInt("page", 1),
-		URL:     "/admin/ingredients",
+		PerPage: c.QueryParamInt("perPage"),
+		Page:    c.QueryParamInt("page"),
+		URL:     "/admin/recipes",
 		Lang:    c.MainLang(),
 	}
 	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())

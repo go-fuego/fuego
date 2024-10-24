@@ -375,6 +375,45 @@ func TestServerTags(t *testing.T) {
 	})
 }
 
+type ReqBody struct {
+	A string
+	B int
+}
+
+type Resp struct {
+	Message string `json:"message"`
+}
+
+func dummyController(_ *ContextWithBody[ReqBody]) (Resp, error) {
+	return Resp{Message: "hello world"}, nil
+}
+
+func TestWithRequestContentType(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		s := NewServer()
+		require.Nil(t, s.acceptedContentTypes)
+	})
+
+	t.Run("input", func(t *testing.T) {
+		arr := []string{"application/json", "application/xml"}
+		s := NewServer(WithRequestContentType("application/json", "application/xml"))
+		require.ElementsMatch(t, arr, s.acceptedContentTypes)
+	})
+
+	t.Run("ensure applied to route", func(t *testing.T) {
+		s := NewServer(WithRequestContentType("application/json", "application/xml"))
+		route := Post(s, "/test", dummyController)
+
+		content := route.Operation.RequestBody.Value.Content
+		require.NotNil(t, content.Get("application/json"))
+		require.NotNil(t, content.Get("application/xml"))
+		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/json").Schema.Ref)
+		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/xml").Schema.Ref)
+		_, ok := s.OpenApiSpec.Components.RequestBodies["ReqBody"]
+		require.False(t, ok)
+	})
+}
+
 func TestCustomSerialization(t *testing.T) {
 	s := NewServer(
 		WithSerializer(func(w http.ResponseWriter, r *http.Request, a any) error {
@@ -407,9 +446,12 @@ func TestGroupParams(t *testing.T) {
 	require.Equal(t, group.params, []OpenAPIParam{{Name: "X-Test-Header", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: true, Example: "example", Type: ""}}})
 
 	document := s.OutputOpenAPISpec()
-	require.Nil(t, document.Paths.Find("/").Get.Parameters)
-	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "X-Test-Header")
-	require.Equal(t, document.Paths.Find("/api/test2").Get.Parameters[0].Value.Name, "X-Test-Header")
+	require.Len(t, document.Paths.Find("/").Get.Parameters, 1)
+	require.Equal(t, document.Paths.Find("/").Get.Parameters[0].Value.Name, "Accept")
+	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "Accept")
+	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[1].Value.Name, "X-Test-Header")
+	require.Equal(t, document.Paths.Find("/api/test2").Get.Parameters[0].Value.Name, "Accept")
+	require.Equal(t, document.Paths.Find("/api/test2").Get.Parameters[1].Value.Name, "X-Test-Header")
 }
 
 func TestGroupHeaderParams(t *testing.T) {
@@ -421,7 +463,8 @@ func TestGroupHeaderParams(t *testing.T) {
 	require.Equal(t, group.params, []OpenAPIParam{{Name: "X-Test-Header", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: HeaderParamType}}})
 
 	document := s.OutputOpenAPISpec()
-	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "X-Test-Header")
+	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "Accept")
+	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[1].Value.Name, "X-Test-Header")
 }
 
 func TestGroupCookieParams(t *testing.T) {
@@ -433,7 +476,8 @@ func TestGroupCookieParams(t *testing.T) {
 	require.Equal(t, group.params, []OpenAPIParam{{Name: "X-Test-Cookie", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: CookieParamType}}})
 
 	document := s.OutputOpenAPISpec()
-	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "X-Test-Cookie")
+	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "Accept")
+	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[1].Value.Name, "X-Test-Cookie")
 }
 
 func TestGroupQueryParam(t *testing.T) {
@@ -445,7 +489,8 @@ func TestGroupQueryParam(t *testing.T) {
 	require.Equal(t, group.params, []OpenAPIParam{{Name: "X-Test-Query", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: QueryParamType}}})
 
 	document := s.OutputOpenAPISpec()
-	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "X-Test-Query")
+	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "Accept")
+	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[1].Value.Name, "X-Test-Query")
 }
 
 func TestGroupParamsInChildGroup(t *testing.T) {

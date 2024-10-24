@@ -3,6 +3,7 @@ package fuego
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -10,16 +11,8 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/require"
+	"github.com/thejerf/slogassert"
 )
-
-// dummyMiddleware sets the X-Test header on the request and the X-Test-Response header on the response.
-func dummyMiddleware(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.Header.Set("X-Test", "test")
-		w.Header().Set("X-Test-Response", "response")
-		handler.ServeHTTP(w, r)
-	})
-}
 
 // orderMiddleware sets the X-Test-Order Header on the request and
 // X-Test-Response header on the response. It is
@@ -84,23 +77,6 @@ func TestUse(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, []string{"Start!", "First!", "Second!", "Third!"}, r.Header["X-Test-Order"])
-	})
-
-	t.Run("variadic use of Route Get", func(t *testing.T) {
-		s := NewServer()
-		Use(s, orderMiddleware("First!"))
-		Use(s, orderMiddleware("Second!"), orderMiddleware("Third!"))
-		Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
-			return "test", nil
-		}, orderMiddleware("Fourth!"), orderMiddleware("Fifth!"))
-
-		r := httptest.NewRequest(http.MethodGet, "/test", nil)
-		r.Header.Set("X-Test-Order", "Start!")
-		w := httptest.NewRecorder()
-
-		s.Mux.ServeHTTP(w, r)
-
-		require.Equal(t, []string{"Start!", "First!", "Second!", "Third!", "Fourth!", "Fifth!"}, r.Header["X-Test-Order"])
 	})
 
 	t.Run("group middlewares", func(t *testing.T) {
@@ -384,8 +360,10 @@ func TestRegister(t *testing.T) {
 		s := NewServer()
 
 		route := Register(s, Route[any, any]{
-			Path:   "/test",
-			Method: http.MethodGet,
+			BaseRoute: BaseRoute{
+				Path:   "/test",
+				Method: http.MethodGet,
+			},
 		}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 
 		require.NotNil(t, route)
@@ -395,20 +373,22 @@ func TestRegister(t *testing.T) {
 		s := NewServer()
 
 		route := Register(s, Route[any, any]{
-			Path:   "/test",
-			Method: http.MethodGet,
-			Operation: &openapi3.Operation{
-				Tags:        []string{"my-tag"},
-				Summary:     "my-summary",
-				Description: "my-description",
-				OperationID: "my-operation-id",
+			BaseRoute: BaseRoute{
+				Path:   "/test",
+				Method: http.MethodGet,
+				Operation: &openapi3.Operation{
+					Tags:        []string{"my-tag"},
+					Summary:     "my-summary",
+					Description: "my-description",
+					OperationID: "my-operation-id",
+				},
 			},
 		}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 
 		require.NotNil(t, route)
 		require.Equal(t, []string{"my-tag"}, route.Operation.Tags)
 		require.Equal(t, "my-summary", route.Operation.Summary)
-		require.Equal(t, "my-description", route.Operation.Description)
+		require.Contains(t, route.Operation.Description, "my-description")
 		require.Equal(t, "my-operation-id", route.Operation.OperationID)
 	})
 
@@ -416,13 +396,15 @@ func TestRegister(t *testing.T) {
 		s := NewServer()
 
 		route := Register(s, Route[any, any]{
-			Path:   "/test",
-			Method: http.MethodGet,
-			Operation: &openapi3.Operation{
-				Tags:        []string{"my-tag"},
-				Summary:     "my-summary",
-				Description: "my-description",
-				OperationID: "my-operation-id",
+			BaseRoute: BaseRoute{
+				Path:   "/test",
+				Method: http.MethodGet,
+				Operation: &openapi3.Operation{
+					Tags:        []string{"my-tag"},
+					Summary:     "my-summary",
+					Description: "my-description",
+					OperationID: "my-operation-id",
+				},
 			},
 		}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})).
 			OperationID("new-operation-id").
@@ -625,40 +607,6 @@ func BenchmarkRequest(b *testing.B) {
 	})
 }
 
-func TestPerRouteMiddleware(t *testing.T) {
-	s := NewServer()
-
-	Get(s, "/withMiddleware", func(ctx *ContextNoBody) (string, error) {
-		return "withmiddleware", nil
-	}, dummyMiddleware)
-
-	Get(s, "/withoutMiddleware", func(ctx *ContextNoBody) (string, error) {
-		return "withoutmiddleware", nil
-	})
-
-	t.Run("withMiddleware", func(t *testing.T) {
-		r := httptest.NewRequest(http.MethodGet, "/withMiddleware", nil)
-
-		w := httptest.NewRecorder()
-
-		s.Mux.ServeHTTP(w, r)
-
-		require.Equal(t, "withmiddleware", w.Body.String())
-		require.Equal(t, "response", w.Header().Get("X-Test-Response"))
-	})
-
-	t.Run("withoutMiddleware", func(t *testing.T) {
-		r := httptest.NewRequest(http.MethodGet, "/withoutMiddleware", nil)
-
-		w := httptest.NewRecorder()
-
-		s.Mux.ServeHTTP(w, r)
-
-		require.Equal(t, "withoutmiddleware", w.Body.String())
-		require.Equal(t, "", w.Header().Get("X-Test-Response"))
-	})
-}
-
 func TestGroup(t *testing.T) {
 	s := NewServer()
 
@@ -726,9 +674,16 @@ func TestGroup(t *testing.T) {
 	})
 
 	t.Run("group path can end with a slash (but with a warning)", func(t *testing.T) {
-		s := NewServer()
+		handler := slogassert.New(t, slog.LevelWarn, nil)
+
+		s := NewServer(
+			WithLogHandler(handler),
+		)
+
 		g := Group(s, "/slash/")
 		require.Equal(t, "/slash/", g.basePath)
+
+		handler.AssertMessage("Group path should not end with a slash.")
 	})
 }
 
@@ -835,7 +790,9 @@ func TestNameFromNamespace(t *testing.T) {
 			name: "base",
 
 			route: Route[any, any]{
-				FullName: "pkg.test.MyFunc1",
+				BaseRoute: BaseRoute{
+					FullName: "pkg.test.MyFunc1",
+				},
 			},
 			expectedOutput: "MyFunc1",
 		},
@@ -843,7 +800,9 @@ func TestNameFromNamespace(t *testing.T) {
 			name: "with camelToHuman",
 
 			route: Route[any, any]{
-				FullName: "pkg.test.MyFunc1",
+				BaseRoute: BaseRoute{
+					FullName: "pkg.test.MyFunc1",
+				},
 			},
 			opts: []func(string) string{
 				camelToHuman,
@@ -854,7 +813,9 @@ func TestNameFromNamespace(t *testing.T) {
 			name: "with inline opt",
 
 			route: Route[any, any]{
-				FullName: "pkg.test.MyFunc1",
+				BaseRoute: BaseRoute{
+					FullName: "pkg.test.MyFunc1",
+				},
 			},
 			opts: []func(string) string{
 				camelToHuman,
@@ -868,7 +829,9 @@ func TestNameFromNamespace(t *testing.T) {
 			name: "with wrapped func",
 
 			route: Route[any, any]{
-				FullName: "pkg.test.MyFunc1",
+				BaseRoute: BaseRoute{
+					FullName: "pkg.test.MyFunc1",
+				},
 			},
 			opts: []func(string) string{
 				wrappedFunc("Foo"),

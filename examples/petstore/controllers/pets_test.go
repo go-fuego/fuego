@@ -16,10 +16,28 @@ func TestGetAllPets(t *testing.T) {
 		s := lib.NewPetStoreServer()
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/pets/", nil)
+		r := httptest.NewRequest("GET", "/pets/all", nil)
 
 		s.Mux.ServeHTTP(w, r)
 
+		require.Equal(t, http.StatusOK, w.Code)
+	})
+}
+
+func TestFilterPets(t *testing.T) {
+	t.Run("can filter pets", func(t *testing.T) {
+		s := lib.NewPetStoreServer()
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/pets/?name=kit", nil)
+		s.Mux.ServeHTTP(w, r)
+		t.Log(w.Body.String())
+		require.Equal(t, http.StatusOK, w.Code)
+
+		w = httptest.NewRecorder()
+		r = httptest.NewRequest("GET", "/pets/?name=kit&younger_than=1", nil)
+		s.Mux.ServeHTTP(w, r)
+		t.Log(w.Body.String())
 		require.Equal(t, http.StatusOK, w.Code)
 	})
 }

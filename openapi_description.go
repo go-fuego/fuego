@@ -51,11 +51,56 @@ func hello(ctx *fuego.ContextWithBody[MyBody]) (*MyResponse, error) {
 }
 ` + "```" + `
 
-### Add more details to the route
+### Add openAPI information to the route
 
 ` + "```go" + `
-fuego.Get(s, "/hello", myController).
-	Description("This is a route that says hello").
-	Summary("Say hello").
+import (
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
+	"github.com/go-fuego/fuego/param"
+)
+
+func main() {
+	s := fuego.NewServer()
+
+	// Custom OpenAPI options
+	fuego.Post(s, "/", myController
+		option.Description("This route does something..."),
+		option.Summary("This is my summary"),
+		option.Tags("MyTag"), // A tag is set by default according to the return type (can be deactivated)
+		option.Deprecated(), // Marks the route as deprecated in the OpenAPI spec
+
+		option.Query("name", "Declares a query parameter with default value", param.Default("Carmack")),
+		option.Header("Authorization", "Bearer token", param.Required()),
+		optionPagination,
+		optionCustomBehavior,
+	)
+
+	s.Run()
+}
+
+var optionPagination = option.Group(
+	option.QueryInt("page", "Page number", param.Default(1), param.Example("1st page", 1), param.Example("42nd page", 42)),
+	option.QueryInt("perPage", "Number of items per page"),
+)
+
+var optionCustomBehavior = func(r *fuego.BaseRoute) {
+	r.XXX = "YYY"
+}
+` + "```" + `
+
+Then, in the controller
+
+` + "```go" + `
+type MyResponse struct {
+	Answer string ` + "`json:\"answer\"`" + `
+}
+
+func getAllPets(ctx *fuego.ContextNoBody) (*MyResponse, error) {
+	name := ctx.QueryParam("name")
+	perPage, _ := ctx.QueryParamIntErr("per_page")
+
+	return &MyResponse{Answer: "Hello " + name}, nil
+}
 ` + "```" + `
 `

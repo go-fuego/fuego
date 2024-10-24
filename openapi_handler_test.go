@@ -8,6 +8,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// dummyMiddleware sets the X-Test header on the request and the X-Test-Response header on the response.
+func dummyMiddleware(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Header.Set("X-Test", "test")
+		w.Header().Set("X-Test-Response", "response")
+		handler.ServeHTTP(w, r)
+	})
+}
+
 func TestUIHandler(t *testing.T) {
 	t.Run("works with DefaultOpenAPIHandler", func(t *testing.T) {
 		s := NewServer()
