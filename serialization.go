@@ -213,9 +213,22 @@ func SendJSONError(w http.ResponseWriter, _ *http.Request, err error) {
 
 // SendXML sends a XML response.
 // Declared as a variable to be able to override it for clients that need to customize serialization.
+// If serialization fails, it does NOT write to the response writer. It has to be passed to SendJSONError.
 var SendXML = func(w http.ResponseWriter, _ *http.Request, ans any) error {
 	w.Header().Set("Content-Type", "application/xml")
-	return xml.NewEncoder(w).Encode(ans)
+	err := xml.NewEncoder(w).Encode(ans)
+	if err != nil {
+		slog.Error("Cannot serialize returned response to XML", "error", err, "errtype", fmt.Sprintf("%T", err))
+		var unsupportedType *xml.UnsupportedTypeError
+		if errors.As(err, &unsupportedType) {
+			return NotAcceptableError{
+				Err:    err,
+				Detail: fmt.Sprintf("Cannot serialize type %T to XML", ans),
+			}
+		}
+	}
+
+	return err
 }
 
 // SendXMLError sends a XML error response.

@@ -97,6 +97,16 @@ func TestXML(t *testing.T) {
 		require.Equal(t, `<response><Message>Hello World</Message><Code>200</Code></response>`, body)
 	})
 
+	t.Run("cannot serialize functions", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		err := SendXML(w, nil, func() {})
+		require.Error(t, err)
+		require.ErrorAs(t, err, &NotAcceptableError{})
+
+		body := w.Body.String()
+		require.Equal(t, "", body)
+	})
+
 	t.Run("can serialize xml error", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		err := HTTPError{Detail: "Hello World"}
