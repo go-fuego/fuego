@@ -16,7 +16,6 @@ import (
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/getkin/kin-openapi/openapi3gen"
 )
 
 func NewOpenApiSpec() openapi3.T {
@@ -147,10 +146,6 @@ func validateSwaggerUrl(swaggerUrl string) bool {
 	swaggerUrlRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_]+[a-zA-Z0-9\-\_]$`)
 	return swaggerUrlRegexp.MatchString(swaggerUrl)
 }
-
-var generator = openapi3gen.NewGenerator(
-	openapi3gen.UseAllExportedFields(),
-)
 
 // RegisterOpenAPIOperation registers an OpenAPI operation.
 func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3.Operation, error) {
@@ -295,7 +290,7 @@ func (s *Server) getOrCreateSchema(key string, v any) *openapi3.Schema {
 // createSchema is used to create a new schema and add it to the OpenAPI spec.
 // Relies on the openapi3gen package to generate the schema, and adds custom struct tags.
 func (s *Server) createSchema(key string, v any) *openapi3.SchemaRef {
-	schemaRef, err := generator.NewSchemaRefForValue(v, s.OpenApiSpec.Components.Schemas)
+	schemaRef, err := s.openAPIGenerator.NewSchemaRefForValue(v, s.OpenApiSpec.Components.Schemas)
 	if err != nil {
 		slog.Error("Error generating schema", "key", key, "error", err)
 	}
