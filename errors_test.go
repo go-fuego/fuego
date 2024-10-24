@@ -101,7 +101,7 @@ func TestHTTPError_Error(t *testing.T) {
 		})
 		t.Run("default title", func(t *testing.T) {
 			err := HTTPError{}
-			require.Contains(t, err.Error(), "HTTP Error")
+			require.Contains(t, err.Error(), "Internal Server Error")
 		})
 	})
 }

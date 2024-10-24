@@ -28,6 +28,6 @@ func TestValidate(t *testing.T) {
 	var errStructValidation HTTPError
 	require.ErrorAs(t, err, &errStructValidation)
 	require.Equal(t, 400, errStructValidation.StatusCode())
-	require.Equal(t, "Validation Error (400): Name should be max=10, Age should be min=18, Required is required, Email should be a valid email, ExternalID should be a valid UUID", errStructValidation.Error())
+	require.Equal(t, "400 Validation Error: Name should be max=10, Age should be min=18, Required is required, Email should be a valid email, ExternalID should be a valid UUID", errStructValidation.Error())
 	require.Len(t, errStructValidation.Errors, 5)
 }
