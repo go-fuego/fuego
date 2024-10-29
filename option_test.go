@@ -1,4 +1,4 @@
-package option
+package fuego_test
 
 import (
 	"log/slog"
@@ -57,7 +57,7 @@ func TestPerRouteMiddleware(t *testing.T) {
 
 	fuego.Get(s, "/withMiddleware", func(ctx *fuego.ContextNoBody) (string, error) {
 		return "withmiddleware", nil
-	}, Middleware(dummyMiddleware))
+	}, fuego.OptionMiddleware(dummyMiddleware))
 
 	fuego.Get(s, "/withoutMiddleware", func(ctx *fuego.ContextNoBody) (string, error) {
 		return "withoutmiddleware", nil
@@ -144,8 +144,8 @@ func TestUse(t *testing.T) {
 		fuego.Get(s, "/test", func(ctx *fuego.ContextNoBody) (string, error) {
 			return "test", nil
 		},
-			Middleware(orderMiddleware("Fourth!")),
-			Middleware(orderMiddleware("Fifth!")),
+			fuego.OptionMiddleware(orderMiddleware("Fourth!")),
+			fuego.OptionMiddleware(orderMiddleware("Fifth!")),
 		)
 
 		r := httptest.NewRequest(http.MethodGet, "/test", nil)
@@ -160,7 +160,7 @@ func TestUse(t *testing.T) {
 
 type ans struct{}
 
-func TestParam(t *testing.T) {
+func TestOptions(t *testing.T) {
 	t.Run("warn if param is not found in openAPI config but called in controller (possibly typo)", func(t *testing.T) {
 		handler := slogassert.New(t, slog.LevelWarn, nil)
 
@@ -172,16 +172,16 @@ func TestParam(t *testing.T) {
 			c.QueryParam("quantity")
 			return ans{}, nil
 		},
-			Query("quantity", "some description"),
-			QueryInt("number", "some description", param.Example("3", 3)),
-			QueryBool("is_active", "some description"),
+			fuego.OptionQuery("quantity", "some description"),
+			fuego.OptionQueryInt("number", "some description", param.Example("3", 3)),
+			fuego.OptionQueryBool("is_active", "some description"),
 		)
 
 		fuego.Get(s, "/typo", func(c fuego.ContextNoBody) (ans, error) {
 			c.QueryParam("quantityy-with-a-typo")
 			return ans{}, nil
 		},
-			Query("quantity", "some description"),
+			fuego.OptionQuery("quantity", "some description"),
 		)
 
 		t.Run("correct param", func(t *testing.T) {
@@ -213,7 +213,7 @@ func TestHeader(t *testing.T) {
 		s := fuego.NewServer()
 
 		fuego.Get(s, "/test", helloWorld,
-			Header("X-Test", "test header", param.Required(), param.Example("test", "My Header"), param.Default("test")),
+			fuego.OptionHeader("X-Test", "test header", param.Required(), param.Example("test", "My Header"), param.Default("test")),
 		)
 
 		r := httptest.NewRequest(http.MethodGet, "/test", nil)
@@ -230,25 +230,25 @@ func TestOpenAPI(t *testing.T) {
 		s := fuego.NewServer()
 
 		route := fuego.Get(s, "/test", helloWorld,
-			Summary("test summary"),
-			Description("test description"),
-			Tags("first-tag", "second-tag"),
-			Deprecated(),
-			OperationID("test-operation-id"),
+			fuego.OptionSummary("test summary"),
+			fuego.OptionDescription("test description"),
+			fuego.OptionTags("first-tag", "second-tag"),
+			fuego.OptionDeprecated(),
+			fuego.OptionOperationID("test-operation-id"),
 		)
 
 		require.Equal(t, "test summary", route.Operation.Summary)
-		require.Equal(t, "controller: `github.com/go-fuego/fuego/option.helloWorld`\n\n---\n\ntest description", route.Operation.Description)
+		require.Equal(t, "controller: `github.com/go-fuego/fuego_test.helloWorld`\n\n---\n\ntest description", route.Operation.Description)
 		require.Equal(t, []string{"first-tag", "second-tag"}, route.Operation.Tags)
 		require.True(t, route.Operation.Deprecated)
 	})
 }
 
 func TestGroup(t *testing.T) {
-	paramsGroup := Group(
-		Header("X-Test", "test header", param.Required(), param.Example("test", "My Header"), param.Default("test")),
-		Query("name", "Filter by name", param.Example("cat name", "felix"), param.Nullable()),
-		Cookie("session", "Session cookie", param.Example("session", "1234"), param.Nullable()),
+	paramsGroup := fuego.GroupOptions(
+		fuego.OptionHeader("X-Test", "test header", param.Required(), param.Example("test", "My Header"), param.Default("test")),
+		fuego.OptionQuery("name", "Filter by name", param.Example("cat name", "felix"), param.Nullable()),
+		fuego.OptionCookie("session", "Session cookie", param.Example("session", "1234"), param.Nullable()),
 	)
 
 	t.Run("Declare a group parameter for the route", func(t *testing.T) {
@@ -270,13 +270,13 @@ func TestQuery(t *testing.T) {
 
 		require.Panics(t, func() {
 			fuego.Get(s, "/test", helloWorld,
-				QueryInt("age", "Filter by age (in years)", param.Example("3 years old", "3 but string"), param.Nullable()),
+				fuego.OptionQueryInt("age", "Filter by age (in years)", param.Example("3 years old", "3 but string"), param.Nullable()),
 			)
 		})
 
 		require.Panics(t, func() {
 			fuego.Get(s, "/test", helloWorld,
-				QueryBool("is_active", "Filter by active status", param.Example("true", 3), param.Nullable()),
+				fuego.OptionQueryBool("is_active", "Filter by active status", param.Example("true", 3), param.Nullable()),
 			)
 		})
 	})
@@ -286,7 +286,7 @@ func TestQuery(t *testing.T) {
 
 		require.Panics(t, func() {
 			fuego.Get(s, "/test", helloWorld,
-				Query("name", "Filter by name", param.Default(3), param.Nullable()),
+				fuego.OptionQuery("name", "Filter by name", param.Default(3), param.Nullable()),
 			)
 		})
 	})
@@ -296,7 +296,7 @@ func TestRequestContentType(t *testing.T) {
 	t.Run("Declare a request content type for the route", func(t *testing.T) {
 		s := fuego.NewServer()
 
-		route := fuego.Get(s, "/test", dummyController, RequestContentType("application/json"))
+		route := fuego.Get(s, "/test", dummyController, fuego.OptionRequestContentType("application/json"))
 
 		r := httptest.NewRequest(http.MethodGet, "/test", nil)
 		w := httptest.NewRecorder()
@@ -311,7 +311,7 @@ func TestRequestContentType(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		s := fuego.NewServer()
 		route := fuego.Post(s, "/base", dummyController,
-			RequestContentType("application/json"),
+			fuego.OptionRequestContentType("application/json"),
 		)
 
 		t.Log("route.Operation", route.Operation)
@@ -326,7 +326,7 @@ func TestRequestContentType(t *testing.T) {
 	t.Run("variadic", func(t *testing.T) {
 		s := fuego.NewServer()
 		route := fuego.Post(s, "/test", dummyController,
-			RequestContentType("application/json", "my/content-type"),
+			fuego.OptionRequestContentType("application/json", "my/content-type"),
 		)
 
 		content := route.Operation.RequestBody.Value.Content
@@ -343,7 +343,7 @@ func TestRequestContentType(t *testing.T) {
 		s := fuego.NewServer(fuego.WithRequestContentType("application/json", "application/xml"))
 		route := fuego.Post(
 			s, "/test", dummyController,
-			RequestContentType("my/content-type"),
+			fuego.OptionRequestContentType("my/content-type"),
 		)
 
 		content := route.Operation.RequestBody.Value.Content
@@ -360,7 +360,7 @@ func TestAddError(t *testing.T) {
 	t.Run("Declare an error for the route", func(t *testing.T) {
 		s := fuego.NewServer()
 
-		route := fuego.Get(s, "/test", helloWorld, AddError(409, "Conflict: Pet with the same name already exists"))
+		route := fuego.Get(s, "/test", helloWorld, fuego.OptionAddError(409, "Conflict: Pet with the same name already exists"))
 
 		t.Log("route.Operation.Responses", route.Operation.Responses)
 		require.Equal(t, 5, route.Operation.Responses.Len()) // 200, 400, 409, 500, default
@@ -373,7 +373,7 @@ func TestAddError(t *testing.T) {
 func TestHide(t *testing.T) {
 	s := fuego.NewServer()
 
-	fuego.Get(s, "/hidden", helloWorld, Hide())
+	fuego.Get(s, "/hidden", helloWorld, fuego.OptionHide())
 	fuego.Get(s, "/visible", helloWorld)
 
 	spec := s.OutputOpenAPISpec()
