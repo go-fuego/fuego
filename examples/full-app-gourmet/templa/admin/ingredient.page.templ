@@ -11,7 +11,6 @@ templ IngredientPage(ingredient store.Ingredient) {
 			Ingredient: ingredient,
 			FormAction:"/admin/ingredients/" + ingredient.ID,
 			IsCreating: false,
-			HXTrigger: "change delay:500ms",
 		})
 	}
 }

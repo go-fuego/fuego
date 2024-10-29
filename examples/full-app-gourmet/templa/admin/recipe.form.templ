@@ -42,6 +42,7 @@ templ RecipeForm(props RecipeFormProps) {
 			Instructions
 			<textarea class="input" name="instructions" rows="10">{ props.Recipe.Instructions }</textarea>
 		</label>
+		
 		<fieldset class="flex gap-4 w-full justify-between">
 			<label class="label w-full">
 				Preparation Time
@@ -54,22 +55,14 @@ templ RecipeForm(props RecipeFormProps) {
 		</fieldset>
 		<fieldset class="flex gap-4 w-full justify-between">
 			<label class="label w-full">
-				Category
-				@components.Select(components.SelectProps{
-					Name: "category",
-					SelectedValue: props.Recipe.Category,
-					Items: []components.SelectItem{},
-				})
-			</label>
-			<label class="label w-full">
-				Class
+				When To Eat
 				@components.Select(components.SelectProps{
 					Name: "whenToEat",
 					SelectedValue: props.Recipe.WhenToEat,
 					Items: []components.SelectItem{
 						{ Value: string(types.WhenToEatStarter),	Label: "Starter"},
-						{ Value: string(types.WhenToEatDish),		Label: "Meal"},
-						{ Value: string(types.WhenToEatDessert),	Label: "Desert"},
+						{ Value: string(types.WhenToEatDish),		Label: "Dish"},
+						{ Value: string(types.WhenToEatDessert),	Label: "Dessert"},
 					},
 				})
 			</label>

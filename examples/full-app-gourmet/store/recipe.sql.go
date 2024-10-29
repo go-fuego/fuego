@@ -11,7 +11,20 @@ import (
 )
 
 const createRecipe = `-- name: CreateRecipe :one
-INSERT INTO recipe (id, name, description, instructions) VALUES (?, ?, ?, ?) RETURNING id, created_at, name, description, instructions, category, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer, when_to_eat
+INSERT INTO recipe (
+  id,
+  name,
+  description,
+  instructions,
+  prep_time,
+  cook_time,
+  category,
+  image_url,
+  published,
+  servings,
+  when_to_eat
+) 
+VALUES (?,?,?,?,?,?,?,?,?,?,?) RETURNING id, created_at, name, description, instructions, category, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer, when_to_eat
 `
 
 type CreateRecipeParams struct {
@@ -19,6 +32,13 @@ type CreateRecipeParams struct {
 	Name         string `json:"name"`
 	Description  string `json:"description"`
 	Instructions string `json:"instructions"`
+	PrepTime     int64  `json:"prep_time"`
+	CookTime     int64  `json:"cook_time"`
+	Category     string `json:"category"`
+	ImageUrl     string `json:"image_url"`
+	Published    bool   `json:"published"`
+	Servings     int64  `json:"servings"`
+	WhenToEat    string `json:"when_to_eat"`
 }
 
 func (q *Queries) CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Recipe, error) {
@@ -27,6 +47,13 @@ func (q *Queries) CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Rec
 		arg.Name,
 		arg.Description,
 		arg.Instructions,
+		arg.PrepTime,
+		arg.CookTime,
+		arg.Category,
+		arg.ImageUrl,
+		arg.Published,
+		arg.Servings,
+		arg.WhenToEat,
 	)
 	var i Recipe
 	err := row.Scan(
