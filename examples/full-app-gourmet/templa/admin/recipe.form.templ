@@ -19,6 +19,7 @@ type RecipeFormProps struct {
 
 templ RecipeForm(props RecipeFormProps) {
 	<form
+		id="recipe"
 		action={ templ.URL(props.FormAction) }
 		if props.IsCreating {
 			method="POST"
@@ -100,75 +101,79 @@ templ RecipeForm(props RecipeFormProps) {
 	</form>
 	<section id="ingredients-section">
 		<h2 class="mb-2 text-2xl font-bold">Ingredients</h2>
-		<ul class="list-disc pl-4">
-			for _, dosing := range props.Dosings {
-				<li class="mb-1">
-					<span>
-						{ dosing.Ingredient.Name }
-					</span>
-					if dosing.Unit != "unit" {
-						: <span class="font-semibold">{ strconv.Itoa(int(dosing.Quantity)) }</span>
-						<span>{ string(dosing.Unit) }</span>
-					}
-				</li>
-			}
-		</ul>
-		<form
-			method="POST"
-			class="form"
-			action="/admin/dosings-new"
-			hx-boost="true"
-			hx-target="#ingredients-section"
-			hx-select="#ingredients-section"
-		>
-			<input type="hidden" name="RecipeID" value={ props.Recipe.ID }/>
-			<div class="flex w-full items-end gap-2 md:gap-4">
-				<label class="label">
-					Name
-					<select
-						name="IngredientID"
-						class="input"
-						hx-get="/ingredients/preselect-unit"
-						hx-trigger="change"
-						hx-target="#unit"
-						hx-select="#unit"
-						hx-swap="outerHTML"
-					>
-						<option value="" selected>-</option>
-						for _, ingredient := range props.AllIngredients {
-							<option value={ ingredient.ID }>
-								{ ingredient.Name }
-							</option>
+		if props.IsCreating {
+			<button class="btn btn-primary" form="recipe" type="submit">Add Ingredients</button>
+		} else {
+			<ul class="list-disc pl-4">
+				for _, dosing := range props.Dosings {
+					<li class="mb-1">
+						<span>
+							{ dosing.Ingredient.Name }
+						</span>
+						if dosing.Unit != "unit" {
+							: <span class="font-semibold">{ strconv.Itoa(int(dosing.Quantity)) }</span>
+							<span>{ string(dosing.Unit) }</span>
 						}
-					</select>
-				</label>
-				<label class="label">
-					Quantity
-					<input class="input" type="number" name="quantity"/>
-				</label>
-				<label class="label">
-					Unit
-					<select
-						id="unit"
-						name="unit"
-						class="input"
-						style="min-width: 5rem;"
-					>
-						for _, unit := range props.Units {
-							<option value={ unit }>
-								{ unit }
-							</option>
-						}
-					</select>
-				</label>
-				<label class="label">
-					Optional
-					<div class="flex items-center justify-center">
-						<input type="checkbox" name=""/>
-					</div>
-				</label>
-				<button class="btn btn-primary aspect-square">+</button>
-			</div>
-		</form>
+					</li>
+				}
+			</ul>
+			<form
+				method="POST"
+				class="form"
+				action="/admin/dosings/new"
+				hx-boost="true"
+				hx-target="#ingredients-section"
+				hx-select="#ingredients-section"
+			>
+				<input type="hidden" name="RecipeID" value={ props.Recipe.ID }/>
+				<div class="flex w-full items-end gap-2 md:gap-4">
+					<label class="label">
+						Name
+						<select
+							name="IngredientID"
+							class="input"
+							hx-get="/ingredients/preselect-unit"
+							hx-trigger="change"
+							hx-target="#unit"
+							hx-select="#unit"
+							hx-swap="outerHTML"
+						>
+							<option value="" selected>-</option>
+							for _, ingredient := range props.AllIngredients {
+								<option value={ ingredient.ID }>
+									{ ingredient.Name }
+								</option>
+							}
+						</select>
+					</label>
+					<label class="label">
+						Quantity
+						<input class="input" type="number" name="quantity"/>
+					</label>
+					<label class="label">
+						Unit
+						<select
+							id="unit"
+							name="unit"
+							class="input"
+							style="min-width: 5rem;"
+						>
+							for _, unit := range props.Units {
+								<option value={ unit }>
+									{ unit }
+								</option>
+							}
+						</select>
+					</label>
+					<label class="label">
+						Optional
+						<div class="flex items-center justify-center">
+							<input type="checkbox" name=""/>
+						</div>
+					</label>
+					<button class="btn btn-primary aspect-square">+</button>
+				</div>
+			</form>
+		}
 	</section>
 }
