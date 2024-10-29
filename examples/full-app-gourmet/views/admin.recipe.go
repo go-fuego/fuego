@@ -106,12 +106,12 @@ func (rs Resource) adminAddRecipes(c *fuego.ContextWithBody[store.CreateRecipePa
 		return "", err
 	}
 
-	_, err = rs.RecipesQueries.CreateRecipe(c.Context(), body)
+	r, err := rs.RecipesQueries.CreateRecipe(c.Context(), body)
 	if err != nil {
 		return "", err
 	}
 
-	return c.Redirect(http.StatusMovedPermanently, "/admin/recipes")
+	return c.Redirect(http.StatusSeeOther, "/admin/recipes/"+r.ID)
 }
 
 func (rs Resource) adminCreateRecipePage(c *fuego.ContextNoBody) (fuego.Templ, error) {

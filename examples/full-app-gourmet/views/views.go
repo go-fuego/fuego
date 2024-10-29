@@ -52,7 +52,7 @@ func (rs Resource) Routes(s *fuego.Server) {
 	fuego.Get(adminRoutes, "/recipes/create", rs.adminCreateRecipePage)
 	fuego.Put(adminRoutes, "/recipes/edit", rs.editRecipe)
 	fuego.Post(adminRoutes, "/recipes/new", rs.adminAddRecipes)
-	fuego.Post(adminRoutes, "/dosings-new", rs.adminAddDosing)
+	fuego.Post(adminRoutes, "/dosings/new", rs.adminAddDosing)
 	fuego.Get(adminRoutes, "/ingredients", rs.adminIngredients,
 		optionPagination,
 	)
