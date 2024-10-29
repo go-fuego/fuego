@@ -38,7 +38,7 @@ func (rs Resource) adminRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 	return admin.RecipeList(recipes, searchParams), nil
 }
 
-func (rs Resource) adminOneRecipe(c *fuego.ContextWithBody[store.UpdateRecipeParams]) (fuego.Templ, error) {
+func (rs Resource) adminOneRecipe(c *fuego.ContextWithBody[store.UpdateRecipeParams]) (any, error) {
 	id := c.Request().PathValue("id")
 
 	if c.Request().Method == "PUT" {
@@ -55,6 +55,7 @@ func (rs Resource) adminOneRecipe(c *fuego.ContextWithBody[store.UpdateRecipePar
 		}
 
 		c.Response().Header().Set("HX-Trigger", "entity-updated")
+		return c.Redirect(http.StatusSeeOther, "/admin/recipes")
 	}
 
 	recipe, err := rs.RecipesQueries.GetRecipe(c.Context(), id)
