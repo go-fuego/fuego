@@ -1,7 +1,9 @@
 package views
 
 import (
+	"fmt"
 	"log/slog"
+	"net/http"
 	"strconv"
 
 	"github.com/go-fuego/fuego"
@@ -10,7 +12,7 @@ import (
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa/components"
 )
 
-func (rs Resource) adminOneIngredient(c *fuego.ContextWithBody[store.UpdateIngredientParams]) (fuego.CtxRenderer, error) {
+func (rs Resource) adminOneIngredient(c *fuego.ContextWithBody[store.UpdateIngredientParams]) (any, error) {
 	id := c.PathParam("id")
 
 	if c.Request().Method == "PUT" {
@@ -26,7 +28,10 @@ func (rs Resource) adminOneIngredient(c *fuego.ContextWithBody[store.UpdateIngre
 			return nil, err
 		}
 
+		fmt.Println("hello")
+
 		c.Response().Header().Set("HX-Trigger", "entity-updated")
+		return c.Redirect(http.StatusSeeOther, "/admin/ingredients")
 	}
 
 	ingredient, err := rs.IngredientsQueries.GetIngredient(c, id)
