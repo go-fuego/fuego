@@ -15,7 +15,20 @@ ORDER BY name ASC
 LIMIT 30;
 
 -- name: CreateRecipe :one
-INSERT INTO recipe (id, name, description, instructions) VALUES (?, ?, ?, ?) RETURNING *;
+INSERT INTO recipe (
+  id,
+  name,
+  description,
+  instructions,
+  prep_time,
+  cook_time,
+  category,
+  image_url,
+  published,
+  servings,
+  when_to_eat
+) 
+VALUES (?,?,?,?,?,?,?,?,?,?,?) RETURNING *;
 
 -- name: DeleteRecipe :exec
 DELETE FROM recipe WHERE id = ?;

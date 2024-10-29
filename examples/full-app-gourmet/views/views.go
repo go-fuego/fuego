@@ -13,7 +13,7 @@ import (
 
 var optionPagination = option.Group(
 	option.QueryInt("page", "Page number", param.Default(1), param.Example("1st page", 1), param.Example("42nd page", 42)),
-	option.QueryInt("perPage", "Number of items per page"),
+	option.QueryInt("perPage", "Number of items per page", param.Default(20)),
 )
 
 func (rs Resource) Routes(s *fuego.Server) {
@@ -40,7 +40,9 @@ func (rs Resource) Routes(s *fuego.Server) {
 	// Admin Pages
 	adminRoutes := fuego.Group(s, "/admin")
 	fuego.UseStd(adminRoutes, basicauth.New(basicauth.Config{Username: os.Getenv("ADMIN_USER"), Password: os.Getenv("ADMIN_PASSWORD")}))
-	fuego.Get(adminRoutes, "", rs.pageAdmin)
+	fuego.Get(adminRoutes, "", rs.pageAdmin,
+		optionPagination,
+	)
 	fuego.Get(adminRoutes, "/recipes", rs.adminRecipes,
 		optionPagination,
 	)
@@ -49,7 +51,7 @@ func (rs Resource) Routes(s *fuego.Server) {
 	fuego.Delete(adminRoutes, "/recipes/{id}", rs.adminDeleteRecipe)
 	fuego.Get(adminRoutes, "/recipes/create", rs.adminCreateRecipePage)
 	fuego.Put(adminRoutes, "/recipes/edit", rs.editRecipe)
-	fuego.Post(adminRoutes, "/recipes-new", rs.adminAddRecipes)
+	fuego.Post(adminRoutes, "/recipes/new", rs.adminAddRecipes)
 	fuego.Post(adminRoutes, "/dosings-new", rs.adminAddDosing)
 	fuego.Get(adminRoutes, "/ingredients", rs.adminIngredients,
 		optionPagination,

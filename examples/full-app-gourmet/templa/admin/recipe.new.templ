@@ -1,0 +1,14 @@
+package admin
+
+import "github.com/go-fuego/fuego/examples/full-app-gourmet/store"
+
+templ RecipeNew() {
+    @htmlPage("Recipe - Creation", true) {
+        <h1>Create Recipe</h1>
+        @RecipeForm(RecipeFormProps{
+            FormAction: "/admin/recipes/new",
+			IsCreating: true,
+            Recipe: store.Recipe{},
+        })
+    }
+}

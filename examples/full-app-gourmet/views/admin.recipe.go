@@ -1,6 +1,7 @@
 package views
 
 import (
+	"net/http"
 	"slices"
 	"strings"
 
@@ -90,12 +91,12 @@ func (rs Resource) editRecipe(c *fuego.ContextWithBody[store.UpdateRecipeParams]
 
 	updateRecipeArgs.ID = c.PathParam("id")
 
-	recipe, err := rs.RecipesQueries.UpdateRecipe(c.Context(), updateRecipeArgs)
+	_, err = rs.RecipesQueries.UpdateRecipe(c.Context(), updateRecipeArgs)
 	if err != nil {
 		return "", err
 	}
 
-	return c.Redirect(301, "/admin/recipes/"+recipe.ID)
+	return c.Redirect(http.StatusMovedPermanently, "/admin/recipes")
 }
 
 func (rs Resource) adminAddRecipes(c *fuego.ContextWithBody[store.CreateRecipeParams]) (any, error) {
@@ -109,24 +110,11 @@ func (rs Resource) adminAddRecipes(c *fuego.ContextWithBody[store.CreateRecipePa
 		return "", err
 	}
 
-	return c.Redirect(301, "/admin/recipes")
+	return c.Redirect(http.StatusMovedPermanently, "/admin/recipes")
 }
 
 func (rs Resource) adminCreateRecipePage(c *fuego.ContextNoBody) (fuego.Templ, error) {
-	allIngredients, err := rs.IngredientsQueries.GetIngredients(c.Context())
-	if err != nil {
-		return nil, err
-	}
-
-	slices.SortFunc(allIngredients, func(a, b store.Ingredient) int {
-		return strings.Compare(a.Name, b.Name)
-	})
-
-	return admin.RecipePage(admin.RecipePageProps{
-		Recipe: store.Recipe{},
-
-		AllIngredients: allIngredients,
-	}), nil
+	return admin.RecipeNew(), nil
 }
 
 func (rs Resource) adminAddDosing(c *fuego.ContextWithBody[store.CreateDosingParams]) (any, error) {
@@ -140,5 +128,5 @@ func (rs Resource) adminAddDosing(c *fuego.ContextWithBody[store.CreateDosingPar
 		return "", err
 	}
 
-	return c.Redirect(301, "/admin/recipes/"+body.RecipeID)
+	return c.Redirect(http.StatusMovedPermanently, "/admin/recipes/"+body.RecipeID)
 }
