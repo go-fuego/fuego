@@ -58,7 +58,7 @@ type BaseRoute struct {
 	AcceptedContentTypes []string // Content types accepted for the request body. If nil, all content types (*/*) are accepted.
 	Hidden               bool     // If true, the route will not be documented in the OpenAPI spec
 
-	MainRouter *Server // PRIVATE ref to the main router, used to register the route in the OpenAPI spec
+	mainRouter *Server // ref to the main router, used to register the route in the OpenAPI spec
 }
 
 // Capture all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
@@ -127,7 +127,7 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 	if route.Operation.OperationID == "" {
 		route.Operation.OperationID = route.Method + "_" + strings.ReplaceAll(strings.ReplaceAll(route.Path, "{", ":"), "}", "")
 	}
-	route.MainRouter = s
+	route.mainRouter = s
 
 	return &route
 }
@@ -181,12 +181,12 @@ func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path
 		Path:       path,
 		FullName:   FuncName(controller),
 		Operation:  openapi3.NewOperation(),
-		MainRouter: s.mainRouter,
+		mainRouter: s.mainRouter,
 	}
-	if route.MainRouter == nil {
-		route.MainRouter = s
+	if route.mainRouter == nil {
+		route.mainRouter = s
 	}
-	route.AcceptedContentTypes = route.MainRouter.acceptedContentTypes
+	route.AcceptedContentTypes = route.mainRouter.acceptedContentTypes
 
 	acceptHeaderParameter := openapi3.NewHeaderParameter("Accept")
 	acceptHeaderParameter.Schema = openapi3.NewStringSchema().NewRef()

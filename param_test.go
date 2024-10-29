@@ -1,16 +1,16 @@
-package param_test
+package fuego_test
 
 import (
 	"strconv"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/option"
-	"github.com/go-fuego/fuego/param"
-	"github.com/stretchr/testify/require"
 )
 
-func TestParam(t *testing.T) {
+func TestParams(t *testing.T) {
 	t.Run("All options", func(t *testing.T) {
 		s := fuego.NewServer()
 
@@ -21,9 +21,9 @@ func TestParam(t *testing.T) {
 
 			return name + strconv.Itoa(age) + strconv.FormatBool(isok), nil
 		},
-			option.Query("name", "Name", param.Required(), param.Default("hey"), param.Example("example1", "you")),
-			option.QueryInt("age", "Age", param.Nullable(), param.Default(18), param.Example("example1", 1)),
-			option.QueryBool("is_ok", "Is OK?", param.Default(true), param.Example("example1", true)),
+			option.Query("name", "Name", fuego.ParamRequired(), fuego.ParamDefault("hey"), fuego.ParamExample("example1", "you")),
+			option.QueryInt("age", "Age", fuego.ParamNullable(), fuego.ParamDefault(18), fuego.ParamExample("example1", 1)),
+			option.QueryBool("is_ok", "Is OK?", fuego.ParamDefault(true), fuego.ParamExample("example1", true)),
 		)
 
 		require.NotNil(t, route)

@@ -139,7 +139,7 @@ func (r Route[ResponseBody, RequestBody]) Tags(tags ...string) Route[ResponseBod
 //
 //	fuego.Post(s, "/test", testControllerWithBody, option.RequestContentType("application/json"))
 func (r Route[ResponseBody, RequestBody]) RequestContentType(consumes ...string) Route[ResponseBody, RequestBody] {
-	bodyTag := SchemaTagFromType(r.MainRouter, *new(RequestBody))
+	bodyTag := SchemaTagFromType(r.mainRouter, *new(RequestBody))
 
 	if bodyTag.Name != "unknown-interface" {
 		requestBody := newRequestBody[RequestBody](bodyTag, consumes)
@@ -168,7 +168,7 @@ func (r Route[ResponseBody, RequestBody]) AddTags(tags ...string) Route[Response
 //
 // Deprecated: Use `option.AddError` from github.com/go-fuego/fuego/option instead.
 func (r Route[ResponseBody, RequestBody]) AddError(code int, description string, errorType ...any) Route[ResponseBody, RequestBody] {
-	addResponse(r.MainRouter, r.Operation, code, description, errorType...)
+	addResponse(r.mainRouter, r.Operation, code, description, errorType...)
 	return r
 }
 
