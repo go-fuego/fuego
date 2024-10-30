@@ -81,14 +81,6 @@ type TestResponseBody struct {
 	TestRequestBody
 }
 
-func testControllerWithBody(c *ContextWithBody[TestRequestBody]) (*TestResponseBody, error) {
-	body, err := c.Body()
-	if err != nil {
-		return nil, err
-	}
-	return &TestResponseBody{TestRequestBody: body}, nil
-}
-
 func TestHttpHandler(t *testing.T) {
 	s := NewServer()
 
@@ -359,10 +351,11 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextNoBody", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := initContext[ContextNoBody](ContextNoBody{
+		ctx, err := initContext[ContextNoBody](ContextNoBody{
 			Req: req,
 			Res: w,
 		})
+		require.NoError(t, err)
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -372,10 +365,11 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextNoBody", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := initContext[*ContextNoBody](ContextNoBody{
+		ctx, err := initContext[*ContextNoBody](ContextNoBody{
 			Req: req,
 			Res: w,
 		})
+		require.NoError(t, err)
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -385,10 +379,11 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextWithBody[string]", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := initContext[*ContextWithBody[string]](ContextNoBody{
+		ctx, err := initContext[*ContextWithBody[string]](ContextNoBody{
 			Req: req,
 			Res: w,
 		})
+		require.NoError(t, err)
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -398,10 +393,11 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextWithBody[struct]", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := initContext[*ContextWithBody[ans]](ContextNoBody{
+		ctx, err := initContext[*ContextWithBody[ans]](ContextNoBody{
 			Req: req,
 			Res: w,
 		})
+		require.NoError(t, err)
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())

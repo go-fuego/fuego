@@ -16,7 +16,7 @@ func TestGetAllPets(t *testing.T) {
 		s := lib.NewPetStoreServer()
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/pets/all", nil)
+		r := httptest.NewRequest("GET", "/pets/all?per_page=5", nil)
 
 		s.Mux.ServeHTTP(w, r)
 
@@ -29,13 +29,13 @@ func TestFilterPets(t *testing.T) {
 		s := lib.NewPetStoreServer()
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/pets/?name=kit", nil)
+		r := httptest.NewRequest("GET", "/pets/?name=kit&per_page=5", nil)
 		s.Mux.ServeHTTP(w, r)
 		t.Log(w.Body.String())
 		require.Equal(t, http.StatusOK, w.Code)
 
 		w = httptest.NewRecorder()
-		r = httptest.NewRequest("GET", "/pets/?name=kit&younger_than=1", nil)
+		r = httptest.NewRequest("GET", "/pets/?name=kit&younger_than=1&per_page=5", nil)
 		s.Mux.ServeHTTP(w, r)
 		t.Log(w.Body.String())
 		require.Equal(t, http.StatusOK, w.Code)
