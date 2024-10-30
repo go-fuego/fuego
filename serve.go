@@ -54,21 +54,46 @@ func (s *Server) proto() string {
 	return "http"
 }
 
+func validateQueryParams(c ContextNoBody) error {
+	for k, param := range c.params {
+		if param.Default != nil {
+			// skip: param has a default
+			continue
+		}
+
+		if param.Required && !c.Req.URL.Query().Has(k) {
+			err := fmt.Errorf("%s is a required query param", k)
+			return BadRequestError{
+				Title:  "Query Param Not Found",
+				Err:    err,
+				Detail: "cannot parse request parameter: " + err.Error(),
+			}
+		}
+	}
+
+	return nil
+}
+
 // initializes any Context type with the base ContextNoBody context.
 //
 //	var ctx ContextWithBody[any] // does not work because it will create a ContextWithBody[any] with a nil value
-func initContext[Contextable ctx[Body], Body any](baseContext ContextNoBody) Contextable {
+func initContext[Contextable ctx[Body], Body any](baseContext ContextNoBody) (Contextable, error) {
 	var c Contextable
+
+	err := validateQueryParams(baseContext)
+	if err != nil {
+		return c, err
+	}
 
 	switch any(c).(type) {
 	case ContextNoBody:
-		return any(baseContext).(Contextable)
+		return any(baseContext).(Contextable), nil
 	case *ContextNoBody:
-		return any(&baseContext).(Contextable)
+		return any(&baseContext).(Contextable), nil
 	case *ContextWithBody[Body]:
 		return any(&ContextWithBody[Body]{
 			ContextNoBody: baseContext,
-		}).(Contextable)
+		}).(Contextable), nil
 	default:
 		panic("unknown type")
 	}
@@ -99,7 +124,8 @@ func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, control
 		if s.template != nil {
 			templates = template.Must(s.template.Clone())
 		}
-		ctx := initContext[Contextable](ContextNoBody{
+
+		ctx, err := initContext[Contextable](ContextNoBody{
 			Req: r,
 			Res: w,
 			readOptions: readOptions{
@@ -110,6 +136,11 @@ func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, control
 			templates: templates,
 			params:    route.Params,
 		})
+		if err != nil {
+			err = s.ErrorHandler(err)
+			s.SerializeError(w, r, err)
+			return
+		}
 
 		timeController := time.Now()
 		w.Header().Set("Server-Timing", Timing{"fuegoReqInit", timeController.Sub(timeCtxInit), ""}.String())
