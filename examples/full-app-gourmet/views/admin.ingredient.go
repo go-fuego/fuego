@@ -1,7 +1,7 @@
 package views
 
 import (
-	"fmt"
+	"database/sql"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -27,8 +27,6 @@ func (rs Resource) adminOneIngredient(c *fuego.ContextWithBody[store.UpdateIngre
 		if err != nil {
 			return nil, err
 		}
-
-		fmt.Println("hello")
 
 		c.Response().Header().Set("HX-Trigger", "entity-updated")
 		return c.Redirect(http.StatusSeeOther, "/admin/ingredients")
@@ -76,7 +74,7 @@ func (rs Resource) adminIngredients(c fuego.ContextNoBody) (fuego.Templ, error) 
 	slog.Debug("params", "params", searchParams)
 
 	ingredients, err := rs.IngredientsQueries.SearchIngredients(c.Context(), store.SearchIngredientsParams{
-		Name:   "%" + searchParams.Name + "%",
+		Search: sql.NullString{String: searchParams.Name, Valid: true},
 		Limit:  int64(searchParams.PerPage),
 		Offset: int64(searchParams.Page-1) * int64(searchParams.PerPage),
 	})

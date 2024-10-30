@@ -1,6 +1,7 @@
 package views
 
 import (
+	"database/sql"
 	"net/http"
 	"slices"
 	"strings"
@@ -30,7 +31,17 @@ func (rs Resource) adminRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 		URL:     "/admin/recipes",
 		Lang:    c.MainLang(),
 	}
-	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
+	recipes, err := rs.RecipesQueries.SearchRecipes(
+		c.Context(),
+		store.SearchRecipesParams{
+			Search:      sql.NullString{String: searchParams.Name, Valid: true},
+			Limit:       int64(searchParams.PerPage),
+			Offset:      int64(searchParams.Page-1) * int64(searchParams.PerPage),
+			MaxCalories: 9999999,
+			MaxTime:     9999999,
+			Published:   false,
+		},
+	)
 	if err != nil {
 		return nil, err
 	}

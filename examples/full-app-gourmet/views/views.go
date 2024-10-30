@@ -45,6 +45,7 @@ func (rs Resource) Routes(s *fuego.Server) {
 	)
 	fuego.Get(adminRoutes, "/recipes", rs.adminRecipes,
 		optionPagination,
+		option.Query("name", "Name to perform LIKE search on"),
 	)
 	fuego.Get(adminRoutes, "/recipes/{id}", rs.adminOneRecipe)
 	fuego.Put(adminRoutes, "/recipes/{id}", rs.adminOneRecipe)
@@ -55,6 +56,7 @@ func (rs Resource) Routes(s *fuego.Server) {
 	fuego.Post(adminRoutes, "/dosings/new", rs.adminAddDosing)
 	fuego.Get(adminRoutes, "/ingredients", rs.adminIngredients,
 		optionPagination,
+		option.Query("name", "Name to perform LIKE search on"),
 	)
 	fuego.Get(adminRoutes, "/ingredients/create", rs.adminIngredientCreationPage)
 	fuego.All(adminRoutes, "/ingredients/{id}", rs.adminOneIngredient)
