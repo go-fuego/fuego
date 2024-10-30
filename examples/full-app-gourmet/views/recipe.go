@@ -64,6 +64,7 @@ func (rs Resource) showIndex(c fuego.ContextNoBody) (fuego.Templ, error) {
 		},
 		MaxTime:     15,
 		MaxCalories: 99999,
+		Published:   true,
 	})
 	if err != nil {
 		return nil, err
@@ -76,6 +77,7 @@ func (rs Resource) showIndex(c fuego.ContextNoBody) (fuego.Templ, error) {
 		},
 		MaxTime:     99999,
 		MaxCalories: 500,
+		Published:   true,
 	})
 	if err != nil {
 		return nil, err
@@ -172,6 +174,7 @@ func (rs Resource) searchRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 		},
 		MaxTime:     99999,
 		MaxCalories: 99999,
+		Published:   true,
 	})
 	if err != nil {
 		return nil, err
@@ -190,6 +193,7 @@ func (rs Resource) fastRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 		},
 		MaxTime:     15,
 		MaxCalories: 99999,
+		Published:   true,
 	})
 	if err != nil {
 		return nil, err
@@ -211,6 +215,7 @@ func (rs Resource) healthyRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 		},
 		MaxTime:     99999,
 		MaxCalories: 500,
+		Published:   true,
 	})
 	if err != nil {
 		return nil, err
@@ -231,6 +236,7 @@ func (rs Resource) showRecipesList(c fuego.ContextNoBody) (fuego.CtxRenderer, er
 			String: search,
 			Valid:  true,
 		},
+		Published: true,
 	})
 	if err != nil {
 		return nil, err

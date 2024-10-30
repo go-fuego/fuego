@@ -5,8 +5,8 @@ SELECT * FROM ingredient WHERE id = ?;
 SELECT * FROM ingredient;
 
 -- name: SearchIngredients :many
-SELECT * FROM ingredient
-WHERE name LIKE ?
+SELECT * FROM ingredient WHERE
+  (name LIKE '%' || @search || '%')
 ORDER BY name ASC
 LIMIT ?
 OFFSET ?;

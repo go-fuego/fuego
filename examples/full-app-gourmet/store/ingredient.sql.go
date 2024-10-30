@@ -7,6 +7,7 @@ package store
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store/types"
 )
@@ -221,21 +222,21 @@ func (q *Queries) GetIngredientsOfRecipe(ctx context.Context, recipeID string) (
 }
 
 const searchIngredients = `-- name: SearchIngredients :many
-SELECT id, created_at, name, description, default_unit, category, available_all_year, available_jan, available_feb, available_mar, available_apr, available_may, available_jun, available_jul, available_aug, available_sep, available_oct, available_nov, available_dec FROM ingredient
-WHERE name LIKE ?
+SELECT id, created_at, name, description, default_unit, category, available_all_year, available_jan, available_feb, available_mar, available_apr, available_may, available_jun, available_jul, available_aug, available_sep, available_oct, available_nov, available_dec FROM ingredient WHERE
+  (name LIKE '%' || ? || '%')
 ORDER BY name ASC
 LIMIT ?
 OFFSET ?
 `
 
 type SearchIngredientsParams struct {
-	Name   string `json:"name"`
-	Limit  int64  `json:"limit"`
-	Offset int64  `json:"offset"`
+	Search sql.NullString `json:"search"`
+	Limit  int64          `json:"limit"`
+	Offset int64          `json:"offset"`
 }
 
 func (q *Queries) SearchIngredients(ctx context.Context, arg SearchIngredientsParams) ([]Ingredient, error) {
-	rows, err := q.db.QueryContext(ctx, searchIngredients, arg.Name, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, searchIngredients, arg.Search, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

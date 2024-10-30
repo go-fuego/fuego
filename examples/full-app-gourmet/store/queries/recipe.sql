@@ -5,14 +5,15 @@ SELECT * FROM recipe WHERE id = ?;
 SELECT * FROM recipe;
 
 -- name: SearchRecipes :many
--- Saerch anything that contains the given string
+-- Search anything that contains the given string
 SELECT * FROM recipe WHERE
   (name LIKE '%' || @search || '%')
-  AND published = true
+  AND published = @published
   AND calories <= @max_calories
   AND prep_time + cook_time <= @max_time
 ORDER BY name ASC
-LIMIT 30;
+LIMIT @limit
+OFFSET @offset;
 
 -- name: CreateRecipe :one
 INSERT INTO recipe (
