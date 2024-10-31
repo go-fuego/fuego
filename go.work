@@ -14,5 +14,6 @@ use (
 	./extra/markdown
 	./middleware/basicauth
 	./middleware/cache
-	./testing-from-outside
+	./integration-tests/cors
+	./integration-tests/gourmet
 )

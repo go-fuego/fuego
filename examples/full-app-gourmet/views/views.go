@@ -48,10 +48,11 @@ func (rs Resource) Routes(s *fuego.Server) {
 	fuego.UseStd(adminRoutes, basicauth.New(basicauth.Config{Username: os.Getenv("ADMIN_USER"), Password: os.Getenv("ADMIN_PASSWORD")}))
 	fuego.Get(adminRoutes, "", rs.pageAdmin,
 		optionPagination,
+		option.Query("name", "Name to perform LIKE search on"),
 	)
 	fuego.Get(adminRoutes, "/recipes", rs.adminRecipes,
 		optionPagination,
-		option.Query("name", "Name to perform LIKE search on"),
+		option.Query("name", "Name to perform LIKE search on", param.Required()),
 	)
 	fuego.Get(adminRoutes, "/recipes/{id}", rs.adminOneRecipe)
 	fuego.Put(adminRoutes, "/recipes/{id}", rs.adminOneRecipe)
