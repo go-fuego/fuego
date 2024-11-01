@@ -61,7 +61,7 @@ func validateQueryParams(c ContextNoBody) error {
 			continue
 		}
 
-		if param.Required && !c.Req.URL.Query().Has(k) {
+		if param.Required && !c.urlValues.Has(k) {
 			err := fmt.Errorf("%s is a required query param", k)
 			return BadRequestError{
 				Title:  "Query Param Not Found",
@@ -135,6 +135,7 @@ func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, control
 			fs:        s.fs,
 			templates: templates,
 			params:    route.Params,
+			urlValues: r.URL.Query(),
 		})
 		if err != nil {
 			err = s.ErrorHandler(err)
