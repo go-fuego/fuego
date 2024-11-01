@@ -101,6 +101,7 @@ func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptio
 				DisallowUnknownFields: options.DisallowUnknownFields,
 				MaxBodySize:           options.MaxBodySize,
 			},
+			urlValues: r.URL.Query(),
 		},
 	}
 
@@ -124,7 +125,8 @@ type ContextNoBody struct {
 	fs        fs.FS
 	templates *template.Template
 
-	params map[string]OpenAPIParam // list of expected query parameters (declared in the OpenAPI spec)
+	params    map[string]OpenAPIParam // list of expected query parameters (declared in the OpenAPI spec)
+	urlValues url.Values
 
 	readOptions readOptions
 }
@@ -262,7 +264,7 @@ func (e QueryParamInvalidTypeError) Error() string {
 
 // QueryParams returns the query parameters of the request. It is a shortcut for c.Req.URL.Query().
 func (c ContextNoBody) QueryParams() url.Values {
-	return c.Req.URL.Query()
+	return c.urlValues
 }
 
 // QueryParamsArr returns an slice of string from the given query parameter.
@@ -271,7 +273,7 @@ func (c ContextNoBody) QueryParamArr(name string) []string {
 	if !ok {
 		slog.Warn("query parameter not expected in OpenAPI spec", "param", name)
 	}
-	return c.Req.URL.Query()[name]
+	return c.urlValues[name]
 }
 
 // QueryParam returns the query parameter with the given name.
@@ -288,12 +290,11 @@ func (c ContextNoBody) QueryParam(name string) string {
 		slog.Warn("query parameter not expected in OpenAPI spec", "param", name, "expected_one_of", c.params)
 	}
 
-	_, found := c.Req.URL.Query()[name]
-	if !found {
+	if !c.urlValues.Has(name) {
 		defaultValue, _ := c.params[name].Default.(string)
 		return defaultValue
 	}
-	return c.Req.URL.Query().Get(name)
+	return c.urlValues.Get(name)
 }
 
 func (c ContextNoBody) QueryParamIntErr(name string) (int, error) {
