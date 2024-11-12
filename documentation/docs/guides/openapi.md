@@ -128,7 +128,9 @@ func openApiHandler(specURL string) http.Handler {
 func main() {
 	s := fuego.NewServer(
 		fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
-			UIHandler: openApiHandler("/swagger.json"),
+			UIHandler: func(specURL string) http.Handler {
+				return openApiHandler(specURL)
+			},
 		}),
 	)
 
