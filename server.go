@@ -209,6 +209,32 @@ func WithGlobalResponseTypes(code int, description string, errorType ...any) fun
 	}
 }
 
+// WithSecurity configures security schemes in the OpenAPI specification.
+// It allows setting up authentication methods like JWT Bearer tokens, API keys, OAuth2, etc.
+// For example:
+//
+//	app := fuego.NewServer(
+//		fuego.WithSecurity(map[string]*openapi3.SecuritySchemeRef{
+//			"bearerAuth": &openapi3.SecuritySchemeRef{
+//				Value: openapi3.NewSecurityScheme().
+//					WithType("http").
+//					WithScheme("bearer").
+//					WithBearerFormat("JWT").
+//					WithDescription("Enter your JWT token in the format: Bearer <token>"),
+//			},
+//		}),
+//	)
+func WithSecurity(schemes openapi3.SecuritySchemes) func(*Server) {
+	return func(s *Server) {
+		if s.OpenApiSpec.Components.SecuritySchemes == nil {
+			s.OpenApiSpec.Components.SecuritySchemes = openapi3.SecuritySchemes{}
+		}
+		for name, scheme := range schemes {
+			s.OpenApiSpec.Components.SecuritySchemes[name] = scheme
+		}
+	}
+}
+
 // WithoutAutoGroupTags disables the automatic grouping of routes by tags.
 // By default, routes are tagged by group.
 // For example:
