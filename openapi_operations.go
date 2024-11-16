@@ -87,6 +87,18 @@ func (r Route[ResponseBody, RequestBody]) Param(paramType ParamType, name, descr
 	return r
 }
 
+// Security adds a security requirement to the route.
+// It configures the route to require authentication using the specified security scheme.
+// The requirementName parameter should match a security scheme defined in the OpenAPI components section.
+// For example, if you have a JWT bearer auth scheme named "bearerAuth" in your components,
+// you would call Security("bearerAuth") to require JWT authentication for this route.
+func (r Route[ResponseBody, RequestBody]) Security(requirementName string) Route[ResponseBody, RequestBody] {
+	securityRequirement := openapi3.NewSecurityRequirement()
+	securityRequirement[requirementName] = []string{}
+	r.Operation.Security = &openapi3.SecurityRequirements{securityRequirement}
+	return r
+}
+
 // Header registers a header parameter for the route.
 //
 // Deprecated: Use `option.Header` from github.com/go-fuego/fuego/option instead.
