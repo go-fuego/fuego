@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/require"
 	"github.com/thejerf/slogassert"
 
@@ -400,5 +401,153 @@ func TestHide(t *testing.T) {
 
 		require.Equal(t, 200, w.Code)
 		require.Equal(t, "hello world", w.Body.String())
+	})
+}
+
+func TestSecurity(t *testing.T) {
+	t.Run("single security requirement", func(t *testing.T) {
+		s := fuego.NewServer()
+		basic := openapi3.SecurityRequirement{
+			"basic": []string{},
+		}
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionSecurity(basic),
+		)
+
+		require.NotNil(t, route.Operation.Security)
+		require.Len(t, *route.Operation.Security, 1)
+		require.Contains(t, (*route.Operation.Security)[0], "basic")
+		require.Empty(t, (*route.Operation.Security)[0]["basic"])
+
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		w := httptest.NewRecorder()
+		s.Mux.ServeHTTP(w, r)
+		require.Equal(t, "hello world", w.Body.String())
+	})
+
+	t.Run("security with scopes", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionSecurity(
+				openapi3.SecurityRequirement{
+					"oauth2": []string{"read:users", "write:users"},
+				},
+			),
+		)
+
+		require.NotNil(t, route.Operation.Security)
+		require.Len(t, *route.Operation.Security, 1)
+		require.Equal(t,
+			[]string{"read:users", "write:users"},
+			(*route.Operation.Security)[0]["oauth2"],
+		)
+	})
+
+	t.Run("AND combination", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionSecurity(
+				openapi3.SecurityRequirement{
+					"basic":  []string{},
+					"oauth2": []string{"read:users"},
+				},
+			),
+		)
+
+		require.NotNil(t, route.Operation.Security)
+		require.Len(t, *route.Operation.Security, 1)
+		require.Contains(t, (*route.Operation.Security)[0], "basic")
+		require.Contains(t, (*route.Operation.Security)[0], "oauth2")
+		require.Equal(t, []string{"read:users"}, (*route.Operation.Security)[0]["oauth2"])
+	})
+
+	t.Run("OR combination", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionSecurity(
+				openapi3.SecurityRequirement{
+					"basic": []string{},
+				},
+				openapi3.SecurityRequirement{
+					"oauth2": []string{"read:users"},
+				},
+			),
+		)
+
+		require.NotNil(t, route.Operation.Security)
+		require.Len(t, *route.Operation.Security, 2)
+		require.Contains(t, (*route.Operation.Security)[0], "basic")
+		require.Contains(t, (*route.Operation.Security)[1], "oauth2")
+		require.Equal(t, []string{"read:users"}, (*route.Operation.Security)[1]["oauth2"])
+	})
+
+	t.Run("complex combination", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionSecurity(
+				openapi3.SecurityRequirement{
+					"basic":  []string{},
+					"oauth2": []string{"read:users"},
+				},
+				openapi3.SecurityRequirement{
+					"apiKey": []string{},
+				},
+			),
+		)
+
+		require.NotNil(t, route.Operation.Security)
+		require.Len(t, *route.Operation.Security, 2)
+
+		// Check first requirement (basic AND oauth2)
+		require.Contains(t, (*route.Operation.Security)[0], "basic")
+		require.Contains(t, (*route.Operation.Security)[0], "oauth2")
+		require.Equal(t, []string{"read:users"}, (*route.Operation.Security)[0]["oauth2"])
+
+		// Check second requirement (apiKey)
+		require.Contains(t, (*route.Operation.Security)[1], "apiKey")
+		require.Empty(t, (*route.Operation.Security)[1]["apiKey"])
+	})
+
+	t.Run("empty security options", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionSecurity(),
+		)
+
+		require.NotNil(t, route.Operation.Security)
+		require.Len(t, *route.Operation.Security, 0)
+		require.Empty(t, (*route.Operation.Security))
+	})
+
+	t.Run("multiple security options with different scopes", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionSecurity(
+				openapi3.SecurityRequirement{
+					"Bearer": []string{"read"},
+					"ApiKey": []string{"basic"},
+				},
+			),
+		)
+
+		require.NotNil(t, route.Operation.Security)
+		require.Len(t, *route.Operation.Security, 1)
+
+		// Check security requirements
+		security := (*route.Operation.Security)[0]
+
+		// Check Bearer requirements
+		require.Contains(t, security, "Bearer")
+		require.Equal(t, []string{"read"}, security["Bearer"])
+
+		// Check ApiKey requirements
+		require.Contains(t, security, "ApiKey")
+		require.Equal(t, []string{"basic"}, security["ApiKey"])
 	})
 }

@@ -247,3 +247,14 @@ func OptionHide() func(*BaseRoute) {
 		r.Hidden = true
 	}
 }
+
+func OptionSecurity(securityRequirements ...openapi3.SecurityRequirement) func(*BaseRoute) {
+	return func(r *BaseRoute) {
+		if r.Operation.Security == nil {
+			r.Operation.Security = &openapi3.SecurityRequirements{}
+		}
+
+		// Append all provided security requirements
+		*r.Operation.Security = append(*r.Operation.Security, securityRequirements...)
+	}
+}
