@@ -87,6 +87,9 @@ var Summary = fuego.OptionSummary
 // Description adds a description to the route.
 var Description = fuego.OptionDescription
 
+// Security adds a list of openapi3.SecurityRequirement to the route.
+var Security = fuego.OptionSecurity
+
 // OperationID adds an operation ID to the route.
 var OperationID = fuego.OptionOperationID
 
