@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
+	"github.com/go-fuego/fuego/option"
 )
 
 type recipeResource struct {
@@ -14,16 +15,17 @@ type recipeResource struct {
 }
 
 func (rs recipeResource) MountRoutes(s *fuego.Server) {
-	fuego.GetStd(s, "/recipes-standard-with-helpers", rs.getAllRecipesStandardWithHelpers).
-		AddTags("Recipe")
-
+	fuego.GetStd(s, "/recipes-standard-with-helpers", rs.getAllRecipesStandardWithHelpers,
+		option.Tags("Recipe"),
+	)
 	recipeGroup := fuego.Group(s, "/recipes")
 
-	fuego.Get(recipeGroup, "/", rs.getAllRecipes).
-		Summary("Get all recipes").Description("Get all recipes").
-		QueryParam("limit", "number of recipes to return").
-		AddTags("custom")
-
+	fuego.Get(recipeGroup, "/", rs.getAllRecipes,
+		option.Summary("Get all recipes"),
+		option.Description("Get all recipes"),
+		option.Query("limit", "number of recipes to return"),
+		option.Tags("customer"),
+	)
 	fuego.Post(recipeGroup, "/new", rs.newRecipe)
 	fuego.Get(recipeGroup, "/{id}", rs.getRecipeWithIngredients)
 }
