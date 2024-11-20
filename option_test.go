@@ -561,7 +561,6 @@ func TestSecurity(t *testing.T) {
 		)
 
 		require.NotNil(t, route.Operation.Security)
-		require.Len(t, *route.Operation.Security, 0)
 		require.Empty(t, (*route.Operation.Security))
 	})
 
