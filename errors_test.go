@@ -10,12 +10,17 @@ import (
 
 type myError struct {
 	status int
+	err    HTTPError
+	detail string
 }
 
 var _ ErrorWithStatus = myError{}
+var _ ErrorWithDetail = myError{}
 
-func (e myError) Error() string   { return "test error" }
-func (e myError) StatusCode() int { return e.status }
+func (e myError) Error() string     { return "test error" }
+func (e myError) StatusCode() int   { return e.status }
+func (e myError) DetailMsg() string { return e.detail }
+func (e myError) Unwrap() error     { return HTTPError(e.err) }
 
 func TestErrorHandler(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
@@ -49,7 +54,7 @@ func TestErrorHandler(t *testing.T) {
 		require.ErrorContains(t, err, "Internal Server Error")
 	})
 
-	t.Run("error with status ", func(t *testing.T) {
+	t.Run("error with status", func(t *testing.T) {
 		err := myError{
 			status: http.StatusNotFound,
 		}
@@ -58,6 +63,18 @@ func TestErrorHandler(t *testing.T) {
 		require.ErrorContains(t, errResponse, "Not Found")
 		require.ErrorContains(t, errResponse, "404")
 		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).StatusCode())
+	})
+
+	t.Run("error with detail", func(t *testing.T) {
+		err := myError{
+			detail: "my detail",
+		}
+		errResponse := ErrorHandler(err)
+		require.ErrorAs(t, errResponse, &HTTPError{})
+		require.Contains(t, errResponse.Error(), "Internal Server Error")
+		require.Contains(t, errResponse.Error(), "500")
+		require.Contains(t, errResponse.Error(), "my detail")
+		require.Equal(t, http.StatusInternalServerError, errResponse.(HTTPError).StatusCode())
 	})
 
 	t.Run("conflict error", func(t *testing.T) {

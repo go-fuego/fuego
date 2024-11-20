@@ -14,6 +14,11 @@ type ErrorWithStatus interface {
 	StatusCode() int
 }
 
+type ErrorWithDetail interface {
+	error
+	DetailMsg() string
+}
+
 // HTTPError is the error response used by the serialization part of the framework.
 type HTTPError struct {
 	Err      error       `json:"-" xml:"-"`                                                                                                                   // Developer readable error message. Not shown to the user to avoid security leaks.
@@ -40,7 +45,7 @@ func (e HTTPError) Error() string {
 			title = "HTTP Error"
 		}
 	}
-	return fmt.Sprintf("%d %s: %s", code, title, e.Detail)
+	return fmt.Sprintf("%d %s: %s", code, title, e.DetailMsg())
 }
 
 func (e HTTPError) StatusCode() int {
@@ -48,6 +53,10 @@ func (e HTTPError) StatusCode() int {
 		return http.StatusInternalServerError
 	}
 	return e.Status
+}
+
+func (e HTTPError) DetailMsg() string {
+	return e.Detail
 }
 
 func (e HTTPError) Unwrap() error { return e.Err }
@@ -122,11 +131,11 @@ func (e NotAcceptableError) StatusCode() int { return http.StatusNotAcceptable }
 func (e NotAcceptableError) Unwrap() error { return HTTPError(e) }
 
 // ErrorHandler is the default error handler used by the framework.
-// If the error is an [HTTPError] that is error is returned.
-// If the error adheres to the [ErrorWithStatus] interface
+// If the error is an [HTTPError] that error is returned.
+// If the error adheres to the [ErrorWithStatus] and/or [ErrorWithDetail] interface
 // the error is transformed to a [HTTPError].
 // If the error is not an [HTTPError] nor does it adhere to an
-// interface the error is returned.
+// interface the error is returned as is.
 func ErrorHandler(err error) error {
 	var errorStatus ErrorWithStatus
 	switch {
@@ -154,11 +163,17 @@ func handleHTTPError(err error) HTTPError {
 		errResponse.Status = errorStatus.StatusCode()
 	}
 
+	// Check for detail
+	var errorDetail ErrorWithDetail
+	if errors.As(err, &errorDetail) {
+		errResponse.Detail = errorDetail.DetailMsg()
+	}
+
 	if errResponse.Title == "" {
 		errResponse.Title = http.StatusText(errResponse.Status)
 	}
 
-	slog.Error("Error "+errResponse.Title, "status", errResponse.StatusCode(), "detail", errResponse.Detail, "error", errResponse.Err)
+	slog.Error("Error "+errResponse.Title, "status", errResponse.StatusCode(), "detail", errResponse.DetailMsg(), "error", errResponse.Err)
 
 	return errResponse
 }
