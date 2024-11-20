@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -570,4 +571,132 @@ func TestHideGroupAfterGroupParam(t *testing.T) {
 
 	document := s.OutputOpenAPISpec()
 	require.Nil(t, document.Paths.Find("/api/test"))
+}
+
+func TestWithSecurity(t *testing.T) {
+	t.Run("add single security scheme", func(t *testing.T) {
+		s := NewServer(
+			WithSecurity(openapi3.SecuritySchemes{
+				"bearerAuth": &openapi3.SecuritySchemeRef{
+					Value: openapi3.NewSecurityScheme().
+						WithType("http").
+						WithScheme("bearer").
+						WithBearerFormat("JWT"),
+				},
+			}),
+		)
+
+		require.NotNil(t, s.OpenApiSpec.Components.SecuritySchemes)
+		require.Contains(t, s.OpenApiSpec.Components.SecuritySchemes, "bearerAuth")
+
+		scheme := s.OpenApiSpec.Components.SecuritySchemes["bearerAuth"].Value
+		require.Equal(t, "http", scheme.Type)
+		require.Equal(t, "bearer", scheme.Scheme)
+		require.Equal(t, "JWT", scheme.BearerFormat)
+	})
+
+	t.Run("add multiple security schemes", func(t *testing.T) {
+		s := NewServer(
+			WithSecurity(openapi3.SecuritySchemes{
+				"bearerAuth": &openapi3.SecuritySchemeRef{
+					Value: openapi3.NewSecurityScheme().
+						WithType("http").
+						WithScheme("bearer").
+						WithBearerFormat("JWT"),
+				},
+				"apiKey": &openapi3.SecuritySchemeRef{
+					Value: openapi3.NewSecurityScheme().
+						WithType("apiKey").
+						WithIn("header").
+						WithName("X-API-Key"),
+				},
+			}),
+		)
+
+		require.NotNil(t, s.OpenApiSpec.Components.SecuritySchemes)
+		require.Contains(t, s.OpenApiSpec.Components.SecuritySchemes, "bearerAuth")
+		require.Contains(t, s.OpenApiSpec.Components.SecuritySchemes, "apiKey")
+
+		bearerScheme := s.OpenApiSpec.Components.SecuritySchemes["bearerAuth"].Value
+		apiKeyScheme := s.OpenApiSpec.Components.SecuritySchemes["apiKey"].Value
+
+		require.Equal(t, "http", bearerScheme.Type)
+		require.Equal(t, "bearer", bearerScheme.Scheme)
+		require.Equal(t, "JWT", bearerScheme.BearerFormat)
+
+		require.Equal(t, "apiKey", apiKeyScheme.Type)
+		require.Equal(t, "header", apiKeyScheme.In)
+		require.Equal(t, "X-API-Key", apiKeyScheme.Name)
+	})
+
+	t.Run("add security scheme to server with existing schemes", func(t *testing.T) {
+		s := NewServer(
+			WithSecurity(openapi3.SecuritySchemes{
+				"bearerAuth": &openapi3.SecuritySchemeRef{
+					Value: openapi3.NewSecurityScheme().
+						WithType("http").
+						WithScheme("bearer").
+						WithBearerFormat("JWT"),
+				},
+			}),
+		)
+
+		// Add another security scheme to the existing server
+		s.OpenApiSpec.Components.SecuritySchemes["oauth2"] = &openapi3.SecuritySchemeRef{
+			Value: openapi3.NewOIDCSecurityScheme("https://example.com/.well-known/openid-configuration").
+				WithType("oauth2"),
+		}
+
+		require.NotNil(t, s.OpenApiSpec.Components.SecuritySchemes)
+		require.Contains(t, s.OpenApiSpec.Components.SecuritySchemes, "bearerAuth")
+		require.Contains(t, s.OpenApiSpec.Components.SecuritySchemes, "oauth2")
+
+		oauth2Scheme := s.OpenApiSpec.Components.SecuritySchemes["oauth2"].Value
+		require.Equal(t, "oauth2", oauth2Scheme.Type)
+		require.Equal(t, "https://example.com/.well-known/openid-configuration", oauth2Scheme.OpenIdConnectUrl)
+	})
+
+	t.Run("multiple calls to WithSecurity", func(t *testing.T) {
+		s := NewServer(
+			WithSecurity(openapi3.SecuritySchemes{
+				"bearerAuth": &openapi3.SecuritySchemeRef{
+					Value: openapi3.NewSecurityScheme().
+						WithType("http").
+						WithScheme("bearer").
+						WithBearerFormat("JWT"),
+				},
+			}),
+			WithSecurity(openapi3.SecuritySchemes{
+				"apiKey": &openapi3.SecuritySchemeRef{
+					Value: openapi3.NewSecurityScheme().
+						WithType("apiKey").
+						WithIn("header").
+						WithName("X-API-Key"),
+				},
+			}),
+		)
+
+		require.NotNil(t, s.OpenApiSpec.Components.SecuritySchemes)
+		require.Contains(t, s.OpenApiSpec.Components.SecuritySchemes, "bearerAuth")
+		require.Contains(t, s.OpenApiSpec.Components.SecuritySchemes, "apiKey")
+	})
+
+	t.Run("initialize security schemes if nil", func(t *testing.T) {
+		s := NewServer()
+		s.OpenApiSpec.Components.SecuritySchemes = nil
+
+		s = NewServer(
+			WithSecurity(openapi3.SecuritySchemes{
+				"bearerAuth": &openapi3.SecuritySchemeRef{
+					Value: openapi3.NewSecurityScheme().
+						WithType("http").
+						WithScheme("bearer").
+						WithBearerFormat("JWT"),
+				},
+			}),
+		)
+
+		require.NotNil(t, s.OpenApiSpec.Components.SecuritySchemes)
+		require.Contains(t, s.OpenApiSpec.Components.SecuritySchemes, "bearerAuth")
+	})
 }
