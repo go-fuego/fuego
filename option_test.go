@@ -368,6 +368,14 @@ func TestAddError(t *testing.T) {
 		require.NotNil(t, resp)
 		require.Equal(t, "Conflict: Pet with the same name already exists", *route.Operation.Responses.Value("409").Value.Description)
 	})
+
+	t.Run("should be fatal", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		require.Panics(t, func() {
+			fuego.Get(s, "/test", helloWorld, fuego.OptionAddError(409, "err", Resp{}, Resp{}))
+		})
+	})
 }
 
 func TestHide(t *testing.T) {
