@@ -479,6 +479,7 @@ func TestSecurity(t *testing.T) {
 
 		require.NotNil(t, route.Operation.Security)
 		require.Len(t, *route.Operation.Security, 1)
+		require.Contains(t, (*route.Operation.Security)[0], "oauth2")
 		require.Equal(t,
 			[]string{"read:users", "write:users"},
 			(*route.Operation.Security)[0]["oauth2"],
@@ -500,6 +501,7 @@ func TestSecurity(t *testing.T) {
 		require.NotNil(t, route.Operation.Security)
 		require.Len(t, *route.Operation.Security, 1)
 		require.Contains(t, (*route.Operation.Security)[0], "basic")
+		require.Empty(t, (*route.Operation.Security)[0]["basic"])
 		require.Contains(t, (*route.Operation.Security)[0], "oauth2")
 		require.Equal(t, []string{"read:users"}, (*route.Operation.Security)[0]["oauth2"])
 	})
@@ -521,6 +523,7 @@ func TestSecurity(t *testing.T) {
 		require.NotNil(t, route.Operation.Security)
 		require.Len(t, *route.Operation.Security, 2)
 		require.Contains(t, (*route.Operation.Security)[0], "basic")
+		require.Empty(t, (*route.Operation.Security)[0]["basic"])
 		require.Contains(t, (*route.Operation.Security)[1], "oauth2")
 		require.Equal(t, []string{"read:users"}, (*route.Operation.Security)[1]["oauth2"])
 	})
@@ -545,6 +548,7 @@ func TestSecurity(t *testing.T) {
 
 		// Check first requirement (basic AND oauth2)
 		require.Contains(t, (*route.Operation.Security)[0], "basic")
+		require.Empty(t, (*route.Operation.Security)[0]["basic"])
 		require.Contains(t, (*route.Operation.Security)[0], "oauth2")
 		require.Equal(t, []string{"read:users"}, (*route.Operation.Security)[0]["oauth2"])
 
