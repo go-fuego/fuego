@@ -125,6 +125,15 @@ func (e NotAcceptableError) Unwrap() error { return HTTPError(e) }
 // It transforms any error into the unified error type [HTTPError],
 // Using the [ErrorWithStatus] interface.
 func ErrorHandler(err error) error {
+	var errorStatus ErrorWithStatus
+	if errors.As(err, &HTTPError{}) || errors.As(err, &errorStatus) {
+		return handleHTTPError(err)
+	}
+
+	return err
+}
+
+func handleHTTPError(err error) HTTPError {
 	errResponse := HTTPError{
 		Err: err,
 	}
@@ -135,7 +144,6 @@ func ErrorHandler(err error) error {
 	}
 
 	// Check status code
-	errResponse.Status = http.StatusInternalServerError
 	var errorStatus ErrorWithStatus
 	if errors.As(err, &errorStatus) {
 		errResponse.Status = errorStatus.StatusCode()
