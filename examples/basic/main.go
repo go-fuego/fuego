@@ -10,6 +10,7 @@ import (
 	"github.com/rs/cors"
 
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
 )
 
 type Received struct {
@@ -47,10 +48,11 @@ func main() {
 			Message:       "Hello, " + data.Name,
 			BestFramework: "Fuego!",
 		}, nil
-	}).
-		Description("Say hello to the world").
-		Header("test", "Just a test header").
-		Cookie("test", "A Cookie!")
+	},
+		option.Description("Say hello to the world"),
+		option.Header("test", "Just a test header"),
+		option.Cookie("test", "A Cookie!"),
+	)
 
 	// Standard net/http handler with automatic OpenAPI route declaration
 	fuego.GetStd(s, "/std", func(w http.ResponseWriter, r *http.Request) {
