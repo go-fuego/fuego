@@ -215,9 +215,14 @@ func OptionDeprecated() func(*BaseRoute) {
 }
 
 // AddError adds an error to the route.
+// Required: should only supply one type to `errorType`
 func OptionAddError(code int, description string, errorType ...any) func(*BaseRoute) {
 	var responseSchema SchemaTag
 	return func(r *BaseRoute) {
+		if len(errorType) > 1 {
+			panic("errorType should not be more than one")
+		}
+
 		if len(errorType) > 0 {
 			responseSchema = SchemaTagFromType(r.mainRouter, errorType[0])
 		} else {
