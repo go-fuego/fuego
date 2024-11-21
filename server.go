@@ -54,7 +54,7 @@ type Server struct {
 	tags []string
 
 	// OpenAPI documentation parameters used for all server routes
-	params []OpenAPIParam
+	params map[string]OpenAPIParam
 
 	middlewares []func(http.Handler) http.Handler
 
@@ -118,6 +118,8 @@ func NewServer(options ...func(*Server)) *Server {
 		openAPIGenerator: openapi3gen.NewGenerator(
 			openapi3gen.UseAllExportedFields(),
 		),
+
+		params: make(map[string]OpenAPIParam),
 
 		Security: NewSecurity(),
 	}
@@ -433,6 +435,19 @@ func WithValidator(newValidator *validator.Validate) func(*Server) {
 	}
 }
 
+func WithRouteOptions(options ...func(*BaseRoute)) func(*Server) {
+	return func(s *Server) {
+		baseRoute := &BaseRoute{
+			Params:    make(map[string]OpenAPIParam),
+			Operation: openapi3.NewOperation(),
+		}
+		for _, option := range options {
+			option(baseRoute)
+		}
+		s.params = baseRoute.Params
+	}
+}
+
 // Replaces Tags for the Server (i.e Group)
 // By default, the tag is the type of the response body.
 func (s *Server) Tags(tags ...string) *Server {
@@ -477,7 +492,10 @@ func (s *Server) Param(name, description string, params ...OpenAPIParamOption) *
 		}
 	}
 
-	s.params = append(s.params, param)
+	if s.params == nil {
+		s.params = make(map[string]OpenAPIParam)
+	}
+	s.params[name] = param
 
 	return s
 }

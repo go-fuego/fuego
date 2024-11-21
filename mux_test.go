@@ -420,6 +420,27 @@ func TestRegister(t *testing.T) {
 	})
 }
 
+func TestGroupInheritance(t *testing.T) {
+	s := NewServer()
+	group := Group(s, "/group",
+		OptionHeader("Header-1", ""),
+	)
+	group2 := Group(group, "/group2",
+		OptionHeader("Header-2", ""),
+	)
+
+	t.Run("group inheritance", func(t *testing.T) {
+		route := Get(group2, "/test", func(ctx *ContextNoBody) (string, error) {
+			return "test", nil
+		})
+
+		t.Log(route.Params)
+		require.Len(t, route.Params, 2)
+		require.Contains(t, route.Params, "Header-1")
+		require.Contains(t, route.Params, "Header-2")
+	})
+}
+
 func TestGroupTagsOnRoute(t *testing.T) {
 	t.Run("route tag inheritance", func(t *testing.T) {
 		s := NewServer().
