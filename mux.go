@@ -24,7 +24,7 @@ import (
 //		return ans{Ans: "users"}, nil
 //	})
 //	s.Run()
-func Group(s *Server, path string) *Server {
+func Group(s *Server, path string, options ...func(*BaseRoute)) *Server {
 	if path == "/" {
 		path = ""
 	} else if path != "" && path[len(path)-1] == '/' {
@@ -39,6 +39,23 @@ func Group(s *Server, path string) *Server {
 		s.OpenApiSpec.Tags = append(s.OpenApiSpec.Tags, &openapi3.Tag{Name: newServer.groupTag})
 	}
 	newServer.mainRouter = s
+
+	baseRoute := BaseRoute{
+		Params:    make(map[string]OpenAPIParam),
+		Operation: openapi3.NewOperation(),
+	}
+	for _, option := range options {
+		option(&baseRoute)
+	}
+
+	// Copy the params from the parent server, and add the new ones
+	newServer.params = make(map[string]OpenAPIParam, len(baseRoute.Params))
+	for k, v := range s.params {
+		newServer.params[k] = v
+	}
+	for k, v := range baseRoute.Params {
+		newServer.params[k] = v
+	}
 
 	return newServer
 }
@@ -179,9 +196,14 @@ func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path
 	route := BaseRoute{
 		Method:     method,
 		Path:       path,
+		Params:     make(map[string]OpenAPIParam),
 		FullName:   FuncName(controller),
 		Operation:  openapi3.NewOperation(),
 		mainRouter: s.mainRouter,
+	}
+	// Copy the params from the server/group, and add the route ones
+	for k, v := range s.params {
+		route.Params[k] = v
 	}
 	if route.mainRouter == nil {
 		route.mainRouter = s
