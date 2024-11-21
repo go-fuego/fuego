@@ -37,7 +37,6 @@ func TestParam(t *testing.T) {
 			require.Equal(t, http.StatusOK, w.Code)
 			require.Equal(t, "hey18true", w.Body.String())
 		})
-
 	})
 
 	t.Run("Should enforce Required", func(t *testing.T) {
