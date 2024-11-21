@@ -31,7 +31,7 @@ func testController(c *ContextNoBody) (ans, error) {
 }
 
 func testControllerWithError(c *ContextNoBody) (ans, error) {
-	return ans{}, errors.New("error happened!")
+	return ans{}, HTTPError{Err: errors.New("error happened!")}
 }
 
 type testOutTransformer struct {
@@ -56,7 +56,7 @@ func testControllerWithOutTransformerStar(c *ContextNoBody) (*testOutTransformer
 }
 
 func testControllerWithOutTransformerStarError(c *ContextNoBody) (*testOutTransformer, error) {
-	return nil, errors.New("error happened!")
+	return nil, HTTPError{Err: errors.New("error happened!")}
 }
 
 func testControllerWithOutTransformerStarNil(c *ContextNoBody) (*testOutTransformer, error) {
@@ -333,7 +333,7 @@ func TestServeError(t *testing.T) {
 	s := NewServer()
 
 	Get(s, "/ctx/error-in-controller", func(c *ContextNoBody) (CtxRenderer, error) {
-		return nil, errors.New("error")
+		return nil, HTTPError{Err: errors.New("error")}
 	})
 
 	t.Run("error return, asking for HTML", func(t *testing.T) {

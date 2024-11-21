@@ -105,6 +105,15 @@
 				],
 				"type": "object"
 			},
+			"PetsError": {
+				"description": "PetsError schema",
+				"properties": {
+					"message": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
 			"PetsUpdate": {
 				"description": "PetsUpdate schema",
 				"properties": {
@@ -326,7 +335,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/HTTPError"
+									"$ref": "#/components/schemas/PetsError"
 								}
 							}
 						},

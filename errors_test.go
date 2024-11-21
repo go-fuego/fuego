@@ -18,13 +18,11 @@ func (e myError) Error() string   { return "test error" }
 func (e myError) StatusCode() int { return e.status }
 
 func TestErrorHandler(t *testing.T) {
-	t.Run("basic error", func(t *testing.T) {
+	t.Run("basic", func(t *testing.T) {
 		err := errors.New("test error")
 
 		errResponse := ErrorHandler(err)
-		require.ErrorAs(t, errResponse, &HTTPError{})
-		require.Contains(t, errResponse.Error(), "Internal Server Error")
-		require.Equal(t, http.StatusInternalServerError, errResponse.(HTTPError).StatusCode())
+		require.Contains(t, errResponse.Error(), "test error")
 	})
 
 	t.Run("not found error", func(t *testing.T) {
