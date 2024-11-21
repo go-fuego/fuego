@@ -32,7 +32,9 @@ func (rs Resource) Routes(s *fuego.Server) {
 
 	// Public Chunks
 	fuego.Get(s, "/recipes-list", rs.showRecipesList)
-	fuego.Get(s, "/search", rs.searchRecipes).AddError(http.StatusUnauthorized, "Authorization Error").AddError(500, "My Server Error")
+	fuego.Get(s, "/search", rs.searchRecipes).AddError(http.StatusUnauthorized, "Authorization Error",
+		option.AddError(500, "My Server Error"),
+	)
 	fuego.Get(s, "/ingredients/preselect-unit", rs.unitPreselected,
 		option.Query("id", "ID", param.Required(), param.Default("1"), param.Example("example", "abcde1245")),
 	)

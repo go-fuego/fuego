@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/middleware/basicauth"
+	"github.com/go-fuego/fuego/option"
 )
 
 // Resource is the global struct that holds useful sources of information available for the controllers.
@@ -58,13 +59,17 @@ func (rs Resource) MountRoutes(s *fuego.Server) {
 	fuego.Use(adminRoutes, fuego.AuthWall("admin", "superadmin"))  // Only admin and superadmin can access the routes in this group
 	fuego.Use(adminRoutes, fuego.AuthWallRegex(`^(super)?admin$`)) // Same as above, but with a regex
 
-	fuego.Get(adminRoutes, "/users", placeholderController).
-		Description("Get all users").
-		Summary("Get all users").
-		Tags("Admin")
+	fuego.Get(adminRoutes, "/users", placeholderController,
+		option.Description("Get all users"),
+		option.Summary("Get all users"),
+		option.Tags("Admin"),
+	)
 
 	testRoutes := fuego.Group(s, "/tests")
-	fuego.Get(testRoutes, "/slow", slow).Description("This is a slow route").Summary("Slow route")
+	fuego.Get(testRoutes, "/slow", slow,
+		option.Description("This is a slow route"),
+		option.Summary("Slow route"),
+	)
 	fuego.Get(testRoutes, "/mounted-route", placeholderController)
 	fuego.Post(testRoutes, "/mounted-route-post", placeholderController)
 
