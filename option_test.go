@@ -446,8 +446,17 @@ func TestHide(t *testing.T) {
 }
 
 func TestSecurity(t *testing.T) {
-	t.Run("single security requirement", func(t *testing.T) {
-		s := fuego.NewServer()
+	t.Run("single security requirement with defined scheme", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithSecurity(openapi3.SecuritySchemes{
+				"basic": &openapi3.SecuritySchemeRef{
+					Value: openapi3.NewSecurityScheme().
+						WithType("http").
+						WithScheme("basic"),
+				},
+			}),
+		)
+
 		basic := openapi3.SecurityRequirement{
 			"basic": []string{},
 		}
@@ -466,8 +475,25 @@ func TestSecurity(t *testing.T) {
 		require.Equal(t, "hello world", w.Body.String())
 	})
 
-	t.Run("security with scopes", func(t *testing.T) {
-		s := fuego.NewServer()
+	t.Run("security with scopes and defined scheme", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithSecurity(openapi3.SecuritySchemes{
+				"oauth2": &openapi3.SecuritySchemeRef{
+					Value: &openapi3.SecurityScheme{
+						Type: "oauth2",
+						Flows: &openapi3.OAuthFlows{
+							AuthorizationCode: &openapi3.OAuthFlow{
+								AuthorizationURL: "https://example.com/oauth/authorize",
+								TokenURL:         "https://example.com/oauth/token",
+								Scopes: map[string]string{
+									"read:users": "Read user information",
+								},
+							},
+						},
+					},
+				},
+			}),
+		)
 
 		route := fuego.Get(s, "/test", helloWorld,
 			fuego.OptionSecurity(
@@ -486,8 +512,30 @@ func TestSecurity(t *testing.T) {
 		)
 	})
 
-	t.Run("AND combination", func(t *testing.T) {
-		s := fuego.NewServer()
+	t.Run("AND combination with defined schemes", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithSecurity(openapi3.SecuritySchemes{
+				"basic": &openapi3.SecuritySchemeRef{
+					Value: openapi3.NewSecurityScheme().
+						WithType("http").
+						WithScheme("basic"),
+				},
+				"oauth2": &openapi3.SecuritySchemeRef{
+					Value: &openapi3.SecurityScheme{
+						Type: "oauth2",
+						Flows: &openapi3.OAuthFlows{
+							AuthorizationCode: &openapi3.OAuthFlow{
+								AuthorizationURL: "https://example.com/oauth/authorize",
+								TokenURL:         "https://example.com/oauth/token",
+								Scopes: map[string]string{
+									"read:users": "Read user information",
+								},
+							},
+						},
+					},
+				},
+			}),
+		)
 
 		route := fuego.Get(s, "/test", helloWorld,
 			fuego.OptionSecurity(
@@ -506,8 +554,30 @@ func TestSecurity(t *testing.T) {
 		require.Equal(t, []string{"read:users"}, (*route.Operation.Security)[0]["oauth2"])
 	})
 
-	t.Run("OR combination", func(t *testing.T) {
-		s := fuego.NewServer()
+	t.Run("OR combination with defined schemes", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithSecurity(openapi3.SecuritySchemes{
+				"basic": &openapi3.SecuritySchemeRef{
+					Value: openapi3.NewSecurityScheme().
+						WithType("http").
+						WithScheme("basic"),
+				},
+				"oauth2": &openapi3.SecuritySchemeRef{
+					Value: &openapi3.SecurityScheme{
+						Type: "oauth2",
+						Flows: &openapi3.OAuthFlows{
+							AuthorizationCode: &openapi3.OAuthFlow{
+								AuthorizationURL: "https://example.com/oauth/authorize",
+								TokenURL:         "https://example.com/oauth/token",
+								Scopes: map[string]string{
+									"read:users": "Read user information",
+								},
+							},
+						},
+					},
+				},
+			}),
+		)
 
 		route := fuego.Get(s, "/test", helloWorld,
 			fuego.OptionSecurity(
@@ -528,33 +598,41 @@ func TestSecurity(t *testing.T) {
 		require.Equal(t, []string{"read:users"}, (*route.Operation.Security)[1]["oauth2"])
 	})
 
-	t.Run("complex combination", func(t *testing.T) {
+	t.Run("panic on undefined security scheme", func(t *testing.T) {
 		s := fuego.NewServer()
 
-		route := fuego.Get(s, "/test", helloWorld,
-			fuego.OptionSecurity(
-				openapi3.SecurityRequirement{
-					"basic":  []string{},
-					"oauth2": []string{"read:users"},
+		require.Panics(t, func() {
+			fuego.Get(s, "/test", helloWorld,
+				fuego.OptionSecurity(
+					openapi3.SecurityRequirement{
+						"undefined": []string{},
+					},
+				),
+			)
+		})
+	})
+
+	t.Run("panic on partially undefined schemes", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithSecurity(openapi3.SecuritySchemes{
+				"basic": &openapi3.SecuritySchemeRef{
+					Value: openapi3.NewSecurityScheme().
+						WithType("http").
+						WithScheme("basic"),
 				},
-				openapi3.SecurityRequirement{
-					"apiKey": []string{},
-				},
-			),
+			}),
 		)
 
-		require.NotNil(t, route.Operation.Security)
-		require.Len(t, *route.Operation.Security, 2)
-
-		// Check first requirement (basic AND oauth2)
-		require.Contains(t, (*route.Operation.Security)[0], "basic")
-		require.Empty(t, (*route.Operation.Security)[0]["basic"])
-		require.Contains(t, (*route.Operation.Security)[0], "oauth2")
-		require.Equal(t, []string{"read:users"}, (*route.Operation.Security)[0]["oauth2"])
-
-		// Check second requirement (apiKey)
-		require.Contains(t, (*route.Operation.Security)[1], "apiKey")
-		require.Empty(t, (*route.Operation.Security)[1]["apiKey"])
+		require.Panics(t, func() {
+			fuego.Get(s, "/test", helloWorld,
+				fuego.OptionSecurity(
+					openapi3.SecurityRequirement{
+						"basic":     []string{},
+						"undefined": []string{},
+					},
+				),
+			)
+		})
 	})
 
 	t.Run("empty security options", func(t *testing.T) {
@@ -569,7 +647,21 @@ func TestSecurity(t *testing.T) {
 	})
 
 	t.Run("multiple security options with different scopes", func(t *testing.T) {
-		s := fuego.NewServer()
+		s := fuego.NewServer(
+			fuego.WithSecurity(openapi3.SecuritySchemes{
+				"Bearer": &openapi3.SecuritySchemeRef{
+					Value: openapi3.NewSecurityScheme().
+						WithType("http").
+						WithScheme("bearer"),
+				},
+				"ApiKey": &openapi3.SecuritySchemeRef{
+					Value: openapi3.NewSecurityScheme().
+						WithType("apiKey").
+						WithIn("header").
+						WithName("X-API-Key"),
+				},
+			}),
+		)
 
 		route := fuego.Get(s, "/test", helloWorld,
 			fuego.OptionSecurity(
@@ -583,14 +675,9 @@ func TestSecurity(t *testing.T) {
 		require.NotNil(t, route.Operation.Security)
 		require.Len(t, *route.Operation.Security, 1)
 
-		// Check security requirements
 		security := (*route.Operation.Security)[0]
-
-		// Check Bearer requirements
 		require.Contains(t, security, "Bearer")
 		require.Equal(t, []string{"read"}, security["Bearer"])
-
-		// Check ApiKey requirements
 		require.Contains(t, security, "ApiKey")
 		require.Equal(t, []string{"basic"}, security["ApiKey"])
 	})

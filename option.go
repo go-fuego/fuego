@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -270,6 +271,18 @@ func OptionHide() func(*BaseRoute) {
 
 func OptionSecurity(securityRequirements ...openapi3.SecurityRequirement) func(*BaseRoute) {
 	return func(r *BaseRoute) {
+
+		// Validate the security scheme exists in components
+		for _, req := range securityRequirements {
+			for schemeName := range req {
+				if r.mainRouter.OpenApiSpec.Components != nil {
+					if _, exists := r.mainRouter.OpenApiSpec.Components.SecuritySchemes[schemeName]; !exists {
+						panic(fmt.Sprintf("security scheme '%s' not defined in components", schemeName))
+					}
+				}
+			}
+		}
+
 		if r.Operation.Security == nil {
 			r.Operation.Security = &openapi3.SecurityRequirements{}
 		}
