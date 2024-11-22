@@ -7,7 +7,6 @@ require (
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/gorilla/schema v1.4.1
-	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/stretchr/testify v1.9.0
 	github.com/thejerf/slogassert v0.3.4
 	gopkg.in/yaml.v3 v3.0.1
@@ -32,5 +31,5 @@ require (
 	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/net v0.29.0 // indirect
 	golang.org/x/sys v0.25.0 // indirect
-	golang.org/x/text v0.18.0 // indirect
+	golang.org/x/text v0.19.0 // indirect
 )
