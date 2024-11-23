@@ -40,7 +40,7 @@ func validate(a any) error {
 	if err == nil {
 		return nil
 	}
-	
+
 	// this check is only needed when your code could produce an
 	// invalid value for validation such as interface with nil value
 	if _, exists := err.(*validator.InvalidValidationError); exists {
