@@ -256,14 +256,15 @@ func OptionHide() func(*BaseRoute) {
 
 func OptionSecurity(securityRequirements ...openapi3.SecurityRequirement) func(*BaseRoute) {
 	return func(r *BaseRoute) {
+		if r.mainRouter.OpenApiSpec.Components == nil {
+			panic("zero security schemes have been registered with the server")
+		}
 
 		// Validate the security scheme exists in components
 		for _, req := range securityRequirements {
 			for schemeName := range req {
-				if r.mainRouter.OpenApiSpec.Components != nil {
-					if _, exists := r.mainRouter.OpenApiSpec.Components.SecuritySchemes[schemeName]; !exists {
-						panic(fmt.Sprintf("security scheme '%s' not defined in components", schemeName))
-					}
+				if _, exists := r.mainRouter.OpenApiSpec.Components.SecuritySchemes[schemeName]; !exists {
+					panic(fmt.Sprintf("security scheme '%s' not defined in components", schemeName))
 				}
 			}
 		}
