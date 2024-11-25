@@ -37,6 +37,18 @@ func TestErrorHandler(t *testing.T) {
 		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).StatusCode())
 	})
 
+	t.Run("not duplicate HTTPError", func(t *testing.T) {
+		err := HTTPError{
+			Err: errors.New("HTTPError"),
+		}
+		errResponse := ErrorHandler(err)
+
+		var httpError HTTPError
+		require.ErrorAs(t, errResponse, &httpError)
+		require.False(t, errors.As(httpError.Err, &HTTPError{}))
+		require.Contains(t, err.Error(), "Internal Server Error")
+	})
+
 	t.Run("error with status ", func(t *testing.T) {
 		err := myError{
 			status: http.StatusNotFound,
