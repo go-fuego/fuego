@@ -21,7 +21,7 @@ type PetsResources struct {
 
 type PetsError struct {
 	Err     error  `json:"-" xml:"-"`
-	Message string `json:"message"`
+	Message string `json:"message" xml:"message"`
 }
 
 var _ error = PetsError{}

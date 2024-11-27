@@ -22,7 +22,7 @@ func TestErrorHandler(t *testing.T) {
 		err := errors.New("test error")
 
 		errResponse := ErrorHandler(err)
-		require.Contains(t, errResponse.Error(), "test error")
+		require.ErrorContains(t, errResponse, "test error")
 	})
 
 	t.Run("not found error", func(t *testing.T) {
@@ -31,9 +31,9 @@ func TestErrorHandler(t *testing.T) {
 		}
 		errResponse := ErrorHandler(err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
-		require.Contains(t, err.Error(), "Not Found :c")
-		require.Contains(t, errResponse.Error(), "Not Found")
-		require.Contains(t, errResponse.Error(), "404")
+		require.ErrorContains(t, err, "Not Found :c")
+		require.ErrorContains(t, errResponse, "Not Found")
+		require.ErrorContains(t, errResponse, "404")
 		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).StatusCode())
 	})
 
@@ -45,8 +45,8 @@ func TestErrorHandler(t *testing.T) {
 
 		var httpError HTTPError
 		require.ErrorAs(t, errResponse, &httpError)
-		require.False(t, errors.As(httpError.Err, &HTTPError{}))
-		require.Contains(t, err.Error(), "Internal Server Error")
+		require.NotErrorAs(t, httpError.Err, &HTTPError{})
+		require.ErrorContains(t, err, "Internal Server Error")
 	})
 
 	t.Run("error with status ", func(t *testing.T) {
@@ -55,8 +55,8 @@ func TestErrorHandler(t *testing.T) {
 		}
 		errResponse := ErrorHandler(err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
-		require.Contains(t, errResponse.Error(), "Not Found")
-		require.Contains(t, errResponse.Error(), "404")
+		require.ErrorContains(t, errResponse, "Not Found")
+		require.ErrorContains(t, errResponse, "404")
 		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).StatusCode())
 	})
 
@@ -66,9 +66,9 @@ func TestErrorHandler(t *testing.T) {
 		}
 		errResponse := ErrorHandler(err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
-		require.Contains(t, err.Error(), "Conflict")
-		require.Contains(t, errResponse.Error(), "Conflict")
-		require.Contains(t, errResponse.Error(), "409")
+		require.ErrorContains(t, err, "Conflict")
+		require.ErrorContains(t, errResponse, "Conflict")
+		require.ErrorContains(t, errResponse, "409")
 		require.Equal(t, http.StatusConflict, errResponse.(HTTPError).StatusCode())
 	})
 
@@ -78,9 +78,9 @@ func TestErrorHandler(t *testing.T) {
 		}
 		errResponse := ErrorHandler(err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
-		require.Contains(t, err.Error(), "coucou")
-		require.Contains(t, errResponse.Error(), "Unauthorized")
-		require.Contains(t, errResponse.Error(), "401")
+		require.ErrorContains(t, err, "coucou")
+		require.ErrorContains(t, errResponse, "Unauthorized")
+		require.ErrorContains(t, errResponse, "401")
 		require.Equal(t, http.StatusUnauthorized, errResponse.(HTTPError).StatusCode())
 	})
 
@@ -90,9 +90,9 @@ func TestErrorHandler(t *testing.T) {
 		}
 		errResponse := ErrorHandler(err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
-		require.Contains(t, err.Error(), "Forbidden")
-		require.Contains(t, errResponse.Error(), "Forbidden")
-		require.Contains(t, errResponse.Error(), "403")
+		require.ErrorContains(t, err, "Forbidden")
+		require.ErrorContains(t, errResponse, "Forbidden")
+		require.ErrorContains(t, errResponse, "403")
 		require.Equal(t, http.StatusForbidden, errResponse.(HTTPError).StatusCode())
 	})
 }
@@ -103,15 +103,15 @@ func TestHTTPError_Error(t *testing.T) {
 			err := HTTPError{
 				Title: "Custom Title",
 			}
-			require.Contains(t, err.Error(), "Custom Title")
+			require.ErrorContains(t, err, "Custom Title")
 		})
 		t.Run("title from status", func(t *testing.T) {
 			err := HTTPError{Status: http.StatusNotFound}
-			require.Contains(t, err.Error(), "Not Found")
+			require.ErrorContains(t, err, "Not Found")
 		})
 		t.Run("default title", func(t *testing.T) {
 			err := HTTPError{}
-			require.Contains(t, err.Error(), "Internal Server Error")
+			require.ErrorContains(t, err, "Internal Server Error")
 		})
 	})
 }
@@ -124,6 +124,6 @@ func TestHTTPError_Unwrap(t *testing.T) {
 	}
 
 	var unwrapped myError
-	require.True(t, errors.As(errResponse.Unwrap(), &unwrapped))
+	require.ErrorAs(t, errResponse.Unwrap(), &unwrapped)
 	require.Equal(t, 999, unwrapped.status)
 }
