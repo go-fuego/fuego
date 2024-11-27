@@ -129,7 +129,9 @@ func (e NotAcceptableError) Unwrap() error { return HTTPError(e) }
 // interface the error is returned.
 func ErrorHandler(err error) error {
 	var errorStatus ErrorWithStatus
-	if errors.As(err, &HTTPError{}) || errors.As(err, &errorStatus) {
+	switch {
+	case errors.As(err, &HTTPError{}),
+		errors.As(err, &errorStatus):
 		return handleHTTPError(err)
 	}
 
