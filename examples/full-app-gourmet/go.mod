@@ -14,20 +14,20 @@ require (
 	github.com/lmittmann/tint v1.0.5
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/text v0.19.0
+	golang.org/x/text v0.21.0
 	modernc.org/sqlite v1.33.1
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
-	github.com/getkin/kin-openapi v0.127.0 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.7 // indirect
+	github.com/getkin/kin-openapi v0.128.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.22.1 // indirect
+	github.com/go-playground/validator/v10 v10.23.0 // indirect
 	github.com/gomarkdown/markdown v0.0.0-20240730141124-034f12af3bf6 // indirect
 	github.com/gorilla/schema v1.4.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
@@ -44,10 +44,10 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	go.uber.org/atomic v1.11.0 // indirect
-	golang.org/x/crypto v0.27.0 // indirect
-	golang.org/x/net v0.29.0 // indirect
-	golang.org/x/sys v0.25.0 // indirect
-	golang.org/x/tools v0.25.0 // indirect
+	golang.org/x/crypto v0.29.0 // indirect
+	golang.org/x/net v0.31.0 // indirect
+	golang.org/x/sys v0.27.0 // indirect
+	golang.org/x/tools v0.27.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/gc/v3 v3.0.0-20240801135723-a856999a2e4a // indirect
 	modernc.org/libc v1.55.3 // indirect
