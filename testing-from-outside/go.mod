@@ -5,7 +5,7 @@ go 1.22.4
 require (
 	github.com/go-fuego/fuego v0.13.4
 	github.com/rs/cors v1.11.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
