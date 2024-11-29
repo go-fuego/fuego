@@ -39,7 +39,7 @@ func TestParam(t *testing.T) {
 		})
 	})
 
-	t.Run("Should enforce Required", func(t *testing.T) {
+	t.Run("Should enforce Required query parameter", func(t *testing.T) {
 		s := fuego.NewServer()
 
 		fuego.Get(s, "/test", func(c fuego.ContextNoBody) (string, error) {
@@ -53,5 +53,21 @@ func TestParam(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 		require.Equal(t, http.StatusBadRequest, w.Code)
 		require.Contains(t, w.Body.String(), "name is a required query param")
+	})
+
+	t.Run("Should enforce Required header", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		fuego.Get(s, "/test", func(c fuego.ContextNoBody) (string, error) {
+			name := c.QueryParam("name")
+			return name, nil
+		},
+			option.Header("foo", "header that is foo", param.Required()),
+		)
+		r := httptest.NewRequest("GET", "/test", nil)
+		w := httptest.NewRecorder()
+		s.Mux.ServeHTTP(w, r)
+		require.Equal(t, http.StatusBadRequest, w.Code)
+		require.Contains(t, w.Body.String(), "foo is a required header")
 	})
 }

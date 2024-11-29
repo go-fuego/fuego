@@ -205,6 +205,11 @@ func (c ContextNoBody) Header(key string) string {
 	return c.Request().Header.Get(key)
 }
 
+// Get request header
+func (c ContextNoBody) HasHeader(key string) bool {
+	return c.Header(key) != ""
+}
+
 // Sets response header
 func (c ContextNoBody) SetHeader(key, value string) {
 	c.Response().Header().Set(key, value)

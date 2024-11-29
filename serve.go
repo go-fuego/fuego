@@ -54,19 +54,33 @@ func (s *Server) proto() string {
 	return "http"
 }
 
-func validateQueryParams(c ContextNoBody) error {
+func validateParams(c ContextNoBody) error {
 	for k, param := range c.params {
 		if param.Default != nil {
 			// skip: param has a default
 			continue
 		}
 
-		if param.Required && !c.urlValues.Has(k) {
-			err := fmt.Errorf("%s is a required query param", k)
-			return BadRequestError{
-				Title:  "Query Param Not Found",
-				Err:    err,
-				Detail: "cannot parse request parameter: " + err.Error(),
+		if param.Required {
+			switch param.Type {
+			case QueryParamType:
+				if !c.urlValues.Has(k) {
+					err := fmt.Errorf("%s is a required query param", k)
+					return BadRequestError{
+						Title:  "Query Param Not Found",
+						Err:    err,
+						Detail: "cannot parse request parameter: " + err.Error(),
+					}
+				}
+			case HeaderParamType:
+				if !c.HasHeader(k) {
+					err := fmt.Errorf("%s is a required header", k)
+					return BadRequestError{
+						Title:  "Header Not Found",
+						Err:    err,
+						Detail: "cannot parse request parameter: " + err.Error(),
+					}
+				}
 			}
 		}
 	}
@@ -80,7 +94,7 @@ func validateQueryParams(c ContextNoBody) error {
 func initContext[Contextable ctx[Body], Body any](baseContext ContextNoBody) (Contextable, error) {
 	var c Contextable
 
-	err := validateQueryParams(baseContext)
+	err := validateParams(baseContext)
 	if err != nil {
 		return c, err
 	}
