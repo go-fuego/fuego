@@ -1,5 +1,3 @@
-import FlowChart from '@site/src/components/FlowChart';
-
 # Transformation
 
 With Fuego, you can transform data coming in and out of your application. This is useful for a variety of reasons, such as:
@@ -9,8 +7,6 @@ With Fuego, you can transform data coming in and out of your application. This i
 - Sanitizing data
 - Masking sensitive data
 - And more...
-
-<FlowChart selected="Transformation" />
 
 ## Input Transformation
 
@@ -38,7 +34,7 @@ func (u *User) InTransform(ctx context.Context) error {
 }
 
 var _ fuego.InTransformer = (*User)(nil) // Ensure *User implements fuego.InTransformer
-// This check is a classic example of Go's interface implementation check and we highly recommend to use it 
+// This check is a classic example of Go's interface implementation check and we highly recommend to use it
 ```
 
 In the example above, we have a `User` struct with two fields: `FirstName` and `LastName`. We also have a method called `InTransform` that takes a `context.Context` and returns an `error`. This method is called before the data is unmarshaled into the `User` struct. In this method, we are transforming the `FirstName` to uppercase and trimming any whitespace from the `LastName`.

@@ -1,5 +1,3 @@
-import FlowChart from '@site/src/components/FlowChart';
-
 # Serialization / Deserialization
 
 Serialization is the process of converting Go data into a format that can be stored or transmitted. Deserialization is the process of converting serialized data back into its original Go form.
@@ -7,8 +5,6 @@ Serialization is the process of converting Go data into a format that can be sto
 The classic example is transforming **Go data into JSON** and back.
 
 Fuego automatically serializes and deserializes inputs and outputs with standard `encoding/json` package.
-
-<FlowChart selected="Serialization" />
 
 ## Serialize data
 

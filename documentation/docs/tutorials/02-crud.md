@@ -23,7 +23,7 @@ for the code generator of Fuego, but you can implement it in any way you want.
 To implement the service, you need to slightly modify the
 generated `controllers/books.go` and `main.go` files.
 
-```go title="controllers/books.go" {8-9,28-39} showLineNumbers
+```go title="controllers/books.go" {8-9,28-42} showLineNumbers
 package controller
 
 import (
@@ -53,7 +53,9 @@ type BooksService interface {
 
 // Implement the BooksService interface
 type RealBooksService struct {
-	BooksService // Embed the interface to satisfy it -this pattern is just there to make the code compile but you should implement all methods
+	// Embed the interface to satisfy it.
+	// This pattern is just there to make the code compile but you should implement all methods.
+	BooksService
 }
 
 func (s RealBooksService) GetBooks(id string) (Books, error) {

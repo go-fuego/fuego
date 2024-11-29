@@ -12,7 +12,7 @@ authentication, etc.
 
 You can add middlewares to the whole server using the `Use` method:
 
-```go
+```go title="main.go" showLineNumbers
 package main
 
 import (
@@ -45,7 +45,7 @@ func main() {
 
 You can also add middlewares to a group of routes using the `Group` method:
 
-```go
+```go title="main.go" showLineNumbers
 package main
 
 import (
@@ -82,9 +82,10 @@ func main() {
 ## Route middlewares
 
 You can also add middlewares to a single route.
+They are treated as an option to the route handler.
 Simply add the middlewares as the last arguments of the route handler:
 
-```go
+```go title="main.go" showLineNumbers {13-14}
 package main
 
 import (
@@ -95,7 +96,11 @@ func main() {
 	s := fuego.NewServer()
 
 	// Declare the middlewares after the route handler
-	fuego.Get(s, "/", myController, middleware1, middleware2, middleware3)
+	fuego.Get(s, "/", myController,
+		option.QueryInt("page", "The page number"),
+		option.Middleware(middleware1),
+		option.Middleware(middleware2, middleware3),
+	)
 
 	s.Run()
 }

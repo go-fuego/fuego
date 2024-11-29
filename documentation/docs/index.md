@@ -18,9 +18,9 @@ Try our [Hello World](./tutorials/01-hello-world.md)!
 go run github.com/go-fuego/fuego/examples/hello-world@latest
 ```
 
-This runs the code for a simple hello world server.
-Look at all it generates from a simple code!
-You'll get a URL to see the result in your browser.
+This simple code snippet runs a 'Hello World' server.
+See how much Fuego generates from just a few lines of code!
+You'll even get a URL to view the result directly in your browser
 
 ```go showLineNumbers
 package main
@@ -42,10 +42,12 @@ func helloWorld(c fuego.ContextNoBody) (string, error) {
 }
 ```
 
-## Try example from real Fuego source code in 3 sec
+![Swagger UI](../static/img/hello-world-openapi.jpeg)
 
-Try Fuego immediately by cloning [the repo](https://github.com/go-fuego/fuego)
-and running one of our examples.
+## Try examples with real source code in 3 sec
+
+Just copy/paste these commands in your terminal,
+you'll be iterating on a real example in no time.
 
 ```bash
 git clone git@github.com:go-fuego/fuego.git
