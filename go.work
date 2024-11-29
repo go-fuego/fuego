@@ -1,4 +1,4 @@
-go 1.22.5
+go 1.23.1
 
 use (
 	.
@@ -10,5 +10,6 @@ use (
 	./examples/hello-world
 	./examples/openapi
 	./extra/markdown
-	./testing-from-outside
+	./integration-tests/cors
+	./integration-tests/gourmet
 )
