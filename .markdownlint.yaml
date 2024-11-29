@@ -7,13 +7,7 @@
 MD010: false
 
 # MD013/line-length : Line length : https://github.com/DavidAnson/markdownlint/blob/v0.34.0/doc/md013.md
-MD013:
-  # Applying line length to code blocks
-  # makes the code look worse sometimes.
-  code_blocks: false
-  # Applying line length to tables makes
-  # it more difficult to edit.
-  tables: false
+MD013: false
 
 # MD033/no-inline-html : Inline HTML : https://github.com/DavidAnson/markdownlint/blob/v0.34.0/doc/md033.md
 #
