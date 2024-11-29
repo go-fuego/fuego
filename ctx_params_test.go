@@ -70,4 +70,20 @@ func TestParam(t *testing.T) {
 		require.Equal(t, http.StatusBadRequest, w.Code)
 		require.Contains(t, w.Body.String(), "foo is a required header")
 	})
+
+	t.Run("Should enforce Required cookie", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		fuego.Get(s, "/test", func(c fuego.ContextNoBody) (string, error) {
+			name := c.QueryParam("name")
+			return name, nil
+		},
+			option.Cookie("bar", "cookie that is bar", param.Required()),
+		)
+		r := httptest.NewRequest("GET", "/test", nil)
+		w := httptest.NewRecorder()
+		s.Mux.ServeHTTP(w, r)
+		require.Equal(t, http.StatusBadRequest, w.Code)
+		require.Contains(t, w.Body.String(), "bar is a required cookie")
+	})
 }

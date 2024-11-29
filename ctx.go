@@ -205,7 +205,7 @@ func (c ContextNoBody) Header(key string) string {
 	return c.Request().Header.Get(key)
 }
 
-// Get request header
+// Has request header
 func (c ContextNoBody) HasHeader(key string) bool {
 	return c.Header(key) != ""
 }
@@ -218,6 +218,12 @@ func (c ContextNoBody) SetHeader(key, value string) {
 // Get request cookie
 func (c ContextNoBody) Cookie(name string) (*http.Cookie, error) {
 	return c.Request().Cookie(name)
+}
+
+// Has request cookie
+func (c ContextNoBody) HasCookie(name string) bool {
+	_, err := c.Cookie(name)
+	return err == nil
 }
 
 // Sets response cookie

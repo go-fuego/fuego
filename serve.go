@@ -81,6 +81,15 @@ func validateParams(c ContextNoBody) error {
 						Detail: "cannot parse request parameter: " + err.Error(),
 					}
 				}
+			case CookieParamType:
+				if !c.HasCookie(k) {
+					err := fmt.Errorf("%s is a required cookie", k)
+					return BadRequestError{
+						Title:  "Cookie Not Found",
+						Err:    err,
+						Detail: "cannot parse request parameter: " + err.Error(),
+					}
+				}
 			}
 		}
 	}
