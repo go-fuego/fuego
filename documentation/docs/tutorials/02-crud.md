@@ -84,7 +84,7 @@ func main() {
 	s := fuego.NewServer()
 	// ....
 
-	// Declare the ressource
+	// Declare the resource
 	booksResources := controllers.BooksResources{
 		BooksService: controllers.RealBooksService{},
 		// Other services & dependencies, like a DB etc.
