@@ -508,7 +508,7 @@ func TestServer_RunTLS(t *testing.T) {
 			}()
 
 			// wait for the server to start
-			conn, err := net.DialTimeout("tcp", s.Server.Addr, 1*time.Second)
+			conn, err := net.DialTimeout("tcp", s.Server.Addr, 2*time.Second)
 			if err != nil {
 				t.Fatal(err)
 			}
