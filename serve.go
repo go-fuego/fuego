@@ -14,6 +14,9 @@ import (
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) Run() error {
 	s.setup()
+	if s.Listener != nil {
+		return s.Server.Serve(s.Listener)
+	}
 	return s.Server.ListenAndServe()
 }
 

@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/fs"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -59,6 +60,8 @@ type Server struct {
 
 	// Points to the server OpenAPI struct.
 	OpenAPI *OpenAPI
+
+	Listener net.Listener // Customizable net.Listener for advanced use cases, such as tunneling (e.g., zrok, ngrok).
 
 	Security Security
 
