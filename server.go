@@ -72,8 +72,6 @@ type Server struct {
 
 	listener net.Listener
 
-	tlsConfig *tls.Config
-
 	Security Security
 
 	autoAuth AutoAuthConfig
@@ -377,7 +375,6 @@ func WithTLSListener(listener net.Listener, certFile, keyFile string) func(*Serv
 		}
 		tlsConfig := &tls.Config{Certificates: []tls.Certificate{cert}}
 		tlsListener := tls.NewListener(listener, tlsConfig)
-		s.tlsConfig = tlsConfig
 		s.isTLS = true
 		setListener(s, tlsListener)
 	}
