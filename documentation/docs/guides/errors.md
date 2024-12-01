@@ -1,15 +1,12 @@
-import FlowChart from '@site/src/components/FlowChart';
-
 # Error handling
 
 Error handling is a crucial part of any application. It is important to handle errors gracefully and provide meaningful feedback to the user. In this guide, we will cover how to handle errors in a Fuego application.
 
-
-<FlowChart selected="ErrorHandler" />
-
 ## Error handling in Fuego
 
 Fuego [controllers](./controllers) returns a value and an error. If the error is not `nil`, it means that an error occurred while processing the request. The error will be returned to the client as a JSON response.
+
+By default, Fuego implements [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457), which defines a standard error format for HTTP APIs. We strongly recommend following this standard, but you can also use your own errors.
 
 The error type returned as JSON is `fuego.HTTPError`. It has a `Status` and a `Info` field. The `Status` field is an integer that represents the error code. The `Info` field is a string that contains a human-readable error message.
 

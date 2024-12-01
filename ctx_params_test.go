@@ -38,20 +38,4 @@ func TestParam(t *testing.T) {
 			require.Equal(t, "hey18true", w.Body.String())
 		})
 	})
-
-	t.Run("Should enforce Required", func(t *testing.T) {
-		s := fuego.NewServer()
-
-		fuego.Get(s, "/test", func(c fuego.ContextNoBody) (string, error) {
-			name := c.QueryParam("name")
-			return name, nil
-		},
-			option.Query("name", "Name", param.Required(), param.Example("example1", "you")),
-		)
-		r := httptest.NewRequest("GET", "/test", nil)
-		w := httptest.NewRecorder()
-		s.Mux.ServeHTTP(w, r)
-		require.Equal(t, http.StatusBadRequest, w.Code)
-		require.Contains(t, w.Body.String(), "name is a required query param")
-	})
 }

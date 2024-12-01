@@ -37,37 +37,38 @@ func validate(a any) error {
 	}
 
 	err := v.Struct(a)
-	if err != nil {
-		// this check is only needed when your code could produce an
-		// invalid value for validation such as interface with nil value
-		if _, exists := err.(*validator.InvalidValidationError); exists {
-			return fmt.Errorf("validation error: %w", err)
-		}
-
-		validationError := HTTPError{
-			Err:    err,
-			Status: http.StatusBadRequest,
-			Title:  "Validation Error",
-		}
-		var errorsSummary []string
-		for _, err := range err.(validator.ValidationErrors) {
-			errorsSummary = append(errorsSummary, explainError(err))
-			validationError.Errors = append(validationError.Errors, ErrorItem{
-				Name:   err.StructNamespace(),
-				Reason: err.Error(),
-				More: map[string]any{
-					"nsField": err.StructNamespace(),
-					"field":   err.StructField(),
-					"tag":     err.Tag(),
-					"param":   err.Param(),
-					"value":   err.Value(),
-				},
-			})
-		}
-
-		validationError.Detail = strings.Join(errorsSummary, ", ")
-
-		return validationError
+	if err == nil {
+		return nil
 	}
-	return nil
+
+	// this check is only needed when your code could produce an
+	// invalid value for validation such as interface with nil value
+	if _, exists := err.(*validator.InvalidValidationError); exists {
+		return fmt.Errorf("validation error: %w", err)
+	}
+
+	validationError := HTTPError{
+		Err:    err,
+		Status: http.StatusBadRequest,
+		Title:  "Validation Error",
+	}
+	var errorsSummary []string
+	for _, err := range err.(validator.ValidationErrors) {
+		errorsSummary = append(errorsSummary, explainError(err))
+		validationError.Errors = append(validationError.Errors, ErrorItem{
+			Name:   err.StructNamespace(),
+			Reason: err.Error(),
+			More: map[string]any{
+				"nsField": err.StructNamespace(),
+				"field":   err.StructField(),
+				"tag":     err.Tag(),
+				"param":   err.Param(),
+				"value":   err.Value(),
+			},
+		})
+	}
+
+	validationError.Detail = strings.Join(errorsSummary, ", ")
+
+	return validationError
 }

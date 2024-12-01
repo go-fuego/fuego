@@ -14,10 +14,16 @@ fuego controller books
 go run github.com/go-fuego/fuego/cmd/fuego@latest controller books
 ```
 
-After executing the above code,
-you need to slightly modify the generated controllers/books.go and main.go files.
+This generates a controller and a service for the `books` resource.
 
-```go title="controllers/books.go" {8-9,28-39}
+You then have to implement the service interface in the controller to be able
+to play with data. It's a form of **dependency injection** that we chose to use
+for the code generator of Fuego, but you can implement it in any way you want.
+
+To implement the service, you need to slightly modify the
+generated `controllers/books.go` and `main.go` files.
+
+```go title="controllers/books.go" {8-9,28-42} showLineNumbers
 package controller
 
 import (
@@ -25,7 +31,7 @@ import (
 )
 
 type BooksResources struct {
-	// CHANGE NEXT LINE (BooksService -> RealBooksService)
+	// Use a concrete struct that implements the service (BooksService -> RealBooksService)
 	BooksService RealBooksService
 }
 
@@ -45,8 +51,10 @@ type BooksService interface {
 }
 
 
-// ADD THIS CODE BLOCK
+// Implement the BooksService interface
 type RealBooksService struct {
+	// Embed the interface to satisfy it.
+	// This pattern is just there to make the code compile but you should implement all methods.
 	BooksService
 }
 
@@ -62,7 +70,9 @@ func (s RealBooksService) GetBooks(id string) (Books, error) {
 // END OF CODE BLOCK
 ```
 
-```go title="main.go" {4-5,13-14}
+Then we'll inject this controller into the server.
+
+```go title="main.go" {6-7,14-21}
 package main
 
 import (
@@ -76,8 +86,15 @@ func main() {
 	s := fuego.NewServer()
 	// ....
 
-	// ADD NEXT LINE
-	controllers.BooksResources{}.Routes(s)
+	// Declare the resource
+	booksResources := controllers.BooksResources{
+		BooksService: controllers.RealBooksService{},
+		// Other services & dependencies, like a DB etc.
+	}
+
+	// Plug the controllers into the server
+	booksResources.Routes(s)
+
 	s.Run()
 }
 ```

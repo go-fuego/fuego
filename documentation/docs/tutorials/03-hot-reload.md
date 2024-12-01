@@ -5,19 +5,19 @@ see the changes in real-time without restarting the server.
 This is very useful for development,
 as it allows you to see the changes you make to your code immediately.
 
-To enable hot reload, you need to install the `air` command-line tool:
+To enable hot reload, you need to install the `air` command-line tool.
 
 ```sh
-go install github.com/cosmtrek/air@latest
+go install github.com/air-verse/air@latest
 ```
 
-Then, create a `.air.toml` file in the root of your project with the following content:
+Optionally, create a `.air.toml` configuration file to customize the hot reload behavior.
 
 ```sh
 air init
 ```
 
-Finally, simply the following command to start the server with hot reload:
+Simply the following command to start the server with hot reload.
 
 ```sh
 air

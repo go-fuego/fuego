@@ -117,8 +117,8 @@ const config: Config = {
           title: "Community",
           items: [
             {
-              label: "Twitter",
-              href: "https://twitter.com/FuegoFramework",
+              label: "Discord",
+              href: "https://discord.gg/tdGPnnxf",
             },
             {
               label: "Youtube",

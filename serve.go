@@ -54,33 +54,13 @@ func (s *Server) proto() string {
 	return "http"
 }
 
-func validateQueryParams(c ContextNoBody) error {
-	for k, param := range c.params {
-		if param.Default != nil {
-			// skip: param has a default
-			continue
-		}
-
-		if param.Required && !c.urlValues.Has(k) {
-			err := fmt.Errorf("%s is a required query param", k)
-			return BadRequestError{
-				Title:  "Query Param Not Found",
-				Err:    err,
-				Detail: "cannot parse request parameter: " + err.Error(),
-			}
-		}
-	}
-
-	return nil
-}
-
 // initializes any Context type with the base ContextNoBody context.
 //
 //	var ctx ContextWithBody[any] // does not work because it will create a ContextWithBody[any] with a nil value
 func initContext[Contextable ctx[Body], Body any](baseContext ContextNoBody) (Contextable, error) {
 	var c Contextable
 
-	err := validateQueryParams(baseContext)
+	err := validateParams(baseContext)
 	if err != nil {
 		return c, err
 	}

@@ -1,11 +1,8 @@
-module github.com/go-fuego/fuego/extra/markdown
+module github.com/go-fuego/fuego/middleware/basicauth
 
-go 1.22.5
+go 1.22.6
 
-require (
-	github.com/gomarkdown/markdown v0.0.0-20240730141124-034f12af3bf6
-	github.com/stretchr/testify v1.10.0
-)
+require github.com/stretchr/testify v1.10.0
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

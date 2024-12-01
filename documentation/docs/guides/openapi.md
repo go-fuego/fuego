@@ -106,7 +106,7 @@ func main() {
 Fuego `Server` exposes a `UIHandler` field that enables you
 to implement your custom UI.
 
-Example with http-swagger:
+Example with `http-swagger`:
 
 ```go
 import (
@@ -146,7 +146,34 @@ by more than 10Mb.
 |               | StopLight Elements | Swagger        | Disabled |
 | ------------- | ------------------ | -------------- | -------- |
 | Works offline | No ❌              | Yes ✅         | -        |
-| Binary Size   | Smaller            | Larger (+10Mb) | Smaller  |
+| Binary Size   | Smaller            | Larger (+10Mb) | Smallest |
+
+## Get OpenAPI Spec at build time
+
+With Go, you cannot generate things at build time, but you can separate the
+OpenAPI generation from the server, by using the
+`(Server).OutputOpenAPISpec()` function.
+
+```go title="main.go" showLineNumbers
+package main
+
+import (
+	"github.com/go-fuego/fuego"
+)
+
+func main() {
+	s := fuego.NewServer()
+
+	fuego.Get(s, "/", helloWorld)
+
+	if justGenerateOpenAPI { // A CLI flag, an env variable, etc.
+		s.OutputOpenAPISpec()
+		return
+	}
+
+	s.Run()
+}
+```
 
 ## Hide From OpenAPI Spec
 

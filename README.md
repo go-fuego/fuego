@@ -338,7 +338,7 @@ See the [contributing guide](CONTRIBUTING.md).
 Thanks to [everyone who has contributed][contributors-url] to this project! ❤️
 
 <a href="https://github.com/go-fuego/fuego/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=go-fuego/fuego" />
+  <img src="https://contrib.rocks/image?repo=go-fuego/fuego" alt="Graph of contributors" />
 </a>
 
 <small>Made with [contrib.rocks](https://contrib.rocks)</small>
