@@ -29,7 +29,6 @@ func (s *Server) Run() error {
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) RunTLS(certFile, keyFile string) error {
-	s.isTLS = true
 	if err := s.setupTLSListener(certFile, keyFile); err != nil {
 		return fmt.Errorf("failed to start TLS server: %w", err)
 	}
@@ -71,6 +70,7 @@ func (s *Server) setupTLSListener(certFile, keyFile string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create a TLS listener on address %s: %w", s.Server.Addr, err)
 	}
+	s.isTLS = true
 	s.listener = listener
 	return nil
 }
