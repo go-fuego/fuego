@@ -62,7 +62,7 @@ type Server struct {
 	// Points to the server OpenAPI struct.
 	OpenAPI *OpenAPI
 
-	listener net.Listener
+	Listener net.Listener
 
 	Security Security
 
@@ -154,8 +154,8 @@ func NewServer(options ...func(*Server)) *Server {
 }
 
 func getServerAddress(s *Server) string {
-	if s.listener != nil {
-		return s.listener.Addr().String()
+	if s.Listener != nil {
+		return s.Listener.Addr().String()
 	}
 	if s.Server.Addr != "" {
 		return s.Server.Addr
@@ -331,7 +331,7 @@ func WithPort(port int) func(*Server) {
 // If not specified addr ':9999' will be used.
 func WithAddr(addr string) func(*Server) {
 	return func(c *Server) {
-		if c.listener != nil {
+		if c.Listener != nil {
 			panic("cannot set addr when a listener is already configured")
 		}
 		c.Server.Addr = addr
@@ -417,13 +417,13 @@ func WithTLSListener(listener net.Listener, certFile, keyFile string) func(*Serv
 }
 
 func setListener(s *Server, listener net.Listener) {
-	if s.listener != nil {
+	if s.Listener != nil {
 		panic("listener already configured")
 	}
 	if s.Server.Addr != "" {
 		panic(fmt.Sprintf("cannot set listener when addr is already configured: addr=%s", s.Server.Addr))
 	}
-	s.listener = listener
+	s.Listener = listener
 	s.Server.Addr = listener.Addr().String()
 }
 

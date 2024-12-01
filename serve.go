@@ -20,7 +20,7 @@ func (s *Server) Run() error {
 	if err := s.setup("", ""); err != nil {
 		return err
 	}
-	return s.Server.Serve(s.listener)
+	return s.Server.Serve(s.Listener)
 }
 
 // RunTLS starts the server with a TLS listener
@@ -32,7 +32,7 @@ func (s *Server) RunTLS(certFile, keyFile string) error {
 	if err := s.setup(certFile, keyFile); err != nil {
 		return err
 	}
-	return s.Server.Serve(s.listener)
+	return s.Server.Serve(s.Listener)
 }
 
 func (s *Server) setup(certFile, keyFile string) error {
@@ -63,10 +63,10 @@ func (s *Server) setup(certFile, keyFile string) error {
 // Requires valid TLS certificate and key files to establish a secure listener.
 // Returns an error if the listener cannot be created or if the provided certificates are invalid.
 func (s *Server) setupTLSListener(certFile, keyFile string) error {
-	if s.listener != nil && !s.isTLS {
+	if s.Listener != nil && !s.isTLS {
 		return errors.New("a non-TLS listener is already configured; cannot set up a TLS listener on the same server")
 	}
-	if s.listener != nil {
+	if s.Listener != nil {
 		return errors.New("a TLS listener is already configured; use the Run() method to start the server")
 	}
 	if certFile == "" || keyFile == "" {
@@ -87,7 +87,7 @@ func (s *Server) setupTLSListener(certFile, keyFile string) error {
 		return fmt.Errorf("failed to create a TLS listener on address %s: %w", s.Server.Addr, err)
 	}
 	s.isTLS = true
-	s.listener = listener
+	s.Listener = listener
 	return nil
 }
 
@@ -95,7 +95,7 @@ func (s *Server) setupTLSListener(certFile, keyFile string) error {
 // If a listener is already set, this method does nothing.
 // Returns an error if the listener cannot be created (e.g., address binding issues).
 func (s *Server) setupDefaultListener() error {
-	if s.listener != nil {
+	if s.Listener != nil {
 		return nil // Listener already exists, no action needed.
 	}
 	addr := s.Server.Addr
@@ -106,8 +106,8 @@ func (s *Server) setupDefaultListener() error {
 	if err != nil {
 		return fmt.Errorf("failed to create default listener on %s: %w", s.Server.Addr, err)
 	}
-	s.listener = listener
-	s.Addr = s.listener.Addr().String()
+	s.Listener = listener
+	s.Addr = s.Listener.Addr().String()
 	return nil
 }
 
