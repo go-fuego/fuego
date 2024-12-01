@@ -141,6 +141,10 @@ func NewServer(options ...func(*Server)) *Server {
 		option(s)
 	}
 
+	if s.Server.Addr == "" {
+		WithAddr("localhost:9999")(s)
+	}
+
 	s.OpenApiSpec.Servers = append(s.OpenApiSpec.Servers, &openapi3.Server{
 		URL:         "http://" + getServerAddress(s),
 		Description: "local server",
@@ -381,22 +385,24 @@ func WithListener(listener net.Listener) func(*Server) {
 
 func WithTLSListener(certFile, keyFile string) func(*Server) {
 	return func(s *Server) {
-		if certFile == "" || keyFile == "" {
-			panic("TLS certificates must be provided (certFile and keyFile)")
+		tlsConfig := tls.Config{}
+		if certFile != "" && keyFile != "" {
+			cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+			if err != nil {
+				panic(fmt.Errorf("failed to load TLS certificate and key files (%s, %s): %w", certFile, keyFile, err))
+			}
+			tlsConfig.Certificates = []tls.Certificate{cert}
 		}
-		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-		if err != nil {
-			panic(fmt.Errorf("failed to load TLS certificate and key files (%s, %s): %w", certFile, keyFile, err))
-		}
-		tlsConfig := &tls.Config{Certificates: []tls.Certificate{cert}}
+
 		addr := s.Server.Addr
 		if addr == "" {
 			addr = ":443"
 		}
-		tlsListener, err := tls.Listen("tcp", addr, tlsConfig)
+		tlsListener, err := tls.Listen("tcp", addr, &tlsConfig)
 		if err != nil {
 			panic(fmt.Errorf("failed to create a TLS listener on address %s: %w", addr, err))
 		}
+		s.isTLS = true
 		setListener(s, tlsListener)
 	}
 }
