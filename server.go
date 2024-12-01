@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"crypto/tls"
 	"fmt"
 	"html/template"
 	"io"
@@ -61,7 +62,9 @@ type Server struct {
 	// Points to the server OpenAPI struct.
 	OpenAPI *OpenAPI
 
-	Listener net.Listener // Customizable net.Listener for advanced use cases, such as tunneling (e.g., zrok, ngrok).
+	listener net.Listener
+
+	tlsConfig *tls.Config
 
 	Security Security
 
@@ -374,6 +377,38 @@ func WithoutLogger() func(*Server) {
 	return func(c *Server) {
 		slog.SetDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
 	}
+}
+
+func WithListener(listener net.Listener) func(*Server) {
+	return func(s *Server) {
+		setListener(s, listener)
+	}
+}
+
+// WithTLSListener configures the server to use a TLS listener with the provided certificates.
+// It ensures the provided listener is wrapped with TLS using the given cert and key files.
+func WithTLSListener(listener net.Listener, certFile, keyFile string) func(*Server) {
+	return func(s *Server) {
+		if certFile == "" || keyFile == "" {
+			panic("TLS certificates must be provided (certFile and keyFile)")
+		}
+		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+		if err != nil {
+			panic(fmt.Errorf("failed to load TLS certificates: %w", err))
+		}
+		tlsConfig := &tls.Config{Certificates: []tls.Certificate{cert}}
+		tlsListener := tls.NewListener(listener, tlsConfig)
+		s.tlsConfig = tlsConfig
+		s.isTLS = true
+		setListener(s, tlsListener)
+	}
+}
+
+func setListener(s *Server, listener net.Listener) {
+	if s.listener != nil {
+		panic("listener already configured")
+	}
+	s.listener = listener
 }
 
 func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
