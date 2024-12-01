@@ -15,7 +15,7 @@ import (
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) Run() error {
-	if err := s.setup("", ""); err != nil {
+	if err := s.setup(); err != nil {
 		return err
 	}
 	return s.Server.Serve(s.Listener)
@@ -26,21 +26,15 @@ func (s *Server) Run() error {
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) RunTLS(certFile, keyFile string) error {
-	s.isTLS = true
-	if err := s.setup(certFile, keyFile); err != nil {
+	if err := s.setup(); err != nil {
 		return err
 	}
-	return s.Server.Serve(s.Listener)
+	return s.Server.ServeTLS(s.Listener, certFile, keyFile)
 }
 
-func (s *Server) setup(certFile, keyFile string) error {
-	if !s.isTLS {
-		if err := s.setupDefaultListener(); err != nil {
-			return err
-		}
-	}
-	if s.isTLS {
-		WithTLSListener(certFile, keyFile)(s)
+func (s *Server) setup() error {
+	if err := s.setupDefaultListener(); err != nil {
+		return err
 	}
 	go s.OutputOpenAPISpec()
 	s.printStartupMessage()
@@ -62,6 +56,9 @@ func (s *Server) setupDefaultListener() error {
 	addr := s.Server.Addr
 	if addr == "" {
 		addr = ":9999"
+		if s.isTLS {
+			addr = ":443"
+		}
 	}
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
