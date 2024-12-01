@@ -1,8 +1,6 @@
 package fuego
 
 import (
-	"crypto/tls"
-	"errors"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -37,16 +35,12 @@ func (s *Server) RunTLS(certFile, keyFile string) error {
 
 func (s *Server) setup(certFile, keyFile string) error {
 	if !s.isTLS {
-		err := s.setupDefaultListener()
-		if err != nil {
+		if err := s.setupDefaultListener(); err != nil {
 			return err
 		}
 	}
 	if s.isTLS {
-		err := s.setupTLSListener(certFile, keyFile)
-		if err != nil {
-			return err
-		}
+		WithTLSListener(certFile, keyFile)(s)
 	}
 	go s.OutputOpenAPISpec()
 	s.printStartupMessage()
@@ -55,39 +49,6 @@ func (s *Server) setup(certFile, keyFile string) error {
 	if s.corsMiddleware != nil {
 		s.Server.Handler = s.corsMiddleware(s.Server.Handler)
 	}
-	return nil
-}
-
-// setupTLSListener creates a TLS listener if no listener is already configured.
-// If a non-TLS listener is already configured, an error is returned.
-// Requires valid TLS certificate and key files to establish a secure listener.
-// Returns an error if the listener cannot be created or if the provided certificates are invalid.
-func (s *Server) setupTLSListener(certFile, keyFile string) error {
-	if s.Listener != nil && !s.isTLS {
-		return errors.New("a non-TLS listener is already configured; cannot set up a TLS listener on the same server")
-	}
-	if s.Listener != nil {
-		return errors.New("a TLS listener is already configured; use the Run() method to start the server")
-	}
-	if certFile == "" || keyFile == "" {
-		return errors.New("TLS certificate and key files must be provided to set up a TLS listener")
-	}
-	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-	if err != nil {
-		return fmt.Errorf("failed to load TLS certificate and key files (%s, %s): %w", certFile, keyFile, err)
-	}
-	tlsConfig := &tls.Config{Certificates: []tls.Certificate{cert}}
-
-	addr := s.Server.Addr
-	if addr == "" {
-		addr = ":443"
-	}
-	listener, err := tls.Listen("tcp", addr, tlsConfig)
-	if err != nil {
-		return fmt.Errorf("failed to create a TLS listener on address %s: %w", s.Server.Addr, err)
-	}
-	s.isTLS = true
-	s.Listener = listener
 	return nil
 }
 
@@ -104,10 +65,9 @@ func (s *Server) setupDefaultListener() error {
 	}
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		return fmt.Errorf("failed to create default listener on %s: %w", s.Server.Addr, err)
+		return err
 	}
-	s.Listener = listener
-	s.Addr = s.Listener.Addr().String()
+	WithListener(listener)(s)
 	return nil
 }
 

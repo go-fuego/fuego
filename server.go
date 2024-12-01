@@ -371,36 +371,39 @@ func WithoutLogger() func(*Server) {
 	}
 }
 
+// WithListener configures the server to use a custom listener.
+// If no listener is provided, it creates a default listener using the server's address.
 func WithListener(listener net.Listener) func(*Server) {
 	return func(s *Server) {
 		setListener(s, listener)
 	}
 }
 
-// WithTLSListener configures the server to use a TLS listener with the provided certificates.
-// It ensures the provided listener is wrapped with TLS using the given cert and key files.
-func WithTLSListener(listener net.Listener, certFile, keyFile string) func(*Server) {
+func WithTLSListener(certFile, keyFile string) func(*Server) {
 	return func(s *Server) {
 		if certFile == "" || keyFile == "" {
 			panic("TLS certificates must be provided (certFile and keyFile)")
 		}
 		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 		if err != nil {
-			panic(fmt.Errorf("failed to load TLS certificates: %w", err))
+			panic(fmt.Errorf("failed to load TLS certificate and key files (%s, %s): %w", certFile, keyFile, err))
 		}
 		tlsConfig := &tls.Config{Certificates: []tls.Certificate{cert}}
-		tlsListener := tls.NewListener(listener, tlsConfig)
-		s.isTLS = true
+		addr := s.Server.Addr
+		if addr == "" {
+			addr = ":443"
+		}
+		tlsListener, err := tls.Listen("tcp", addr, tlsConfig)
+		if err != nil {
+			panic(fmt.Errorf("failed to create a TLS listener on address %s: %w", addr, err))
+		}
 		setListener(s, tlsListener)
 	}
 }
 
 func setListener(s *Server, listener net.Listener) {
 	if s.Listener != nil {
-		panic("listener already configured")
-	}
-	if s.Server.Addr != "" {
-		panic(fmt.Sprintf("cannot set listener when addr is already configured: addr=%s", s.Server.Addr))
+		panic("a listener is already configured; cannot overwrite it")
 	}
 	s.Listener = listener
 	s.Server.Addr = listener.Addr().String()
