@@ -4,6 +4,7 @@ use (
 	.
 	./cmd/fuego
 	./examples/acme-tls
+	./examples/with-listener
 	./examples/basic
 	./examples/custom-serializer
 	./examples/full-app-gourmet

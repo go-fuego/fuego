@@ -129,7 +129,6 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	defaultOptions := [...]func(*Server){
-		WithAddr("localhost:9999"),
 		WithDisallowUnknownFields(true),
 		WithSerializer(Send),
 		WithErrorSerializer(SendError),
@@ -143,7 +142,7 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	s.OpenApiSpec.Servers = append(s.OpenApiSpec.Servers, &openapi3.Server{
-		URL:         "http://" + s.Addr,
+		URL:         "http://" + getServerAddress(s),
 		Description: "local server",
 	})
 
@@ -161,6 +160,17 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	return s
+}
+
+func getServerAddress(s *Server) string {
+	if s.listener != nil {
+		return s.listener.Addr().String()
+	}
+	if s.Server.Addr != "" {
+		return s.Server.Addr
+	}
+	// Default address if none is set
+	return ":9999"
 }
 
 // WithTemplateFS sets the filesystem used to load templates.
@@ -300,7 +310,12 @@ func WithPort(port int) func(*Server) {
 // WithAddr optionally specifies the TCP address for the server to listen on, in the form "host:port".
 // If not specified addr ':9999' will be used.
 func WithAddr(addr string) func(*Server) {
-	return func(c *Server) { c.Server.Addr = addr }
+	return func(c *Server) {
+		if c.listener != nil {
+			panic("cannot set addr when a listener is already configured")
+		}
+		c.Server.Addr = addr
+	}
 }
 
 // WithXML sets the serializer to XML
@@ -384,7 +399,11 @@ func setListener(s *Server, listener net.Listener) {
 	if s.listener != nil {
 		panic("listener already configured")
 	}
+	if s.Server.Addr != "" {
+		panic(fmt.Sprintf("cannot set listener when addr is already configured: addr=%s", s.Server.Addr))
+	}
 	s.listener = listener
+	s.Server.Addr = listener.Addr().String()
 }
 
 func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {

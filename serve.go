@@ -17,10 +17,9 @@ import (
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) Run() error {
-	if err := s.setupDefaultListener(); err != nil {
-		return fmt.Errorf("failed to start server: %w", err)
+	if err := s.setup("", ""); err != nil {
+		return err
 	}
-	s.setup()
 	return s.Server.Serve(s.listener)
 }
 
@@ -29,14 +28,26 @@ func (s *Server) Run() error {
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) RunTLS(certFile, keyFile string) error {
-	if err := s.setupTLSListener(certFile, keyFile); err != nil {
-		return fmt.Errorf("failed to start TLS server: %w", err)
+	s.isTLS = true
+	if err := s.setup(certFile, keyFile); err != nil {
+		return err
 	}
-	s.setup()
 	return s.Server.Serve(s.listener)
 }
 
-func (s *Server) setup() {
+func (s *Server) setup(certFile, keyFile string) error {
+	if !s.isTLS {
+		err := s.setupDefaultListener()
+		if err != nil {
+			return err
+		}
+	}
+	if s.isTLS {
+		err := s.setupTLSListener(certFile, keyFile)
+		if err != nil {
+			return err
+		}
+	}
 	go s.OutputOpenAPISpec()
 	s.printStartupMessage()
 
@@ -44,6 +55,7 @@ func (s *Server) setup() {
 	if s.corsMiddleware != nil {
 		s.Server.Handler = s.corsMiddleware(s.Server.Handler)
 	}
+	return nil
 }
 
 // setupTLSListener creates a TLS listener if no listener is already configured.
@@ -66,7 +78,11 @@ func (s *Server) setupTLSListener(certFile, keyFile string) error {
 	}
 	tlsConfig := &tls.Config{Certificates: []tls.Certificate{cert}}
 
-	listener, err := tls.Listen("tcp", s.Server.Addr, tlsConfig)
+	addr := s.Server.Addr
+	if addr == "" {
+		addr = "127.0.0.1:9999"
+	}
+	listener, err := tls.Listen("tcp", addr, tlsConfig)
 	if err != nil {
 		return fmt.Errorf("failed to create a TLS listener on address %s: %w", s.Server.Addr, err)
 	}
@@ -82,11 +98,16 @@ func (s *Server) setupDefaultListener() error {
 	if s.listener != nil {
 		return nil // Listener already exists, no action needed.
 	}
-	listener, err := net.Listen("tcp", s.Server.Addr)
+	addr := s.Server.Addr
+	if addr == "" {
+		addr = "127.0.0.1:9999"
+	}
+	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		return fmt.Errorf("failed to create default listener on %s: %w", s.Server.Addr, err)
 	}
 	s.listener = listener
+	s.Addr = s.listener.Addr().String()
 	return nil
 }
 
