@@ -80,7 +80,7 @@ func (s *Server) setupTLSListener(certFile, keyFile string) error {
 
 	addr := s.Server.Addr
 	if addr == "" {
-		addr = "127.0.0.1:443"
+		addr = ":443"
 	}
 	listener, err := tls.Listen("tcp", addr, tlsConfig)
 	if err != nil {
@@ -100,7 +100,7 @@ func (s *Server) setupDefaultListener() error {
 	}
 	addr := s.Server.Addr
 	if addr == "" {
-		addr = "127.0.0.1:9999"
+		addr = ":9999"
 	}
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
