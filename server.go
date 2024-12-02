@@ -381,7 +381,6 @@ func WithoutLogger() func(*Server) {
 }
 
 // WithListener configures the server to use a custom listener.
-// If no listener is provided, it creates a default listener using the server's address.
 func WithListener(listener net.Listener) func(*Server) {
 	return func(s *Server) {
 		if s.listener != nil {
