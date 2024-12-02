@@ -140,12 +140,8 @@ func NewServer(options ...func(*Server)) *Server {
 		option(s)
 	}
 
-	if s.Server.Addr == "" {
-		WithAddr("localhost:9999")(s)
-	}
-
 	s.OpenApiSpec.Servers = append(s.OpenApiSpec.Servers, &openapi3.Server{
-		URL:         "http://" + s.Server.Addr,
+		URL:         fmt.Sprintf("%s://%s", s.proto(), s.Server.Addr),
 		Description: "local server",
 	})
 
@@ -370,8 +366,8 @@ func WithListener(listener net.Listener) func(*Server) {
 		if s.listener != nil {
 			panic("a listener is already configured; cannot overwrite it")
 		}
+		WithAddr(listener.Addr().String())(s)
 		s.listener = listener
-		s.Server.Addr = listener.Addr().String()
 	}
 }
 
