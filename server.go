@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"crypto/tls"
 	"fmt"
 	"html/template"
 	"io"
@@ -368,40 +367,12 @@ func WithoutLogger() func(*Server) {
 // If no listener is provided, it creates a default listener using the server's address.
 func WithListener(listener net.Listener) func(*Server) {
 	return func(s *Server) {
-		setListener(s, listener)
-	}
-}
-
-func WithTLSListener(certFile, keyFile string) func(*Server) {
-	return func(s *Server) {
-		tlsConfig := tls.Config{}
-		if certFile != "" && keyFile != "" {
-			cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-			if err != nil {
-				panic(fmt.Errorf("failed to load TLS certificate and key files (%s, %s): %w", certFile, keyFile, err))
-			}
-			tlsConfig.Certificates = []tls.Certificate{cert}
+		if s.listener != nil {
+			panic("a listener is already configured; cannot overwrite it")
 		}
-
-		addr := s.Server.Addr
-		if addr == "" {
-			addr = "localhost:443"
-		}
-		tlsListener, err := tls.Listen("tcp", addr, &tlsConfig)
-		if err != nil {
-			panic(fmt.Errorf("failed to create a TLS listener on address %s: %w", addr, err))
-		}
-		s.isTLS = true
-		setListener(s, tlsListener)
+		s.listener = listener
+		s.Server.Addr = listener.Addr().String()
 	}
-}
-
-func setListener(s *Server, listener net.Listener) {
-	if s.listener != nil {
-		panic("a listener is already configured; cannot overwrite it")
-	}
-	s.listener = listener
-	s.Server.Addr = listener.Addr().String()
 }
 
 func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
