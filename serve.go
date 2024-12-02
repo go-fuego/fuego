@@ -18,7 +18,7 @@ func (s *Server) Run() error {
 	if err := s.setup(); err != nil {
 		return err
 	}
-	return s.Server.Serve(s.Listener)
+	return s.Server.Serve(s.listener)
 }
 
 // RunTLS starts the server with a TLS listener
@@ -29,7 +29,7 @@ func (s *Server) RunTLS(certFile, keyFile string) error {
 	if err := s.setup(); err != nil {
 		return err
 	}
-	return s.Server.ServeTLS(s.Listener, certFile, keyFile)
+	return s.Server.ServeTLS(s.listener, certFile, keyFile)
 }
 
 func (s *Server) setup() error {
@@ -50,14 +50,14 @@ func (s *Server) setup() error {
 // If a listener is already set, this method does nothing.
 // Returns an error if the listener cannot be created (e.g., address binding issues).
 func (s *Server) setupDefaultListener() error {
-	if s.Listener != nil {
+	if s.listener != nil {
 		return nil // Listener already exists, no action needed.
 	}
 	addr := s.Server.Addr
 	if addr == "" {
-		addr = ":9999"
+		addr = "localhost:9999"
 		if s.isTLS {
-			addr = ":443"
+			addr = "localhost:443"
 		}
 	}
 	listener, err := net.Listen("tcp", addr)
