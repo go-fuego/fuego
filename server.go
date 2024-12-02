@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"reflect"
 	"slices"
 	"time"
 
@@ -138,6 +139,10 @@ func NewServer(options ...func(*Server)) *Server {
 
 	for _, option := range append(defaultOptions[:], options...) {
 		option(s)
+	}
+
+	if s.Server.Addr == "" {
+		WithAddr("localhost:9999")(s)
 	}
 
 	s.OpenApiSpec.Servers = append(s.OpenApiSpec.Servers, &openapi3.Server{
@@ -365,9 +370,18 @@ func WithListener(listener net.Listener) func(*Server) {
 		if s.listener != nil {
 			panic("a listener is already configured; cannot overwrite it")
 		}
+		s.isTLS = isTLSListener(listener)
 		WithAddr(listener.Addr().String())(s)
 		s.listener = listener
 	}
+}
+
+func isTLSListener(listener net.Listener) bool {
+	listenerType := reflect.TypeOf(listener)
+	if listenerType != nil && listenerType.String() == "*tls.listener" {
+		return true
+	}
+	return false
 }
 
 func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
