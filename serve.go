@@ -26,6 +26,7 @@ func (s *Server) Run() error {
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) RunTLS(certFile, keyFile string) error {
+	s.isTLS = true
 	if err := s.setup(); err != nil {
 		return err
 	}
