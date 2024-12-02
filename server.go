@@ -387,8 +387,8 @@ func WithListener(listener net.Listener) func(*Server) {
 		if s.listener != nil {
 			panic("a listener is already configured; cannot overwrite it")
 		}
+		WithAddr(listener.Addr().String())(s)
 		s.listener = listener
-		s.Server.Addr = listener.Addr().String()
 	}
 }
 
