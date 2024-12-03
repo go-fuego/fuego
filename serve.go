@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"fmt"
 	"html/template"
 	"log/slog"
 	"net"
@@ -52,16 +51,10 @@ func (s *Server) setup() error {
 // Returns an error if the listener cannot be created (e.g., address binding issues).
 func (s *Server) setupDefaultListener() error {
 	if s.listener != nil {
+		WithAddr(s.listener.Addr().String())(s)
 		return nil // Listener already exists, no action needed.
 	}
-	addr := s.Server.Addr
-	if addr == "" {
-		addr = "localhost:9999"
-		if s.isTLS {
-			addr = "localhost:443"
-		}
-	}
-	listener, err := net.Listen("tcp", addr)
+	listener, err := net.Listen("tcp", s.Addr)
 	if err != nil {
 		return err
 	}
