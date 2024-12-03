@@ -129,6 +129,7 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	defaultOptions := [...]func(*Server){
+		WithAddr("localhost:9999"),
 		WithDisallowUnknownFields(true),
 		WithSerializer(Send),
 		WithErrorSerializer(SendError),
@@ -141,12 +142,8 @@ func NewServer(options ...func(*Server)) *Server {
 		option(s)
 	}
 
-	if s.Server.Addr == "" {
-		WithAddr("localhost:9999")(s)
-	}
-
 	s.OpenApiSpec.Servers = append(s.OpenApiSpec.Servers, &openapi3.Server{
-		URL:         fmt.Sprintf("%s://%s", s.proto(), s.Server.Addr),
+		URL:         fmt.Sprintf("%s://%s", s.proto(), s.Addr),
 		Description: "local server",
 	})
 
@@ -304,9 +301,6 @@ func WithPort(port int) func(*Server) {
 // If not specified addr ':9999' will be used.
 func WithAddr(addr string) func(*Server) {
 	return func(c *Server) {
-		if c.listener != nil {
-			panic("cannot set addr when a listener is already configured")
-		}
 		c.Server.Addr = addr
 	}
 }
@@ -365,13 +359,18 @@ func WithoutLogger() func(*Server) {
 }
 
 // WithListener configures the server to use a custom listener.
+// If a listener is provided using this option, any address specified with WithAddr will be ignored.
+//
+// Example:
+//
+//	listener, _ := net.Listen("tcp", ":8080")
+//	server := NewServer(
+//	    WithListener(listener),
+//	    WithAddr(":9999"), // This will be ignored because WithListener takes precedence.
+//	)
 func WithListener(listener net.Listener) func(*Server) {
 	return func(s *Server) {
-		if s.listener != nil {
-			panic("a listener is already configured; cannot overwrite it")
-		}
 		s.isTLS = isTLSListener(listener)
-		WithAddr(listener.Addr().String())(s)
 		s.listener = listener
 	}
 }

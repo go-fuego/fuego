@@ -52,16 +52,10 @@ func (s *Server) setup() error {
 // Returns an error if the listener cannot be created (e.g., address binding issues).
 func (s *Server) setupDefaultListener() error {
 	if s.listener != nil {
+		WithAddr(s.listener.Addr().String())(s)
 		return nil // Listener already exists, no action needed.
 	}
-	addr := s.Server.Addr
-	if addr == "" {
-		addr = "localhost:9999"
-		if s.isTLS {
-			addr = "localhost:443"
-		}
-	}
-	listener, err := net.Listen("tcp", addr)
+	listener, err := net.Listen("tcp", s.Addr)
 	if err != nil {
 		return err
 	}
@@ -73,7 +67,7 @@ func (s *Server) printStartupMessage() {
 	if !s.disableStartupMessages {
 		elapsed := time.Since(s.startTime)
 		slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
-		slog.Info("Server running ✅ on "+s.proto()+"://"+s.Server.Addr, "started in", elapsed.String())
+		slog.Info("Server running ✅ on "+s.proto()+"://"+s.Addr, "started in", elapsed.String())
 	}
 }
 
