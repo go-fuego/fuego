@@ -9,7 +9,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"reflect"
 	"slices"
 	"time"
 
@@ -371,17 +370,8 @@ func WithoutLogger() func(*Server) {
 //	)
 func WithListener(listener net.Listener) func(*Server) {
 	return func(s *Server) {
-		s.isTLS = isTLSListener(listener)
 		s.listener = listener
 	}
-}
-
-func isTLSListener(listener net.Listener) bool {
-	listenerType := reflect.TypeOf(listener)
-	if listenerType != nil && listenerType.String() == "*tls.listener" {
-		return true
-	}
-	return false
 }
 
 func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
