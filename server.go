@@ -9,7 +9,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"reflect"
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -395,14 +394,6 @@ func WithListener(listener net.Listener) func(*Server) {
 		s.listener = listener
 		s.Addr = s.listener.Addr().String()
 	}
-}
-
-func isTLSListener(listener net.Listener) bool {
-	listenerType := reflect.TypeOf(listener)
-	if listenerType != nil && listenerType.String() == "*tls.listener" {
-		return true
-	}
-	return false
 }
 
 func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
