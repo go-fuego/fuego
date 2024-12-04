@@ -141,6 +141,15 @@ func NewServer(options ...func(*Server)) *Server {
 		option(s)
 	}
 
+	addr := s.Addr
+	if s.listener != nil {
+		addr = s.listener.Addr().String()
+	}
+	s.OpenApiSpec.Servers = append(s.OpenApiSpec.Servers, &openapi3.Server{
+		URL:         fmt.Sprintf("%s://%s", s.proto(), addr),
+		Description: "local server",
+	})
+	
 	s.startTime = time.Now()
 
 	if s.autoAuth.Enabled {
@@ -366,6 +375,7 @@ func WithoutLogger() func(*Server) {
 func WithListener(listener net.Listener) func(*Server) {
 	return func(s *Server) {
 		s.listener = listener
+		s.Addr = s.listener.Addr().String()
 	}
 }
 

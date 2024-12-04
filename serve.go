@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"reflect"
 	"time"
-
-	"github.com/getkin/kin-openapi/openapi3"
 )
 
 // Run starts the server.
@@ -47,10 +45,6 @@ func (s *Server) setup() error {
 		s.Server.Handler = s.corsMiddleware(s.Server.Handler)
 	}
 
-	s.OpenApiSpec.Servers = append(s.OpenApiSpec.Servers, &openapi3.Server{
-		URL:         fmt.Sprintf("%s://%s", s.proto(), s.Addr),
-		Description: "local server",
-	})
 	return nil
 }
 
