@@ -136,7 +136,7 @@ func NewServer(options ...func(*Server)) *Server {
 		URL:         fmt.Sprintf("%s://%s", s.proto(), addr),
 		Description: "local server",
 	})
-	
+
 	s.startTime = time.Now()
 
 	if s.autoAuth.Enabled {
