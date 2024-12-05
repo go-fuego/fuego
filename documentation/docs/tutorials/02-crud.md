@@ -189,9 +189,9 @@ func UpdateBook(c *fuego.ContextWithBody[Book]) (Book, error) {
 	return Book{}, nil
 }
 
-func DeleteBook(c *fuego.ContextNoBody) error {
+func DeleteBook(c *fuego.ContextNoBody) (any, error) {
 	// Your code here
-	return nil
+	return nil, nil
 }
 
 ```
