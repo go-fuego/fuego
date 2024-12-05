@@ -40,7 +40,9 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		option.AddError(409, "Conflict: Pet with the same name already exists"),
 	)
 
-	fuego.Get(petsGroup, "/{id}", rs.getPets)
+	fuego.Get(petsGroup, "/{id}", rs.getPets,
+		option.Path("id", "Pet ID", param.Example("example", "123")),
+	)
 	fuego.Get(petsGroup, "/by-name/{name...}", rs.getPetByName)
 	fuego.Put(petsGroup, "/{id}", rs.putPets)
 	fuego.Put(petsGroup, "/{id}/json", rs.putPets,
