@@ -696,17 +696,23 @@
 						}
 					},
 					{
-						"description": "header description",
-						"in": "header",
-						"name": "X-Header",
+						"description": "Pet ID",
+						"examples": {
+							"example": {
+								"value": "123"
+							}
+						},
+						"in": "path",
+						"name": "id",
+						"required": true,
 						"schema": {
 							"type": "string"
 						}
 					},
 					{
-						"in": "path",
-						"name": "id",
-						"required": true,
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
 						"schema": {
 							"type": "string"
 						}
