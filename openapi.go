@@ -185,11 +185,13 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 		addResponse(s, route.Operation, openAPIGlobalResponse.Code, openAPIGlobalResponse.Description, openAPIGlobalResponse.ErrorType)
 	}
 
-	// Response - 200
-	responseSchema := SchemaTagFromType(s, *new(T))
-	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
-	response := openapi3.NewResponse().WithDescription("OK").WithContent(content)
-	route.Operation.AddResponse(200, response)
+	// Automatically add non-declared 200 Response
+	if route.Operation.Responses.Value("200") == nil {
+		responseSchema := SchemaTagFromType(s, *new(T))
+		content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
+		response := openapi3.NewResponse().WithDescription("OK").WithContent(content)
+		route.Operation.AddResponse(200, response)
+	}
 
 	// Automatically add non-declared Path parameters
 	for _, pathParam := range parsePathParams(route.Path) {

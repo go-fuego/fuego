@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
@@ -525,4 +526,27 @@ func TestEmbeddedStructHandling(t *testing.T) {
 	require.Equal(t, &openapi3.Types{"integer"}, outerSchema.Properties["field_b"].Value.Type)
 	require.Equal(t, 100, outerSchema.Properties["field_b"].Value.Example)
 	require.Equal(t, "B field in the outer struct", outerSchema.Properties["field_b"].Value.Description)
+}
+
+func TestDeclareCustom200Response(t *testing.T) {
+	// A custom option to add a custom response to the OpenAPI spec.
+	// The route returns a PNG image.
+	optionReturnsPNG := func(br *BaseRoute) {
+		response := openapi3.NewResponse()
+		response.WithDescription("Generated image")
+		response.WithContent(openapi3.NewContentWithSchema(nil, []string{"image/png"}))
+		br.Operation.AddResponse(200, response)
+	}
+
+	s := NewServer()
+
+	GetStd(s, "/image", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/png")
+		w.Write([]byte("PNG image"))
+	}, optionReturnsPNG)
+
+	openAPIResponse := s.OpenApiSpec.Paths.Find("/image").Get.Responses.Value("200")
+	require.Nil(t, openAPIResponse.Value.Content.Get("application/json"))
+	require.NotNil(t, openAPIResponse.Value.Content.Get("image/png"))
+	require.Equal(t, "Generated image", *openAPIResponse.Value.Description)
 }
