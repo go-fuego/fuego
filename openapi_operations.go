@@ -9,6 +9,7 @@ import (
 type ParamType string // Query, Header, Cookie
 
 const (
+	PathParamType   ParamType = "path"
 	QueryParamType  ParamType = "query"
 	HeaderParamType ParamType = "header"
 	CookieParamType ParamType = "cookie"

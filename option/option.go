@@ -64,6 +64,17 @@ var Header = fuego.OptionHeader
 // The list of options is in the param package.
 var Cookie = fuego.OptionCookie
 
+// Declare a path parameter for the route.
+// This will be added to the OpenAPI spec.
+// It will be marked as required by default by Fuego.
+// If not set explicitly, the parameter will still be declared on the spec.
+// Example:
+//
+//	Path("id", "ID of the item", param.Required())
+//
+// The list of options is in the param package.
+var Path = fuego.OptionPath
+
 // Registers a parameter for the route. Prefer using the [Query], [QueryInt], [Header], [Cookie] shortcuts.
 var Param = fuego.OptionParam
 
