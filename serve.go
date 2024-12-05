@@ -50,6 +50,7 @@ func (s *Server) setup() error {
 
 func (s *Server) setupDefaultListener() error {
 	if s.listener != nil {
+		WithAddr(s.listener.Addr().String())(s)
 		return nil
 	}
 	listener, err := net.Listen("tcp", s.Addr)
