@@ -1,4 +1,4 @@
-go 1.22.6
+go 1.23.3
 
 use (
 	.
@@ -8,6 +8,7 @@ use (
 	./examples/basic
 	./examples/custom-serializer
 	./examples/full-app-gourmet
+	./examples/generate-opengraph-image
 	./examples/hello-world
 	./examples/openapi
 	./extra/markdown
