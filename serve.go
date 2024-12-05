@@ -47,13 +47,9 @@ func (s *Server) setup() error {
 	return nil
 }
 
-// setupDefaultListener creates a default (non-TLS) listener if none is already configured.
-// If a listener is already set, this method does nothing.
-// Returns an error if the listener cannot be created (e.g., address binding issues).
 func (s *Server) setupDefaultListener() error {
 	if s.listener != nil {
-		WithAddr(s.listener.Addr().String())(s)
-		return nil // Listener already exists, no action needed.
+		return nil
 	}
 	listener, err := net.Listen("tcp", s.Addr)
 	if err != nil {
