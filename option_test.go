@@ -302,7 +302,7 @@ func TestPath(t *testing.T) {
 		require.Equal(t, "", s.OpenApiSpec.Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Description)
 	})
 
-	t.Run("Declare explicitely an existing path parameter for the route", func(t *testing.T) {
+	t.Run("Declare explicitly an existing path parameter for the route", func(t *testing.T) {
 		s := fuego.NewServer()
 
 		fuego.Get(s, "/test/{id}", helloWorld,
@@ -314,7 +314,7 @@ func TestPath(t *testing.T) {
 		require.Equal(t, true, s.OpenApiSpec.Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Required, "path parameter is forced to be required")
 	})
 
-	t.Run("Declare explicitely a non-existing path parameter for the route panics", func(t *testing.T) {
+	t.Run("Declare explicitly a non-existing path parameter for the route panics", func(t *testing.T) {
 		s := fuego.NewServer()
 
 		require.Panics(t, func() {
