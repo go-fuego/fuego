@@ -153,19 +153,6 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 		route.Operation = openapi3.NewOperation()
 	}
 
-	if s.tags != nil {
-		route.Operation.Tags = append(route.Operation.Tags, s.tags...)
-	}
-
-	// Tags
-	if !s.disableAutoGroupTags && s.groupTag != "" {
-		route.Operation.Tags = append(route.Operation.Tags, s.groupTag)
-	}
-
-	for _, param := range s.params {
-		route.Param(param.Type, param.Name, param.Description, param.OpenAPIParamOption)
-	}
-
 	// Request Body
 	if route.Operation.RequestBody == nil {
 		bodyTag := SchemaTagFromType(s, *new(B))

@@ -300,82 +300,6 @@ func TestWithoutAutoGroupTags(t *testing.T) {
 	require.Nil(t, document.Paths.Find("/api/test").Get.Tags)
 }
 
-func TestServerTags(t *testing.T) {
-	t.Run("set tags", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag")
-
-		require.Equal(t, s.tags, []string{"my-server-tag"})
-	})
-
-	t.Run("add tags", func(t *testing.T) {
-		s := NewServer().
-			AddTags("my-server-tag").
-			AddTags("my-other-server-tag")
-
-		require.Equal(t, s.tags, []string{"my-server-tag", "my-other-server-tag"})
-	})
-
-	t.Run("remove tags", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag").
-			AddTags("my-other-server-tag").
-			RemoveTags("my-other-server-tag")
-
-		require.Equal(t, s.tags, []string{"my-server-tag"})
-	})
-
-	t.Run("inherit tags from group, replace", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag")
-
-		group := Group(s, "/api").
-			Tags("my-group-tag")
-
-		require.Equal(t, group.tags, []string{"my-group-tag"})
-
-		subGroup := Group(group, "/users").
-			Tags("my-sub-group-tag")
-
-		require.Equal(t, subGroup.tags, []string{"my-sub-group-tag"})
-	})
-
-	t.Run("inherit tags from group, add", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag")
-
-		group := Group(s, "/api").
-			AddTags("my-group-tag")
-
-		require.Equal(t, group.tags, []string{"my-server-tag", "my-group-tag"})
-
-		subGroup := Group(group, "/users").
-			AddTags("my-sub-group-tag")
-
-		require.Equal(t, subGroup.tags, []string{"my-server-tag", "my-group-tag", "my-sub-group-tag"})
-	})
-
-	t.Run("inherit tags from group, remove", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag")
-
-		group := Group(s, "/api").
-			AddTags("my-group-tag")
-
-		require.Equal(t, group.tags, []string{"my-server-tag", "my-group-tag"})
-
-		siblingGroup := Group(s, "/api2").
-			AddTags("my-sibling-group-tag")
-
-		require.Equal(t, siblingGroup.tags, []string{"my-server-tag", "my-sibling-group-tag"})
-
-		subGroup := Group(group, "/users").
-			RemoveTags("my-group-tag")
-
-		require.Equal(t, subGroup.tags, []string{"my-server-tag"})
-	})
-}
-
 type ReqBody struct {
 	A string
 	B int
@@ -438,15 +362,17 @@ func TestCustomSerialization(t *testing.T) {
 
 func TestGroupParams(t *testing.T) {
 	s := NewServer()
-	group := Group(s, "/api").Param("X-Test-Header", "test-value", OpenAPIParamOption{Example: "example", Required: true})
+	group := Group(s, "/api",
+		OptionHeader("X-Test-Header", "test-value", ParamRequired(), ParamExample("example", "example")),
+	)
 
 	Get(s, "/", controller)
 	Get(group, "/test", controller)
-	Get(group, "/test2", controller)
+	route := Get(group, "/test2", controller)
 
-	require.Equal(t, group.params, map[string]OpenAPIParam{
-		"X-Test-Header": {Name: "X-Test-Header", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: true, Example: "example", Type: ""}},
-	})
+	require.Equal(t, "test-value", route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Description)
+	require.Equal(t, true, route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Required)
+	require.Equal(t, "example", route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Examples["example"].Value.Value)
 
 	document := s.OutputOpenAPISpec()
 	t.Log(document.Paths.Find("/").Get.Parameters[0].Value.Name)
@@ -464,9 +390,9 @@ func TestGroupHeaderParams(t *testing.T) {
 		OptionHeader("X-Test-Header", "test-value"),
 	)
 
-	Get(group, "/test", controller)
+	route := Get(group, "/test", controller)
 
-	require.Equal(t, map[string]OpenAPIParam{"X-Test-Header": {Name: "X-Test-Header", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: HeaderParamType}}}, group.params)
+	require.Equal(t, "test-value", route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Description)
 
 	document := s.OutputOpenAPISpec()
 	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "Accept")
@@ -479,9 +405,9 @@ func TestGroupCookieParams(t *testing.T) {
 		OptionCookie("X-Test-Cookie", "test-value"),
 	)
 
-	Get(group, "/test", controller)
+	route := Get(group, "/test", controller)
 
-	require.Equal(t, group.params, map[string]OpenAPIParam{"X-Test-Cookie": {Name: "X-Test-Cookie", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: CookieParamType}}})
+	require.Equal(t, "test-value", route.Operation.Parameters.GetByInAndName("cookie", "X-Test-Cookie").Description)
 
 	document := s.OutputOpenAPISpec()
 	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "Accept")
@@ -494,15 +420,9 @@ func TestGroupQueryParam(t *testing.T) {
 		OptionQuery("X-Test-Query", "test-value"),
 	)
 
-	Get(group, "/test", controller)
+	route := Get(group, "/test", controller)
 
-	require.Equal(t, map[string]OpenAPIParam{
-		"X-Test-Query": {
-			Name:               "X-Test-Query",
-			Description:        "test-value",
-			OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: QueryParamType, GoType: "string"},
-		},
-	}, group.params)
+	require.Equal(t, "test-value", route.Operation.Parameters.GetByInAndName("query", "X-Test-Query").Description)
 
 	document := s.OutputOpenAPISpec()
 	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "Accept")
@@ -512,59 +432,56 @@ func TestGroupQueryParam(t *testing.T) {
 func TestGroupParamsInChildGroup(t *testing.T) {
 	s := NewServer()
 	group := Group(s, "/api",
-		OptionParam("X-Test-Header", ParamDescription("test-value")),
+		OptionHeader("X-Test-Header", "test-value"),
 	)
 
 	subGroup := Group(group, "/users")
 
-	expectedParams := map[string]OpenAPIParam{
-		"X-Test-Header": {
-			Name:               "X-Test-Header",
-			Description:        "test-value",
-			OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: ""},
-		},
-	}
-	require.Equal(t, expectedParams, group.params)
-	require.Equal(t, expectedParams, subGroup.params)
+	route := Get(subGroup, "/test", controller)
+
+	require.Equal(t, "test-value", route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Description)
 }
 
 func TestGroupParamsNotInParentGroup(t *testing.T) {
 	s := NewServer()
 	parentGroup := Group(s, "/api")
 	group := Group(parentGroup, "/users",
-		OptionParam("X-Test-Header", ParamDescription("test-value")),
+		OptionHeader("X-Test-Header", "test-value"),
 	)
+	route := Get(group, "/test", controller)
 
-	expectedParams := map[string]OpenAPIParam{"X-Test-Header": {Name: "X-Test-Header", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: ""}}}
-	require.Equal(t, map[string]OpenAPIParam{}, parentGroup.params)
-	require.Equal(t, expectedParams, group.params)
+	require.Equal(t, "test-value", route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Description)
 }
 
 func TestGroupParamsNotInSiblingGroup(t *testing.T) {
 	s := NewServer()
-	group := Group(s, "/api", OptionParam("X-Test-Header", ParamDescription("test-value")))
+	group := Group(s, "/api", OptionHeader("X-Test-Header", "test-value"))
 	siblingGroup := Group(s, "/api2")
+	route1 := Get(group, "/test", controller)
+	route2 := Get(siblingGroup, "/test", controller)
 
-	expectedParams := map[string]OpenAPIParam{"X-Test-Header": {Name: "X-Test-Header", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: ""}}}
-	require.Equal(t, expectedParams, group.params)
-	require.Equal(t, map[string]OpenAPIParam{}, siblingGroup.params)
+	require.Equal(t, "test-value", route1.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Description)
+	require.Nil(t, route2.Operation.Parameters.GetByInAndName("header", "X-Test-Header"))
 }
 
 func TestGroupParamsInMainServerInstance(t *testing.T) {
 	s := NewServer(
 		WithRouteOptions(
-			OptionParam("X-Test-Header", ParamDescription("test-value")),
+			OptionHeader("X-Test-Header", "test-value"),
 		),
 	)
 
-	expectedParams := map[string]OpenAPIParam{"X-Test-Header": {Name: "X-Test-Header", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: ""}}}
-	require.Equal(t, expectedParams, s.params)
+	route := Get(s, "/test", controller)
+
+	require.Equal(t, "test-value", route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Description)
+	// expectedParams := map[string]OpenAPIParam{"X-Test-Header": {Name: "X-Test-Header", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: ""}}}
+	// require.Equal(t, expectedParams, route.Params)
 }
 
 func TestHideGroupAfterGroupParam(t *testing.T) {
 	s := NewServer()
 	group := Group(s, "/api",
-		OptionParam("X-Test-Header", ParamDescription("test-value")),
+		OptionHeader("X-Test-Header", "test-value"),
 	).Hide()
 
 	Get(group, "/test", controller)
