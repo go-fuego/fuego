@@ -105,19 +105,22 @@ func main() {
 	s := fuego.NewServer()
 
 	// Automatically generates OpenAPI documentation for this route
-	fuego.Post(s, "/", func(c *fuego.ContextWithBody[MyInput]) (MyOutput, error) {
-		body, err := c.Body()
-		if err != nil {
-			return MyOutput{}, err
-		}
-
-		return MyOutput{
-			Message: "Hello, " + body.Name,
-		}, nil
-	})
+	fuego.Post(s, "/user/{user}", myController)
 
 	s.Run()
 }
+
+func myController(c *fuego.ContextWithBody[MyInput]) (MyOutput, error) {
+	body, err := c.Body()
+	if err != nil {
+		return MyOutput{}, err
+	}
+
+	return MyOutput{
+		Message: "Hello, " + body.Name,
+	}, nil
+}
+
 ```
 
 ### With transformation & custom validation
