@@ -1,4 +1,4 @@
-module github.com/go-fuego/fuego/examples/generate-image
+module github.com/go-fuego/fuego/examples/generate-opengraph-image
 
 go 1.23.3
 

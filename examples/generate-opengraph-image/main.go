@@ -4,7 +4,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 
 	"github.com/go-fuego/fuego"
-	"github.com/go-fuego/fuego/examples/generate-image/controller"
+	"github.com/go-fuego/fuego/examples/generate-opengraph-image/controller"
 	"github.com/go-fuego/fuego/middleware/cache"
 	"github.com/go-fuego/fuego/option"
 	"github.com/go-fuego/fuego/param"
