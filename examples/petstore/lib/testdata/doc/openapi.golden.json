@@ -949,5 +949,13 @@
 			"description": "local server",
 			"url": "http://localhost:9999"
 		}
+	],
+	"tags": [
+		{
+			"name": "pets"
+		},
+		{
+			"name": "my-tag"
+		}
 	]
 }
