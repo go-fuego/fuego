@@ -8,12 +8,14 @@ import (
 )
 
 // ErrorWithStatus is an interface that can be implemented by an error to provide
-// additional information about the error.
+// a status code
 type ErrorWithStatus interface {
 	error
 	StatusCode() int
 }
 
+// ErrorWithDetail is an interface that can be implemented by an error to provide
+// an additional detail message about the error
 type ErrorWithDetail interface {
 	error
 	DetailMsg() string
@@ -21,11 +23,16 @@ type ErrorWithDetail interface {
 
 // HTTPError is the error response used by the serialization part of the framework.
 type HTTPError struct {
-	Err      error       `json:"-" xml:"-"`                                                                                                                   // Developer readable error message. Not shown to the user to avoid security leaks.
-	Type     string      `json:"type,omitempty" xml:"type,omitempty" description:"URL of the error type. Can be used to lookup the error in a documentation"` // URL of the error type. Can be used to lookup the error in a documentation
-	Title    string      `json:"title,omitempty" xml:"title,omitempty" description:"Short title of the error"`                                                // Short title of the error
-	Status   int         `json:"status,omitempty" xml:"status,omitempty" description:"HTTP status code" example:"403"`                                        // HTTP status code. If using a different type than [HTTPError], for example [BadRequestError], this will be automatically overridden after Fuego error handling.
-	Detail   string      `json:"detail,omitempty" xml:"detail,omitempty" description:"Human readable error message"`                                          // Human readable error message
+	// Developer readable error message. Not shown to the user to avoid security leaks.
+	Err error `json:"-" xml:"-"`
+	// URL of the error type. Can be used to lookup the error in a documentation
+	Type string `json:"type,omitempty" xml:"type,omitempty" description:"URL of the error type. Can be used to lookup the error in a documentation"`
+	// Short title of the error
+	Title string `json:"title,omitempty" xml:"title,omitempty" description:"Short title of the error"`
+	// HTTP status code. If using a different type than [HTTPError], for example [BadRequestError], this will be automatically overridden after Fuego error handling.
+	Status int `json:"status,omitempty" xml:"status,omitempty" description:"HTTP status code" example:"403"`
+	// Human readable error message
+	Detail   string      `json:"detail,omitempty" xml:"detail,omitempty" description:"Human readable error message"`
 	Instance string      `json:"instance,omitempty" xml:"instance,omitempty"`
 	Errors   []ErrorItem `json:"errors,omitempty" xml:"errors,omitempty"`
 }
