@@ -22,22 +22,6 @@ type MyResponse struct {
 	BestFramework string `json:"best"`
 }
 
-type MyError struct {
-	Err     error  `json:"error"`
-	Message string `json:"message"`
-}
-
-var _ fuego.ErrorWithStatus = MyError{}
-var _ fuego.ErrorWithDetail = MyError{}
-
-func (e MyError) Error() string { return e.Err.Error() }
-
-func (e MyError) StatusCode() int { return http.StatusTeapot }
-
-func (e MyError) DetailMsg() string {
-	return strings.Split(e.Error(), " ")[1]
-}
-
 func main() {
 	s := fuego.NewServer(
 		fuego.WithAddr("localhost:8088"),
@@ -73,10 +57,6 @@ func main() {
 	// Standard net/http handler with automatic OpenAPI route declaration
 	fuego.GetStd(s, "/std", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello, World!"))
-	})
-
-	fuego.Get(s, "/custom-err", func(c *fuego.ContextNoBody) (string, error) {
-		return "hello", MyError{Err: errors.New("my error")}
 	})
 
 	s.Run()
