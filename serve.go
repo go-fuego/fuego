@@ -49,14 +49,14 @@ func (s *Server) setup() error {
 
 func (s *Server) setupDefaultListener() error {
 	if s.listener != nil {
-		WithAddr(s.listener.Addr().String())(s)
+		s.Addr = s.listener.Addr().String()
 		return nil
 	}
 	listener, err := net.Listen("tcp", s.Addr)
 	if err != nil {
 		return err
 	}
-	WithListener(listener)(s)
+	s.listener = listener
 	return nil
 }
 
