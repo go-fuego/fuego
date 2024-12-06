@@ -21,9 +21,9 @@ to play with data. It's a form of **dependency injection** that we chose to use
 for the code generator of Fuego, but you can implement it in any way you want.
 
 To implement the service, you need to slightly modify the
-generated `controllers/books.go` and `main.go` files.
+generated `controller/books.go` and `main.go` files.
 
-```go title="controllers/books.go" {8-9,28-42} showLineNumbers
+```go title="controller/books.go" {8-9,28-42} showLineNumbers
 package controller
 
 import (
@@ -79,7 +79,7 @@ import (
 	"github.com/go-fuego/fuego"
 
 	// ADD NEXT LINE
-	"hello-fuego/controllers"
+	"hello-fuego/controller"
 )
 
 func main() {
@@ -87,8 +87,8 @@ func main() {
 	// ....
 
 	// Declare the resource
-	booksResources := controllers.BooksResources{
-		BooksService: controllers.RealBooksService{},
+	booksResources := controller.BooksResources{
+		BooksService: controller.RealBooksService{},
 		// Other services & dependencies, like a DB etc.
 	}
 
@@ -125,36 +125,36 @@ package main
 import (
 	"github.com/go-fuego/fuego"
 
-	"hello-fuego/controllers"
+	"hello-fuego/controller"
 )
 
 func main() {
 	s := fuego.NewServer()
 
 	// List all books
-	fuego.Get(s, "/books", controllers.GetBooks)
+	fuego.Get(s, "/books", controller.GetBooks)
 
 	// Create a new book
-	fuego.Post(s, "/books", controllers.CreateBook)
+	fuego.Post(s, "/books", controller.CreateBook)
 
 	// Get a book by id
-	fuego.Get(s, "/books/:id", controllers.GetBook)
+	fuego.Get(s, "/books/:id", controller.GetBook)
 
 	// Update a book by id
-	fuego.Put(s, "/books/:id", controllers.UpdateBook)
+	fuego.Put(s, "/books/:id", controller.UpdateBook)
 
 	// Update a book by id
-	fuego.Patch(s, "/books/:id", controllers.UpdateBook)
+	fuego.Patch(s, "/books/:id", controller.UpdateBook)
 
 	// Delete a book by id
-	fuego.Delete(s, "/books/:id", controllers.DeleteBook)
+	fuego.Delete(s, "/books/:id", controller.DeleteBook)
 
 	s.Run()
 }
 ```
 
-```go title="controllers/books.go"
-package controllers
+```go title="controller/books.go"
+package controller
 
 import (
 	"github.com/go-fuego/fuego"
@@ -189,9 +189,9 @@ func UpdateBook(c *fuego.ContextWithBody[Book]) (Book, error) {
 	return Book{}, nil
 }
 
-func DeleteBook(c *fuego.ContextNoBody) error {
+func DeleteBook(c *fuego.ContextNoBody) (any, error) {
 	// Your code here
-	return nil
+	return nil, nil
 }
 
 ```

@@ -293,6 +293,39 @@ func TestQuery(t *testing.T) {
 	})
 }
 
+func TestPath(t *testing.T) {
+	t.Run("Path parameter is automatically declared for the route", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		fuego.Get(s, "/test/{id}", helloWorld)
+
+		require.Equal(t, "id", s.OpenApiSpec.Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Name)
+		require.Equal(t, "", s.OpenApiSpec.Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Description)
+	})
+
+	t.Run("Declare explicitly an existing path parameter for the route", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		fuego.Get(s, "/test/{id}", helloWorld,
+			fuego.OptionPath("id", "some id", param.Example("123", "123"), param.Nullable()),
+		)
+
+		require.Equal(t, "id", s.OpenApiSpec.Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Name)
+		require.Equal(t, "some id", s.OpenApiSpec.Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Description)
+		require.Equal(t, true, s.OpenApiSpec.Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Required, "path parameter is forced to be required")
+	})
+
+	t.Run("Declare explicitly a non-existing path parameter for the route panics", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		require.Panics(t, func() {
+			fuego.Get(s, "/test/{id}", helloWorld,
+				fuego.OptionPath("not-existing-in-url", "some id"),
+			)
+		})
+	})
+}
+
 func TestRequestContentType(t *testing.T) {
 	t.Run("Declare a request content type for the route", func(t *testing.T) {
 		s := fuego.NewServer()

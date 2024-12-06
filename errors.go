@@ -122,9 +122,23 @@ func (e NotAcceptableError) StatusCode() int { return http.StatusNotAcceptable }
 func (e NotAcceptableError) Unwrap() error { return HTTPError(e) }
 
 // ErrorHandler is the default error handler used by the framework.
-// It transforms any error into the unified error type [HTTPError],
-// Using the [ErrorWithStatus] interface.
+// If the error is an [HTTPError] that is error is returned.
+// If the error adheres to the [ErrorWithStatus] interface
+// the error is transformed to a [HTTPError].
+// If the error is not an [HTTPError] nor does it adhere to an
+// interface the error is returned.
 func ErrorHandler(err error) error {
+	var errorStatus ErrorWithStatus
+	switch {
+	case errors.As(err, &HTTPError{}),
+		errors.As(err, &errorStatus):
+		return handleHTTPError(err)
+	}
+
+	return err
+}
+
+func handleHTTPError(err error) HTTPError {
 	errResponse := HTTPError{
 		Err: err,
 	}
@@ -135,7 +149,6 @@ func ErrorHandler(err error) error {
 	}
 
 	// Check status code
-	errResponse.Status = http.StatusInternalServerError
 	var errorStatus ErrorWithStatus
 	if errors.As(err, &errorStatus) {
 		errResponse.Status = errorStatus.StatusCode()

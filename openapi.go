@@ -185,14 +185,19 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 		addResponse(s, route.Operation, openAPIGlobalResponse.Code, openAPIGlobalResponse.Description, openAPIGlobalResponse.ErrorType)
 	}
 
-	// Response - 200
-	responseSchema := SchemaTagFromType(s, *new(T))
-	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
-	response := openapi3.NewResponse().WithDescription("OK").WithContent(content)
-	route.Operation.AddResponse(200, response)
+	// Automatically add non-declared 200 Response
+	if route.Operation.Responses.Value("200") == nil {
+		responseSchema := SchemaTagFromType(s, *new(T))
+		content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
+		response := openapi3.NewResponse().WithDescription("OK").WithContent(content)
+		route.Operation.AddResponse(200, response)
+	}
 
-	// Path parameters
+	// Automatically add non-declared Path parameters
 	for _, pathParam := range parsePathParams(route.Path) {
+		if exists := route.Operation.Parameters.GetByInAndName("path", pathParam); exists != nil {
+			continue
+		}
 		parameter := openapi3.NewPathParameter(pathParam)
 		parameter.Schema = openapi3.NewStringSchema().NewRef()
 		if strings.HasSuffix(pathParam, "...") {
@@ -200,6 +205,13 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 		}
 
 		route.Operation.AddParameter(parameter)
+	}
+	for _, params := range route.Operation.Parameters {
+		if params.Value.In == "path" {
+			if !strings.Contains(route.Path, "{"+params.Value.Name) {
+				return nil, fmt.Errorf("path parameter '%s' is not declared in the path", params.Value.Name)
+			}
+		}
 	}
 
 	s.OpenApiSpec.AddOperation(route.Path, route.Method, route.Operation)

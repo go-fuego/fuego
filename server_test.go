@@ -20,7 +20,7 @@ func controller(c *ContextNoBody) (testStruct, error) {
 }
 
 func controllerWithError(c *ContextNoBody) (testStruct, error) {
-	return testStruct{}, errors.New("error")
+	return testStruct{}, HTTPError{Err: errors.New("error")}
 }
 
 func TestNewServer(t *testing.T) {

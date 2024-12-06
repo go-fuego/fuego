@@ -102,6 +102,21 @@ func OptionCookie(name, description string, options ...func(*OpenAPIParam)) func
 	}
 }
 
+// Declare a path parameter for the route.
+// This will be added to the OpenAPI spec.
+// It will be marked as required by default by Fuego.
+// Example:
+//
+//	Path("id", "ID of the item")
+//
+// The list of options is in the param package.
+func OptionPath(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+	options = append(options, ParamDescription(description), paramType(PathParamType), ParamRequired())
+	return func(r *BaseRoute) {
+		OptionParam(name, options...)(r)
+	}
+}
+
 func paramType(paramType ParamType) func(*OpenAPIParam) {
 	return func(param *OpenAPIParam) {
 		param.Type = paramType

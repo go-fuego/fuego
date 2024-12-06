@@ -19,6 +19,15 @@ type PetsResources struct {
 	PetsService PetsService
 }
 
+type PetsError struct {
+	Err     error  `json:"-" xml:"-"`
+	Message string `json:"message" xml:"message"`
+}
+
+var _ error = PetsError{}
+
+func (e PetsError) Error() string { return e.Err.Error() }
+
 func (rs PetsResources) Routes(s *fuego.Server) {
 	petsGroup := fuego.Group(s, "/pets", option.Header("X-Header", "header description"))
 
@@ -37,10 +46,12 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 
 	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge, option.Description("Returns an array of pets grouped by age"))
 	fuego.Post(petsGroup, "/", rs.postPets,
-		option.AddError(409, "Conflict: Pet with the same name already exists"),
+		option.AddError(409, "Conflict: Pet with the same name already exists", PetsError{}),
 	)
 
-	fuego.Get(petsGroup, "/{id}", rs.getPets)
+	fuego.Get(petsGroup, "/{id}", rs.getPets,
+		option.Path("id", "Pet ID", param.Example("example", "123")),
+	)
 	fuego.Get(petsGroup, "/by-name/{name...}", rs.getPetByName)
 	fuego.Put(petsGroup, "/{id}", rs.putPets)
 	fuego.Put(petsGroup, "/{id}/json", rs.putPets,

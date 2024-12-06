@@ -105,6 +105,15 @@
 				],
 				"type": "object"
 			},
+			"PetsError": {
+				"description": "PetsError schema",
+				"properties": {
+					"message": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
 			"PetsUpdate": {
 				"description": "PetsUpdate schema",
 				"properties": {
@@ -326,7 +335,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/HTTPError"
+									"$ref": "#/components/schemas/PetsError"
 								}
 							}
 						},
@@ -696,17 +705,23 @@
 						}
 					},
 					{
-						"description": "header description",
-						"in": "header",
-						"name": "X-Header",
+						"description": "Pet ID",
+						"examples": {
+							"example": {
+								"value": "123"
+							}
+						},
+						"in": "path",
+						"name": "id",
+						"required": true,
 						"schema": {
 							"type": "string"
 						}
 					},
 					{
-						"in": "path",
-						"name": "id",
-						"required": true,
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
 						"schema": {
 							"type": "string"
 						}
