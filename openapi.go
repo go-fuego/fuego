@@ -182,7 +182,7 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 
 	// Response - globals
 	for _, openAPIGlobalResponse := range s.globalOpenAPIResponses {
-		addResponse(s, route.Operation, openAPIGlobalResponse.Code, openAPIGlobalResponse.Description, openAPIGlobalResponse.ErrorType)
+		addResponseIfNotSet(s, route.Operation, openAPIGlobalResponse.Code, openAPIGlobalResponse.Description, openAPIGlobalResponse.ErrorType)
 	}
 
 	// Automatically add non-declared 200 Response

@@ -3,6 +3,7 @@ package fuego
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
 )
@@ -231,6 +232,7 @@ func OptionDeprecated() func(*BaseRoute) {
 }
 
 // AddError adds an error to the route.
+// It replaces any existing error previously set with the same code.
 // Required: should only supply one type to `errorType`
 func OptionAddError(code int, description string, errorType ...any) func(*BaseRoute) {
 	var responseSchema SchemaTag
@@ -249,7 +251,11 @@ func OptionAddError(code int, description string, errorType ...any) func(*BaseRo
 		response := openapi3.NewResponse().
 			WithDescription(description).
 			WithContent(content)
-		r.Operation.AddResponse(code, response)
+
+		if r.Operation.Responses == nil {
+			r.Operation.Responses = openapi3.NewResponses()
+		}
+		r.Operation.Responses.Set(strconv.Itoa(code), &openapi3.ResponseRef{Value: response})
 	}
 }
 
