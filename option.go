@@ -210,10 +210,22 @@ func OptionSummary(summary string) func(*BaseRoute) {
 	}
 }
 
-// Description adds a description to the route.
+// Description sets the description to the route.
+// By default, the description is set by Fuego with some info,
+// like the controller function name and the package name.
+// If you want to add a description, please use [AddDescription] instead.
 func OptionDescription(description string) func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		r.Operation.Description = description
+	}
+}
+
+// Description appends a description to the route.
+// By default, the description is set by Fuego with some info,
+// like the controller function name and the package name.
+func OptionAddDescription(description string) func(*BaseRoute) {
+	return func(r *BaseRoute) {
+		r.Operation.Description += description
 	}
 }
 

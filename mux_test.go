@@ -435,17 +435,19 @@ func TestGroupInheritance(t *testing.T) {
 			return "test", nil
 		})
 
-		t.Log(route.Params)
-		require.Len(t, route.Params, 2)
-		require.Contains(t, route.Params, "Header-1")
-		require.Contains(t, route.Params, "Header-2")
+		require.Equal(t, 3, len(route.Operation.Parameters))
+		require.NotNil(t, route.Operation.Parameters.GetByInAndName("header", "Header-1"))
+		require.NotNil(t, route.Operation.Parameters.GetByInAndName("header", "Header-2"))
+		require.NotNil(t, route.Operation.Parameters.GetByInAndName("header", "Accept"))
+		require.Nil(t, route.Operation.Parameters.GetByInAndName("header", "Not-exists"))
 	})
 }
 
 func TestGroupTagsOnRoute(t *testing.T) {
 	t.Run("route tag inheritance", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag")
+		s := NewServer(
+			WithRouteOptions(OptionTags("my-server-tag")),
+		)
 		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
 		})
@@ -453,8 +455,9 @@ func TestGroupTagsOnRoute(t *testing.T) {
 	})
 
 	t.Run("route tag add", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag")
+		s := NewServer(
+			WithRouteOptions(OptionTags("my-server-tag")),
+		)
 
 		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
@@ -462,7 +465,7 @@ func TestGroupTagsOnRoute(t *testing.T) {
 			OptionTags("my-route-tag"),
 		)
 
-		require.Equal(t, []string{"my-route-tag", "my-server-tag"}, route.Operation.Tags)
+		require.Equal(t, []string{"my-server-tag", "my-route-tag"}, route.Operation.Tags)
 	})
 }
 
@@ -691,45 +694,50 @@ func TestGroup(t *testing.T) {
 
 func TestGroupTags(t *testing.T) {
 	t.Run("inherit tags", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag")
+		s := NewServer(
+			WithRouteOptions(OptionTags("my-server-tag")),
+		)
 		group := Group(s, "/slash")
+		route := Get(group, "/test", dummyController)
 
-		require.Equal(t, []string{"my-server-tag"}, group.tags)
+		require.Equal(t, []string{"my-server-tag", "slash"}, route.Operation.Tags)
 	})
 	t.Run("override parent tags", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag")
-		group := Group(s, "/slash").
-			Tags("my-group-tag")
+		s := NewServer(
+			WithRouteOptions(OptionTags("my-server-tag")),
+		)
+		group := Group(s, "/slash",
+			OptionTags("my-group-tag"),
+		)
+		route := Get(group, "/test", dummyController)
 
-		require.Equal(t, []string{"my-group-tag"}, group.tags)
+		require.Equal(t, []string{"my-server-tag", "slash", "my-group-tag"}, route.Operation.Tags)
 	})
 	t.Run("add child group tag", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag")
-		group := Group(s, "/slash").
-			AddTags("my-group-tag")
+		s := NewServer(
+			WithRouteOptions(OptionTags("my-server-tag")),
+		)
+		group := Group(s, "/slash",
+			OptionTags("my-group-tag"),
+		)
+		route := Get(group, "/test", dummyController)
 
-		require.Equal(t, []string{"my-server-tag", "my-group-tag"}, group.tags)
+		require.Equal(t, []string{"my-server-tag", "slash", "my-group-tag"}, route.Operation.Tags)
 	})
-	t.Run("remove server tag", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag", "my-other-server-tag")
-		group := Group(s, "/slash").
-			RemoveTags("my-server-tag")
 
-		require.Equal(t, []string{"my-other-server-tag"}, group.tags)
-	})
 	t.Run("multiple groups inheritance", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag")
-		group := Group(s, "/slash").
-			AddTags("my-group-tag")
-		childGroup := Group(group, "/slash").
-			AddTags("my-childGroup-tag")
+		s := NewServer(
+			WithRouteOptions(OptionTags("my-server-tag")),
+		)
+		group := Group(s, "/slash",
+			OptionTags("my-group-tag"),
+		)
+		childGroup := Group(group, "/slash",
+			OptionTags("my-childGroup-tag"),
+		)
+		route := Get(childGroup, "/test", dummyController)
 
-		require.Equal(t, []string{"my-server-tag", "my-group-tag", "my-childGroup-tag"}, childGroup.tags)
+		require.Equal(t, []string{"my-server-tag", "slash", "my-group-tag", "slash", "my-childGroup-tag"}, route.Operation.Tags)
 	})
 }
 

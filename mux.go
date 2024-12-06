@@ -34,28 +34,13 @@ func Group(s *Server, path string, routeOptions ...func(*BaseRoute)) *Server {
 	ss := *s
 	newServer := &ss
 	newServer.basePath += path
-	newServer.groupTag = strings.TrimLeft(path, "/")
-	if newServer.groupTag != "" {
-		s.OpenApiSpec.Tags = append(s.OpenApiSpec.Tags, &openapi3.Tag{Name: newServer.groupTag})
+
+	if !s.disableAutoGroupTags {
+		newServer.routeOptions = append(s.routeOptions, OptionTags(strings.TrimLeft(path, "/")))
 	}
 	newServer.mainRouter = s
 
-	baseRoute := BaseRoute{
-		Params:    make(map[string]OpenAPIParam),
-		Operation: openapi3.NewOperation(),
-	}
-	for _, option := range routeOptions {
-		option(&baseRoute)
-	}
-
-	// Copy the params from the parent server, and add the new ones
-	newServer.params = make(map[string]OpenAPIParam, len(baseRoute.Params))
-	for k, v := range s.params {
-		newServer.params[k] = v
-	}
-	for k, v := range baseRoute.Params {
-		newServer.params[k] = v
-	}
+	newServer.routeOptions = append(newServer.routeOptions, routeOptions...)
 
 	return newServer
 }
@@ -202,19 +187,17 @@ func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path
 		mainRouter: s.mainRouter,
 	}
 	// Copy the params from the server/group, and add the route ones
-	for k, v := range s.params {
-		route.Params[k] = v
-	}
 	if route.mainRouter == nil {
 		route.mainRouter = s
 	}
+
 	route.AcceptedContentTypes = route.mainRouter.acceptedContentTypes
 
 	acceptHeaderParameter := openapi3.NewHeaderParameter("Accept")
 	acceptHeaderParameter.Schema = openapi3.NewStringSchema().NewRef()
 	route.Operation.AddParameter(acceptHeaderParameter)
 
-	for _, o := range options {
+	for _, o := range append(s.routeOptions, options...) {
 		o(&route)
 	}
 
@@ -229,7 +212,7 @@ func registerStdController(s *Server, method, path string, controller func(http.
 		Operation: openapi3.NewOperation(),
 	}
 
-	for _, o := range options {
+	for _, o := range append(s.routeOptions, options...) {
 		o(&route)
 	}
 

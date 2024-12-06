@@ -85,7 +85,15 @@ var Tags = fuego.OptionTags
 var Summary = fuego.OptionSummary
 
 // Description adds a description to the route.
+// By default, the description is set by Fuego with some info,
+// like the controller function name and the package name.
+// If you want to add a description, please use [AddDescription] instead.
 var Description = fuego.OptionDescription
+
+// AddDescription adds a description to the route.
+// By default, the description is set by Fuego with some info,
+// like the controller function name and the package name.
+var AddDescription = fuego.OptionAddDescription
 
 // Security configures security requirements to the route.
 //
