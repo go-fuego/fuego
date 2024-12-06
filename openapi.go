@@ -52,10 +52,26 @@ func (s *Server) Show() *Server {
 	return s
 }
 
+func declareAllTagsFromOperations(s *Server) {
+	for _, pathItem := range s.OpenApiSpec.Paths.Map() {
+		for _, op := range pathItem.Operations() {
+			for _, tag := range op.Tags {
+				if s.OpenApiSpec.Tags.Get(tag) == nil {
+					s.OpenApiSpec.Tags = append(s.OpenApiSpec.Tags, &openapi3.Tag{
+						Name: tag,
+					})
+				}
+			}
+		}
+	}
+}
+
 // OutputOpenAPISpec takes the OpenAPI spec and outputs it to a JSON file and/or serves it on a URL.
 // Also serves a Swagger UI.
 // To modify its behavior, use the [WithOpenAPIConfig] option.
 func (s *Server) OutputOpenAPISpec() openapi3.T {
+	declareAllTagsFromOperations(s)
+
 	// Validate
 	err := s.OpenApiSpec.Validate(context.Background())
 	if err != nil {
