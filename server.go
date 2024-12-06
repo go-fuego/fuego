@@ -146,14 +146,23 @@ func NewServer(options ...func(*Server)) *Server {
 	s.startTime = time.Now()
 
 	if s.autoAuth.Enabled {
-		Post(s, "/auth/login", s.Security.LoginHandler(s.autoAuth.VerifyUserInfo)).Tags("Auth").Summary("Login")
-		PostStd(s, "/auth/logout", s.Security.CookieLogoutHandler).Tags("Auth").Summary("Logout")
+		Post(s, "/auth/login", s.Security.LoginHandler(s.autoAuth.VerifyUserInfo),
+			OptionTags("Auth"),
+			OptionSummary("Login"),
+		)
+		PostStd(s, "/auth/logout", s.Security.CookieLogoutHandler,
+			OptionTags("Auth"),
+			OptionSummary("Logout"),
+		)
 
 		s.middlewares = []func(http.Handler) http.Handler{
 			s.Security.TokenToContext(TokenFromCookie, TokenFromHeader),
 		}
 
-		PostStd(s, "/auth/refresh", s.Security.RefreshHandler).Tags("Auth").Summary("Refresh token")
+		PostStd(s, "/auth/refresh", s.Security.RefreshHandler,
+			OptionTags("Auth"),
+			OptionSummary("Refresh"),
+		)
 	}
 
 	return s
