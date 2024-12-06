@@ -453,7 +453,7 @@ func TestAutoGroupTags(t *testing.T) {
 	require.NotNil(t, document)
 	require.Nil(t, document.Paths.Find("/a").Get.Tags)
 	require.Equal(t, []string{"group"}, document.Paths.Find("/group/b").Get.Tags)
-	require.Equal(t, []string{"subgroup"}, document.Paths.Find("/group/subgroup/c").Get.Tags)
+	require.Equal(t, []string{"group", "subgroup"}, document.Paths.Find("/group/subgroup/c").Get.Tags)
 	require.Equal(t, []string{"other"}, document.Paths.Find("/other/d").Get.Tags)
 }
 

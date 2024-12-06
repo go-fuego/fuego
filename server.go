@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"slices"
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -49,18 +48,14 @@ type Server struct {
 	// For example, it allows OPTIONS /foo even if it is not declared (only GET /foo is declared).
 	corsMiddleware func(http.Handler) http.Handler
 
-	// OpenAPI documentation tags used for logical groupings of operations
-	// These tags will be inherited by child Routes/Groups
-	tags []string
-
-	// OpenAPI documentation parameters used for all server routes
-	params map[string]OpenAPIParam
+	// routeOptions is used to store the options
+	// that will be applied of the route.
+	routeOptions []func(*BaseRoute)
 
 	middlewares []func(http.Handler) http.Handler
 
 	disableStartupMessages bool
 	disableAutoGroupTags   bool
-	groupTag               string
 	mainRouter             *Server // Ref to the main router (used for groups)
 	basePath               string  // Base path of the group
 
@@ -118,8 +113,6 @@ func NewServer(options ...func(*Server)) *Server {
 		openAPIGenerator: openapi3gen.NewGenerator(
 			openapi3gen.UseAllExportedFields(),
 		),
-
-		params: make(map[string]OpenAPIParam),
 
 		Security: NewSecurity(),
 	}
@@ -452,83 +445,6 @@ func WithValidator(newValidator *validator.Validate) func(*Server) {
 
 func WithRouteOptions(options ...func(*BaseRoute)) func(*Server) {
 	return func(s *Server) {
-		baseRoute := &BaseRoute{
-			Params:    make(map[string]OpenAPIParam),
-			Operation: openapi3.NewOperation(),
-		}
-		for _, option := range options {
-			option(baseRoute)
-		}
-		s.params = baseRoute.Params
+		s.routeOptions = append(s.routeOptions, options...)
 	}
-}
-
-// Replaces Tags for the Server (i.e Group)
-// By default, the tag is the type of the response body.
-func (s *Server) Tags(tags ...string) *Server {
-	s.tags = tags
-	return s
-}
-
-// AddTags adds tags from the Server (i.e Group)
-// Tags from the parent Groups will be respected
-func (s *Server) AddTags(tags ...string) *Server {
-	s.tags = append(s.tags, tags...)
-	return s
-}
-
-// RemoveTags removes tags from the Server (i.e Group)
-// if the parent Group(s) has matching tags they will be removed
-func (s *Server) RemoveTags(tags ...string) *Server {
-	for _, tag := range tags {
-		for i, t := range s.tags {
-			if t == tag {
-				s.tags = slices.Delete(s.tags, i, i+1)
-				break
-			}
-		}
-	}
-	return s
-}
-
-// Registers a param for all server routes.
-func (s *Server) Param(name, description string, params ...OpenAPIParamOption) *Server {
-	param := OpenAPIParam{Name: name, Description: description}
-
-	for _, p := range params {
-		if p.Required {
-			param.Required = p.Required
-		}
-		if p.Example != "" {
-			param.Example = p.Example
-		}
-		if p.Type != "" {
-			param.Type = p.Type
-		}
-	}
-
-	if s.params == nil {
-		s.params = make(map[string]OpenAPIParam)
-	}
-	s.params[name] = param
-
-	return s
-}
-
-// Registers a header param for all server routes.
-func (s *Server) Header(name, description string, params ...OpenAPIParamOption) *Server {
-	s.Param(name, description, append(params, OpenAPIParamOption{Type: HeaderParamType})...)
-	return s
-}
-
-// Registers a cookie param for all server routes.
-func (s *Server) Cookie(name, description string, params ...OpenAPIParamOption) *Server {
-	s.Param(name, description, append(params, OpenAPIParamOption{Type: CookieParamType})...)
-	return s
-}
-
-// Registers a query param for all server routes.
-func (s *Server) Query(name, description string, params ...OpenAPIParamOption) *Server {
-	s.Param(name, description, append(params, OpenAPIParamOption{Type: QueryParamType})...)
-	return s
 }

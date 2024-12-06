@@ -163,6 +163,14 @@
 						}
 					},
 					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
 						"description": "Number of items per page",
 						"in": "query",
 						"name": "per_page",
@@ -212,14 +220,6 @@
 						"schema": {
 							"default": 3,
 							"type": "integer"
-						}
-					},
-					{
-						"description": "header description",
-						"in": "header",
-						"name": "X-Header",
-						"schema": {
-							"type": "string"
 						}
 					}
 				],
@@ -374,6 +374,14 @@
 						}
 					},
 					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
 						"description": "Number of items per page",
 						"in": "query",
 						"name": "per_page",
@@ -400,14 +408,6 @@
 						"schema": {
 							"default": 1,
 							"type": "integer"
-						}
-					},
-					{
-						"description": "header description",
-						"in": "header",
-						"name": "X-Header",
-						"schema": {
-							"type": "string"
 						}
 					}
 				],
@@ -459,8 +459,8 @@
 				},
 				"summary": "get all pets",
 				"tags": [
-					"my-tag",
-					"pets"
+					"pets",
+					"my-tag"
 				]
 			}
 		},
@@ -705,6 +705,14 @@
 						}
 					},
 					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
 						"description": "Pet ID",
 						"examples": {
 							"example": {
@@ -714,14 +722,6 @@
 						"in": "path",
 						"name": "id",
 						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"description": "header description",
-						"in": "header",
-						"name": "X-Header",
 						"schema": {
 							"type": "string"
 						}
@@ -948,11 +948,6 @@
 		{
 			"description": "local server",
 			"url": "http://localhost:9999"
-		}
-	],
-	"tags": [
-		{
-			"name": "pets"
 		}
 	]
 }
