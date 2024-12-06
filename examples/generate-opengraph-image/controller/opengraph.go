@@ -48,6 +48,7 @@ func OpenGraphHandler(w http.ResponseWriter, r *http.Request) {
 	addLabel(img, startX, lineY-12, 36, r.PathValue("title"), TitleColor)
 	addLabel(img, startX, lineY+32, 24, Title, SubtitleColor)
 
+	w.Header().Set("Content-Type", "image/png")
 	png.Encode(w, img)
 }
 
