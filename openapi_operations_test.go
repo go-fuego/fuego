@@ -54,8 +54,9 @@ func TestCustomError(t *testing.T) {
 		Message string
 	}
 	s := NewServer()
-	route := Get(s, "/test", testController).
-		AddError(400, "My Validation Error", MyError{})
+	route := Get(s, "/test", testController,
+		OptionAddError(400, "My Validation Error", MyError{}),
+	)
 
 	require.Equal(t, "My Validation Error", *route.Operation.Responses.Map()["400"].Value.Description)
 }
@@ -74,12 +75,13 @@ func TestCustomErrorGlobalAndOnRoute(t *testing.T) {
 	}
 
 	routeGlobal := Get(s, "/test-global", testController)
-	routeCustom := Get(s, "/test-custom", testController).
-		AddError(400, "My Local Error", MyLocalError{}).
-		AddError(419, "My Local Teapot")
+	routeCustom := Get(s, "/test-custom", testController,
+		OptionAddError(400, "My Local Error", MyLocalError{}),
+		OptionAddError(419, "My Local Teapot"),
+	)
 
-	require.Equal(t, "My Global Error", *routeGlobal.Operation.Responses.Map()["400"].Value.Description, "Overrides Fuego's default 400 error")
-	require.Equal(t, "Another Global Error", *routeGlobal.Operation.Responses.Map()["501"].Value.Description)
+	require.Equal(t, "My Global Error", *routeGlobal.Operation.Responses.Value("400").Value.Description, "Overrides Fuego's default 400 error")
+	require.Equal(t, "Another Global Error", *routeGlobal.Operation.Responses.Value("501").Value.Description)
 
 	require.Equal(t, "My Local Error", *routeCustom.Operation.Responses.Map()["400"].Value.Description, "Local error overrides global error")
 	require.Equal(t, "My Local Teapot", *routeCustom.Operation.Responses.Map()["419"].Value.Description)
