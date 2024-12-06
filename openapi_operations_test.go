@@ -8,55 +8,43 @@ import (
 
 func TestTags(t *testing.T) {
 	s := NewServer()
-	route := Get(s, "/test", testController).
-		Tags("my-tag").
-		Description("my description").
-		Summary("my summary").
-		Deprecated()
+	route := Get(s, "/test", testController,
+		OptionTags("my-tag"),
+		OptionDescription("my description"),
+		OptionSummary("my summary"),
+		OptionDeprecated(),
+	)
 
-	require.Equal(t, route.Operation.Tags, []string{"my-tag"})
-	require.Equal(t, route.Operation.Description, "my description")
-	require.Equal(t, route.Operation.Summary, "my summary")
-	require.Equal(t, route.Operation.Deprecated, true)
+	require.Equal(t, []string{"my-tag"}, route.Operation.Tags)
+	require.Equal(t, "controller: `github.com/go-fuego/fuego.testController`\n\n---\n\nmy description", route.Operation.Description)
+	require.Equal(t, "my summary", route.Operation.Summary)
+	require.Equal(t, true, route.Operation.Deprecated)
 }
 
 func TestAddTags(t *testing.T) {
 	s := NewServer()
-	route := Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
-		return "test", nil
-	}).
-		AddTags("my-tag").
-		AddTags("my-other-tag")
+	route := Get(s, "/test", dummyController,
+		OptionTags("my-tag"),
+		OptionTags("my-other-tag"),
+	)
 
 	require.Equal(t, route.Operation.Tags, []string{"my-tag", "my-other-tag"})
 }
 
-func TestRemoveTags(t *testing.T) {
+func TestQuery(t *testing.T) {
 	s := NewServer()
-	route := Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
-		return "test", nil
-	}).
-		AddTags("my-tag").
-		RemoveTags("my-tag", "string").
-		AddTags("my-other-tag")
-
-	require.Equal(t, route.Operation.Tags, []string{"my-other-tag"})
-}
-
-func TestQueryParams(t *testing.T) {
-	s := NewServer()
-	route := Get(s, "/test", func(ctx *ContextNoBody) (string, error) {
-		return "test", nil
-	}).
-		QueryParam("my-param", "my description")
+	route := Get(s, "/test", dummyController,
+		OptionQuery("my-param", "my description"),
+	)
 
 	require.Equal(t, "my description", route.Operation.Parameters.GetByInAndName("query", "my-param").Description)
 }
 
 func TestHeaderParams(t *testing.T) {
 	s := NewServer()
-	route := Get(s, "/test", testController).
-		Header("my-header", "my description")
+	route := Get(s, "/test", testController,
+		OptionHeader("my-header", "my description"),
+	)
 
 	require.Equal(t, "my description", route.Operation.Parameters.GetByInAndName("header", "my-header").Description)
 }
@@ -102,19 +90,23 @@ func TestCustomErrorGlobalAndOnRoute(t *testing.T) {
 func TestCookieParams(t *testing.T) {
 	t.Run("basic cookie", func(t *testing.T) {
 		s := NewServer()
-		route := Get(s, "/test", testController).
-			Cookie("my-cookie", "my description")
+		route := Get(s, "/test", testController,
+			OptionCookie("my-cookie", "my description"),
+		)
 
 		require.Equal(t, "my description", route.Operation.Parameters.GetByInAndName("cookie", "my-cookie").Description)
 	})
 
 	t.Run("with more parameters", func(t *testing.T) {
 		s := NewServer()
-		route := Get(s, "/test", testController).
-			Cookie("my-cookie", "my description", OpenAPIParamOption{Required: true, Example: "my-example"})
+		route := Get(s, "/test", testController,
+			OptionCookie("my-cookie", "my description", ParamRequired(), ParamExample("example", "my-example")),
+		)
 
-		require.Equal(t, "my description", route.Operation.Parameters.GetByInAndName("cookie", "my-cookie").Description)
-		require.Equal(t, true, route.Operation.Parameters.GetByInAndName("cookie", "my-cookie").Required)
-		require.Equal(t, "my-example", route.Operation.Parameters.GetByInAndName("cookie", "my-cookie").Example)
+		cookieParam := route.Operation.Parameters.GetByInAndName("cookie", "my-cookie")
+		t.Logf("%#v", cookieParam.Examples["example"].Value)
+		require.Equal(t, "my description", cookieParam.Description)
+		require.Equal(t, true, cookieParam.Required)
+		require.Equal(t, "my-example", cookieParam.Examples["example"].Value.Value)
 	})
 }

@@ -406,16 +406,17 @@ func TestRegister(t *testing.T) {
 					OperationID: "my-operation-id",
 				},
 			},
-		}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})).
-			OperationID("new-operation-id").
-			Summary("new-summary").
-			Description("new-description").
-			Tags("new-tag")
+		}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),
+			OptionOperationID("new-operation-id"),
+			OptionSummary("new-summary"),
+			OptionDescription("new-description"),
+			OptionTags("new-tag"),
+		)
 
 		require.NotNil(t, route)
-		require.Equal(t, []string{"new-tag"}, route.Operation.Tags)
+		require.Equal(t, []string{"my-tag", "new-tag"}, route.Operation.Tags)
 		require.Equal(t, "new-summary", route.Operation.Summary)
-		require.Equal(t, "new-description", route.Operation.Description)
+		require.Equal(t, "controller: `/test`\n\n---\n\nnew-description", route.Operation.Description)
 		require.Equal(t, "new-operation-id", route.Operation.OperationID)
 	})
 }
@@ -451,37 +452,17 @@ func TestGroupTagsOnRoute(t *testing.T) {
 		require.Equal(t, []string{"my-server-tag"}, route.Operation.Tags)
 	})
 
-	t.Run("route tag override", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag")
-
-		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
-			return "test", nil
-		}).Tags("my-route-tag")
-
-		require.Equal(t, []string{"my-route-tag"}, route.Operation.Tags)
-	})
-
 	t.Run("route tag add", func(t *testing.T) {
 		s := NewServer().
 			Tags("my-server-tag")
 
 		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
 			return "test", nil
-		}).AddTags("my-route-tag")
+		},
+			OptionTags("my-route-tag"),
+		)
 
-		require.Equal(t, []string{"my-server-tag", "my-route-tag"}, route.Operation.Tags)
-	})
-
-	t.Run("route tag removal", func(t *testing.T) {
-		s := NewServer().
-			Tags("my-server-tag")
-
-		route := Get(s, "/path", func(ctx *ContextNoBody) (string, error) {
-			return "test", nil
-		}).AddTags("my-route-tag").RemoveTags("my-server-tag")
-
-		require.Equal(t, []string{"my-route-tag"}, route.Operation.Tags)
+		require.Equal(t, []string{"my-route-tag", "my-server-tag"}, route.Operation.Tags)
 	})
 }
 
