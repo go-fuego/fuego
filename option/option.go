@@ -87,13 +87,13 @@ var Summary = fuego.OptionSummary
 // Description adds a description to the route.
 var Description = fuego.OptionDescription
 
-// OptionSecurity configures security requirements to the route.
+// Security configures security requirements to the route.
 //
 // Single Scheme (AND Logic):
 //
 //	Add a single security requirement with multiple schemes.
 //	All schemes must be satisfied:
-//	OptionSecurity(openapi3.SecurityRequirement{
+//	Security(openapi3.SecurityRequirement{
 //	  "basic": [],        // Requires basic auth
 //	  "oauth2": ["read"]  // AND requires oauth with read scope
 //	})
@@ -102,7 +102,7 @@ var Description = fuego.OptionDescription
 //
 //	Add multiple security requirements.
 //	At least one requirement must be satisfied:
-//	OptionSecurity(
+//	Security(
 //	  openapi3.SecurityRequirement{"basic": []},        // First option
 //	  openapi3.SecurityRequirement{"oauth2": ["read"]}  // Alternative option
 //	})
@@ -110,7 +110,7 @@ var Description = fuego.OptionDescription
 // Mixing Approaches:
 //
 //	Combine AND logic within requirements and OR logic between requirements:
-//	OptionSecurity(
+//	Security(
 //	  openapi3.SecurityRequirement{
 //	    "basic": [],             // Requires basic auth
 //	    "oauth2": ["read:user"]  // AND oauth with read:user scope
