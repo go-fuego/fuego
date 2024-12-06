@@ -24,7 +24,7 @@ import (
 //		return ans{Ans: "users"}, nil
 //	})
 //	s.Run()
-func Group(s *Server, path string, options ...func(*BaseRoute)) *Server {
+func Group(s *Server, path string, routeOptions ...func(*BaseRoute)) *Server {
 	if path == "/" {
 		path = ""
 	} else if path != "" && path[len(path)-1] == '/' {
@@ -44,7 +44,7 @@ func Group(s *Server, path string, options ...func(*BaseRoute)) *Server {
 		Params:    make(map[string]OpenAPIParam),
 		Operation: openapi3.NewOperation(),
 	}
-	for _, option := range options {
+	for _, option := range routeOptions {
 		option(&baseRoute)
 	}
 

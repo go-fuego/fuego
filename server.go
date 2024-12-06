@@ -124,17 +124,23 @@ func NewServer(options ...func(*Server)) *Server {
 		Security: NewSecurity(),
 	}
 
+	// Default options that can be overridden
 	defaultOptions := [...]func(*Server){
 		WithAddr("localhost:9999"),
 		WithDisallowUnknownFields(true),
 		WithSerializer(Send),
 		WithErrorSerializer(SendError),
 		WithErrorHandler(ErrorHandler),
+	}
+	options = append(defaultOptions[:], options...)
+
+	// Options set if not provided
+	options = append(options,
 		WithGlobalResponseTypes(http.StatusBadRequest, "Bad Request _(validation or deserialization error)_", HTTPError{}),
 		WithGlobalResponseTypes(http.StatusInternalServerError, "Internal Server Error _(panics)_", HTTPError{}),
-	}
+	)
 
-	for _, option := range append(defaultOptions[:], options...) {
+	for _, option := range options {
 		option(s)
 	}
 
@@ -203,7 +209,7 @@ func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Se
 }
 
 // WithGlobalResponseTypes adds default response types to the server.
-// useful for adding global error types.
+// Useful for adding global error types.
 // For example:
 //
 //	app := fuego.NewServer(

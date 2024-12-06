@@ -1,6 +1,8 @@
 package fuego
 
 import (
+	"strconv"
+
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
@@ -52,15 +54,8 @@ func (r Route[ResponseBody, RequestBody]) Param(paramType ParamType, name, descr
 	return r
 }
 
-// AddError adds an error to the route.
-//
-// Deprecated: Use `option.AddError` from github.com/go-fuego/fuego/option instead.
-func (r Route[ResponseBody, RequestBody]) AddError(code int, description string, errorType ...any) Route[ResponseBody, RequestBody] {
-	addResponse(r.mainRouter, r.Operation, code, description, errorType...)
-	return r
-}
-
-func addResponse(s *Server, operation *openapi3.Operation, code int, description string, errorType ...any) {
+// Registers a response for the route, only if error for this code is not already set.
+func addResponseIfNotSet(s *Server, operation *openapi3.Operation, code int, description string, errorType ...any) {
 	var responseSchema SchemaTag
 
 	if len(errorType) > 0 {
@@ -70,11 +65,13 @@ func addResponse(s *Server, operation *openapi3.Operation, code int, description
 	}
 	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json"})
 
-	response := openapi3.NewResponse().
-		WithDescription(description).
-		WithContent(content)
+	if operation.Responses.Value(strconv.Itoa(code)) == nil {
+		response := openapi3.NewResponse().
+			WithDescription(description).
+			WithContent(content)
 
-	operation.AddResponse(code, response)
+		operation.AddResponse(code, response)
+	}
 }
 
 // openAPIError describes a response error in the OpenAPI spec.
