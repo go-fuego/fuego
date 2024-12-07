@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateController(t *testing.T) {
-	res, err := createController("books")
+func TestCreateControllerFile(t *testing.T) {
+	res, err := createControllerFile("books", "controller.go", "books.go")
 	require.NoError(t, err)
 	require.Contains(t, res, "package controller")
 	require.Contains(t, res, `fuego.Get(booksGroup, "/{id}", rs.getBooks)`)
