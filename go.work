@@ -6,6 +6,7 @@ use (
 	./examples/acme-tls
 	./examples/with-listener
 	./examples/basic
+	./examples/custom-errors
 	./examples/custom-serializer
 	./examples/full-app-gourmet
 	./examples/generate-opengraph-image

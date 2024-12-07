@@ -1,4 +1,4 @@
-module github.com/go-fuego/fuego/examples/basic
+module github.com/go-fuego/fuego/examples/custom-errors
 
 go 1.22.2
 
