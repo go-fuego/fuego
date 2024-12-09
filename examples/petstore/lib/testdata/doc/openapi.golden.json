@@ -243,7 +243,34 @@
 								}
 							}
 						},
-						"description": "OK"
+						"description": "OK",
+						"headers": {
+							"Content-Range": {
+								"examples": {
+									"42 pets": {
+										"value": "0-10/42"
+									}
+								},
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					},
+					"206": {
+						"description": "OK",
+						"headers": {
+							"Content-Range": {
+								"examples": {
+									"42 pets": {
+										"value": "0-10/42"
+									}
+								},
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
 					},
 					"400": {
 						"content": {
@@ -431,7 +458,34 @@
 								}
 							}
 						},
-						"description": "OK"
+						"description": "OK",
+						"headers": {
+							"Content-Range": {
+								"examples": {
+									"42 pets": {
+										"value": "0-10/42"
+									}
+								},
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					},
+					"206": {
+						"description": "OK",
+						"headers": {
+							"Content-Range": {
+								"examples": {
+									"42 pets": {
+										"value": "0-10/42"
+									}
+								},
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
 					},
 					"400": {
 						"content": {
