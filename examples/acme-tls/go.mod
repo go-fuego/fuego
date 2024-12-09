@@ -4,7 +4,7 @@ go 1.22.2
 
 require (
 	github.com/caddyserver/certmagic v0.21.4
-	github.com/go-fuego/fuego v0.15.1
+	github.com/go-fuego/fuego v0.16.1
 )
 
 require (
