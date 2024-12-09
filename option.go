@@ -158,28 +158,35 @@ func panicsIfNotCorrectType(openapiParam *openapi3.Parameter, exampleValue any) 
 //
 // The list of options is in the param package.
 func OptionResponseHeader(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
-	_, openapiParam := buildParam(name, options...)
+	apiParam, openapiParam := buildParam(name, options...)
 
 	openapiParam.Name = ""
 	openapiParam.In = ""
 
+	if len(apiParam.StatusCodes) == 0 {
+		apiParam.StatusCodes = []int{200}
+	}
+
 	return func(r *BaseRoute) {
-		response200 := r.Operation.Responses.Value("200")
-		if response200 == nil {
-			response := openapi3.NewResponse().WithDescription("OK")
-			r.Operation.AddResponse(200, response)
-			response200 = r.Operation.Responses.Value("200")
-		}
+		for _, code := range apiParam.StatusCodes {
+			codeString := strconv.Itoa(code)
+			response200 := r.Operation.Responses.Value(codeString)
+			if response200 == nil {
+				response := openapi3.NewResponse().WithDescription("OK")
+				r.Operation.AddResponse(code, response)
+				response200 = r.Operation.Responses.Value(codeString)
+			}
 
-		response200headers := response200.Value.Headers
-		if response200headers == nil {
-			response200.Value.Headers = make(map[string]*openapi3.HeaderRef)
-		}
+			response200headers := response200.Value.Headers
+			if response200headers == nil {
+				response200.Value.Headers = make(map[string]*openapi3.HeaderRef)
+			}
 
-		response200.Value.Headers[name] = &openapi3.HeaderRef{
-			Value: &openapi3.Header{
-				Parameter: *openapiParam,
-			},
+			response200.Value.Headers[name] = &openapi3.HeaderRef{
+				Value: &openapi3.Header{
+					Parameter: *openapiParam,
+				},
+			}
 		}
 	}
 }

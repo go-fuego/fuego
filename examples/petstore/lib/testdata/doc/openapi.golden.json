@@ -243,7 +243,34 @@
 								}
 							}
 						},
-						"description": "OK"
+						"description": "OK",
+						"headers": {
+							"Content-Range": {
+								"examples": {
+									"42 pets": {
+										"value": "0-10/42"
+									}
+								},
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					},
+					"206": {
+						"description": "OK",
+						"headers": {
+							"Content-Range": {
+								"examples": {
+									"42 pets": {
+										"value": "0-10/42"
+									}
+								},
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
 					},
 					"400": {
 						"content": {
@@ -433,10 +460,25 @@
 						},
 						"description": "OK",
 						"headers": {
-							"X-Total-Count": {
+							"Content-Range": {
 								"examples": {
 									"42 pets": {
-										"value": "42"
+										"value": "0-10/42"
+									}
+								},
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					},
+					"206": {
+						"description": "OK",
+						"headers": {
+							"Content-Range": {
+								"examples": {
+									"42 pets": {
+										"value": "0-10/42"
 									}
 								},
 								"schema": {

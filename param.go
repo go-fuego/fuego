@@ -51,3 +51,12 @@ func ParamExample(exampleName string, value any) func(param *OpenAPIParam) {
 		param.Examples[exampleName] = value
 	}
 }
+
+// StatusCodes sets the status codes for which this parameter is required.
+// Only used for response parameters.
+// If empty, it is required for 200 status codes.
+func ParamStatusCodes(codes ...int) func(param *OpenAPIParam) {
+	return func(param *OpenAPIParam) {
+		param.StatusCodes = codes
+	}
+}
