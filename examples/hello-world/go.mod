@@ -2,7 +2,7 @@ module github.com/go-fuego/fuego/examples/hello-world
 
 go 1.22.2
 
-require github.com/go-fuego/fuego v0.15.1
+require github.com/go-fuego/fuego v0.16.1
 
 require (
 	github.com/gabriel-vasile/mimetype v1.4.7 // indirect

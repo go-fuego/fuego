@@ -7,10 +7,10 @@ toolchain go1.23.3
 require (
 	github.com/a-h/templ v0.2.793
 	github.com/go-chi/chi/v5 v5.1.0
-	github.com/go-fuego/fuego v0.15.1
-	github.com/go-fuego/fuego/extra/markdown v0.0.0-20241206012402-4c4bc8bfe6ef
+	github.com/go-fuego/fuego v0.16.1
+	github.com/go-fuego/fuego/extra/markdown v0.0.0-20241209141708-1e6d931908a8
 	github.com/go-fuego/fuego/middleware/basicauth v0.15.1
-	github.com/go-fuego/fuego/middleware/cache v0.0.0-20241206012402-4c4bc8bfe6ef
+	github.com/go-fuego/fuego/middleware/cache v0.0.0-20241209141708-1e6d931908a8
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/google/uuid v1.6.0

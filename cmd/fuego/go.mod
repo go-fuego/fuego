@@ -5,7 +5,7 @@ go 1.22.2
 toolchain go1.22.5
 
 require (
-	github.com/go-fuego/fuego v0.15.1
+	github.com/go-fuego/fuego v0.16.1
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v2 v2.27.5
 	golang.org/x/text v0.21.0

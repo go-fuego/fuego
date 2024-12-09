@@ -6,8 +6,8 @@ github.com/getkin/kin-openapi v0.128.0 h1:jqq3D9vC9pPq1dGcOCv7yOp1DaEe7c/T1vzcLb
 github.com/getkin/kin-openapi v0.128.0/go.mod h1:OZrfXzUfGrNbsKj+xmFBx6E5c6yH3At/tAKSc2UszXM=
 github.com/go-chi/chi/v5 v5.1.0 h1:acVI1TYaD+hhedDJ3r54HyA6sExp3HfXq7QWEEY/xMw=
 github.com/go-chi/chi/v5 v5.1.0/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
-github.com/go-fuego/fuego v0.15.1 h1:9ESspiRFeUmSl2YdZzL5VE+8F2sGYSTBRkGJEfvoLXc=
-github.com/go-fuego/fuego v0.15.1/go.mod h1:XMpAQQnZsoMON0UD6ncvzj6YukGQlNECDcINJt49zx4=
+github.com/go-fuego/fuego v0.16.1 h1:G+sDF55BjFI7FH7dd07HDx4jfNPxXEeab+YKuLjj5zY=
+github.com/go-fuego/fuego v0.16.1/go.mod h1:ARPlRxY+RgbahF6ZvnjsESGQd3h/jCw8ksCJxKLbgjY=
 github.com/go-openapi/jsonpointer v0.21.0 h1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=
 github.com/go-openapi/jsonpointer v0.21.0/go.mod h1:IUyH9l/+uyhIYQ/PXVA41Rexl+kOkAPDdXEYns6fzUY=
 github.com/go-openapi/swag v0.23.0 h1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=
