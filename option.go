@@ -287,7 +287,7 @@ func OptionHide() func(*BaseRoute) {
 	}
 }
 
-// Hide hides the route from the OpenAPI spec.
+// OptionDefaultStatusCode sets the default status code for the route.
 func OptionDefaultStatusCode(defaultStatusCode int) func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		r.DefaultStatusCode = defaultStatusCode
