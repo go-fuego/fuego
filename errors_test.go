@@ -14,8 +14,10 @@ type myError struct {
 	detail string
 }
 
-var _ ErrorWithStatus = myError{}
-var _ ErrorWithDetail = myError{}
+var (
+	_ ErrorWithStatus = myError{}
+	_ ErrorWithDetail = myError{}
+)
 
 func (e myError) Error() string     { return "test error" }
 func (e myError) StatusCode() int   { return e.status }

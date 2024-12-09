@@ -17,8 +17,10 @@ type MyError struct {
 	Message string `json:"message"`
 }
 
-var _ fuego.ErrorWithStatus = MyError{}
-var _ fuego.ErrorWithDetail = MyError{}
+var (
+	_ fuego.ErrorWithStatus = MyError{}
+	_ fuego.ErrorWithDetail = MyError{}
+)
 
 func (e MyError) Error() string { return e.Err.Error() }
 
