@@ -431,7 +431,19 @@
 								}
 							}
 						},
-						"description": "OK"
+						"description": "OK",
+						"headers": {
+							"X-Total-Count": {
+								"examples": {
+									"42 pets": {
+										"value": "42"
+									}
+								},
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
 					},
 					"400": {
 						"content": {

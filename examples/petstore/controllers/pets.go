@@ -42,6 +42,7 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		optionPagination,
 		option.Tags("my-tag"),
 		option.Description("Get all pets"),
+		option.ResponseHeader("X-Total-Count", "Total number of pets", param.Example("42 pets", "42")),
 	)
 
 	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge, option.Description("Returns an array of pets grouped by age"))
