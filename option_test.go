@@ -450,13 +450,24 @@ func TestOptionResponseHeader(t *testing.T) {
 		s := fuego.NewServer()
 
 		route := fuego.Get(s, "/test", helloWorld,
-			fuego.OptionResponseHeader("X-Test", "test header", param.Required(), param.Example("test", "My Header"), param.Default("test"), param.Description("test description")),
+			fuego.OptionResponseHeader("X-Test", "test header", param.Example("test", "My Header"), param.Default("test"), param.Description("test description")),
 		)
 
-		require.NotNil(t, route)
 		require.NotNil(t, route.Operation.Responses.Value("200").Value.Headers["X-Test"])
 		require.Equal(t, "My Header", route.Operation.Responses.Value("200").Value.Headers["X-Test"].Value.Examples["test"].Value.Value)
 		require.Equal(t, "test description", route.Operation.Responses.Value("200").Value.Headers["X-Test"].Value.Description)
+	})
+
+	t.Run("Declare a response header for the route with multiple status codes", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionResponseHeader("X-Test", "test header", param.StatusCodes(200, 206)),
+		)
+
+		require.NotNil(t, route.Operation.Responses.Value("200").Value.Headers["X-Test"])
+		require.NotNil(t, route.Operation.Responses.Value("206").Value.Headers["X-Test"])
+		require.Nil(t, route.Operation.Responses.Value("400").Value.Headers["X-Test"])
 	})
 }
 
