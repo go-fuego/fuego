@@ -10,6 +10,7 @@ use (
 	./examples/generate-opengraph-image
 	./examples/hello-world
 	./examples/openapi
+	./extra/fuegogin
 	./extra/markdown
 	./middleware/basicauth
 	./middleware/cache
