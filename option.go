@@ -150,7 +150,7 @@ func panicsIfNotCorrectType(openapiParam *openapi3.Parameter, exampleValue any) 
 }
 
 // Declare a response header for the route.
-// This will be added to the OpenAPI spec, under the 200 response.
+// This will be added to the OpenAPI spec, under the given default status code response.
 // Example:
 //
 //	ResponseHeader("Content-Range", "Pagination range", ParamExample("42 pets", "unit 0-9/42"), ParamDescription("https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Range"))
@@ -158,28 +158,35 @@ func panicsIfNotCorrectType(openapiParam *openapi3.Parameter, exampleValue any) 
 //
 // The list of options is in the param package.
 func OptionResponseHeader(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
-	_, openapiParam := buildParam(name, options...)
+	apiParam, openapiParam := buildParam(name, options...)
 
 	openapiParam.Name = ""
 	openapiParam.In = ""
 
+	if len(apiParam.StatusCodes) == 0 {
+		apiParam.StatusCodes = []int{200}
+	}
+
 	return func(r *BaseRoute) {
-		response200 := r.Operation.Responses.Value("200")
-		if response200 == nil {
-			response := openapi3.NewResponse().WithDescription("OK")
-			r.Operation.AddResponse(200, response)
-			response200 = r.Operation.Responses.Value("200")
-		}
+		for _, code := range apiParam.StatusCodes {
+			codeString := strconv.Itoa(code)
+			responseForCurrentCode := r.Operation.Responses.Value(codeString)
+			if responseForCurrentCode == nil {
+				response := openapi3.NewResponse().WithDescription("OK")
+				r.Operation.AddResponse(code, response)
+				responseForCurrentCode = r.Operation.Responses.Value(codeString)
+			}
 
-		response200headers := response200.Value.Headers
-		if response200headers == nil {
-			response200.Value.Headers = make(map[string]*openapi3.HeaderRef)
-		}
+			responseForCurrentCodeHeaders := responseForCurrentCode.Value.Headers
+			if responseForCurrentCodeHeaders == nil {
+				responseForCurrentCode.Value.Headers = make(map[string]*openapi3.HeaderRef)
+			}
 
-		response200.Value.Headers[name] = &openapi3.HeaderRef{
-			Value: &openapi3.Header{
-				Parameter: *openapiParam,
-			},
+			responseForCurrentCode.Value.Headers[name] = &openapi3.HeaderRef{
+				Value: &openapi3.Header{
+					Parameter: *openapiParam,
+				},
+			}
 		}
 	}
 }
