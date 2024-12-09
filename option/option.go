@@ -144,4 +144,5 @@ var RequestContentType = fuego.OptionRequestContentType
 // Hide hides the route from the OpenAPI spec.
 var Hide = fuego.OptionHide
 
+// DefaultStatusCode sets the default status code for the route.
 var DefaultStatusCode = fuego.OptionDefaultStatusCode
