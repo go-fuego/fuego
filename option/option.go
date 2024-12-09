@@ -75,7 +75,19 @@ var Cookie = fuego.OptionCookie
 // The list of options is in the param package.
 var Path = fuego.OptionPath
 
-// Registers a parameter for the route. Prefer using the [Query], [QueryInt], [Header], [Cookie] shortcuts.
+// Declare a response header for the route.
+// This will be added to the OpenAPI spec, under the 200 response.
+// Example:
+//
+//	ResponseHeader("Content-Range", "Pagination range", ParamExample("42 pets", "unit 0-9/42"), ParamDescription("https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Range"))
+//	ResponseHeader("Set-Cookie", "Session cookie", ParamExample("session abc123", "session=abc123; Expires=Wed, 09 Jun 2021 10:18:14 GMT"))
+//
+// The list of options is in the param package.
+var ResponseHeader = fuego.OptionResponseHeader
+
+// Registers a parameter for the route.
+//
+// Deprecated: Use [Query], [QueryInt], [Header], [Cookie], [Path] instead.
 var Param = fuego.OptionParam
 
 // Tags adds one or more tags to the route.

@@ -445,6 +445,21 @@ func TestHide(t *testing.T) {
 	})
 }
 
+func TestOptionResponseHeader(t *testing.T) {
+	t.Run("Declare a response header for the route", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionResponseHeader("X-Test", "test header", param.Required(), param.Example("test", "My Header"), param.Default("test"), param.Description("test description")),
+		)
+
+		require.NotNil(t, route)
+		require.NotNil(t, route.Operation.Responses.Value("200").Value.Headers["X-Test"])
+		require.Equal(t, "My Header", route.Operation.Responses.Value("200").Value.Headers["X-Test"].Value.Examples["test"].Value.Value)
+		require.Equal(t, "test description", route.Operation.Responses.Value("200").Value.Headers["X-Test"].Value.Description)
+	})
+}
+
 func TestSecurity(t *testing.T) {
 	t.Run("single security requirement with defined scheme", func(t *testing.T) {
 		s := fuego.NewServer(
