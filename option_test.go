@@ -682,3 +682,16 @@ func TestSecurity(t *testing.T) {
 		require.Equal(t, []string{"basic"}, security["ApiKey"])
 	})
 }
+
+func TestOptionAddDescription(t *testing.T) {
+	t.Run("Declare a description for the route with multiple descriptions", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionDescription("test description"),
+			fuego.OptionAddDescription("another description"),
+		)
+
+		require.Equal(t, "controller: `github.com/go-fuego/fuego_test.helloWorld`\n\n---\n\ntest description\n\nanother description", route.Operation.Description)
+	})
+}
