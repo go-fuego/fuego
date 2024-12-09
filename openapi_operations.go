@@ -24,11 +24,18 @@ type OpenAPIParam struct {
 type OpenAPIParamOption struct {
 	Required bool
 	Nullable bool
-	Default  any // Default value for the parameter
+	// Default value for the parameter.
+	// Type is checked at start-time.
+	Default  any
 	Example  string
 	Examples map[string]any
 	Type     ParamType
-	GoType   string // integer, string, bool
+	// integer, string, bool
+	GoType string
+	// Status codes for which this parameter is required.
+	// Only used for response parameters.
+	// If empty, it is required for 200 status codes.
+	StatusCodes []int
 }
 
 // Param registers a parameter for the route.
