@@ -149,8 +149,42 @@ func panicsIfNotCorrectType(openapiParam *openapi3.Parameter, exampleValue any) 
 	return exampleValue
 }
 
-// Registers a parameter for the route. Prefer using the [Query], [QueryInt], [Header], [Cookie] shortcuts.
-func OptionParam(name string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+// Declare a response header for the route.
+// This will be added to the OpenAPI spec, under the 200 response.
+// Example:
+//
+//	ResponseHeader("Content-Range", "Pagination range", ParamExample("42 pets", "unit 0-9/42"), ParamDescription("https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Range"))
+//	ResponseHeader("Set-Cookie", "Session cookie", ParamExample("session abc123", "session=abc123; Expires=Wed, 09 Jun 2021 10:18:14 GMT"))
+//
+// The list of options is in the param package.
+func OptionResponseHeader(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+	_, openapiParam := buildParam(name, options...)
+
+	openapiParam.Name = ""
+	openapiParam.In = ""
+
+	return func(r *BaseRoute) {
+		response200 := r.Operation.Responses.Value("200")
+		if response200 == nil {
+			response := openapi3.NewResponse().WithDescription("OK")
+			r.Operation.AddResponse(200, response)
+			response200 = r.Operation.Responses.Value("200")
+		}
+
+		response200headers := response200.Value.Headers
+		if response200headers == nil {
+			response200.Value.Headers = make(map[string]*openapi3.HeaderRef)
+		}
+
+		response200.Value.Headers[name] = &openapi3.HeaderRef{
+			Value: &openapi3.Header{
+				Parameter: *openapiParam,
+			},
+		}
+	}
+}
+
+func buildParam(name string, options ...func(*OpenAPIParam)) (OpenAPIParam, *openapi3.Parameter) {
 	param := OpenAPIParam{
 		Name: name,
 	}
@@ -186,6 +220,13 @@ func OptionParam(name string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
 		exampleOpenAPI.Value = panicsIfNotCorrectType(openapiParam, exampleValue)
 		openapiParam.Examples[name] = &openapi3.ExampleRef{Value: exampleOpenAPI}
 	}
+
+	return param, openapiParam
+}
+
+// Registers a parameter for the route. Prefer using the [Query], [QueryInt], [Header], [Cookie] shortcuts.
+func OptionParam(name string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+	param, openapiParam := buildParam(name, options...)
 
 	return func(r *BaseRoute) {
 		r.Operation.AddParameter(openapiParam)
