@@ -51,7 +51,10 @@ func TestPostPets(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, http.StatusOK, w.Code)
+		require.Equal(t, http.StatusCreated, w.Code)
+		petId := w.Body.String()
+		t.Log(petId)
+		require.NotEmpty(t, petId)
 	})
 }
 
@@ -63,7 +66,7 @@ func TestGetPets(t *testing.T) {
 		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
 		s.Mux.ServeHTTP(w, r)
 		t.Log(w.Body.String())
-		require.Equal(t, http.StatusOK, w.Code)
+		require.Equal(t, http.StatusCreated, w.Code)
 
 		w = httptest.NewRecorder()
 		r = httptest.NewRequest("GET", "/pets/pet-1", nil)
@@ -83,7 +86,7 @@ func TestGetAllPestByAge(t *testing.T) {
 		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
 		s.Mux.ServeHTTP(w, r)
 		t.Log(w.Body.String())
-		require.Equal(t, http.StatusOK, w.Code)
+		require.Equal(t, http.StatusCreated, w.Code)
 
 		w = httptest.NewRecorder()
 		r = httptest.NewRequest("GET", "/pets/by-age", nil)
@@ -103,7 +106,7 @@ func TestGetPetsByName(t *testing.T) {
 		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
 		s.Mux.ServeHTTP(w, r)
 		t.Log(w.Body.String())
-		require.Equal(t, http.StatusOK, w.Code)
+		require.Equal(t, http.StatusCreated, w.Code)
 
 		w = httptest.NewRecorder()
 		r = httptest.NewRequest("GET", "/pets/by-name/kitkat", nil)
@@ -123,7 +126,7 @@ func TestPutPets(t *testing.T) {
 		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
 		s.Mux.ServeHTTP(w, r)
 		t.Log(w.Body.String())
-		require.Equal(t, http.StatusOK, w.Code)
+		require.Equal(t, http.StatusCreated, w.Code)
 
 		w = httptest.NewRecorder()
 		r = httptest.NewRequest("PUT", "/pets/pet-1", strings.NewReader(`{"name": "snickers"}`))
@@ -143,7 +146,7 @@ func TestDeletePets(t *testing.T) {
 		r := httptest.NewRequest("POST", "/pets/", strings.NewReader(`{"name": "kitkat"}`))
 		s.Mux.ServeHTTP(w, r)
 		t.Log(w.Body.String())
-		require.Equal(t, http.StatusOK, w.Code)
+		require.Equal(t, http.StatusCreated, w.Code)
 
 		w = httptest.NewRecorder()
 		r = httptest.NewRequest("DELETE", "/pets/pet-1", nil)

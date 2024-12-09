@@ -287,6 +287,13 @@ func OptionHide() func(*BaseRoute) {
 	}
 }
 
+// Hide hides the route from the OpenAPI spec.
+func OptionDefaultStatusCode(defaultStatusCode int) func(*BaseRoute) {
+	return func(r *BaseRoute) {
+		r.DefaultStatusCode = defaultStatusCode
+	}
+}
+
 // OptionSecurity configures security requirements to the route.
 //
 // Single Scheme (AND Logic):

@@ -161,6 +161,10 @@ func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, control
 			return
 		}
 
+		if route.DefaultStatusCode != 0 {
+			w.WriteHeader(route.DefaultStatusCode)
+		}
+
 		// TRANSFORM OUT
 		timeTransformOut := time.Now()
 		ans, err = transformOut(r.Context(), ans)
