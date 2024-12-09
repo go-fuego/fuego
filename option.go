@@ -225,7 +225,7 @@ func OptionDescription(description string) func(*BaseRoute) {
 // like the controller function name and the package name.
 func OptionAddDescription(description string) func(*BaseRoute) {
 	return func(r *BaseRoute) {
-		r.Operation.Description += description
+		r.Operation.Description += "\n\n" + description
 	}
 }
 
