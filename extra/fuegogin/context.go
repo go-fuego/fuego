@@ -5,14 +5,24 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/go-fuego/fuego"
 )
 
-type ContextWithBody[B any] struct{}
+type ContextWithBody[B any] struct {
+	ContextNoBody
+}
+
+type ContextNoBody struct {
+	c *gin.Context
+}
 
 // Body implements fuego.Ctx.
 func (c *ContextWithBody[B]) Body() (B, error) {
-	panic("unimplemented")
+	var body B
+	err := c.c.Bind(&body)
+	return body, err
 }
 
 // Context implements fuego.Ctx.

@@ -35,9 +35,19 @@ func Handle[T, B any](
 	options ...func(*fuego.BaseRoute),
 ) *fuego.Route[B, T] {
 	e.Handle(method, path, func(c *gin.Context) {
-		ans, err := handler(&ContextWithBody[T]{})
+		context := &ContextWithBody[T]{
+			ContextNoBody: ContextNoBody{
+				c: c,
+			},
+		}
+		ans, err := handler(context)
 		if err != nil {
 			c.Error(err)
+			return
+		}
+
+		if c.Request.Header.Get("Accept") == "application/xml" {
+			c.XML(200, ans)
 			return
 		}
 
