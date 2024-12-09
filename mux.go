@@ -59,6 +59,7 @@ type BaseRoute struct {
 	Middlewares          []func(http.Handler) http.Handler
 	AcceptedContentTypes []string // Content types accepted for the request body. If nil, all content types (*/*) are accepted.
 	Hidden               bool     // If true, the route will not be documented in the OpenAPI spec
+	DefaultStatusCode    int      // Default status code for the response
 
 	mainRouter *Server // ref to the main router, used to register the route in the OpenAPI spec
 }

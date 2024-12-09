@@ -188,19 +188,23 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 		addResponseIfNotSet(s, route.Operation, openAPIGlobalResponse.Code, openAPIGlobalResponse.Description, openAPIGlobalResponse.ErrorType)
 	}
 
-	// Automatically add non-declared 200 Response
-	response200 := route.Operation.Responses.Value("200")
-	if response200 == nil {
-		response := openapi3.NewResponse().WithDescription("OK")
-		route.Operation.AddResponse(200, response)
-		response200 = route.Operation.Responses.Value("200")
+	// Automatically add non-declared 200 (or other) Response
+	if route.DefaultStatusCode == 0 {
+		route.DefaultStatusCode = 200
+	}
+	defaultStatusCode := strconv.Itoa(route.DefaultStatusCode)
+	responseDefault := route.Operation.Responses.Value(defaultStatusCode)
+	if responseDefault == nil {
+		response := openapi3.NewResponse().WithDescription(http.StatusText(route.DefaultStatusCode))
+		route.Operation.AddResponse(route.DefaultStatusCode, response)
+		responseDefault = route.Operation.Responses.Value(defaultStatusCode)
 	}
 
-	// Automatically add non-declared Content for 200 Response
-	if response200.Value.Content == nil {
+	// Automatically add non-declared Content for 200 (or other) Response
+	if responseDefault.Value.Content == nil {
 		responseSchema := SchemaTagFromType(s, *new(T))
 		content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
-		response200.Value.WithContent(content)
+		responseDefault.Value.WithContent(content)
 	}
 
 	// Automatically add non-declared Path parameters

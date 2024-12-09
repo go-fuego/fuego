@@ -695,3 +695,44 @@ func TestOptionAddDescription(t *testing.T) {
 		require.Equal(t, "controller: `github.com/go-fuego/fuego_test.helloWorld`\n\n---\n\ntest description\n\nanother description", route.Operation.Description)
 	})
 }
+
+func TestDefaultStatusCode(t *testing.T) {
+	t.Run("Declare a default status code for the route", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Post(s, "/test", helloWorld,
+			fuego.OptionDefaultStatusCode(201),
+		)
+
+		r := httptest.NewRequest(http.MethodPost, "/test", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 201, w.Code)
+		require.Equal(t, "hello world", w.Body.String())
+		require.Equal(t, 201, route.DefaultStatusCode)
+		require.NotNil(t, route.Operation.Responses.Value("201").Value)
+	})
+
+	t.Run("Declare a default status code for the route but bypass it in the controller", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Post(s, "/test", func(c fuego.ContextNoBody) (string, error) {
+			c.SetStatus(200)
+			return "hello world", nil
+		},
+			fuego.OptionDefaultStatusCode(201),
+		)
+
+		r := httptest.NewRequest(http.MethodPost, "/test", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+		require.Equal(t, "hello world", w.Body.String())
+		require.Equal(t, 201, route.DefaultStatusCode, "default status code should not be changed")
+		require.NotNil(t, route.Operation.Responses.Value("201").Value, "default status is still in the spec even if code is not used")
+	})
+}

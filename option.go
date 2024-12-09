@@ -287,6 +287,13 @@ func OptionHide() func(*BaseRoute) {
 	}
 }
 
+// OptionDefaultStatusCode sets the default status code for the route.
+func OptionDefaultStatusCode(defaultStatusCode int) func(*BaseRoute) {
+	return func(r *BaseRoute) {
+		r.DefaultStatusCode = defaultStatusCode
+	}
+}
+
 // OptionSecurity configures security requirements to the route.
 //
 // Single Scheme (AND Logic):
