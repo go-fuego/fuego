@@ -76,7 +76,7 @@ var Cookie = fuego.OptionCookie
 var Path = fuego.OptionPath
 
 // Declare a response header for the route.
-// This will be added to the OpenAPI spec, under the 200 response.
+// This will be added to the OpenAPI spec, under the given default status code response.
 // Example:
 //
 //	ResponseHeader("Content-Range", "Pagination range", ParamExample("42 pets", "unit 0-9/42"), ParamDescription("https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Range"))
