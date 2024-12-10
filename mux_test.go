@@ -467,6 +467,17 @@ func TestGroupTagsOnRoute(t *testing.T) {
 
 		require.Equal(t, []string{"my-server-tag", "my-route-tag"}, route.Operation.Tags)
 	})
+
+	t.Run("do not add empty tag group", func(t *testing.T) {
+		s := NewServer()
+		groupEmpty := Group(s, "")
+		groupSlash := Group(s, "/")
+		routeEmpty := Get(groupEmpty, "/empty", dummyController)
+		routeSlash := Get(groupSlash, "/slash", dummyController)
+
+		require.Nil(t, routeEmpty.Operation.Tags)
+		require.Nil(t, routeSlash.Operation.Tags)
+	})
 }
 
 func TestHideOpenapiRoutes(t *testing.T) {
