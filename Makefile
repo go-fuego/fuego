@@ -57,6 +57,10 @@ example-watch:
 petstore:
 	( cd examples/petstore && go run . -debug )
 
+# Uses hurl https://github.com/Orange-OpenSource/hurl
+integration:
+	HURL_GOURMET_BASE_URL=http://localhost:8083 HURL_GOURMET_BASIC_AUTH="YWRtaW46YWRtaW4=" hurl -v --test integration-tests examples/full-app-gourmet/tests
+
 # Documentation website
 docs:
 	go run golang.org/x/pkgsite/cmd/pkgsite@latest -http localhost:8084
