@@ -35,8 +35,8 @@ func Group(s *Server, path string, routeOptions ...func(*BaseRoute)) *Server {
 	newServer := &ss
 	newServer.basePath += path
 
-	if !s.disableAutoGroupTags {
-		newServer.routeOptions = append(s.routeOptions, OptionTags(strings.TrimLeft(path, "/")))
+	if autoTag := strings.TrimLeft(path, "/"); !s.disableAutoGroupTags && autoTag != "" {
+		newServer.routeOptions = append(s.routeOptions, OptionTags(autoTag))
 	}
 	newServer.mainRouter = s
 
