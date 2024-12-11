@@ -302,9 +302,9 @@ func OptionAddError(code int, description string, errorType ...any) func(*BaseRo
 		}
 
 		if len(errorType) > 0 {
-			responseSchema = SchemaTagFromType(r.mainRouter, errorType[0])
+			responseSchema = SchemaTagFromType(r.mainRouter.OpenAPIzer, errorType[0])
 		} else {
-			responseSchema = SchemaTagFromType(r.mainRouter, HTTPError{})
+			responseSchema = SchemaTagFromType(r.mainRouter.OpenAPIzer, HTTPError{})
 		}
 		content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json"})
 
@@ -374,14 +374,14 @@ func OptionDefaultStatusCode(defaultStatusCode int) func(*BaseRoute) {
 //	})
 func OptionSecurity(securityRequirements ...openapi3.SecurityRequirement) func(*BaseRoute) {
 	return func(r *BaseRoute) {
-		if r.mainRouter.OpenApiSpec.Components == nil {
+		if r.mainRouter.OpenAPIzer.OpenAPIDescription().Components == nil {
 			panic("zero security schemes have been registered with the server")
 		}
 
 		// Validate the security scheme exists in components
 		for _, req := range securityRequirements {
 			for schemeName := range req {
-				if _, exists := r.mainRouter.OpenApiSpec.Components.SecuritySchemes[schemeName]; !exists {
+				if _, exists := r.mainRouter.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes[schemeName]; !exists {
 					panic(fmt.Sprintf("security scheme '%s' not defined in components", schemeName))
 				}
 			}

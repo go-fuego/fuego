@@ -545,7 +545,7 @@ func TestDeclareCustom200Response(t *testing.T) {
 		w.Write([]byte("PNG image"))
 	}, optionReturnsPNG)
 
-	openAPIResponse := s.OpenApiSpec.Paths.Find("/image").Get.Responses.Value("200")
+	openAPIResponse := s.OpenAPIzer.OpenAPIDescription().Paths.Find("/image").Get.Responses.Value("200")
 	require.Nil(t, openAPIResponse.Value.Content.Get("application/json"))
 	require.NotNil(t, openAPIResponse.Value.Content.Get("image/png"))
 	require.Equal(t, "Generated image", *openAPIResponse.Value.Description)
