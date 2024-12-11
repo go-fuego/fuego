@@ -41,7 +41,7 @@ func (rs Resources) Setup(
 	// Create server with some options
 	app := fuego.NewServer(options...)
 
-	app.OpenApiSpec.Info.Title = "Gourmet API"
+	app.OpenAPI.Description().Info.Title = "Gourmet API"
 
 	rs.API.Security = app.Security
 

@@ -62,7 +62,7 @@ func (r Route[ResponseBody, RequestBody]) Param(paramType ParamType, name, descr
 }
 
 // Registers a response for the route, only if error for this code is not already set.
-func addResponseIfNotSet(s OpenAPIzer, operation *openapi3.Operation, code int, description string, errorType ...any) {
+func addResponseIfNotSet(s *OpenAPI, operation *openapi3.Operation, code int, description string, errorType ...any) {
 	var responseSchema SchemaTag
 
 	if len(errorType) > 0 {
