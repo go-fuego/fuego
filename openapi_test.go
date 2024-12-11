@@ -193,7 +193,7 @@ func Test_tagFromType(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			tag := SchemaTagFromType(s, tc.inputType)
+			tag := SchemaTagFromType(s.OpenAPI, tc.inputType)
 			require.Equal(t, tc.expectedTagValue, tag.Name, tc.description)
 			if tc.expectedTagValueType != nil {
 				require.NotNil(t, tag.Value)
@@ -545,7 +545,7 @@ func TestDeclareCustom200Response(t *testing.T) {
 		w.Write([]byte("PNG image"))
 	}, optionReturnsPNG)
 
-	openAPIResponse := s.OpenAPIzer.OpenAPIDescription().Paths.Find("/image").Get.Responses.Value("200")
+	openAPIResponse := s.OpenAPI.Description().Paths.Find("/image").Get.Responses.Value("200")
 	require.Nil(t, openAPIResponse.Value.Content.Get("application/json"))
 	require.NotNil(t, openAPIResponse.Value.Content.Get("image/png"))
 	require.Equal(t, "Generated image", *openAPIResponse.Value.Description)

@@ -334,7 +334,7 @@ func TestWithRequestContentType(t *testing.T) {
 		require.NotNil(t, content.Get("application/xml"))
 		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/json").Schema.Ref)
 		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/xml").Schema.Ref)
-		_, ok := s.OpenAPIzer.OpenAPIDescription().Components.RequestBodies["ReqBody"]
+		_, ok := s.OpenAPI.Description().Components.RequestBodies["ReqBody"]
 		require.False(t, ok)
 	})
 }
@@ -503,10 +503,10 @@ func TestWithSecurity(t *testing.T) {
 			}),
 		)
 
-		require.NotNil(t, s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes)
-		require.Contains(t, s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes, "bearerAuth")
+		require.NotNil(t, s.OpenAPI.Description().Components.SecuritySchemes)
+		require.Contains(t, s.OpenAPI.Description().Components.SecuritySchemes, "bearerAuth")
 
-		scheme := s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes["bearerAuth"].Value
+		scheme := s.OpenAPI.Description().Components.SecuritySchemes["bearerAuth"].Value
 		require.Equal(t, "http", scheme.Type)
 		require.Equal(t, "bearer", scheme.Scheme)
 		require.Equal(t, "JWT", scheme.BearerFormat)
@@ -530,12 +530,12 @@ func TestWithSecurity(t *testing.T) {
 			}),
 		)
 
-		require.NotNil(t, s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes)
-		require.Contains(t, s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes, "bearerAuth")
-		require.Contains(t, s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes, "apiKey")
+		require.NotNil(t, s.OpenAPI.Description().Components.SecuritySchemes)
+		require.Contains(t, s.OpenAPI.Description().Components.SecuritySchemes, "bearerAuth")
+		require.Contains(t, s.OpenAPI.Description().Components.SecuritySchemes, "apiKey")
 
-		bearerScheme := s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes["bearerAuth"].Value
-		apiKeyScheme := s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes["apiKey"].Value
+		bearerScheme := s.OpenAPI.Description().Components.SecuritySchemes["bearerAuth"].Value
+		apiKeyScheme := s.OpenAPI.Description().Components.SecuritySchemes["apiKey"].Value
 
 		require.Equal(t, "http", bearerScheme.Type)
 		require.Equal(t, "bearer", bearerScheme.Scheme)
@@ -559,16 +559,16 @@ func TestWithSecurity(t *testing.T) {
 		)
 
 		// Add another security scheme to the existing server
-		s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes["oauth2"] = &openapi3.SecuritySchemeRef{
+		s.OpenAPI.Description().Components.SecuritySchemes["oauth2"] = &openapi3.SecuritySchemeRef{
 			Value: openapi3.NewOIDCSecurityScheme("https://example.com/.well-known/openid-configuration").
 				WithType("oauth2"),
 		}
 
-		require.NotNil(t, s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes)
-		require.Contains(t, s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes, "bearerAuth")
-		require.Contains(t, s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes, "oauth2")
+		require.NotNil(t, s.OpenAPI.Description().Components.SecuritySchemes)
+		require.Contains(t, s.OpenAPI.Description().Components.SecuritySchemes, "bearerAuth")
+		require.Contains(t, s.OpenAPI.Description().Components.SecuritySchemes, "oauth2")
 
-		oauth2Scheme := s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes["oauth2"].Value
+		oauth2Scheme := s.OpenAPI.Description().Components.SecuritySchemes["oauth2"].Value
 		require.Equal(t, "oauth2", oauth2Scheme.Type)
 		require.Equal(t, "https://example.com/.well-known/openid-configuration", oauth2Scheme.OpenIdConnectUrl)
 	})
@@ -593,14 +593,14 @@ func TestWithSecurity(t *testing.T) {
 			}),
 		)
 
-		require.NotNil(t, s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes)
-		require.Contains(t, s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes, "bearerAuth")
-		require.Contains(t, s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes, "apiKey")
+		require.NotNil(t, s.OpenAPI.Description().Components.SecuritySchemes)
+		require.Contains(t, s.OpenAPI.Description().Components.SecuritySchemes, "bearerAuth")
+		require.Contains(t, s.OpenAPI.Description().Components.SecuritySchemes, "apiKey")
 	})
 
 	t.Run("initialize security schemes if nil", func(t *testing.T) {
 		s := NewServer()
-		s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes = nil
+		s.OpenAPI.Description().Components.SecuritySchemes = nil
 
 		s = NewServer(
 			WithSecurity(openapi3.SecuritySchemes{
@@ -613,7 +613,7 @@ func TestWithSecurity(t *testing.T) {
 			}),
 		)
 
-		require.NotNil(t, s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes)
-		require.Contains(t, s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes, "bearerAuth")
+		require.NotNil(t, s.OpenAPI.Description().Components.SecuritySchemes)
+		require.Contains(t, s.OpenAPI.Description().Components.SecuritySchemes, "bearerAuth")
 	})
 }

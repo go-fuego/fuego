@@ -21,7 +21,7 @@ func TestPetstoreOpenAPIGeneration(t *testing.T) {
 	)
 
 	server.OutputOpenAPISpec()
-	err := server.OpenAPIzer.OpenAPIDescription().Validate(context.Background())
+	err := server.OpenAPI.Description().Validate(context.Background())
 	require.NoError(t, err)
 
 	generatedSpec, err := os.ReadFile("testdata/doc/openapi.json")

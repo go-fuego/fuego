@@ -19,18 +19,12 @@ import (
 	"github.com/getkin/kin-openapi/openapi3gen"
 )
 
-type OpenAPIzer interface {
-	OpenAPIDescription() *openapi3.T
-	Generator() *openapi3gen.Generator
-	GlobalOpenAPIResponses() *[]openAPIError
-}
-
-func NewSpec() *OpenAPI {
+func NewOpenAPI() *OpenAPI {
 	desc := NewOpenApiSpec()
 	return &OpenAPI{
 		description:            &desc,
 		generator:              openapi3gen.NewGenerator(),
-		globalOpenAPIResponses: &[]openAPIError{},
+		globalOpenAPIResponses: []openAPIError{},
 	}
 }
 
@@ -38,22 +32,16 @@ func NewSpec() *OpenAPI {
 type OpenAPI struct {
 	description            *openapi3.T
 	generator              *openapi3gen.Generator
-	globalOpenAPIResponses *[]openAPIError
+	globalOpenAPIResponses []openAPIError
 }
 
-func (d *OpenAPI) OpenAPIDescription() *openapi3.T {
+func (d *OpenAPI) Description() *openapi3.T {
 	return d.description
 }
 
 func (d *OpenAPI) Generator() *openapi3gen.Generator {
 	return d.generator
 }
-
-func (d *OpenAPI) GlobalOpenAPIResponses() *[]openAPIError {
-	return d.globalOpenAPIResponses
-}
-
-var _ OpenAPIzer = &OpenAPI{}
 
 func NewOpenApiSpec() openapi3.T {
 	info := &openapi3.Info{
@@ -90,11 +78,11 @@ func (s *Server) Show() *Server {
 }
 
 func declareAllTagsFromOperations(s *Server) {
-	for _, pathItem := range s.OpenAPIzer.OpenAPIDescription().Paths.Map() {
+	for _, pathItem := range s.OpenAPI.Description().Paths.Map() {
 		for _, op := range pathItem.Operations() {
 			for _, tag := range op.Tags {
-				if s.OpenAPIzer.OpenAPIDescription().Tags.Get(tag) == nil {
-					s.OpenAPIzer.OpenAPIDescription().Tags = append(s.OpenAPIzer.OpenAPIDescription().Tags, &openapi3.Tag{
+				if s.OpenAPI.Description().Tags.Get(tag) == nil {
+					s.OpenAPI.Description().Tags = append(s.OpenAPI.Description().Tags, &openapi3.Tag{
 						Name: tag,
 					})
 				}
@@ -110,7 +98,7 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 	declareAllTagsFromOperations(s)
 
 	// Validate
-	err := s.OpenAPIzer.OpenAPIDescription().Validate(context.Background())
+	err := s.OpenAPI.Description().Validate(context.Background())
 	if err != nil {
 		slog.Error("Error validating spec", "error", err)
 	}
@@ -132,14 +120,14 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 		}
 	}
 
-	return *s.OpenAPIzer.OpenAPIDescription()
+	return *s.OpenAPI.Description()
 }
 
 func (s *Server) marshalSpec() ([]byte, error) {
 	if s.OpenAPIConfig.PrettyFormatJson {
-		return json.MarshalIndent(s.OpenAPIzer.OpenAPIDescription(), "", "	")
+		return json.MarshalIndent(s.OpenAPI.Description(), "", "	")
 	}
-	return json.Marshal(s.OpenAPIzer.OpenAPIDescription())
+	return json.Marshal(s.OpenAPI.Description())
 }
 
 func (s *Server) saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) error {
@@ -201,7 +189,7 @@ func validateSwaggerUrl(swaggerUrl string) bool {
 }
 
 // RegisterOpenAPIOperation registers an OpenAPI operation.
-func RegisterOpenAPIOperation[T, B any](s OpenAPIzer, route Route[T, B]) (*openapi3.Operation, error) {
+func RegisterOpenAPIOperation[T, B any](s *OpenAPI, route Route[T, B]) (*openapi3.Operation, error) {
 	if route.Operation == nil {
 		route.Operation = openapi3.NewOperation()
 	}
@@ -221,7 +209,7 @@ func RegisterOpenAPIOperation[T, B any](s OpenAPIzer, route Route[T, B]) (*opena
 	}
 
 	// Response - globals
-	for _, openAPIGlobalResponse := range *s.GlobalOpenAPIResponses() {
+	for _, openAPIGlobalResponse := range s.globalOpenAPIResponses {
 		addResponseIfNotSet(s, route.Operation, openAPIGlobalResponse.Code, openAPIGlobalResponse.Description, openAPIGlobalResponse.ErrorType)
 	}
 
@@ -265,7 +253,7 @@ func RegisterOpenAPIOperation[T, B any](s OpenAPIzer, route Route[T, B]) (*opena
 		}
 	}
 
-	s.OpenAPIDescription().AddOperation(route.Path, route.Method, route.Operation)
+	s.Description().AddOperation(route.Path, route.Method, route.Operation)
 
 	return route.Operation, nil
 }
@@ -284,10 +272,10 @@ type SchemaTag struct {
 	Name string
 }
 
-func SchemaTagFromType(s OpenAPIzer, v any) SchemaTag {
+func SchemaTagFromType(s *OpenAPI, v any) SchemaTag {
 	if v == nil {
 		// ensure we add unknown-interface to our schemas
-		schema := getOrCreateSchema(s, "unknown-interface", struct{}{})
+		schema := s.getOrCreateSchema("unknown-interface", struct{}{})
 		return SchemaTag{
 			Name: "unknown-interface",
 			SchemaRef: openapi3.SchemaRef{
@@ -307,7 +295,7 @@ func SchemaTagFromType(s OpenAPIzer, v any) SchemaTag {
 // If the type is a slice or array type it will dive into the type as well as
 // build and openapi3.Schema where Type is array and Ref is set to the proper
 // components Schema
-func dive(s OpenAPIzer, t reflect.Type, tag SchemaTag, maxDepth int) SchemaTag {
+func dive(s *OpenAPI, t reflect.Type, tag SchemaTag, maxDepth int) SchemaTag {
 	if maxDepth == 0 {
 		return SchemaTag{
 			Name: "default",
@@ -334,7 +322,7 @@ func dive(s OpenAPIzer, t reflect.Type, tag SchemaTag, maxDepth int) SchemaTag {
 			return dive(s, t.Field(0).Type, tag, maxDepth-1)
 		}
 		tag.Ref = "#/components/schemas/" + tag.Name
-		tag.Value = getOrCreateSchema(s, tag.Name, reflect.New(t).Interface())
+		tag.Value = s.getOrCreateSchema(tag.Name, reflect.New(t).Interface())
 
 		return tag
 	}
@@ -342,18 +330,18 @@ func dive(s OpenAPIzer, t reflect.Type, tag SchemaTag, maxDepth int) SchemaTag {
 
 // getOrCreateSchema is used to get a schema from the OpenAPI spec.
 // If the schema does not exist, it will create a new schema and add it to the OpenAPI spec.
-func getOrCreateSchema(s OpenAPIzer, key string, v any) *openapi3.Schema {
-	schemaRef, ok := s.OpenAPIDescription().Components.Schemas[key]
+func (s *OpenAPI) getOrCreateSchema(key string, v any) *openapi3.Schema {
+	schemaRef, ok := s.Description().Components.Schemas[key]
 	if !ok {
-		schemaRef = createSchema(s, key, v)
+		schemaRef = s.createSchema(key, v)
 	}
 	return schemaRef.Value
 }
 
 // createSchema is used to create a new schema and add it to the OpenAPI spec.
 // Relies on the openapi3gen package to generate the schema, and adds custom struct tags.
-func createSchema(s OpenAPIzer, key string, v any) *openapi3.SchemaRef {
-	schemaRef, err := s.Generator().NewSchemaRefForValue(v, s.OpenAPIDescription().Components.Schemas)
+func (s *OpenAPI) createSchema(key string, v any) *openapi3.SchemaRef {
+	schemaRef, err := s.Generator().NewSchemaRefForValue(v, s.Description().Components.Schemas)
 	if err != nil {
 		slog.Error("Error generating schema", "key", key, "error", err)
 	}
@@ -366,7 +354,7 @@ func createSchema(s OpenAPIzer, key string, v any) *openapi3.SchemaRef {
 
 	parseStructTags(reflect.TypeOf(v), schemaRef)
 
-	s.OpenAPIDescription().Components.Schemas[key] = schemaRef
+	s.Description().Components.Schemas[key] = schemaRef
 
 	return schemaRef
 }
