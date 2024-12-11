@@ -112,7 +112,7 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 	route.Path = s.basePath + route.Path
 
 	var err error
-	route.Operation, err = RegisterOpenAPIOperation(s, route)
+	route.Operation, err = RegisterOpenAPIOperation(s.OpenAPIzer, route)
 	if err != nil {
 		slog.Warn("error documenting openapi operation", "error", err)
 	}
