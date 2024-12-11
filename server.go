@@ -59,10 +59,8 @@ type Server struct {
 	mainRouter             *Server // Ref to the main router (used for groups)
 	basePath               string  // Base path of the group
 
-	globalOpenAPIResponses []openAPIError // Global error responses
-
-	// OpenAPIzer handles the OpenAPI spec generation.
-	OpenAPIzer
+	// OpenAPI handles the OpenAPI spec generation.
+	OpenAPI *OpenAPI
 
 	Security Security
 
@@ -109,7 +107,7 @@ func NewServer(options ...func(*Server)) *Server {
 		Mux: http.NewServeMux(),
 
 		OpenAPIConfig: defaultOpenAPIConfig,
-		OpenAPIzer:    NewSpec(),
+		OpenAPI:       NewOpenAPI(),
 
 		openAPIGenerator: openapi3gen.NewGenerator(
 			openapi3gen.UseAllExportedFields(),
@@ -138,7 +136,7 @@ func NewServer(options ...func(*Server)) *Server {
 		option(s)
 	}
 
-	s.OpenAPIzer.OpenAPIDescription().Servers = append(s.OpenAPIzer.OpenAPIDescription().Servers, &openapi3.Server{
+	s.OpenAPI.Description().Servers = append(s.OpenAPI.Description().Servers, &openapi3.Server{
 		URL:         "http://" + s.Addr,
 		Description: "local server",
 	})
@@ -214,9 +212,7 @@ func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Se
 func WithGlobalResponseTypes(code int, description string, errorType ...any) func(*Server) {
 	errorType = append(errorType, HTTPError{})
 	return func(c *Server) {
-		c.globalOpenAPIResponses = append(c.globalOpenAPIResponses, openAPIError{code, description, errorType[0]})
-		truc := c.OpenAPIzer.GlobalOpenAPIResponses()
-		*truc = append(*truc, openAPIError{code, description, errorType[0]})
+		c.OpenAPI.globalOpenAPIResponses = append(c.OpenAPI.globalOpenAPIResponses, openAPIError{code, description, errorType[0]})
 	}
 }
 
@@ -237,11 +233,11 @@ func WithGlobalResponseTypes(code int, description string, errorType ...any) fun
 //	)
 func WithSecurity(schemes openapi3.SecuritySchemes) func(*Server) {
 	return func(s *Server) {
-		if s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes == nil {
-			s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes = openapi3.SecuritySchemes{}
+		if s.OpenAPI.Description().Components.SecuritySchemes == nil {
+			s.OpenAPI.Description().Components.SecuritySchemes = openapi3.SecuritySchemes{}
 		}
 		for name, scheme := range schemes {
-			s.OpenAPIzer.OpenAPIDescription().Components.SecuritySchemes[name] = scheme
+			s.OpenAPI.Description().Components.SecuritySchemes[name] = scheme
 		}
 	}
 }
