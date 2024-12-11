@@ -299,8 +299,8 @@ func TestPath(t *testing.T) {
 
 		fuego.Get(s, "/test/{id}", helloWorld)
 
-		require.Equal(t, "id", s.OpenApiSpec.Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Name)
-		require.Equal(t, "", s.OpenApiSpec.Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Description)
+		require.Equal(t, "id", s.OpenAPIzer.OpenAPIDescription().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Name)
+		require.Equal(t, "", s.OpenAPIzer.OpenAPIDescription().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Description)
 	})
 
 	t.Run("Declare explicitly an existing path parameter for the route", func(t *testing.T) {
@@ -310,9 +310,9 @@ func TestPath(t *testing.T) {
 			fuego.OptionPath("id", "some id", param.Example("123", "123"), param.Nullable()),
 		)
 
-		require.Equal(t, "id", s.OpenApiSpec.Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Name)
-		require.Equal(t, "some id", s.OpenApiSpec.Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Description)
-		require.Equal(t, true, s.OpenApiSpec.Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Required, "path parameter is forced to be required")
+		require.Equal(t, "id", s.OpenAPIzer.OpenAPIDescription().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Name)
+		require.Equal(t, "some id", s.OpenAPIzer.OpenAPIDescription().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Description)
+		require.Equal(t, true, s.OpenAPIzer.OpenAPIDescription().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Required, "path parameter is forced to be required")
 	})
 
 	t.Run("Declare explicitly a non-existing path parameter for the route panics", func(t *testing.T) {
@@ -353,7 +353,7 @@ func TestRequestContentType(t *testing.T) {
 		require.NotNil(t, content.Get("application/json"))
 		require.Nil(t, content.Get("application/xml"))
 		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/json").Schema.Ref)
-		_, ok := s.OpenApiSpec.Components.RequestBodies["ReqBody"]
+		_, ok := s.OpenAPIzer.OpenAPIDescription().Components.RequestBodies["ReqBody"]
 		require.False(t, ok)
 	})
 
@@ -369,7 +369,7 @@ func TestRequestContentType(t *testing.T) {
 		require.Nil(t, content.Get("application/xml"))
 		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/json").Schema.Ref)
 		require.Equal(t, "#/components/schemas/ReqBody", content.Get("my/content-type").Schema.Ref)
-		_, ok := s.OpenApiSpec.Components.RequestBodies["ReqBody"]
+		_, ok := s.OpenAPIzer.OpenAPIDescription().Components.RequestBodies["ReqBody"]
 		require.False(t, ok)
 	})
 
@@ -385,7 +385,7 @@ func TestRequestContentType(t *testing.T) {
 		require.Nil(t, content.Get("application/xml"))
 		require.NotNil(t, content.Get("my/content-type"))
 		require.Equal(t, "#/components/schemas/ReqBody", content.Get("my/content-type").Schema.Ref)
-		_, ok := s.OpenApiSpec.Components.RequestBodies["ReqBody"]
+		_, ok := s.OpenAPIzer.OpenAPIDescription().Components.RequestBodies["ReqBody"]
 		require.False(t, ok)
 	})
 }
