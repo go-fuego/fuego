@@ -25,9 +25,9 @@ type OpenAPIzer interface {
 	GlobalOpenAPIResponses() *[]openAPIError
 }
 
-func NewSpec() *Spec {
+func NewSpec() *OpenAPI {
 	desc := NewOpenApiSpec()
-	return &Spec{
+	return &OpenAPI{
 		description:            &desc,
 		generator:              openapi3gen.NewGenerator(),
 		globalOpenAPIResponses: &[]openAPIError{},
@@ -35,25 +35,25 @@ func NewSpec() *Spec {
 }
 
 // Holds the OpenAPI OpenAPIDescription (OAD) and OpenAPI capabilities.
-type Spec struct {
+type OpenAPI struct {
 	description            *openapi3.T
 	generator              *openapi3gen.Generator
 	globalOpenAPIResponses *[]openAPIError
 }
 
-func (d *Spec) OpenAPIDescription() *openapi3.T {
+func (d *OpenAPI) OpenAPIDescription() *openapi3.T {
 	return d.description
 }
 
-func (d *Spec) Generator() *openapi3gen.Generator {
+func (d *OpenAPI) Generator() *openapi3gen.Generator {
 	return d.generator
 }
 
-func (d *Spec) GlobalOpenAPIResponses() *[]openAPIError {
+func (d *OpenAPI) GlobalOpenAPIResponses() *[]openAPIError {
 	return d.globalOpenAPIResponses
 }
 
-var _ OpenAPIzer = &Spec{}
+var _ OpenAPIzer = &OpenAPI{}
 
 func NewOpenApiSpec() openapi3.T {
 	info := &openapi3.Info{
