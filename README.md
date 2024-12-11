@@ -12,13 +12,13 @@
 
 > The framework for busy Go developers
 
-**Build your API or web application in minutes!**
+🚀 **Explore and contribute to our [2025 Roadmap](https://github.com/go-fuego/fuego/discussions/263)!** 🚀
 
-Go framework generating OpenAPI documentation from code.
+Production-ready Go API framework generating OpenAPI documentation from code.
 Inspired by Nest, built for Go developers.
 
-Also empowers `html/template`, `a-h/templ` and `maragudk/gomponents`:
-see [the example](./examples/full-app-gourmet) - actually running [in prod](https://gourmet.quimerch.com)!
+Also empowers templating with `html/template`, `a-h/templ` and `maragudk/gomponents`:
+see [the example](./examples/full-app-gourmet) [running live](https://gourmet.quimerch.com).
 
 ## Sponsors
 
