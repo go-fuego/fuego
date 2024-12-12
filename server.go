@@ -107,10 +107,10 @@ func NewServer(options ...func(*Server)) *Server {
 			WriteTimeout:      30 * time.Second,
 			IdleTimeout:       30 * time.Second,
 		},
-		Mux: http.NewServeMux(),
+		Mux:     http.NewServeMux(),
+		OpenAPI: NewOpenAPI(),
 
 		OpenAPIConfig: defaultOpenAPIConfig,
-		OpenAPI:       NewOpenAPI(),
 
 		openAPIGenerator: openapi3gen.NewGenerator(
 			openapi3gen.UseAllExportedFields(),
