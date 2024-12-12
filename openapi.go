@@ -188,7 +188,17 @@ func validateSwaggerUrl(swaggerUrl string) bool {
 	return swaggerUrlRegexp.MatchString(swaggerUrl)
 }
 
+// RegisterOpenAPIOperation registers the route to the OpenAPI description.
+// Modifies the route's Operation.
+func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(openapi *OpenAPI) error {
+	operation, err := RegisterOpenAPIOperation(openapi, *route)
+	route.Operation = operation
+	return err
+}
+
 // RegisterOpenAPIOperation registers an OpenAPI operation.
+//
+// Deprecated: Use `(*Route[ResponseBody, RequestBody]).RegisterOpenAPIOperation` instead.
 func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*openapi3.Operation, error) {
 	if route.Operation == nil {
 		route.Operation = openapi3.NewOperation()
