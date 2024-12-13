@@ -488,8 +488,8 @@ func TestHideOpenapiRoutes(t *testing.T) {
 		Get(s, "/test", func(ctx *ContextNoBody) (string, error) { return "", nil })
 
 		require.Equal(t, s.DisableOpenapi, true)
-		require.True(t, s.OpenApiSpec.Paths.Find("/not-hidden") != nil)
-		require.True(t, s.OpenApiSpec.Paths.Find("/test") == nil)
+		require.True(t, s.OpenAPI.Description().Paths.Find("/not-hidden") != nil)
+		require.True(t, s.OpenAPI.Description().Paths.Find("/test") == nil)
 	})
 
 	t.Run("hide group", func(t *testing.T) {
@@ -500,8 +500,8 @@ func TestHideOpenapiRoutes(t *testing.T) {
 		Get(g, "/test", func(ctx *ContextNoBody) (string, error) { return "", nil })
 
 		require.Equal(t, g.DisableOpenapi, true)
-		require.True(t, s.OpenApiSpec.Paths.Find("/not-hidden") != nil)
-		require.True(t, s.OpenApiSpec.Paths.Find("/group/test") == nil)
+		require.True(t, s.OpenAPI.Description().Paths.Find("/not-hidden") != nil)
+		require.True(t, s.OpenAPI.Description().Paths.Find("/group/test") == nil)
 	})
 
 	t.Run("hide group but not other group", func(t *testing.T) {
@@ -514,8 +514,8 @@ func TestHideOpenapiRoutes(t *testing.T) {
 
 		require.Equal(t, true, g.DisableOpenapi)
 		require.Equal(t, false, g2.DisableOpenapi)
-		require.True(t, s.OpenApiSpec.Paths.Find("/group/test") == nil)
-		require.True(t, s.OpenApiSpec.Paths.Find("/group2/test") != nil)
+		require.True(t, s.OpenAPI.Description().Paths.Find("/group/test") == nil)
+		require.True(t, s.OpenAPI.Description().Paths.Find("/group2/test") != nil)
 	})
 
 	t.Run("hide group but show sub group", func(t *testing.T) {
@@ -527,8 +527,8 @@ func TestHideOpenapiRoutes(t *testing.T) {
 		Get(g2, "/test", func(ctx *ContextNoBody) (string, error) { return "test", nil })
 
 		require.Equal(t, true, g.DisableOpenapi)
-		require.True(t, s.OpenApiSpec.Paths.Find("/group/test") == nil)
-		require.True(t, s.OpenApiSpec.Paths.Find("/group/sub/test") != nil)
+		require.True(t, s.OpenAPI.Description().Paths.Find("/group/test") == nil)
+		require.True(t, s.OpenAPI.Description().Paths.Find("/group/sub/test") != nil)
 	})
 }
 

@@ -16,7 +16,32 @@ import (
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3gen"
 )
+
+func NewOpenAPI() *OpenAPI {
+	desc := NewOpenApiSpec()
+	return &OpenAPI{
+		description:            &desc,
+		generator:              openapi3gen.NewGenerator(),
+		globalOpenAPIResponses: []openAPIError{},
+	}
+}
+
+// Holds the OpenAPI OpenAPIDescription (OAD) and OpenAPI capabilities.
+type OpenAPI struct {
+	description            *openapi3.T
+	generator              *openapi3gen.Generator
+	globalOpenAPIResponses []openAPIError
+}
+
+func (d *OpenAPI) Description() *openapi3.T {
+	return d.description
+}
+
+func (d *OpenAPI) Generator() *openapi3gen.Generator {
+	return d.generator
+}
 
 func NewOpenApiSpec() openapi3.T {
 	info := &openapi3.Info{
@@ -53,11 +78,11 @@ func (s *Server) Show() *Server {
 }
 
 func declareAllTagsFromOperations(s *Server) {
-	for _, pathItem := range s.OpenApiSpec.Paths.Map() {
+	for _, pathItem := range s.OpenAPI.Description().Paths.Map() {
 		for _, op := range pathItem.Operations() {
 			for _, tag := range op.Tags {
-				if s.OpenApiSpec.Tags.Get(tag) == nil {
-					s.OpenApiSpec.Tags = append(s.OpenApiSpec.Tags, &openapi3.Tag{
+				if s.OpenAPI.Description().Tags.Get(tag) == nil {
+					s.OpenAPI.Description().Tags = append(s.OpenAPI.Description().Tags, &openapi3.Tag{
 						Name: tag,
 					})
 				}
@@ -73,7 +98,7 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 	declareAllTagsFromOperations(s)
 
 	// Validate
-	err := s.OpenApiSpec.Validate(context.Background())
+	err := s.OpenAPI.Description().Validate(context.Background())
 	if err != nil {
 		slog.Error("Error validating spec", "error", err)
 	}
@@ -95,14 +120,14 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 		}
 	}
 
-	return s.OpenApiSpec
+	return *s.OpenAPI.Description()
 }
 
 func (s *Server) marshalSpec() ([]byte, error) {
 	if s.OpenAPIConfig.PrettyFormatJson {
-		return json.MarshalIndent(s.OpenApiSpec, "", "	")
+		return json.MarshalIndent(s.OpenAPI.Description(), "", "	")
 	}
-	return json.Marshal(s.OpenApiSpec)
+	return json.Marshal(s.OpenAPI.Description())
 }
 
 func (s *Server) saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) error {
@@ -163,15 +188,25 @@ func validateSwaggerUrl(swaggerUrl string) bool {
 	return swaggerUrlRegexp.MatchString(swaggerUrl)
 }
 
+// RegisterOpenAPIOperation registers the route to the OpenAPI description.
+// Modifies the route's Operation.
+func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(openapi *OpenAPI) error {
+	operation, err := RegisterOpenAPIOperation(openapi, *route)
+	route.Operation = operation
+	return err
+}
+
 // RegisterOpenAPIOperation registers an OpenAPI operation.
-func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3.Operation, error) {
+//
+// Deprecated: Use `(*Route[ResponseBody, RequestBody]).RegisterOpenAPIOperation` instead.
+func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*openapi3.Operation, error) {
 	if route.Operation == nil {
 		route.Operation = openapi3.NewOperation()
 	}
 
 	// Request Body
 	if route.Operation.RequestBody == nil {
-		bodyTag := SchemaTagFromType(s, *new(B))
+		bodyTag := SchemaTagFromType(openapi, *new(B))
 
 		if bodyTag.Name != "unknown-interface" {
 			requestBody := newRequestBody[B](bodyTag, route.AcceptedContentTypes)
@@ -184,8 +219,8 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 	}
 
 	// Response - globals
-	for _, openAPIGlobalResponse := range s.globalOpenAPIResponses {
-		addResponseIfNotSet(s, route.Operation, openAPIGlobalResponse.Code, openAPIGlobalResponse.Description, openAPIGlobalResponse.ErrorType)
+	for _, openAPIGlobalResponse := range openapi.globalOpenAPIResponses {
+		addResponseIfNotSet(openapi, route.Operation, openAPIGlobalResponse.Code, openAPIGlobalResponse.Description, openAPIGlobalResponse.ErrorType)
 	}
 
 	// Automatically add non-declared 200 (or other) Response
@@ -202,7 +237,7 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 
 	// Automatically add non-declared Content for 200 (or other) Response
 	if responseDefault.Value.Content == nil {
-		responseSchema := SchemaTagFromType(s, *new(T))
+		responseSchema := SchemaTagFromType(openapi, *new(T))
 		content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
 		responseDefault.Value.WithContent(content)
 	}
@@ -228,7 +263,7 @@ func RegisterOpenAPIOperation[T, B any](s *Server, route Route[T, B]) (*openapi3
 		}
 	}
 
-	s.OpenApiSpec.AddOperation(route.Path, route.Method, route.Operation)
+	openapi.Description().AddOperation(route.Path, route.Method, route.Operation)
 
 	return route.Operation, nil
 }
@@ -247,10 +282,10 @@ type SchemaTag struct {
 	Name string
 }
 
-func SchemaTagFromType(s *Server, v any) SchemaTag {
+func SchemaTagFromType(openapi *OpenAPI, v any) SchemaTag {
 	if v == nil {
 		// ensure we add unknown-interface to our schemas
-		schema := s.getOrCreateSchema("unknown-interface", struct{}{})
+		schema := openapi.getOrCreateSchema("unknown-interface", struct{}{})
 		return SchemaTag{
 			Name: "unknown-interface",
 			SchemaRef: openapi3.SchemaRef{
@@ -260,7 +295,7 @@ func SchemaTagFromType(s *Server, v any) SchemaTag {
 		}
 	}
 
-	return dive(s, reflect.TypeOf(v), SchemaTag{}, 5)
+	return dive(openapi, reflect.TypeOf(v), SchemaTag{}, 5)
 }
 
 // dive returns a schemaTag which includes the generated openapi3.SchemaRef and
@@ -270,7 +305,7 @@ func SchemaTagFromType(s *Server, v any) SchemaTag {
 // If the type is a slice or array type it will dive into the type as well as
 // build and openapi3.Schema where Type is array and Ref is set to the proper
 // components Schema
-func dive(s *Server, t reflect.Type, tag SchemaTag, maxDepth int) SchemaTag {
+func dive(openapi *OpenAPI, t reflect.Type, tag SchemaTag, maxDepth int) SchemaTag {
 	if maxDepth == 0 {
 		return SchemaTag{
 			Name: "default",
@@ -282,10 +317,10 @@ func dive(s *Server, t reflect.Type, tag SchemaTag, maxDepth int) SchemaTag {
 
 	switch t.Kind() {
 	case reflect.Ptr, reflect.Map, reflect.Chan, reflect.Func, reflect.UnsafePointer:
-		return dive(s, t.Elem(), tag, maxDepth-1)
+		return dive(openapi, t.Elem(), tag, maxDepth-1)
 
 	case reflect.Slice, reflect.Array:
-		item := dive(s, t.Elem(), tag, maxDepth-1)
+		item := dive(openapi, t.Elem(), tag, maxDepth-1)
 		tag.Name = item.Name
 		tag.Value = openapi3.NewArraySchema()
 		tag.Value.Items = &item.SchemaRef
@@ -294,10 +329,10 @@ func dive(s *Server, t reflect.Type, tag SchemaTag, maxDepth int) SchemaTag {
 	default:
 		tag.Name = t.Name()
 		if t.Kind() == reflect.Struct && strings.HasPrefix(tag.Name, "DataOrTemplate") {
-			return dive(s, t.Field(0).Type, tag, maxDepth-1)
+			return dive(openapi, t.Field(0).Type, tag, maxDepth-1)
 		}
 		tag.Ref = "#/components/schemas/" + tag.Name
-		tag.Value = s.getOrCreateSchema(tag.Name, reflect.New(t).Interface())
+		tag.Value = openapi.getOrCreateSchema(tag.Name, reflect.New(t).Interface())
 
 		return tag
 	}
@@ -305,18 +340,18 @@ func dive(s *Server, t reflect.Type, tag SchemaTag, maxDepth int) SchemaTag {
 
 // getOrCreateSchema is used to get a schema from the OpenAPI spec.
 // If the schema does not exist, it will create a new schema and add it to the OpenAPI spec.
-func (s *Server) getOrCreateSchema(key string, v any) *openapi3.Schema {
-	schemaRef, ok := s.OpenApiSpec.Components.Schemas[key]
+func (openapi *OpenAPI) getOrCreateSchema(key string, v any) *openapi3.Schema {
+	schemaRef, ok := openapi.Description().Components.Schemas[key]
 	if !ok {
-		schemaRef = s.createSchema(key, v)
+		schemaRef = openapi.createSchema(key, v)
 	}
 	return schemaRef.Value
 }
 
 // createSchema is used to create a new schema and add it to the OpenAPI spec.
 // Relies on the openapi3gen package to generate the schema, and adds custom struct tags.
-func (s *Server) createSchema(key string, v any) *openapi3.SchemaRef {
-	schemaRef, err := s.openAPIGenerator.NewSchemaRefForValue(v, s.OpenApiSpec.Components.Schemas)
+func (openapi *OpenAPI) createSchema(key string, v any) *openapi3.SchemaRef {
+	schemaRef, err := openapi.Generator().NewSchemaRefForValue(v, openapi.Description().Components.Schemas)
 	if err != nil {
 		slog.Error("Error generating schema", "key", key, "error", err)
 	}
@@ -327,9 +362,9 @@ func (s *Server) createSchema(key string, v any) *openapi3.SchemaRef {
 		schemaRef.Value.Description = descriptionable.Description()
 	}
 
-	s.parseStructTags(reflect.TypeOf(v), schemaRef)
+	parseStructTags(reflect.TypeOf(v), schemaRef)
 
-	s.OpenApiSpec.Components.Schemas[key] = schemaRef
+	openapi.Description().Components.Schemas[key] = schemaRef
 
 	return schemaRef
 }
@@ -346,7 +381,7 @@ func (s *Server) createSchema(key string, v any) *openapi3.SchemaRef {
 //   - min=1 => minLength=1 (for strings)
 //   - max=100 => max=100 (for integers)
 //   - max=100 => maxLength=100 (for strings)
-func (s *Server) parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
+func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
@@ -360,7 +395,7 @@ func (s *Server) parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) 
 
 		if field.Anonymous {
 			fieldType := field.Type
-			s.parseStructTags(fieldType, schemaRef)
+			parseStructTags(fieldType, schemaRef)
 			continue
 		}
 
