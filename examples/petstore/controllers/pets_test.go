@@ -24,6 +24,19 @@ func TestGetAllPets(t *testing.T) {
 	})
 }
 
+func TestGetAllPetsStd(t *testing.T) {
+	t.Run("can get all pets std", func(t *testing.T) {
+		s := lib.NewPetStoreServer()
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/pets/std/all", nil)
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, http.StatusOK, w.Code)
+	})
+}
+
 func TestFilterPets(t *testing.T) {
 	t.Run("can filter pets", func(t *testing.T) {
 		s := lib.NewPetStoreServer()
