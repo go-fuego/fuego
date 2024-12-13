@@ -95,6 +95,14 @@ func declareAllTagsFromOperations(s *Server) {
 // Also serves a Swagger UI.
 // To modify its behavior, use the [WithOpenAPIConfig] option.
 func (s *Server) OutputOpenAPISpec() openapi3.T {
+	if s.OpenAPIConfig.Server == nil {
+		s.OpenAPIConfig.Server = &openapi3.Server{
+			URL:         s.proto() + "://" + s.Addr,
+			Description: "local server",
+		}
+	}
+	s.OpenAPI.Description().Servers = append(s.OpenAPI.Description().Servers, s.OpenAPIConfig.Server)
+
 	declareAllTagsFromOperations(s)
 
 	// Validate

@@ -83,6 +83,10 @@ func TestWithOpenAPIConfig(t *testing.T) {
 	t.Run("with custom values", func(t *testing.T) {
 		s := NewServer(
 			WithOpenAPIConfig(OpenAPIConfig{
+				Server: &openapi3.Server{
+					URL:         "foo",
+					Description: "bar",
+				},
 				SwaggerUrl:       "/api",
 				JsonUrl:          "/api/openapi.json",
 				JsonFilePath:     "openapi.json",
@@ -95,6 +99,8 @@ func TestWithOpenAPIConfig(t *testing.T) {
 		require.Equal(t, "/api", s.OpenAPIConfig.SwaggerUrl)
 		require.Equal(t, "/api/openapi.json", s.OpenAPIConfig.JsonUrl)
 		require.Equal(t, "openapi.json", s.OpenAPIConfig.JsonFilePath)
+		require.Equal(t, "foo", s.OpenAPIConfig.Server.URL)
+		require.Equal(t, "bar", s.OpenAPIConfig.Server.Description)
 		require.True(t, s.OpenAPIConfig.DisableSwagger)
 		require.True(t, s.OpenAPIConfig.DisableLocalSave)
 		require.True(t, s.OpenAPIConfig.PrettyFormatJson)

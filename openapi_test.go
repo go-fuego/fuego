@@ -263,6 +263,8 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 		require.NotNil(t, file)
 		defer os.Remove(file.Name())
 		require.Equal(t, 1, lineCounter(t, file))
+		require.Equal(t, "http://localhost:9999", document.Servers[0].URL)
+		require.Equal(t, "local server", document.Servers[0].Description)
 	})
 	t.Run("do not print file", func(t *testing.T) {
 		s := NewServer(
@@ -327,6 +329,29 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 		require.NotNil(t, file)
 		defer os.Remove(file.Name())
 		require.Greater(t, lineCounter(t, file), 1)
+	})
+	t.Run("custom server input", func(t *testing.T) {
+		s := NewServer(
+			WithOpenAPIConfig(
+				OpenAPIConfig{
+					JsonFilePath:     docPath,
+					PrettyFormatJson: true,
+					Server: &openapi3.Server{
+						URL:         "foo",
+						Description: "bar",
+					},
+				},
+			),
+		)
+		Get(s, "/", func(*ContextNoBody) (MyStruct, error) {
+			return MyStruct{}, nil
+		})
+
+		document := s.OutputOpenAPISpec()
+		require.NotNil(t, document)
+
+		require.Equal(t, "foo", document.Servers[0].URL)
+		require.Equal(t, "bar", document.Servers[0].Description)
 	})
 }
 
