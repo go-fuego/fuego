@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"encoding/json"
 	"log/slog"
+	"net/http"
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/petstore/models"
@@ -48,7 +50,7 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge, option.Description("Returns an array of pets grouped by age"))
 	fuego.Post(petsGroup, "/", rs.postPets,
 		option.DefaultStatusCode(201),
-		option.AddError(409, "Conflict: Pet with the same name already exists", PetsError{}),
+		option.AddResponse(409, "Conflict: Pet with the same name already exists", fuego.Response{Type: PetsError{}}),
 	)
 
 	fuego.Get(petsGroup, "/{id}", rs.getPets,
@@ -61,6 +63,28 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		option.RequestContentType("application/json"),
 	)
 	fuego.Delete(petsGroup, "/{id}", rs.deletePets)
+
+	stdPetsGroup := fuego.Group(petsGroup, "/std")
+
+	fuego.GetStd(stdPetsGroup, "/all", func(w http.ResponseWriter, r *http.Request) {
+		pets, err := rs.PetsService.GetAllPets()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(pets); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+	}, option.AddResponse(http.StatusOK, "all the pets",
+		fuego.Response{
+			Type:         []models.Pets{},
+			ContentTypes: []string{"application/json"},
+		},
+	))
+
 }
 
 func (rs PetsResources) getAllPets(c fuego.ContextNoBody) ([]models.Pets, error) {
