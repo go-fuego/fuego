@@ -152,7 +152,7 @@ var AddError = fuego.OptionAddError
 // AddResponse adds a response to a route by status code
 // It replaces any existing response set by any status code, this will override 200.
 // Required: fuego.Response.Type must be set
-// Optional: fuego.Response.ContentTypes will default to `application/json`, `application/xml` if no set
+// Optional: fuego.Response.ContentTypes will default to `application/json` and `application/xml` if not set
 var AddResponse = fuego.OptionAddResponse
 
 // RequestContentType sets the accepted content types for the route.
