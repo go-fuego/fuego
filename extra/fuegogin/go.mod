@@ -1,8 +1,9 @@
 module github.com/go-fuego/fuego/extra/fuegogin
 
-go 1.22.5
+go 1.23.0
 
 require (
+	github.com/getkin/kin-openapi v0.128.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-fuego/fuego v0.16.1
 	github.com/stretchr/testify v1.10.0
@@ -15,7 +16,6 @@ require (
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.7 // indirect
-	github.com/getkin/kin-openapi v0.128.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect

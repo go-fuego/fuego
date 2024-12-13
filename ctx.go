@@ -53,9 +53,6 @@ type ContextWithBody[B any] interface {
 	QueryParamBoolErr(name string) (bool, error)
 	QueryParams() url.Values
 
-	MainLang() string   // ex: fr. MainLang returns the main language of the request. It is the first language of the Accept-Language header. To get the main locale (ex: fr-CA), use [Ctx.MainLocale].
-	MainLocale() string // ex: en-US. MainLocale returns the main locale of the request. It is the first locale of the Accept-Language header. To get the main language (ex: en), use [Ctx.MainLang].
-
 	// Render renders the given templates with the given data.
 	// Example:
 	//   fuego.Get(s, "/recipes", func(c fuego.ContextNoBody) (any, error) {

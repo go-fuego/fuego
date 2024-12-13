@@ -1,15 +1,13 @@
 package main
 
-import "github.com/go-fuego/fuego/extra/fuegogin/lib"
+import (
+	"github.com/go-fuego/fuego/extra/fuegogin/lib"
+)
 
 func main() {
-	e, s := lib.SetupGin()
+	e, _ := lib.SetupGin()
 
-	go func() {
-		s.Run()
-	}()
-
-	err := e.Run(":8080")
+	err := e.Run(":8980")
 	if err != nil {
 		panic(err)
 	}

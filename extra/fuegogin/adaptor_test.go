@@ -9,7 +9,7 @@ import (
 	"github.com/go-fuego/fuego/extra/fuegogin/lib"
 )
 
-func TestXxx(t *testing.T) {
+func TestFuegoGin(t *testing.T) {
 	e, _ := lib.SetupGin()
 
 	t.Run("simply test gin", func(t *testing.T) {
