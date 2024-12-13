@@ -11,9 +11,9 @@ func Get[T, B any](
 	s *fuego.OpenAPI,
 	e *gin.Engine,
 	path string,
-	handler func(c *ContextWithBody[T]) (B, error),
+	handler func(c *ContextWithBody[B]) (T, error),
 	options ...func(*fuego.BaseRoute),
-) *fuego.Route[B, T] {
+) *fuego.Route[T, B] {
 	return Handle(s, e, "GET", path, handler, options...)
 }
 
@@ -21,9 +21,9 @@ func Post[T, B any](
 	s *fuego.OpenAPI,
 	e *gin.Engine,
 	path string,
-	handler func(c *ContextWithBody[T]) (B, error),
+	handler func(c *ContextWithBody[B]) (T, error),
 	options ...func(*fuego.BaseRoute),
-) *fuego.Route[B, T] {
+) *fuego.Route[T, B] {
 	return Handle(s, e, "POST", path, handler, options...)
 }
 
@@ -32,10 +32,10 @@ func Handle[T, B any](
 	e *gin.Engine,
 	method,
 	path string,
-	handler func(c *ContextWithBody[T]) (B, error),
+	handler func(c *ContextWithBody[B]) (T, error),
 	options ...func(*fuego.BaseRoute),
-) *fuego.Route[B, T] {
-	route := &fuego.Route[B, T]{
+) *fuego.Route[T, B] {
+	route := &fuego.Route[T, B]{
 		BaseRoute: fuego.BaseRoute{
 			Method:    method,
 			Path:      path,
@@ -50,12 +50,14 @@ func Handle[T, B any](
 		o(&route.BaseRoute)
 	}
 
+	route.BaseRoute.GenerateDefaultDescription()
+
 	e.Handle(method, path, func(c *gin.Context) {
-		context := &ContextWithBody[T]{
-			ContextNoBody: ContextNoBody{
-				ginCtx: c,
-			},
+		context := &ContextWithBody[B]{
+
+			ginCtx: c,
 		}
+
 		ans, err := handler(context)
 		if err != nil {
 			c.Error(err)
