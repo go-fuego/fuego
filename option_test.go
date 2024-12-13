@@ -11,6 +11,7 @@ import (
 	"github.com/thejerf/slogassert"
 
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
 	"github.com/go-fuego/fuego/param"
 )
 
@@ -232,7 +233,7 @@ func TestOpenAPI(t *testing.T) {
 
 		route := fuego.Get(s, "/test", helloWorld,
 			fuego.OptionSummary("test summary"),
-			fuego.OptionDescription("test description"),
+			fuego.OptionAddDescription("test description"),
 			fuego.OptionTags("first-tag", "second-tag"),
 			fuego.OptionDeprecated(),
 			fuego.OptionOperationID("test-operation-id"),
@@ -779,15 +780,25 @@ func TestSecurity(t *testing.T) {
 }
 
 func TestOptionAddDescription(t *testing.T) {
+	t.Run("Declare a description for the route", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			option.AddDescription("test description"),
+		)
+
+		require.Equal(t, "controller: `github.com/go-fuego/fuego_test.helloWorld`\n\n---\n\ntest description", route.Operation.Description)
+	})
+
 	t.Run("Declare a description for the route with multiple descriptions", func(t *testing.T) {
 		s := fuego.NewServer()
 
 		route := fuego.Get(s, "/test", helloWorld,
-			fuego.OptionDescription("test description"),
-			fuego.OptionAddDescription("another description"),
+			option.Description("test description\n\n"),
+			option.AddDescription("another description"),
 		)
 
-		require.Equal(t, "controller: `github.com/go-fuego/fuego_test.helloWorld`\n\n---\n\ntest description\n\nanother description", route.Operation.Description)
+		require.Equal(t, "test description\n\nanother description", route.Operation.Description)
 	})
 }
 

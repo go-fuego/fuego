@@ -402,21 +402,21 @@ func TestRegister(t *testing.T) {
 				Operation: &openapi3.Operation{
 					Tags:        []string{"my-tag"},
 					Summary:     "my-summary",
-					Description: "my-description",
+					Description: "my-description\n",
 					OperationID: "my-operation-id",
 				},
 			},
 		}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),
 			OptionOperationID("new-operation-id"),
 			OptionSummary("new-summary"),
-			OptionDescription("new-description"),
+			OptionAddDescription("new-description"),
 			OptionTags("new-tag"),
 		)
 
 		require.NotNil(t, route)
 		require.Equal(t, []string{"my-tag", "new-tag"}, route.Operation.Tags)
 		require.Equal(t, "new-summary", route.Operation.Summary)
-		require.Equal(t, "controller: `/test`\n\n---\n\nnew-description", route.Operation.Description)
+		require.Equal(t, "my-description\nnew-description", route.Operation.Description)
 		require.Equal(t, "new-operation-id", route.Operation.OperationID)
 	})
 }

@@ -812,8 +812,8 @@
 				]
 			},
 			"get": {
-				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.getPets`\n\n---\n\n",
-				"operationId": "GET_/pets/:id",
+				"description": "Replace description with this sentence.",
+				"operationId": "getPet",
 				"parameters": [
 					{
 						"in": "header",

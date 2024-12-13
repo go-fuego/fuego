@@ -38,22 +38,24 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		optionPagination,
 		option.Query("name", "Filter by name", param.Example("cat name", "felix"), param.Nullable()),
 		option.QueryInt("younger_than", "Only get pets younger than given age in years", param.Default(3)),
-		option.Description("Filter pets"),
+		option.AddDescription("Filter pets"),
 	)
 
 	fuego.Get(petsGroup, "/all", rs.getAllPets,
 		optionPagination,
 		option.Tags("my-tag"),
-		option.Description("Get all pets"),
+		option.AddDescription("Get all pets"),
 	)
 
-	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge, option.Description("Returns an array of pets grouped by age"))
+	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge, option.AddDescription("Returns an array of pets grouped by age"))
 	fuego.Post(petsGroup, "/", rs.postPets,
 		option.DefaultStatusCode(201),
 		option.AddResponse(409, "Conflict: Pet with the same name already exists", fuego.Response{Type: PetsError{}}),
 	)
 
 	fuego.Get(petsGroup, "/{id}", rs.getPets,
+		option.Description("Replace description with this sentence."),
+		option.OperationID("getPet"),
 		option.Path("id", "Pet ID", param.Example("example", "123")),
 	)
 	fuego.Get(petsGroup, "/by-name/{name...}", rs.getPetByName)

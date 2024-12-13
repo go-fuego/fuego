@@ -93,8 +93,9 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 		o(&route.BaseRoute)
 	}
 	route.Handler = controller
+	route.Path = s.basePath + route.Path
 
-	fullPath := s.basePath + route.Path
+	fullPath := route.Path
 	if route.Method != "" {
 		fullPath = route.Method + " " + fullPath
 	}
@@ -107,25 +108,9 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 		return &route
 	}
 
-	route.Path = s.basePath + route.Path
-
 	err := route.RegisterOpenAPIOperation(s.OpenAPI)
 	if err != nil {
 		slog.Warn("error documenting openapi operation", "error", err)
-	}
-
-	if route.FullName == "" {
-		route.FullName = route.Path
-	}
-
-	if route.Operation.Summary == "" {
-		route.Operation.Summary = route.NameFromNamespace(camelToHuman)
-	}
-
-	route.Operation.Description = "controller: `" + route.FullName + "`\n\n---\n\n" + route.Operation.Description
-
-	if route.Operation.OperationID == "" {
-		route.Operation.OperationID = route.Method + "_" + strings.ReplaceAll(strings.ReplaceAll(route.Path, "{", ":"), "}", "")
 	}
 
 	return &route
@@ -176,12 +161,14 @@ func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http
 
 func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path string, controller func(Contexted) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
 	route := BaseRoute{
-		Method:    method,
-		Path:      path,
-		Params:    make(map[string]OpenAPIParam),
-		FullName:  FuncName(controller),
-		Operation: openapi3.NewOperation(),
-		OpenAPI:   s.OpenAPI,
+		Method:   method,
+		Path:     path,
+		Params:   make(map[string]OpenAPIParam),
+		FullName: FuncName(controller),
+		Operation: &openapi3.Operation{
+			Description: "controller: `" + FuncName(controller) + "`\n\n---\n\n",
+		},
+		OpenAPI: s.OpenAPI,
 	}
 
 	acceptHeaderParameter := openapi3.NewHeaderParameter("Accept")
@@ -197,11 +184,15 @@ func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path
 
 func registerStdController(s *Server, method, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
 	route := BaseRoute{
-		Method:    method,
-		Path:      path,
-		FullName:  FuncName(controller),
-		Operation: openapi3.NewOperation(),
-		OpenAPI:   s.OpenAPI,
+		Method:   method,
+		Path:     path,
+		Params:   make(map[string]OpenAPIParam),
+		FullName: FuncName(controller),
+		Operation: &openapi3.Operation{
+			Description: "controller: `" + FuncName(controller) + "`\n\n---\n\n",
+		},
+		Handler: http.HandlerFunc(controller),
+		OpenAPI: s.OpenAPI,
 	}
 
 	for _, o := range append(s.routeOptions, options...) {
