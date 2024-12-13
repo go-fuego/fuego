@@ -37,7 +37,7 @@ lint:
 	golangci-lint run ${FIX} ./...
 
 lint-markdown:
-	markdownlint --ignore documentation/node_modules --dot .
+	markdownlint ${FIX} --ignore documentation/node_modules --dot .
 
 # Update golden files
 golden-update:
