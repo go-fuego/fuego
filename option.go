@@ -319,6 +319,43 @@ func OptionAddError(code int, description string, errorType ...any) func(*BaseRo
 	}
 }
 
+// Response represents a fuego.Response that can be used
+// when setting custom response types on routes
+type Response struct {
+	// content-type of the response i.e application/json
+	ContentTypes []string
+	// user provided type
+	Type any
+}
+
+// AddResponse adds a response to a route by status code
+// It replaces any existing response set by any status code, this will override 200.
+// Required: Response.Type must be set
+// Optional: Response.ContentTypes will default to `application/json`, `application/xml` if no set
+func OptionAddResponse(code int, description string, response Response) func(*BaseRoute) {
+	var responseSchema SchemaTag
+	return func(r *BaseRoute) {
+		if response.Type == nil {
+			panic("Type in Response cannot be nil")
+		}
+
+		responseSchema = SchemaTagFromType(r.OpenAPI, response.Type)
+		if len(response.ContentTypes) == 0 {
+			response.ContentTypes = []string{"application/json", "application/xml"}
+		}
+
+		content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, response.ContentTypes)
+		response := openapi3.NewResponse().
+			WithDescription(description).
+			WithContent(content)
+
+		if r.Operation.Responses == nil {
+			r.Operation.Responses = openapi3.NewResponses()
+		}
+		r.Operation.Responses.Set(strconv.Itoa(code), &openapi3.ResponseRef{Value: response})
+	}
+}
+
 // RequestContentType sets the accepted content types for the route.
 // By default, the accepted content types is */*.
 // This will override any options set at the server level.
