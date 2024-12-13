@@ -28,8 +28,8 @@ func SetupGin() (*gin.Engine, *fuego.OpenAPI) {
 	e.GET("/gin", ginController)
 
 	// Register to Gin router with Fuego wrapper for same OpenAPI spec
-	fuegogin.Get(openapi, e, "/fuego", fuegoController)
-	fuegogin.Get(openapi, e, "/fuego-with-options", fuegoController,
+	fuegogin.Get(openapi, e, "/fuego", fuegoControllerGet)
+	fuegogin.Post(openapi, e, "/fuego-with-options", fuegoControllerPost,
 		option.Description("Some description"),
 		option.OperationID("SomeOperationID"),
 		option.AddError(409, "Name Already Exists"),
@@ -50,7 +50,13 @@ func ginController(c *gin.Context) {
 	c.String(200, "pong")
 }
 
-func fuegoController(c *fuegogin.ContextWithBody[HelloRequest]) (HelloResponse, error) {
+func fuegoControllerGet(c *fuegogin.ContextNoBody) (HelloResponse, error) {
+	return HelloResponse{
+		Message: "Hello",
+	}, nil
+}
+
+func fuegoControllerPost(c *fuegogin.ContextWithBody[HelloRequest]) (HelloResponse, error) {
 	body, err := c.Body()
 	if err != nil {
 		return HelloResponse{}, err
@@ -61,7 +67,7 @@ func fuegoController(c *fuegogin.ContextWithBody[HelloRequest]) (HelloResponse, 
 	fmt.Println("name", name)
 
 	return HelloResponse{
-		Message: "Hello " + body.Name,
+		Message: "Hello " + body.Name + name,
 	}, nil
 }
 
