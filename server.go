@@ -138,11 +138,6 @@ func NewServer(options ...func(*Server)) *Server {
 		option(s)
 	}
 
-	s.OpenAPI.Description().Servers = append(s.OpenAPI.Description().Servers, &openapi3.Server{
-		URL:         "http://" + s.Addr,
-		Description: "local server",
-	})
-
 	s.startTime = time.Now()
 
 	if s.autoAuth.Enabled {
