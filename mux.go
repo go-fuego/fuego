@@ -145,7 +145,7 @@ func Handle(s *Server, path string, controller http.Handler, options ...func(*Ba
 	return Register(s, Route[any, any]{
 		BaseRoute: BaseRoute{
 			Path:     path,
-			FullName: FuncName(controller),
+			FullName: funcName(controller),
 		},
 	}, controller)
 }
@@ -179,7 +179,7 @@ func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path
 		Method:    method,
 		Path:      path,
 		Params:    make(map[string]OpenAPIParam),
-		FullName:  FuncName(controller),
+		FullName:  funcName(controller),
 		Operation: openapi3.NewOperation(),
 		OpenAPI:   s.OpenAPI,
 	}
@@ -199,7 +199,7 @@ func registerStdController(s *Server, method, path string, controller func(http.
 	route := BaseRoute{
 		Method:    method,
 		Path:      path,
-		FullName:  FuncName(controller),
+		FullName:  funcName(controller),
 		Operation: openapi3.NewOperation(),
 		OpenAPI:   s.OpenAPI,
 	}
@@ -218,8 +218,8 @@ func withMiddlewares(controller http.Handler, middlewares ...func(http.Handler) 
 	return controller
 }
 
-// FuncName returns the name of a function and the name with package path
-func FuncName(f interface{}) string {
+// funcName returns the name of a function and the name with package path
+func funcName(f interface{}) string {
 	return strings.TrimSuffix(runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name(), "-fm")
 }
 
