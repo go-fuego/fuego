@@ -56,10 +56,9 @@ type Server struct {
 
 	disableStartupMessages bool
 	disableAutoGroupTags   bool
-	mainRouter             *Server // Ref to the main router (used for groups)
-	basePath               string  // Base path of the group
+	basePath               string // Base path of the group
 
-	// OpenAPI handles the OpenAPI spec generation.
+	// Points to the server OpenAPI struct.
 	OpenAPI *OpenAPI
 
 	Security Security
