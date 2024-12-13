@@ -332,7 +332,7 @@ type Response struct {
 // AddResponse adds a response to a route by status code
 // It replaces any existing response set by any status code, this will override 200.
 // Required: Response.Type must be set
-// Optional: Response.ContentTypes will default to `application/json`, `application/xml` if no set
+// Optional: Response.ContentTypes will default to `application/json` and `application/xml` if not set
 func OptionAddResponse(code int, description string, response Response) func(*BaseRoute) {
 	var responseSchema SchemaTag
 	return func(r *BaseRoute) {
