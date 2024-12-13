@@ -237,8 +237,8 @@ func FuncName(f interface{}) string {
 //
 // The output can be further modified with a list of optional
 // string manipulation funcs (i.e func(string) string)
-func (r Route[T, B]) NameFromNamespace(opts ...func(string) string) string {
-	ss := strings.Split(r.FullName, ".")
+func (route Route[T, B]) NameFromNamespace(opts ...func(string) string) string {
+	ss := strings.Split(route.FullName, ".")
 	name := ss[len(ss)-1]
 	for _, o := range opts {
 		name = o(name)

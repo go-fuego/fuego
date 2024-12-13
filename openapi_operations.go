@@ -38,29 +38,6 @@ type OpenAPIParamOption struct {
 	StatusCodes []int
 }
 
-// Param registers a parameter for the route.
-// The paramType can be "query", "header" or "cookie" as defined in [ParamType].
-// [Cookie], [Header], [QueryParam] are shortcuts for Param.
-func (r Route[ResponseBody, RequestBody]) Param(paramType ParamType, name, description string, params ...OpenAPIParamOption) Route[ResponseBody, RequestBody] {
-	openapiParam := openapi3.NewHeaderParameter(name)
-	openapiParam.Description = description
-	openapiParam.Schema = openapi3.NewStringSchema().NewRef()
-	openapiParam.In = string(paramType)
-
-	for _, param := range params {
-		if param.Required {
-			openapiParam.Required = param.Required
-		}
-		if param.Example != "" {
-			openapiParam.Example = param.Example
-		}
-	}
-
-	r.Operation.AddParameter(openapiParam)
-
-	return r
-}
-
 // Registers a response for the route, only if error for this code is not already set.
 func addResponseIfNotSet(openapi *OpenAPI, operation *openapi3.Operation, code int, description string, errorType ...any) {
 	var responseSchema SchemaTag
