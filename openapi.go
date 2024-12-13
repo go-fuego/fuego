@@ -96,7 +96,7 @@ func declareAllTagsFromOperations(s *Server) {
 // To modify its behavior, use the [WithOpenAPIConfig] option.
 func (s *Server) OutputOpenAPISpec() openapi3.T {
 	s.OpenAPI.Description().Servers = append(s.OpenAPI.Description().Servers, &openapi3.Server{
-		URL:         s.proto() + "//" + s.Addr,
+		URL:         s.proto() + "://" + s.Addr,
 		Description: "local server",
 	})
 
