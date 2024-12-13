@@ -5,7 +5,7 @@ go 1.23.3
 require (
 	github.com/getkin/kin-openapi v0.128.0
 	github.com/go-fuego/fuego v0.16.1
-	github.com/go-fuego/fuego/middleware/cache v0.0.0-20241209141708-1e6d931908a8
+	github.com/go-fuego/fuego/middleware/cache v0.0.0-20241211140128-19a76d1a892d
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	golang.org/x/image v0.23.0
 )
@@ -26,7 +26,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
-	golang.org/x/crypto v0.30.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/net v0.32.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
