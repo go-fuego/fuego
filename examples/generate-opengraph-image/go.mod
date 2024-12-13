@@ -5,7 +5,7 @@ go 1.23.3
 require (
 	github.com/getkin/kin-openapi v0.128.0
 	github.com/go-fuego/fuego v0.16.1
-	github.com/go-fuego/fuego/middleware/cache v0.0.0-20241211140128-19a76d1a892d
+	github.com/go-fuego/fuego/middleware/cache v0.0.0-20241213083019-8a613313c19f
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	golang.org/x/image v0.23.0
 )

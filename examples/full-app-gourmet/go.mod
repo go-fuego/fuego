@@ -8,9 +8,9 @@ require (
 	github.com/a-h/templ v0.2.793
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-fuego/fuego v0.16.1
-	github.com/go-fuego/fuego/extra/markdown v0.0.0-20241211140128-19a76d1a892d
+	github.com/go-fuego/fuego/extra/markdown v0.0.0-20241213083019-8a613313c19f
 	github.com/go-fuego/fuego/middleware/basicauth v0.15.1
-	github.com/go-fuego/fuego/middleware/cache v0.0.0-20241211140128-19a76d1a892d
+	github.com/go-fuego/fuego/middleware/cache v0.0.0-20241213083019-8a613313c19f
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/google/uuid v1.6.0
