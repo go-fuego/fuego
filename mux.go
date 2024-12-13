@@ -38,7 +38,6 @@ func Group(s *Server, path string, routeOptions ...func(*BaseRoute)) *Server {
 	if autoTag := strings.TrimLeft(path, "/"); !s.disableAutoGroupTags && autoTag != "" {
 		newServer.routeOptions = append(s.routeOptions, OptionTags(autoTag))
 	}
-	newServer.mainRouter = s
 
 	newServer.routeOptions = append(newServer.routeOptions, routeOptions...)
 
@@ -60,8 +59,7 @@ type BaseRoute struct {
 	AcceptedContentTypes []string // Content types accepted for the request body. If nil, all content types (*/*) are accepted.
 	Hidden               bool     // If true, the route will not be documented in the OpenAPI spec
 	DefaultStatusCode    int      // Default status code for the response
-
-	mainRouter *Server // ref to the main router, used to register the route in the OpenAPI spec
+	OpenAPI              *OpenAPI // Ref to the whole OpenAPI spec
 }
 
 // Capture all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
@@ -129,7 +127,6 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 	if route.Operation.OperationID == "" {
 		route.Operation.OperationID = route.Method + "_" + strings.ReplaceAll(strings.ReplaceAll(route.Path, "{", ":"), "}", "")
 	}
-	route.mainRouter = s
 
 	return &route
 }
@@ -179,19 +176,13 @@ func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http
 
 func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path string, controller func(Contexted) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
 	route := BaseRoute{
-		Method:     method,
-		Path:       path,
-		Params:     make(map[string]OpenAPIParam),
-		FullName:   FuncName(controller),
-		Operation:  openapi3.NewOperation(),
-		mainRouter: s.mainRouter,
+		Method:    method,
+		Path:      path,
+		Params:    make(map[string]OpenAPIParam),
+		FullName:  FuncName(controller),
+		Operation: openapi3.NewOperation(),
+		OpenAPI:   s.OpenAPI,
 	}
-	// Copy the params from the server/group, and add the route ones
-	if route.mainRouter == nil {
-		route.mainRouter = s
-	}
-
-	route.AcceptedContentTypes = route.mainRouter.acceptedContentTypes
 
 	acceptHeaderParameter := openapi3.NewHeaderParameter("Accept")
 	acceptHeaderParameter.Schema = openapi3.NewStringSchema().NewRef()
@@ -210,6 +201,7 @@ func registerStdController(s *Server, method, path string, controller func(http.
 		Path:      path,
 		FullName:  FuncName(controller),
 		Operation: openapi3.NewOperation(),
+		OpenAPI:   s.OpenAPI,
 	}
 
 	for _, o := range append(s.routeOptions, options...) {
