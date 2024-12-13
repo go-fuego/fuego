@@ -96,7 +96,7 @@ func declareAllTagsFromOperations(s *Server) {
 // To modify its behavior, use the [WithOpenAPIConfig] option.
 func (s *Server) OutputOpenAPISpec() openapi3.T {
 	s.OpenAPI.Description().Servers = append(s.OpenAPI.Description().Servers, &openapi3.Server{
-		URL:         s.proto() + "://" + s.Addr,
+		URL:         s.url(),
 		Description: "local server",
 	})
 
@@ -164,7 +164,7 @@ func (s *Server) registerOpenAPIRoutes(jsonSpec []byte) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write(jsonSpec)
 	})
-	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s://%s%s", s.proto(), s.Server.Addr, s.OpenAPIConfig.JsonUrl))
+	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s%s", s.url(), s.OpenAPIConfig.JsonUrl))
 
 	if !s.OpenAPIConfig.DisableSwaggerUI {
 		Register(s, Route[any, any]{
@@ -173,7 +173,7 @@ func (s *Server) registerOpenAPIRoutes(jsonSpec []byte) {
 				Path:   s.OpenAPIConfig.SwaggerUrl + "/",
 			},
 		}, s.OpenAPIConfig.UIHandler(s.OpenAPIConfig.JsonUrl))
-		s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s://%s%s/index.html", s.proto(), s.Server.Addr, s.OpenAPIConfig.SwaggerUrl))
+		s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s%s/index.html", s.url(), s.OpenAPIConfig.SwaggerUrl))
 	}
 }
 
