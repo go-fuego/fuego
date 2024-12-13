@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"reflect"
 	"time"
+
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 // Run starts the server.
@@ -30,6 +32,10 @@ func (s *Server) RunTLS(certFile, keyFile string) error {
 }
 
 func (s *Server) setup() {
+	s.OpenAPI.Description().Servers = append(s.OpenAPI.Description().Servers, &openapi3.Server{
+		URL:         s.proto() + "//" + s.Addr,
+		Description: "local server",
+	})
 	go s.OutputOpenAPISpec()
 	s.printStartupMessage()
 
