@@ -486,7 +486,10 @@ func TestServer_RunTLS(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewServer(WithoutLogger())
+			s := NewServer(
+				WithoutLogger(),
+				WithAddr("localhost:3005"),
+			)
 
 			if tc.tlsConfig != nil {
 				s.Server.TLSConfig = tc.tlsConfig
@@ -497,7 +500,10 @@ func TestServer_RunTLS(t *testing.T) {
 			})
 
 			go func() { // start our test server async
-				_ = s.RunTLS(tc.certFile, tc.keyFile)
+				err := s.RunTLS(tc.certFile, tc.keyFile)
+				if err != nil {
+					t.Log(err)
+				}
 			}()
 			defer func() { // stop our test server when we are done
 				ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
