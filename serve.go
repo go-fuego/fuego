@@ -43,7 +43,7 @@ func (s *Server) printStartupMessage() {
 	if !s.disableStartupMessages {
 		elapsed := time.Since(s.startTime)
 		slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
-		slog.Info("Server running ✅ on "+s.proto()+"://"+s.Server.Addr, "started in", elapsed.String())
+		slog.Info("Server running ✅ on "+s.url(), "started in", elapsed.String())
 	}
 }
 
@@ -52,6 +52,10 @@ func (s *Server) proto() string {
 		return "https"
 	}
 	return "http"
+}
+
+func (s *Server) url() string {
+	return s.proto() + "://" + s.Server.Addr
 }
 
 // initializes any Context type with the base ContextNoBody context.
