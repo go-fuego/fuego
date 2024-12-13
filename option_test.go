@@ -412,6 +412,75 @@ func TestAddError(t *testing.T) {
 	})
 }
 
+func TestAddResponse(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		s := fuego.NewServer()
+		route := fuego.Get(s, "/test", helloWorld, fuego.OptionAddResponse(
+			409,
+			"Conflict: Pet with the same name already exists",
+			fuego.Response{
+				ContentTypes: []string{"application/json"},
+				Type:         fuego.HTTPError{},
+			},
+		))
+		require.Equal(t, 5, route.Operation.Responses.Len()) // 200, 400, 409, 500, default
+		resp := route.Operation.Responses.Value("409")
+		require.NotNil(t, resp)
+		require.NotNil(t, resp.Value.Content.Get("application/json"))
+		require.Nil(t, resp.Value.Content.Get("application/xml"))
+		require.Equal(t, "Conflict: Pet with the same name already exists", *route.Operation.Responses.Value("409").Value.Description)
+	})
+
+	t.Run("no content types provided", func(t *testing.T) {
+		s := fuego.NewServer()
+		route := fuego.Get(s, "/test", helloWorld, fuego.OptionAddResponse(
+			409,
+			"Conflict: Pet with the same name already exists",
+			fuego.Response{
+				Type: fuego.HTTPError{},
+			},
+		))
+		require.Equal(t, 5, route.Operation.Responses.Len()) // 200, 400, 409, 500, default
+		resp := route.Operation.Responses.Value("409")
+		require.NotNil(t, resp)
+		require.NotNil(t, resp.Value.Content.Get("application/json"))
+		require.NotNil(t, resp.Value.Content.Get("application/xml"))
+		require.Equal(t, "Conflict: Pet with the same name already exists", *route.Operation.Responses.Value("409").Value.Description)
+	})
+
+	t.Run("should override 200", func(t *testing.T) {
+		s := fuego.NewServer()
+		route := fuego.Get(s, "/test", helloWorld, fuego.OptionAddResponse(
+			200,
+			"set 200",
+			fuego.Response{
+				Type:         fuego.HTTPError{},
+				ContentTypes: []string{"application/x-yaml"},
+			},
+		))
+		require.Equal(t, 4, route.Operation.Responses.Len()) // 200, 400, 500, default
+		resp := route.Operation.Responses.Value("200")
+		require.NotNil(t, resp)
+		require.Nil(t, resp.Value.Content.Get("application/json"))
+		require.Nil(t, resp.Value.Content.Get("application/xml"))
+		require.NotNil(t, resp.Value.Content.Get("application/x-yaml"))
+		require.Equal(t, "#/components/schemas/HTTPError", resp.Value.Content.Get("application/x-yaml").Schema.Ref)
+		require.Equal(t, "set 200", *route.Operation.Responses.Value("200").Value.Description)
+	})
+
+	t.Run("should be fatal", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		require.Panics(t, func() {
+			fuego.Get(s, "/test", helloWorld, fuego.OptionAddResponse(
+				409,
+				"Conflict: Pet with the same name already exists",
+				fuego.Response{},
+			))
+		})
+	})
+}
+
 func TestHide(t *testing.T) {
 	s := fuego.NewServer()
 
