@@ -364,6 +364,11 @@
 								"schema": {
 									"$ref": "#/components/schemas/PetsError"
 								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/PetsError"
+								}
 							}
 						},
 						"description": "Conflict: Pet with the same name already exists"
@@ -670,6 +675,65 @@
 				"summary": "get pet by name",
 				"tags": [
 					"pets"
+				]
+			}
+		},
+		"/pets/std/all": {
+			"get": {
+				"description": "controller: `github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.Routes.func1`\n\n---\n\n",
+				"operationId": "GET_/pets/std/all",
+				"parameters": [
+					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Pets"
+									},
+									"type": "array"
+								}
+							}
+						},
+						"description": "all the pets"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"description": ""
+					}
+				},
+				"summary": "func1",
+				"tags": [
+					"pets",
+					"std"
 				]
 			}
 		},
@@ -1007,6 +1071,9 @@
 	"tags": [
 		{
 			"name": "pets"
+		},
+		{
+			"name": "std"
 		},
 		{
 			"name": "my-tag"
