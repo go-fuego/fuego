@@ -2,7 +2,6 @@ package fuegogin
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/url"
 
@@ -12,17 +11,13 @@ import (
 )
 
 type ContextWithBody[B any] struct {
-	ContextNoBody
-}
-
-type ContextNoBody struct {
-	fuego.ContextNoBody
 	ginCtx *gin.Context
 }
 
+type ContextNoBody = ContextWithBody[any]
+
 // Body implements fuego.Ctx.
 func (c *ContextWithBody[B]) Body() (B, error) {
-	fmt.Println("c.ginCtx", c.ginCtx)
 	var body B
 	err := c.ginCtx.Bind(&body)
 	return body, err
