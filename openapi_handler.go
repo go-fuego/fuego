@@ -7,7 +7,12 @@ import (
 func DefaultOpenAPIHandler(specURL string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		_, _ = w.Write([]byte(`<!doctype html>
+		_, _ = w.Write([]byte(DefaultOpenAPIHTML(specURL)))
+	})
+}
+
+func DefaultOpenAPIHTML(specURL string) string {
+	return `<!doctype html>
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
@@ -27,6 +32,5 @@ func DefaultOpenAPIHandler(specURL string) http.Handler {
 		tryItCredentialsPolicy="same-origin"
 	/>
 </body>
-</html>`))
-	})
+</html>`
 }
