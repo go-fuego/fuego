@@ -2,22 +2,35 @@ package fuegogin
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/go-fuego/fuego"
 )
 
-type ContextWithBody[B any] struct{}
+type ContextWithBody[B any] struct {
+	ContextNoBody
+}
+
+type ContextNoBody struct {
+	fuego.ContextNoBody
+	ginCtx *gin.Context
+}
 
 // Body implements fuego.Ctx.
 func (c *ContextWithBody[B]) Body() (B, error) {
-	panic("unimplemented")
+	fmt.Println("c.ginCtx", c.ginCtx)
+	var body B
+	err := c.ginCtx.Bind(&body)
+	return body, err
 }
 
 // Context implements fuego.Ctx.
 func (c *ContextWithBody[B]) Context() context.Context {
-	panic("unimplemented")
+	return c.ginCtx
 }
 
 // Cookie implements fuego.Ctx.
@@ -27,32 +40,26 @@ func (c *ContextWithBody[B]) Cookie(name string) (*http.Cookie, error) {
 
 // Header implements fuego.Ctx.
 func (c *ContextWithBody[B]) Header(key string) string {
-	panic("unimplemented")
-}
-
-// MainLang implements fuego.Ctx.
-func (c *ContextWithBody[B]) MainLang() string {
-	panic("unimplemented")
-}
-
-// MainLocale implements fuego.Ctx.
-func (c *ContextWithBody[B]) MainLocale() string {
-	panic("unimplemented")
+	return c.ginCtx.GetHeader(key)
 }
 
 // MustBody implements fuego.Ctx.
 func (c *ContextWithBody[B]) MustBody() B {
-	panic("unimplemented")
+	body, err := c.Body()
+	if err != nil {
+		panic(err)
+	}
+	return body
 }
 
 // PathParam implements fuego.Ctx.
 func (c *ContextWithBody[B]) PathParam(name string) string {
-	panic("unimplemented")
+	return c.ginCtx.Param(name)
 }
 
 // QueryParam implements fuego.Ctx.
 func (c *ContextWithBody[B]) QueryParam(name string) string {
-	panic("unimplemented")
+	return c.ginCtx.Query(name)
 }
 
 // QueryParamArr implements fuego.Ctx.
@@ -82,12 +89,13 @@ func (c *ContextWithBody[B]) QueryParamIntErr(name string) (int, error) {
 
 // QueryParams implements fuego.Ctx.
 func (c *ContextWithBody[B]) QueryParams() url.Values {
-	panic("unimplemented")
+	return c.ginCtx.Request.URL.Query()
 }
 
 // Redirect implements fuego.Ctx.
 func (c *ContextWithBody[B]) Redirect(code int, url string) (any, error) {
-	panic("unimplemented")
+	c.ginCtx.Redirect(code, url)
+	return nil, nil
 }
 
 // Render implements fuego.Ctx.
@@ -97,25 +105,24 @@ func (c *ContextWithBody[B]) Render(templateToExecute string, data any, template
 
 // Request implements fuego.Ctx.
 func (c *ContextWithBody[B]) Request() *http.Request {
-	panic("unimplemented")
+	return c.ginCtx.Request
 }
 
 // Response implements fuego.Ctx.
 func (c *ContextWithBody[B]) Response() http.ResponseWriter {
-	panic("unimplemented")
+	return c.ginCtx.Writer
 }
 
 // SetCookie implements fuego.Ctx.
 func (c *ContextWithBody[B]) SetCookie(cookie http.Cookie) {
-	panic("unimplemented")
 }
 
 // SetHeader implements fuego.Ctx.
 func (c *ContextWithBody[B]) SetHeader(key, value string) {
-	panic("unimplemented")
+	c.ginCtx.Header(key, value)
 }
 
 // SetStatus implements fuego.Ctx.
 func (c *ContextWithBody[B]) SetStatus(code int) {
-	panic("unimplemented")
+	c.ginCtx.Status(code)
 }

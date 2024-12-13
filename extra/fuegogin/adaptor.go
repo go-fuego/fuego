@@ -1,50 +1,76 @@
 package fuegogin
 
 import (
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-fuego/fuego"
 )
 
 func Get[T, B any](
-	s *fuego.Server,
+	s *fuego.OpenAPI,
 	e *gin.Engine,
 	path string,
 	handler func(c *ContextWithBody[T]) (B, error),
 	options ...func(*fuego.BaseRoute),
 ) *fuego.Route[B, T] {
-	return Handle(s, e, "GET", path, handler)
+	return Handle(s, e, "GET", path, handler, options...)
 }
 
 func Post[T, B any](
-	s *fuego.Server,
+	s *fuego.OpenAPI,
 	e *gin.Engine,
 	path string,
 	handler func(c *ContextWithBody[T]) (B, error),
 	options ...func(*fuego.BaseRoute),
 ) *fuego.Route[B, T] {
-	return Handle(s, e, "GET", path, handler)
+	return Handle(s, e, "POST", path, handler, options...)
 }
 
 func Handle[T, B any](
-	s *fuego.Server,
+	openapi *fuego.OpenAPI,
 	e *gin.Engine,
 	method,
 	path string,
 	handler func(c *ContextWithBody[T]) (B, error),
 	options ...func(*fuego.BaseRoute),
 ) *fuego.Route[B, T] {
+	route := &fuego.Route[B, T]{
+		BaseRoute: fuego.BaseRoute{
+			Method:    method,
+			Path:      path,
+			Params:    make(map[string]fuego.OpenAPIParam),
+			FullName:  fuego.FuncName(handler),
+			Operation: openapi3.NewOperation(),
+			OpenAPI:   openapi,
+		},
+	}
+
+	for _, o := range options {
+		o(&route.BaseRoute)
+	}
+
 	e.Handle(method, path, func(c *gin.Context) {
-		ans, err := handler(&ContextWithBody[T]{})
+		context := &ContextWithBody[T]{
+			ContextNoBody: ContextNoBody{
+				ginCtx: c,
+			},
+		}
+		ans, err := handler(context)
 		if err != nil {
 			c.Error(err)
+			return
+		}
+
+		if c.Request.Header.Get("Accept") == "application/xml" {
+			c.XML(200, ans)
 			return
 		}
 
 		c.JSON(200, ans)
 	})
 
-	// Also register the route with fuego!!!
-	// Useful for the OpenAPI spec but also allows for to run Fuego in parallel.
-	return fuego.Get(s, path, handler, options...)
+	route.RegisterOpenAPIOperation(openapi)
+
+	return route
 }
