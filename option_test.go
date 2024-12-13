@@ -233,14 +233,14 @@ func TestOpenAPI(t *testing.T) {
 
 		route := fuego.Get(s, "/test", helloWorld,
 			fuego.OptionSummary("test summary"),
-			fuego.OptionAddDescription("test description"),
+			fuego.OptionDescription("test description"),
 			fuego.OptionTags("first-tag", "second-tag"),
 			fuego.OptionDeprecated(),
 			fuego.OptionOperationID("test-operation-id"),
 		)
 
 		require.Equal(t, "test summary", route.Operation.Summary)
-		require.Equal(t, "controller: `github.com/go-fuego/fuego_test.helloWorld`\n\n---\n\ntest description", route.Operation.Description)
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n---\n\ntest description", route.Operation.Description)
 		require.Equal(t, []string{"first-tag", "second-tag"}, route.Operation.Tags)
 		require.True(t, route.Operation.Deprecated)
 	})
@@ -779,26 +779,25 @@ func TestSecurity(t *testing.T) {
 	})
 }
 
-func TestOptionAddDescription(t *testing.T) {
+func TestOptionDescription(t *testing.T) {
 	t.Run("Declare a description for the route", func(t *testing.T) {
 		s := fuego.NewServer()
 
 		route := fuego.Get(s, "/test", helloWorld,
-			option.AddDescription("test description"),
+			option.Description("test description"),
 		)
 
-		require.Equal(t, "controller: `github.com/go-fuego/fuego_test.helloWorld`\n\n---\n\ntest description", route.Operation.Description)
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n---\n\ntest description", route.Operation.Description)
 	})
 
-	t.Run("Declare a description for the route with multiple descriptions", func(t *testing.T) {
+	t.Run("Override Fuego's description for the route", func(t *testing.T) {
 		s := fuego.NewServer()
 
 		route := fuego.Get(s, "/test", helloWorld,
-			option.Description("test description\n\n"),
-			option.AddDescription("another description"),
+			option.OverrideDescription("another description"),
 		)
 
-		require.Equal(t, "test description\n\nanother description", route.Operation.Description)
+		require.Equal(t, "another description", route.Operation.Description)
 	})
 }
 

@@ -58,8 +58,16 @@ type BaseRoute struct {
 	Middlewares          []func(http.Handler) http.Handler
 	AcceptedContentTypes []string // Content types accepted for the request body. If nil, all content types (*/*) are accepted.
 	Hidden               bool     // If true, the route will not be documented in the OpenAPI spec
+	OverrideDescription  bool     // Override the default description
 	DefaultStatusCode    int      // Default status code for the response
 	OpenAPI              *OpenAPI // Ref to the whole OpenAPI spec
+}
+
+func (r *BaseRoute) GenerateDefaultDescription(otherMiddlewares ...func(http.Handler) http.Handler) {
+	if r.OverrideDescription {
+		return
+	}
+	r.Operation.Description = DefaultDescription(r.FullName, append(r.Middlewares, otherMiddlewares...)) + r.Operation.Description
 }
 
 // Capture all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
@@ -161,14 +169,12 @@ func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http
 
 func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path string, controller func(Contexted) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
 	route := BaseRoute{
-		Method:   method,
-		Path:     path,
-		Params:   make(map[string]OpenAPIParam),
-		FullName: FuncName(controller),
-		Operation: &openapi3.Operation{
-			Description: "controller: `" + FuncName(controller) + "`\n\n---\n\n",
-		},
-		OpenAPI: s.OpenAPI,
+		Method:    method,
+		Path:      path,
+		Params:    make(map[string]OpenAPIParam),
+		FullName:  FuncName(controller),
+		Operation: &openapi3.Operation{},
+		OpenAPI:   s.OpenAPI,
 	}
 
 	acceptHeaderParameter := openapi3.NewHeaderParameter("Accept")
@@ -179,25 +185,27 @@ func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path
 		o(&route)
 	}
 
+	route.GenerateDefaultDescription(s.middlewares...)
+
 	return Register(s, Route[T, B]{BaseRoute: route}, HTTPHandler(s, controller, &route))
 }
 
 func registerStdController(s *Server, method, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
 	route := BaseRoute{
-		Method:   method,
-		Path:     path,
-		Params:   make(map[string]OpenAPIParam),
-		FullName: FuncName(controller),
-		Operation: &openapi3.Operation{
-			Description: "controller: `" + FuncName(controller) + "`\n\n---\n\n",
-		},
-		Handler: http.HandlerFunc(controller),
-		OpenAPI: s.OpenAPI,
+		Method:    method,
+		Path:      path,
+		Params:    make(map[string]OpenAPIParam),
+		FullName:  FuncName(controller),
+		Operation: &openapi3.Operation{},
+		Handler:   http.HandlerFunc(controller),
+		OpenAPI:   s.OpenAPI,
 	}
 
 	for _, o := range append(s.routeOptions, options...) {
 		o(&route)
 	}
+
+	route.GenerateDefaultDescription(s.middlewares...)
 
 	return Register(s, Route[any, any]{BaseRoute: route}, http.HandlerFunc(controller))
 }
@@ -243,4 +251,25 @@ func camelToHuman(s string) string {
 		}
 	}
 	return result.String()
+}
+
+// DefaultDescription returns a default .md description for a controller
+func DefaultDescription[T any](handler string, middlewares []T) string {
+	description := "#### Controller: \n\n`" +
+		handler + "`"
+
+	if len(middlewares) > 0 {
+		description += "\n\n#### Middlewares:\n"
+
+		for i, fn := range middlewares {
+			description += "\n- `" + FuncName(fn) + "`"
+
+			if i == 6 {
+				description += "\n- more middleware..."
+				break
+			}
+		}
+	}
+
+	return description + "\n\n---\n\n"
 }

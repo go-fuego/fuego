@@ -67,6 +67,8 @@ func (rs Resource) Routes(s *fuego.Server) {
 	fuego.Get(adminRoutes, "/ingredients/create", rs.adminIngredientCreationPage)
 	fuego.All(adminRoutes, "/ingredients/{id}", rs.adminOneIngredient)
 
-	fuego.Post(adminRoutes, "/ingredients/new", rs.adminCreateIngredient)
+	fuego.Post(adminRoutes, "/ingredients/new", rs.adminCreateIngredient,
+		option.Description("Create a new ingredient"),
+	)
 	fuego.Get(adminRoutes, "/users", rs.adminRecipes)
 }
