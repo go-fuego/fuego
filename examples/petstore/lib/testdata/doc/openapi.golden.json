@@ -525,7 +525,7 @@
 		},
 		"/pets/by-age": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.getAllPetsByAge`\n\n---\n\nReturns an array of pets grouped by age",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.getAllPetsByAge`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego/examples/petstore/controllers.dummyMiddleware`\n\n---\n\nReturns an array of pets grouped by age",
 				"operationId": "GET_/pets/by-age",
 				"parameters": [
 					{

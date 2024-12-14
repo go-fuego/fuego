@@ -47,7 +47,10 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		option.Description("Get all pets"),
 	)
 
-	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge, option.Description("Returns an array of pets grouped by age"))
+	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge,
+		option.Description("Returns an array of pets grouped by age"),
+		option.Middleware(dummyMiddleware),
+	)
 	fuego.Post(petsGroup, "/", rs.postPets,
 		option.DefaultStatusCode(201),
 		option.AddResponse(409, "Conflict: Pet with the same name already exists", fuego.Response{Type: PetsError{}}),

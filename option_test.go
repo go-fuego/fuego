@@ -799,6 +799,37 @@ func TestOptionDescription(t *testing.T) {
 
 		require.Equal(t, "another description", route.Operation.Description)
 	})
+
+	t.Run("Add description to the route, route middleware is included", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			option.Middleware(dummyMiddleware),
+			option.Description("another description"),
+		)
+
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n\n---\n\nanother description", route.Operation.Description)
+	})
+
+	t.Run("Add description to the route, route middleware is included", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		fuego.Use(s, dummyMiddleware)
+
+		group := fuego.Group(s, "/group", option.Middleware(dummyMiddleware))
+
+		fuego.Use(group, dummyMiddleware)
+
+		route := fuego.Get(s, "/test", helloWorld,
+			option.Middleware(dummyMiddleware),
+			option.Description("another description"),
+			option.Middleware(dummyMiddleware), // After the description
+			option.Middleware(dummyMiddleware), // 6th middleware
+			option.Middleware(dummyMiddleware), // 7th middleware, should not be included
+		)
+
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n\n---\n\nanother description", route.Operation.Description)
+	})
 }
 
 func TestDefaultStatusCode(t *testing.T) {
