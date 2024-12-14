@@ -47,13 +47,18 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		option.Description("Get all pets"),
 	)
 
-	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge, option.Description("Returns an array of pets grouped by age"))
+	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge,
+		option.Description("Returns an array of pets grouped by age"),
+		option.Middleware(dummyMiddleware),
+	)
 	fuego.Post(petsGroup, "/", rs.postPets,
 		option.DefaultStatusCode(201),
 		option.AddResponse(409, "Conflict: Pet with the same name already exists", fuego.Response{Type: PetsError{}}),
 	)
 
 	fuego.Get(petsGroup, "/{id}", rs.getPets,
+		option.OverrideDescription("Replace description with this sentence."),
+		option.OperationID("getPet"),
 		option.Path("id", "Pet ID", param.Example("example", "123")),
 	)
 	fuego.Get(petsGroup, "/by-name/{name...}", rs.getPetByName)
@@ -77,14 +82,12 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		if err := json.NewEncoder(w).Encode(pets); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-
 	}, option.AddResponse(http.StatusOK, "all the pets",
 		fuego.Response{
 			Type:         []models.Pets{},
 			ContentTypes: []string{"application/json"},
 		},
 	))
-
 }
 
 func (rs PetsResources) getAllPets(c fuego.ContextNoBody) ([]models.Pets, error) {

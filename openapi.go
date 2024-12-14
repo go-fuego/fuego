@@ -89,6 +89,11 @@ func declareAllTagsFromOperations(s *Server) {
 			}
 		}
 	}
+
+	// Make sure tags are sorted
+	slices.SortFunc(s.OpenAPI.Description().Tags, func(a, b *openapi3.Tag) int {
+		return strings.Compare(a.Name, b.Name)
+	})
 }
 
 // OutputOpenAPISpec takes the OpenAPI spec and outputs it to a JSON file and/or serves it on a URL.
@@ -209,6 +214,20 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 		route.Operation = openapi3.NewOperation()
 	}
 
+	if route.FullName == "" {
+		route.FullName = route.Path
+	}
+
+	route.GenerateDefaultDescription()
+
+	if route.Operation.Summary == "" {
+		route.Operation.Summary = route.NameFromNamespace(camelToHuman)
+	}
+
+	if route.Operation.OperationID == "" {
+		route.GenerateDefaultOperationID()
+	}
+
 	// Request Body
 	if route.Operation.RequestBody == nil {
 		bodyTag := SchemaTagFromType(openapi, *new(B))
@@ -263,7 +282,7 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 	for _, params := range route.Operation.Parameters {
 		if params.Value.In == "path" {
 			if !strings.Contains(route.Path, "{"+params.Value.Name) {
-				return nil, fmt.Errorf("path parameter '%s' is not declared in the path", params.Value.Name)
+				panic(fmt.Errorf("path parameter '%s' is not declared in the path", params.Value.Name))
 			}
 		}
 	}
