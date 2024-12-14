@@ -89,6 +89,11 @@ func declareAllTagsFromOperations(s *Server) {
 			}
 		}
 	}
+
+	// Make sure tags are sorted
+	slices.SortFunc(s.OpenAPI.Description().Tags, func(a, b *openapi3.Tag) int {
+		return strings.Compare(a.Name, b.Name)
+	})
 }
 
 // OutputOpenAPISpec takes the OpenAPI spec and outputs it to a JSON file and/or serves it on a URL.

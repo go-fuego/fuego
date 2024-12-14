@@ -264,7 +264,7 @@ func DefaultDescription[T any](handler string, middlewares []T) string {
 		for i, fn := range middlewares {
 			description += "\n- `" + FuncName(fn) + "`"
 
-			if i == 6 {
+			if i == 4 {
 				description += "\n- more middleware..."
 				break
 			}

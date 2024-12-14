@@ -1070,13 +1070,13 @@
 	],
 	"tags": [
 		{
+			"name": "my-tag"
+		},
+		{
 			"name": "pets"
 		},
 		{
 			"name": "std"
-		},
-		{
-			"name": "my-tag"
 		}
 	]
 }
