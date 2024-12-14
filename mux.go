@@ -71,6 +71,10 @@ func (r *BaseRoute) GenerateDefaultDescription(otherMiddlewares ...func(http.Han
 	r.Operation.Description = DefaultDescription(r.FullName, append(r.Middlewares, otherMiddlewares...)) + r.Operation.Description
 }
 
+func (r *BaseRoute) GenerateDefaultOperationID() {
+	r.Operation.OperationID = r.Method + "_" + strings.ReplaceAll(strings.ReplaceAll(r.Path, "{", ":"), "}", "")
+}
+
 // Capture all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
 func All[ReturnType, Body any, Contexted ctx[Body]](s *Server, path string, controller func(Contexted) (ReturnType, error), options ...func(*BaseRoute)) *Route[ReturnType, Body] {
 	return registerFuegoController(s, "", path, controller, options...)
