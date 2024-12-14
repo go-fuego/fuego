@@ -58,13 +58,14 @@ type BaseRoute struct {
 	Middlewares          []func(http.Handler) http.Handler
 	AcceptedContentTypes []string // Content types accepted for the request body. If nil, all content types (*/*) are accepted.
 	Hidden               bool     // If true, the route will not be documented in the OpenAPI spec
-	OverrideDescription  bool     // Override the default description
 	DefaultStatusCode    int      // Default status code for the response
 	OpenAPI              *OpenAPI // Ref to the whole OpenAPI spec
+
+	overrideDescription bool // Override the default description
 }
 
 func (r *BaseRoute) GenerateDefaultDescription(otherMiddlewares ...func(http.Handler) http.Handler) {
-	if r.OverrideDescription {
+	if r.overrideDescription {
 		return
 	}
 	r.Operation.Description = DefaultDescription(r.FullName, append(r.Middlewares, otherMiddlewares...)) + r.Operation.Description
