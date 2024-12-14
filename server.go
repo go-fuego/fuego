@@ -130,8 +130,8 @@ func NewServer(options ...func(*Server)) *Server {
 
 	// Options set if not provided
 	options = append(options,
-		WithGlobalResponseTypes(http.StatusBadRequest, "Bad Request _(validation or deserialization error)_", HTTPError{}),
-		WithGlobalResponseTypes(http.StatusInternalServerError, "Internal Server Error _(panics)_", HTTPError{}),
+		WithGlobalResponseTypes(http.StatusBadRequest, "Bad Request _(validation or deserialization error)_", Response{Type: HTTPError{}}),
+		WithGlobalResponseTypes(http.StatusInternalServerError, "Internal Server Error _(panics)_", Response{Type: HTTPError{}}),
 	)
 
 	for _, option := range options {
@@ -198,18 +198,20 @@ func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Se
 }
 
 // WithGlobalResponseTypes adds default response types to the server.
-// Useful for adding global error types.
 // For example:
 //
 //	app := fuego.NewServer(
 //		fuego.WithGlobalResponseTypes(400, "Bad Request _(validation or deserialization error)_", HTTPError{}),
 //		fuego.WithGlobalResponseTypes(401, "Unauthorized _(authentication error)_", HTTPError{}),
 //		fuego.WithGlobalResponseTypes(500, "Internal Server Error _(panics)_", HTTPError{}),
+//		fuego.WithGlobalResponseTypes(204, "No Content", Empty{}),
 //	)
-func WithGlobalResponseTypes(code int, description string, errorType ...any) func(*Server) {
-	errorType = append(errorType, HTTPError{})
+func WithGlobalResponseTypes(code int, description string, response Response) func(*Server) {
 	return func(c *Server) {
-		c.OpenAPI.globalOpenAPIResponses = append(c.OpenAPI.globalOpenAPIResponses, openAPIError{code, description, errorType[0]})
+		c.OpenAPI.globalOpenAPIResponses = append(
+			c.OpenAPI.globalOpenAPIResponses,
+			openAPIResponse{Code: code, Description: description, Response: response},
+		)
 	}
 }
 

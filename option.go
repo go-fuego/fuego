@@ -343,26 +343,15 @@ type Response struct {
 // Required: Response.Type must be set
 // Optional: Response.ContentTypes will default to `application/json` and `application/xml` if not set
 func OptionAddResponse(code int, description string, response Response) func(*BaseRoute) {
-	var responseSchema SchemaTag
 	return func(r *BaseRoute) {
-		if response.Type == nil {
-			panic("Type in Response cannot be nil")
-		}
-
-		responseSchema = SchemaTagFromType(r.OpenAPI, response.Type)
-		if len(response.ContentTypes) == 0 {
-			response.ContentTypes = []string{"application/json", "application/xml"}
-		}
-
-		content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, response.ContentTypes)
-		response := openapi3.NewResponse().
-			WithDescription(description).
-			WithContent(content)
-
 		if r.Operation.Responses == nil {
 			r.Operation.Responses = openapi3.NewResponses()
 		}
-		r.Operation.Responses.Set(strconv.Itoa(code), &openapi3.ResponseRef{Value: response})
+		r.Operation.Responses.Set(
+			strconv.Itoa(code), &openapi3.ResponseRef{
+				Value: r.OpenAPI.buildOpenapi3Response(description, response),
+			},
+		)
 	}
 }
 
