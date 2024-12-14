@@ -218,6 +218,8 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 		route.FullName = route.Path
 	}
 
+	route.GenerateDefaultDescription()
+
 	if route.Operation.Summary == "" {
 		route.Operation.Summary = route.NameFromNamespace(camelToHuman)
 	}

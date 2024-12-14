@@ -409,7 +409,7 @@ func TestRegister(t *testing.T) {
 		}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),
 			OptionOperationID("new-operation-id"),
 			OptionSummary("new-summary"),
-			OptionDescription("new-description"),
+			OptionOverrideDescription("new-description"),
 			OptionTags("new-tag"),
 		)
 

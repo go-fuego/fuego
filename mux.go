@@ -64,11 +64,11 @@ type BaseRoute struct {
 	overrideDescription bool // Override the default description
 }
 
-func (r *BaseRoute) GenerateDefaultDescription(otherMiddlewares ...func(http.Handler) http.Handler) {
+func (r *BaseRoute) GenerateDefaultDescription() {
 	if r.overrideDescription {
 		return
 	}
-	r.Operation.Description = DefaultDescription(r.FullName, append(r.Middlewares, otherMiddlewares...)) + r.Operation.Description
+	r.Operation.Description = DefaultDescription(r.FullName, r.Middlewares) + r.Operation.Description
 }
 
 func (r *BaseRoute) GenerateDefaultOperationID() {
@@ -114,8 +114,8 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 	}
 	slog.Debug("registering controller " + fullPath)
 
-	allMiddlewares := append(s.middlewares, route.Middlewares...)
-	s.Mux.Handle(fullPath, withMiddlewares(route.Handler, allMiddlewares...))
+	route.Middlewares = append(s.middlewares, route.Middlewares...)
+	s.Mux.Handle(fullPath, withMiddlewares(route.Handler, route.Middlewares...))
 
 	if s.DisableOpenapi || route.Hidden || route.Method == "" {
 		return &route
@@ -190,8 +190,6 @@ func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path
 		o(&route)
 	}
 
-	route.GenerateDefaultDescription(s.middlewares...)
-
 	return Register(s, Route[T, B]{BaseRoute: route}, HTTPHandler(s, controller, &route))
 }
 
@@ -209,8 +207,6 @@ func registerStdController(s *Server, method, path string, controller func(http.
 	for _, o := range append(s.routeOptions, options...) {
 		o(&route)
 	}
-
-	route.GenerateDefaultDescription(s.middlewares...)
 
 	return Register(s, Route[any, any]{BaseRoute: route}, http.HandlerFunc(controller))
 }
