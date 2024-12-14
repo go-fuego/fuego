@@ -27,7 +27,7 @@ func TestFuegoGin(t *testing.T) {
 
 		e.ServeHTTP(w, r)
 
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, `{"message":"Hello "}`, w.Body.String())
 	})
 }
