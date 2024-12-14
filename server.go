@@ -315,7 +315,7 @@ func WithDisallowUnknownFields(b bool) func(*Server) {
 // If not specified, the default port is 9999.
 // If you want to use a different address, use [WithAddr] instead.
 //
-// Deprecated: Please use fuego.WithAddr(addr string)
+// Deprecated: Please use [WithAddr]
 func WithPort(port int) func(*Server) {
 	return func(s *Server) { s.Server.Addr = fmt.Sprintf("localhost:%d", port) }
 }

@@ -394,7 +394,7 @@ func TestAddError(t *testing.T) {
 	t.Run("Declare an error for the route", func(t *testing.T) {
 		s := fuego.NewServer()
 
-		route := fuego.Get(s, "/test", helloWorld, fuego.OptionAddError(409, "Conflict: Pet with the same name already exists"))
+		route := fuego.Get(s, "/test", helloWorld, fuego.OptionAddError(http.StatusConflict, "Conflict: Pet with the same name already exists"))
 
 		t.Log("route.Operation.Responses", route.Operation.Responses)
 		require.Equal(t, 5, route.Operation.Responses.Len()) // 200, 400, 409, 500, default
@@ -407,7 +407,7 @@ func TestAddError(t *testing.T) {
 		s := fuego.NewServer()
 
 		require.Panics(t, func() {
-			fuego.Get(s, "/test", helloWorld, fuego.OptionAddError(409, "err", Resp{}, Resp{}))
+			fuego.Get(s, "/test", helloWorld, fuego.OptionAddError(http.StatusConflict, "err", Resp{}, Resp{}))
 		})
 	})
 }
@@ -416,7 +416,7 @@ func TestAddResponse(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		s := fuego.NewServer()
 		route := fuego.Get(s, "/test", helloWorld, fuego.OptionAddResponse(
-			409,
+			http.StatusConflict,
 			"Conflict: Pet with the same name already exists",
 			fuego.Response{
 				ContentTypes: []string{"application/json"},
@@ -434,7 +434,7 @@ func TestAddResponse(t *testing.T) {
 	t.Run("no content types provided", func(t *testing.T) {
 		s := fuego.NewServer()
 		route := fuego.Get(s, "/test", helloWorld, fuego.OptionAddResponse(
-			409,
+			http.StatusConflict,
 			"Conflict: Pet with the same name already exists",
 			fuego.Response{
 				Type: fuego.HTTPError{},
@@ -451,7 +451,7 @@ func TestAddResponse(t *testing.T) {
 	t.Run("should override 200", func(t *testing.T) {
 		s := fuego.NewServer()
 		route := fuego.Get(s, "/test", helloWorld, fuego.OptionAddResponse(
-			200,
+			http.StatusOK,
 			"set 200",
 			fuego.Response{
 				Type:         fuego.HTTPError{},
@@ -473,7 +473,7 @@ func TestAddResponse(t *testing.T) {
 
 		require.Panics(t, func() {
 			fuego.Get(s, "/test", helloWorld, fuego.OptionAddResponse(
-				409,
+				http.StatusConflict,
 				"Conflict: Pet with the same name already exists",
 				fuego.Response{},
 			))
