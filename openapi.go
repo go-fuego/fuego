@@ -304,12 +304,6 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 		}
 	}
 
-	// Names & default description
-
-	if route.Operation.OperationID == "" {
-		route.Operation.OperationID = route.Method + "_" + strings.ReplaceAll(strings.ReplaceAll(route.Path, "{", ":"), "}", "")
-	}
-
 	openapi.Description().AddOperation(route.Path, route.Method, route.Operation)
 
 	return route.Operation, nil
