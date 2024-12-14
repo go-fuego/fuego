@@ -54,22 +54,21 @@ func Handle[T, B any](
 
 	e.Handle(method, path, func(c *gin.Context) {
 		context := &ContextWithBody[B]{
-
 			ginCtx: c,
 		}
 
-		ans, err := handler(context)
+		resp, err := handler(context)
 		if err != nil {
 			c.Error(err)
 			return
 		}
 
 		if c.Request.Header.Get("Accept") == "application/xml" {
-			c.XML(200, ans)
+			c.XML(200, resp)
 			return
 		}
 
-		c.JSON(200, ans)
+		c.JSON(200, resp)
 	})
 
 	route.RegisterOpenAPIOperation(openapi)
