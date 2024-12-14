@@ -24,7 +24,7 @@ func NewOpenAPI() *OpenAPI {
 	return &OpenAPI{
 		description:            &desc,
 		generator:              openapi3gen.NewGenerator(),
-		globalOpenAPIResponses: []openAPIError{},
+		globalOpenAPIResponses: []openAPIResponse{},
 	}
 }
 
@@ -32,7 +32,7 @@ func NewOpenAPI() *OpenAPI {
 type OpenAPI struct {
 	description            *openapi3.T
 	generator              *openapi3gen.Generator
-	globalOpenAPIResponses []openAPIError
+	globalOpenAPIResponses []openAPIResponse
 }
 
 func (d *OpenAPI) Description() *openapi3.T {
@@ -244,7 +244,13 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 
 	// Response - globals
 	for _, openAPIGlobalResponse := range openapi.globalOpenAPIResponses {
-		addResponseIfNotSet(openapi, route.Operation, openAPIGlobalResponse.Code, openAPIGlobalResponse.Description, openAPIGlobalResponse.ErrorType)
+		addResponseIfNotSet(
+			openapi,
+			route.Operation,
+			openAPIGlobalResponse.Code,
+			openAPIGlobalResponse.Description,
+			openAPIGlobalResponse.Response,
+		)
 	}
 
 	// Automatically add non-declared 200 (or other) Response

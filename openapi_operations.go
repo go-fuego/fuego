@@ -39,28 +39,32 @@ type OpenAPIParamOption struct {
 }
 
 // Registers a response for the route, only if error for this code is not already set.
-func addResponseIfNotSet(openapi *OpenAPI, operation *openapi3.Operation, code int, description string, errorType ...any) {
-	var responseSchema SchemaTag
-
-	if len(errorType) > 0 {
-		responseSchema = SchemaTagFromType(openapi, errorType[0])
-	} else {
-		responseSchema = SchemaTagFromType(openapi, HTTPError{})
+func addResponseIfNotSet(openapi *OpenAPI, operation *openapi3.Operation, code int, description string, response Response) {
+	if operation.Responses.Value(strconv.Itoa(code)) != nil {
+		return
 	}
-	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json"})
-
-	if operation.Responses.Value(strconv.Itoa(code)) == nil {
-		response := openapi3.NewResponse().
-			WithDescription(description).
-			WithContent(content)
-
-		operation.AddResponse(code, response)
-	}
+	operation.AddResponse(code, openapi.buildOpenapi3Response(description, response))
 }
 
-// openAPIError describes a response error in the OpenAPI spec.
-type openAPIError struct {
+func (o *OpenAPI) buildOpenapi3Response(description string, response Response) *openapi3.Response {
+	if response.Type == nil {
+		panic("Type in Response cannot be nil")
+	}
+
+	responseSchema := SchemaTagFromType(o, response.Type)
+	if len(response.ContentTypes) == 0 {
+		response.ContentTypes = []string{"application/json", "application/xml"}
+	}
+
+	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, response.ContentTypes)
+	return openapi3.NewResponse().
+		WithDescription(description).
+		WithContent(content)
+}
+
+// openAPIResponse describes a response error in the OpenAPI spec.
+type openAPIResponse struct {
+	Response
 	Code        int
 	Description string
-	ErrorType   any
 }
