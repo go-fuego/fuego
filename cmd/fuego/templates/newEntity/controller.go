@@ -1,4 +1,4 @@
-package controller
+package newEntity
 
 import (
 	"github.com/go-fuego/fuego"

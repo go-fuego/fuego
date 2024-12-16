@@ -8,7 +8,7 @@ import (
 )
 
 func TestCreateController(t *testing.T) {
-	res, err := createControllerFile("books", "controller.go", "booksController.go")
+	res, err := createNewEntityDomainFile("books", "controller.go", "booksController.go")
 	require.NoError(t, err)
 	require.Contains(t, res, "package controller")
 	require.Contains(t, res, `fuego.Get(booksGroup, "/{id}", rs.getBooks)`)

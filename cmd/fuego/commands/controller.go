@@ -25,12 +25,12 @@ func Controller() *cli.Command {
 				fmt.Println("Note: You can add a controller name as an argument. Example: `fuego controller books`")
 			}
 
-			_, err := createControllerFile(entityName, "entity.go", entityName+".go")
+			_, err := createNewEntityDomainFile(entityName, "entity.go", entityName+".go")
 			if err != nil {
 				return err
 			}
 
-			_, err = createControllerFile(entityName, "controller.go", entityName+"Controller.go")
+			_, err = createNewEntityDomainFile(entityName, "controller.go", entityName+"Controller.go")
 			if err != nil {
 				return err
 			}
@@ -42,16 +42,16 @@ func Controller() *cli.Command {
 }
 
 // createController creates a new controller file
-func createControllerFile(entityName, controllerTemplateFileName, outputFileName string) (string, error) {
-	controllerDir := "./controller/"
+func createNewEntityDomainFile(entityName, controllerTemplateFileName, outputFileName string) (string, error) {
+	controllerDir := "./domains/" + entityName + "/"
 	if _, err := os.Stat(controllerDir); os.IsNotExist(err) {
-		err = os.Mkdir(controllerDir, 0o755)
+		err = os.MkdirAll(controllerDir, 0o755)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	templateContent, err := templates.FS.ReadFile("controller/" + controllerTemplateFileName)
+	templateContent, err := templates.FS.ReadFile("newEntity/" + controllerTemplateFileName)
 	if err != nil {
 		return "", err
 	}
