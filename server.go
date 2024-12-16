@@ -125,14 +125,10 @@ func NewServer(options ...func(*Server)) *Server {
 		WithSerializer(Send),
 		WithErrorSerializer(SendError),
 		WithErrorHandler(ErrorHandler),
-	}
-	options = append(defaultOptions[:], options...)
-
-	// Options set if not provided
-	options = append(options,
 		WithGlobalResponseTypes(http.StatusBadRequest, "Bad Request _(validation or deserialization error)_", Response{Type: HTTPError{}}),
 		WithGlobalResponseTypes(http.StatusInternalServerError, "Internal Server Error _(panics)_", Response{Type: HTTPError{}}),
-	)
+	}
+	options = append(defaultOptions[:], options...)
 
 	for _, option := range options {
 		option(s)
@@ -208,10 +204,9 @@ func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Se
 //	)
 func WithGlobalResponseTypes(code int, description string, response Response) func(*Server) {
 	return func(c *Server) {
-		c.OpenAPI.globalOpenAPIResponses = append(
-			c.OpenAPI.globalOpenAPIResponses,
-			openAPIResponse{Code: code, Description: description, Response: response},
-		)
+		WithRouteOptions(
+			OptionAddResponse(code, description, response),
+		)(c)
 	}
 }
 
