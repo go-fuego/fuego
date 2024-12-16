@@ -1,59 +1,76 @@
 package fuegogin
 
 import (
+	"log/slog"
+
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-fuego/fuego"
 )
 
-func Get[T, B any](
-	s *fuego.OpenAPI,
-	e *gin.Engine,
-	path string,
-	handler func(c *ContextWithBody[B]) (T, error),
-	options ...func(*fuego.BaseRoute),
-) *fuego.Route[T, B] {
-	return Handle(s, e, "GET", path, handler, options...)
+func GetGin(s *fuego.OpenAPI, e gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	return handleGin(s, e, "GET", path, handler, options...)
 }
 
-func Post[T, B any](
-	s *fuego.OpenAPI,
-	e *gin.Engine,
-	path string,
-	handler func(c *ContextWithBody[B]) (T, error),
-	options ...func(*fuego.BaseRoute),
-) *fuego.Route[T, B] {
-	return Handle(s, e, "POST", path, handler, options...)
+func PostGin(s *fuego.OpenAPI, e gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	return handleGin(s, e, "POST", path, handler, options...)
 }
 
-func Handle[T, B any](
-	openapi *fuego.OpenAPI,
-	e *gin.Engine,
-	method,
-	path string,
-	handler func(c *ContextWithBody[B]) (T, error),
-	options ...func(*fuego.BaseRoute),
-) *fuego.Route[T, B] {
-	route := &fuego.Route[T, B]{
-		BaseRoute: fuego.BaseRoute{
-			Method:    method,
-			Path:      path,
-			Params:    make(map[string]fuego.OpenAPIParam),
-			FullName:  fuego.FuncName(handler),
-			Operation: openapi3.NewOperation(),
-			OpenAPI:   openapi,
-		},
+func Get[T, B any](s *fuego.OpenAPI, e gin.IRouter, path string, handler func(c ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+	return handleFuego(s, e, "GET", path, handler, options...)
+}
+
+func Post[T, B any](s *fuego.OpenAPI, e gin.IRouter, path string, handler func(c ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+	return handleFuego(s, e, "POST", path, handler, options...)
+}
+
+func handleFuego[T, B any](openapi *fuego.OpenAPI, e gin.IRouter, method, path string, fuegoHandler func(c ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+	baseRoute := NewBaseRoute(method, path, fuegoHandler, openapi, options...)
+	return handle(openapi, e, &fuego.Route[T, B]{BaseRoute: baseRoute}, GinHandler(fuegoHandler))
+}
+
+func handleGin(openapi *fuego.OpenAPI, e gin.IRouter, method, path string, ginHandler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	baseRoute := NewBaseRoute(method, path, ginHandler, openapi, options...)
+	return handle(openapi, e, &fuego.Route[any, any]{BaseRoute: baseRoute}, ginHandler)
+}
+
+func handle[T, B any](openapi *fuego.OpenAPI, e gin.IRouter, route *fuego.Route[T, B], fuegoHandler gin.HandlerFunc) *fuego.Route[T, B] {
+	if _, ok := e.(*gin.RouterGroup); ok {
+		route.Path = e.(*gin.RouterGroup).BasePath() + route.Path
+	}
+
+	e.Handle(route.Method, route.Path, fuegoHandler)
+
+	err := route.RegisterOpenAPIOperation(openapi)
+	if err != nil {
+		slog.Warn("error documenting openapi operation", "error", err)
+	}
+
+	return route
+}
+
+func NewBaseRoute(method, path string, handler any, openapi *fuego.OpenAPI, options ...func(*fuego.BaseRoute)) fuego.BaseRoute {
+	baseRoute := fuego.BaseRoute{
+		Method:    method,
+		Path:      path,
+		Params:    make(map[string]fuego.OpenAPIParam),
+		FullName:  fuego.FuncName(handler),
+		Operation: openapi3.NewOperation(),
+		OpenAPI:   openapi,
 	}
 
 	for _, o := range options {
-		o(&route.BaseRoute)
+		o(&baseRoute)
 	}
 
-	route.BaseRoute.GenerateDefaultDescription()
+	return baseRoute
+}
 
-	e.Handle(method, path, func(c *gin.Context) {
-		context := &ContextWithBody[B]{
+// Convert a Fuego handler to a Gin handler.
+func GinHandler[B, T any](handler func(c ContextWithBody[B]) (T, error)) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		context := &contextWithBody[B]{
 			ginCtx: c,
 		}
 
@@ -69,9 +86,5 @@ func Handle[T, B any](
 		}
 
 		c.JSON(200, resp)
-	})
-
-	route.RegisterOpenAPIOperation(openapi)
-
-	return route
+	}
 }

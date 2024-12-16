@@ -1,6 +1,7 @@
 package fuegogin_test
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -28,6 +29,6 @@ func TestFuegoGin(t *testing.T) {
 		e.ServeHTTP(w, r)
 
 		require.Equal(t, http.StatusOK, w.Code)
-		require.Equal(t, `{"message":"Hello "}`, w.Body.String())
+		require.JSONEq(t, `{"message":"Hello "}`, w.Body.String())
 	})
 }
