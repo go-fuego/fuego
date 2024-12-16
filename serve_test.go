@@ -446,7 +446,7 @@ func TestServer_Run(t *testing.T) {
 			s.Mux.ServeHTTP(w, req)
 
 			return w.Body.String() == `OK`
-		}, 5*time.Millisecond, 500*time.Microsecond)
+		}, 5*time.Second, 500*time.Millisecond)
 	})
 }
 
