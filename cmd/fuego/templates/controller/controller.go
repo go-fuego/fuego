@@ -4,83 +4,83 @@ import (
 	"github.com/go-fuego/fuego"
 )
 
-type NewControllerResources struct {
+type NewEntityResources struct {
 	// TODO add resources
-	NewControllerService NewControllerService
+	NewEntityService NewEntityService
 }
 
-type NewController struct {
+type NewEntity struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
-type NewControllerCreate struct {
+type NewEntityCreate struct {
 	Name string `json:"name"`
 }
 
-type NewControllerUpdate struct {
+type NewEntityUpdate struct {
 	Name string `json:"name"`
 }
 
-func (rs NewControllerResources) Routes(s *fuego.Server) {
-	newControllerGroup := fuego.Group(s, "/newController")
+func (rs NewEntityResources) Routes(s *fuego.Server) {
+	newEntityGroup := fuego.Group(s, "/newEntity")
 
-	fuego.Get(newControllerGroup, "/", rs.getAllNewController)
-	fuego.Post(newControllerGroup, "/", rs.postNewController)
+	fuego.Get(newEntityGroup, "/", rs.getAllNewEntity)
+	fuego.Post(newEntityGroup, "/", rs.postNewEntity)
 
-	fuego.Get(newControllerGroup, "/{id}", rs.getNewController)
-	fuego.Put(newControllerGroup, "/{id}", rs.putNewController)
-	fuego.Delete(newControllerGroup, "/{id}", rs.deleteNewController)
+	fuego.Get(newEntityGroup, "/{id}", rs.getNewEntity)
+	fuego.Put(newEntityGroup, "/{id}", rs.putNewEntity)
+	fuego.Delete(newEntityGroup, "/{id}", rs.deleteNewEntity)
 }
 
-func (rs NewControllerResources) getAllNewController(c fuego.ContextNoBody) ([]NewController, error) {
-	return rs.NewControllerService.GetAllNewController()
+func (rs NewEntityResources) getAllNewEntity(c fuego.ContextNoBody) ([]NewEntity, error) {
+	return rs.NewEntityService.GetAllNewEntity()
 }
 
-func (rs NewControllerResources) postNewController(c *fuego.ContextWithBody[NewControllerCreate]) (NewController, error) {
+func (rs NewEntityResources) postNewEntity(c *fuego.ContextWithBody[NewEntityCreate]) (NewEntity, error) {
 	body, err := c.Body()
 	if err != nil {
-		return NewController{}, err
+		return NewEntity{}, err
 	}
 
-	new, err := rs.NewControllerService.CreateNewController(body)
+	new, err := rs.NewEntityService.CreateNewEntity(body)
 	if err != nil {
-		return NewController{}, err
+		return NewEntity{}, err
 	}
 
 	return new, nil
 }
 
-func (rs NewControllerResources) getNewController(c fuego.ContextNoBody) (NewController, error) {
+func (rs NewEntityResources) getNewEntity(c fuego.ContextNoBody) (NewEntity, error) {
 	id := c.PathParam("id")
 
-	return rs.NewControllerService.GetNewController(id)
+	return rs.NewEntityService.GetNewEntity(id)
 }
 
-func (rs NewControllerResources) putNewController(c *fuego.ContextWithBody[NewControllerUpdate]) (NewController, error) {
+func (rs NewEntityResources) putNewEntity(c *fuego.ContextWithBody[NewEntityUpdate]) (NewEntity, error) {
 	id := c.PathParam("id")
 
 	body, err := c.Body()
 	if err != nil {
-		return NewController{}, err
+		return NewEntity{}, err
 	}
 
-	new, err := rs.NewControllerService.UpdateNewController(id, body)
+	new, err := rs.NewEntityService.UpdateNewEntity(id, body)
 	if err != nil {
-		return NewController{}, err
+		return NewEntity{}, err
 	}
 
 	return new, nil
 }
 
-func (rs NewControllerResources) deleteNewController(c *fuego.ContextNoBody) (any, error) {
-	return rs.NewControllerService.DeleteNewController(c.PathParam("id"))
+func (rs NewEntityResources) deleteNewEntity(c *fuego.ContextNoBody) (any, error) {
+	return rs.NewEntityService.DeleteNewEntity(c.PathParam("id"))
 }
 
-type NewControllerService interface {
-	GetNewController(id string) (NewController, error)
-	CreateNewController(NewControllerCreate) (NewController, error)
-	GetAllNewController() ([]NewController, error)
-	UpdateNewController(id string, input NewControllerUpdate) (NewController, error)
-	DeleteNewController(id string) (any, error)
+type NewEntityService interface {
+	GetNewEntity(id string) (NewEntity, error)
+	CreateNewEntity(NewEntityCreate) (NewEntity, error)
+	GetAllNewEntity() ([]NewEntity, error)
+	UpdateNewEntity(id string, input NewEntityUpdate) (NewEntity, error)
+	DeleteNewEntity(id string) (any, error)
 }
