@@ -9,19 +9,6 @@ type NewEntityResources struct {
 	NewEntityService NewEntityService
 }
 
-type NewEntity struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type NewEntityCreate struct {
-	Name string `json:"name"`
-}
-
-type NewEntityUpdate struct {
-	Name string `json:"name"`
-}
-
 func (rs NewEntityResources) Routes(s *fuego.Server) {
 	newEntityGroup := fuego.Group(s, "/newEntity")
 
@@ -75,12 +62,4 @@ func (rs NewEntityResources) putNewEntity(c *fuego.ContextWithBody[NewEntityUpda
 
 func (rs NewEntityResources) deleteNewEntity(c *fuego.ContextNoBody) (any, error) {
 	return rs.NewEntityService.DeleteNewEntity(c.PathParam("id"))
-}
-
-type NewEntityService interface {
-	GetNewEntity(id string) (NewEntity, error)
-	CreateNewEntity(NewEntityCreate) (NewEntity, error)
-	GetAllNewEntity() ([]NewEntity, error)
-	UpdateNewEntity(id string, input NewEntityUpdate) (NewEntity, error)
-	DeleteNewEntity(id string) (any, error)
 }

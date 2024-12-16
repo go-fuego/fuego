@@ -25,7 +25,12 @@ func Controller() *cli.Command {
 				fmt.Println("Note: You can add a controller name as an argument. Example: `fuego controller books`")
 			}
 
-			_, err := createController(entityName)
+			_, err := createControllerFile(entityName, "entity.go", entityName+".go")
+			if err != nil {
+				return err
+			}
+
+			_, err = createControllerFile(entityName, "controller.go", entityName+"Controller.go")
 			if err != nil {
 				return err
 			}
@@ -37,7 +42,7 @@ func Controller() *cli.Command {
 }
 
 // createController creates a new controller file
-func createController(entityName string) (string, error) {
+func createControllerFile(entityName, controllerTemplateFileName, outputFileName string) (string, error) {
 	controllerDir := "./controller/"
 	if _, err := os.Stat(controllerDir); os.IsNotExist(err) {
 		err = os.Mkdir(controllerDir, 0o755)
@@ -46,7 +51,7 @@ func createController(entityName string) (string, error) {
 		}
 	}
 
-	templateContent, err := templates.FS.ReadFile("controller/controller.go")
+	templateContent, err := templates.FS.ReadFile("controller/" + controllerTemplateFileName)
 	if err != nil {
 		return "", err
 	}
@@ -57,7 +62,7 @@ func createController(entityName string) (string, error) {
 	newContent := strings.ReplaceAll(string(templateContent), "newEntity", entityName)
 	newContent = strings.ReplaceAll(newContent, "NewEntity", titler.String(entityName))
 
-	controllerPath := fmt.Sprintf("%s%s.go", controllerDir, entityName)
+	controllerPath := fmt.Sprintf("%s%s", controllerDir, outputFileName)
 
 	err = os.WriteFile(controllerPath, []byte(newContent), 0o644)
 	if err != nil {
