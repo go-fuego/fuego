@@ -98,7 +98,7 @@ func TestWithGlobalResponseType(t *testing.T) {
 		routeGlobal := Get(s, "/test-global", testController)
 		routeCustom := Get(s, "/test-custom", testController,
 			OptionAddResponse(http.StatusBadRequest, "My Local Error", Response{Type: MyLocalResponse{}}),
-			OptionAddError(http.StatusTeapot, "My Local Teapot", Response{Type: HTTPError{}}),
+			OptionAddResponse(http.StatusTeapot, "My Local Teapot", Response{Type: HTTPError{}}),
 		)
 
 		require.Equal(t, "My Global Error", *routeGlobal.Operation.Responses.Value("400").Value.Description, "Overrides Fuego's default 400 error")
