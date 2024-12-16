@@ -1,4 +1,4 @@
-package controller
+package newEntity
 
 type NewEntity struct {
 	ID   string `json:"id"`
