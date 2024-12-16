@@ -38,6 +38,20 @@ func Controller() *cli.Command {
 			fmt.Printf("🔥 Controller %s created successfully\n", entityName)
 			return nil
 		},
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:  "with-service",
+				Usage: "enable service file generation",
+				Value: false,
+				Action: func(cCtx *cli.Context, shouldGenerateServiceFile bool) error {
+					if !shouldGenerateServiceFile {
+						return nil
+					}
+
+					return serviceCommandAction(cCtx)
+				},
+			},
+		},
 	}
 }
 
