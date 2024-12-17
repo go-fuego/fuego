@@ -30,12 +30,7 @@ func (rs NewEntityResources) postNewEntity(c *fuego.ContextWithBody[NewEntityCre
 		return NewEntity{}, err
 	}
 
-	new, err := rs.NewEntityService.CreateNewEntity(body)
-	if err != nil {
-		return NewEntity{}, err
-	}
-
-	return new, nil
+	return rs.NewEntityService.CreateNewEntity(body)
 }
 
 func (rs NewEntityResources) getNewEntity(c fuego.ContextNoBody) (NewEntity, error) {
@@ -52,12 +47,7 @@ func (rs NewEntityResources) putNewEntity(c *fuego.ContextWithBody[NewEntityUpda
 		return NewEntity{}, err
 	}
 
-	new, err := rs.NewEntityService.UpdateNewEntity(id, body)
-	if err != nil {
-		return NewEntity{}, err
-	}
-
-	return new, nil
+	return rs.NewEntityService.UpdateNewEntity(id, body)
 }
 
 func (rs NewEntityResources) deleteNewEntity(c *fuego.ContextNoBody) (any, error) {
