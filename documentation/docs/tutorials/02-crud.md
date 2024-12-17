@@ -14,7 +14,13 @@ fuego controller books
 go run github.com/go-fuego/fuego/cmd/fuego@latest controller books
 ```
 
-This generates a controller and a service for the `books` resource.
+This generates a controller for the `books` resource.
+
+:::tip
+
+Use `fuego controller --with-service books` to generate a simple map based in memory service so you can pass it to the controller resources to quickly interact with your new book entity!
+
+:::
 
 You then have to implement the service interface in the controller to be able
 to play with data. It's a form of **dependency injection** that we chose to use
