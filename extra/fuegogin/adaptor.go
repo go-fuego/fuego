@@ -3,7 +3,6 @@ package fuegogin
 import (
 	"log/slog"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-fuego/fuego"
@@ -26,12 +25,12 @@ func Post[T, B any](s *fuego.OpenAPI, e gin.IRouter, path string, handler func(c
 }
 
 func handleFuego[T, B any](openapi *fuego.OpenAPI, e gin.IRouter, method, path string, fuegoHandler func(c ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
-	baseRoute := NewBaseRoute(method, path, fuegoHandler, openapi, options...)
+	baseRoute := fuego.NewBaseRoute(method, path, fuegoHandler, openapi, options...)
 	return handle(openapi, e, &fuego.Route[T, B]{BaseRoute: baseRoute}, GinHandler(fuegoHandler))
 }
 
 func handleGin(openapi *fuego.OpenAPI, e gin.IRouter, method, path string, ginHandler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
-	baseRoute := NewBaseRoute(method, path, ginHandler, openapi, options...)
+	baseRoute := fuego.NewBaseRoute(method, path, ginHandler, openapi, options...)
 	return handle(openapi, e, &fuego.Route[any, any]{BaseRoute: baseRoute}, ginHandler)
 }
 
@@ -48,23 +47,6 @@ func handle[T, B any](openapi *fuego.OpenAPI, e gin.IRouter, route *fuego.Route[
 	}
 
 	return route
-}
-
-func NewBaseRoute(method, path string, handler any, openapi *fuego.OpenAPI, options ...func(*fuego.BaseRoute)) fuego.BaseRoute {
-	baseRoute := fuego.BaseRoute{
-		Method:    method,
-		Path:      path,
-		Params:    make(map[string]fuego.OpenAPIParam),
-		FullName:  fuego.FuncName(handler),
-		Operation: openapi3.NewOperation(),
-		OpenAPI:   openapi,
-	}
-
-	for _, o := range options {
-		o(&baseRoute)
-	}
-
-	return baseRoute
 }
 
 // Convert a Fuego handler to a Gin handler.

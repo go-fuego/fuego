@@ -33,7 +33,7 @@ func fuegoControllerPost(c fuegogin.ContextWithBody[HelloRequest]) (HelloRespons
 	}, nil
 }
 
-func serveController(s *fuego.OpenAPI) func(ctx *gin.Context) {
+func serveOpenApiJSONDescription(s *fuego.OpenAPI) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, s.Description())
 	}
