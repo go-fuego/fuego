@@ -1,4 +1,4 @@
-package fuegogin_test
+package main
 
 import (
 	"net/http"
@@ -6,12 +6,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	"github.com/go-fuego/fuego/extra/fuegogin/lib"
 )
 
 func TestFuegoGin(t *testing.T) {
-	e, _ := lib.SetupGin()
+	e, _ := server()
 
 	t.Run("simply test gin", func(t *testing.T) {
 		r := httptest.NewRequest("GET", "/gin", nil)
