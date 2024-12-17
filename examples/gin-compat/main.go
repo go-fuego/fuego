@@ -20,6 +20,17 @@ type HelloResponse struct {
 }
 
 func main() {
+	e, _ := server()
+
+	fmt.Println("OpenAPI at at http://localhost:8980/swagger ✅")
+
+	err := e.Run(":8980")
+	if err != nil {
+		panic(err)
+	}
+}
+
+func server() (*gin.Engine, *fuego.OpenAPI) {
 	e := gin.Default()
 	openapi := fuego.NewOpenAPI()
 
@@ -57,10 +68,5 @@ func main() {
 	e.GET("/openapi.json", serveController(openapi))
 	e.GET("/swagger", DefaultOpenAPIHandler("/openapi.json"))
 
-	fmt.Println("OpenAPI at at http://localhost:8980/swagger ✅")
-
-	err := e.Run(":8980")
-	if err != nil {
-		panic(err)
-	}
+	return e, openapi
 }
