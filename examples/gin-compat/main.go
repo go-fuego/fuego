@@ -65,7 +65,7 @@ func server() (*gin.Engine, *fuego.OpenAPI) {
 	)
 
 	// Serve the OpenAPI spec
-	e.GET("/openapi.json", serveController(openapi))
+	e.GET("/openapi.json", serveOpenApiJSONDescription(openapi))
 	e.GET("/swagger", DefaultOpenAPIHandler("/openapi.json"))
 
 	return e, openapi

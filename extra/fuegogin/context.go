@@ -85,6 +85,14 @@ func (c *contextWithBody[B]) QueryParams() url.Values {
 	return c.ginCtx.Request.URL.Query()
 }
 
+func (c *contextWithBody[B]) MainLang() string {
+	panic("unimplemented")
+}
+
+func (c *contextWithBody[B]) MainLocale() string {
+	panic("unimplemented")
+}
+
 func (c *contextWithBody[B]) Redirect(code int, url string) (any, error) {
 	c.ginCtx.Redirect(code, url)
 	return nil, nil
