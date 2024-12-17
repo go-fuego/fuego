@@ -125,11 +125,12 @@ func NewServer(options ...func(*Server)) *Server {
 		WithSerializer(Send),
 		WithErrorSerializer(SendError),
 		WithErrorHandler(ErrorHandler),
-		WithGlobalResponseTypes(http.StatusBadRequest, "Bad Request _(validation or deserialization error)_", Response{Type: HTTPError{}}),
-		WithGlobalResponseTypes(http.StatusInternalServerError, "Internal Server Error _(panics)_", Response{Type: HTTPError{}}),
+		WithRouteOptions(
+			OptionAddResponse(http.StatusBadRequest, "Bad Request _(validation or deserialization error)_", Response{Type: HTTPError{}}),
+			OptionAddResponse(http.StatusInternalServerError, "Internal Server Error _(panics)_", Response{Type: HTTPError{}}),
+		),
 	}
 	options = append(defaultOptions[:], options...)
-
 	for _, option := range options {
 		option(s)
 	}
@@ -202,6 +203,8 @@ func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Se
 //		fuego.WithGlobalResponseTypes(500, "Internal Server Error _(panics)_", HTTPError{}),
 //		fuego.WithGlobalResponseTypes(204, "No Content", Empty{}),
 //	)
+//
+// Deprecated: Please use [OptionAddResponse] with [WithRouteOptions]
 func WithGlobalResponseTypes(code int, description string, response Response) func(*Server) {
 	return func(c *Server) {
 		WithRouteOptions(
