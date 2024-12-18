@@ -35,12 +35,32 @@ type OpenAPI struct {
 	globalOpenAPIResponses []openAPIResponse
 }
 
-func (d *OpenAPI) Description() *openapi3.T {
-	return d.description
+func (openAPI *OpenAPI) Description() *openapi3.T {
+	return openAPI.description
 }
 
-func (d *OpenAPI) Generator() *openapi3gen.Generator {
-	return d.generator
+func (openAPI *OpenAPI) Generator() *openapi3gen.Generator {
+	return openAPI.generator
+}
+
+// Compute the tags to declare at the root of the OpenAPI spec from the tags declared in the operations.
+func (openAPI *OpenAPI) computeTags() {
+	for _, pathItem := range openAPI.Description().Paths.Map() {
+		for _, op := range pathItem.Operations() {
+			for _, tag := range op.Tags {
+				if openAPI.Description().Tags.Get(tag) == nil {
+					openAPI.Description().Tags = append(openAPI.Description().Tags, &openapi3.Tag{
+						Name: tag,
+					})
+				}
+			}
+		}
+	}
+
+	// Make sure tags are sorted
+	slices.SortFunc(openAPI.Description().Tags, func(a, b *openapi3.Tag) int {
+		return strings.Compare(a.Name, b.Name)
+	})
 }
 
 func NewOpenApiSpec() openapi3.T {
@@ -77,25 +97,6 @@ func (s *Server) Show() *Server {
 	return s
 }
 
-func declareAllTagsFromOperations(s *Server) {
-	for _, pathItem := range s.OpenAPI.Description().Paths.Map() {
-		for _, op := range pathItem.Operations() {
-			for _, tag := range op.Tags {
-				if s.OpenAPI.Description().Tags.Get(tag) == nil {
-					s.OpenAPI.Description().Tags = append(s.OpenAPI.Description().Tags, &openapi3.Tag{
-						Name: tag,
-					})
-				}
-			}
-		}
-	}
-
-	// Make sure tags are sorted
-	slices.SortFunc(s.OpenAPI.Description().Tags, func(a, b *openapi3.Tag) int {
-		return strings.Compare(a.Name, b.Name)
-	})
-}
-
 // OutputOpenAPISpec takes the OpenAPI spec and outputs it to a JSON file and/or serves it on a URL.
 // Also serves a Swagger UI.
 // To modify its behavior, use the [WithOpenAPIConfig] option.
@@ -105,7 +106,7 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 		Description: "local server",
 	})
 
-	declareAllTagsFromOperations(s)
+	s.OpenAPI.computeTags()
 
 	// Validate
 	err := s.OpenAPI.Description().Validate(context.Background())
