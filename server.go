@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/getkin/kin-openapi/openapi3gen"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -80,8 +79,6 @@ type Server struct {
 
 	OpenAPIConfig OpenAPIConfig
 
-	openAPIGenerator *openapi3gen.Generator
-
 	isTLS bool
 }
 
@@ -107,10 +104,6 @@ func NewServer(options ...func(*Server)) *Server {
 		OpenAPI: NewOpenAPI(),
 
 		OpenAPIConfig: defaultOpenAPIConfig,
-
-		openAPIGenerator: openapi3gen.NewGenerator(
-			openapi3gen.UseAllExportedFields(),
-		),
 
 		Security: NewSecurity(),
 	}
