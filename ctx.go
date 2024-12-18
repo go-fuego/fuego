@@ -18,13 +18,28 @@ const (
 	maxBodySize = 1048576
 )
 
-type ContextNoBody = ContextWithBody[any]
+type contextImpl[B, P any] struct {
+	contextWithBodyImpl[B]
+	params P
+}
+
+func (c contextImpl[B, P]) Params() P {
+	return c.params
+}
+
+var _ Context[any, any] = &contextImpl[any, any]{}
+
+type (
+	ContextNoBody          = Context[any, any]
+	ContextWithBody[B any] = Context[B, any]
+)
 
 // ctx is the context of the request.
 // It contains the request body, the path parameters, the query parameters, and the HTTP request.
 // Please do not use a pointer type as parameter.
-type ContextWithBody[B any] interface {
+type Context[B, P any] interface {
 	context.Context
+	Params() P
 	// Body returns the body of the request.
 	// If (*B) implements [InTransformer], it will be transformed after deserialization.
 	// It caches the result, so it can be called multiple times.
@@ -95,9 +110,11 @@ type ContextWithBody[B any] interface {
 }
 
 // NewContextWithBody returns a new context. It is used internally by Fuego. You probably want to use Ctx[B] instead.
-func NewContextWithBody[B any](w http.ResponseWriter, r *http.Request, options readOptions) ContextWithBody[B] {
-	c := &contextWithBodyImpl[B]{
-		contextNoBodyImpl: NewContextNoBody(w, r, options),
+func NewContextWithBody[B, P any](w http.ResponseWriter, r *http.Request, options readOptions) Context[B, P] {
+	c := &contextImpl[B, P]{
+		contextWithBodyImpl: contextWithBodyImpl[B]{
+			contextNoBodyImpl: NewContextNoBody(w, r, options),
+		},
 	}
 
 	return c
@@ -125,8 +142,8 @@ type contextWithBodyImpl[Body any] struct {
 }
 
 var (
-	_ ContextWithBody[any]    = &contextWithBodyImpl[any]{}    // Check that ContextWithBody implements Ctx.
-	_ ContextWithBody[string] = &contextWithBodyImpl[string]{} // Check that ContextWithBody implements Ctx.
+	_ ContextWithBody[any]    = &contextImpl[any, any]{}    // Check that ContextWithBody implements Ctx.
+	_ ContextWithBody[string] = &contextImpl[string, any]{} // Check that ContextWithBody implements Ctx.
 )
 
 // ContextNoBody is used when the controller does not have a body.
@@ -144,10 +161,7 @@ type contextNoBodyImpl struct {
 	readOptions readOptions
 }
 
-var (
-	_ ContextWithBody[any] = contextNoBodyImpl{} // Check that ContextNoBody implements Ctx.
-	_ context.Context      = contextNoBodyImpl{} // Check that ContextNoBody implements context.Context.
-)
+var _ context.Context = contextNoBodyImpl{} // Check that ContextNoBody implements context.Context.
 
 func (c contextNoBodyImpl) Body() (any, error) {
 	slog.Warn("this method should not be called. It probably happened because you passed the context to another controller.")

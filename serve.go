@@ -60,7 +60,7 @@ func (s *Server) url() string {
 // HTTPHandler converts a Fuego controller into a http.HandlerFunc.
 // Uses Server for configuration.
 // Uses Route for route configuration. Optional.
-func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithBody[Body]) (ReturnType, error), route *BaseRoute) http.HandlerFunc {
+func HTTPHandler[ReturnType, Body, Params any](s *Server, controller func(c Context[Body, Params]) (ReturnType, error), route *BaseRoute) http.HandlerFunc {
 	// Just a check, not used at request time
 
 	if route == nil {
@@ -78,18 +78,20 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 			templates = template.Must(s.template.Clone())
 		}
 
-		ctx := &contextWithBodyImpl[Body]{
-			contextNoBodyImpl: contextNoBodyImpl{
-				Req: r,
-				Res: w,
-				readOptions: readOptions{
-					DisallowUnknownFields: s.DisallowUnknownFields,
-					MaxBodySize:           s.maxBodySize,
+		ctx := &contextImpl[Body, Params]{
+			contextWithBodyImpl: contextWithBodyImpl[Body]{
+				contextNoBodyImpl: contextNoBodyImpl{
+					Req: r,
+					Res: w,
+					readOptions: readOptions{
+						DisallowUnknownFields: s.DisallowUnknownFields,
+						MaxBodySize:           s.maxBodySize,
+					},
+					fs:        s.fs,
+					templates: templates,
+					params:    route.Params,
+					urlValues: r.URL.Query(),
 				},
-				fs:        s.fs,
-				templates: templates,
-				params:    route.Params,
-				urlValues: r.URL.Query(),
 			},
 		}
 
