@@ -2,6 +2,7 @@ package fuegogin
 
 import (
 	"log/slog"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 
@@ -9,19 +10,19 @@ import (
 )
 
 func GetGin(s *fuego.OpenAPI, e gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
-	return handleGin(s, e, "GET", path, handler, options...)
+	return handleGin(s, e, http.MethodGet, path, handler, options...)
 }
 
 func PostGin(s *fuego.OpenAPI, e gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
-	return handleGin(s, e, "POST", path, handler, options...)
+	return handleGin(s, e, http.MethodPost, path, handler, options...)
 }
 
 func Get[T, B any](s *fuego.OpenAPI, e gin.IRouter, path string, handler func(c ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
-	return handleFuego(s, e, "GET", path, handler, options...)
+	return handleFuego(s, e, http.MethodGet, path, handler, options...)
 }
 
 func Post[T, B any](s *fuego.OpenAPI, e gin.IRouter, path string, handler func(c ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
-	return handleFuego(s, e, "POST", path, handler, options...)
+	return handleFuego(s, e, http.MethodPost, path, handler, options...)
 }
 
 func handleFuego[T, B any](openapi *fuego.OpenAPI, e gin.IRouter, method, path string, fuegoHandler func(c ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
