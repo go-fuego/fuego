@@ -1,6 +1,7 @@
 package fuego_test
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -837,7 +838,7 @@ func TestDefaultStatusCode(t *testing.T) {
 		s := fuego.NewServer()
 
 		route := fuego.Post(s, "/test", helloWorld,
-			fuego.OptionDefaultStatusCode(201),
+			option.DefaultStatusCode(201),
 		)
 
 		r := httptest.NewRequest(http.MethodPost, "/test", nil)
@@ -858,7 +859,7 @@ func TestDefaultStatusCode(t *testing.T) {
 			c.SetStatus(200)
 			return "hello world", nil
 		},
-			fuego.OptionDefaultStatusCode(201),
+			option.DefaultStatusCode(201),
 		)
 
 		r := httptest.NewRequest(http.MethodPost, "/test", nil)
@@ -870,5 +871,39 @@ func TestDefaultStatusCode(t *testing.T) {
 		require.Equal(t, "hello world", w.Body.String())
 		require.Equal(t, 201, route.DefaultStatusCode, "default status code should not be changed")
 		require.NotNil(t, route.Operation.Responses.Value("201").Value, "default status is still in the spec even if code is not used")
+	})
+
+	t.Run("can return 204 when no data is being sent", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		fuego.Get(s, "/", func(_ fuego.ContextNoBody) (any, error) {
+			return nil, nil
+		},
+			option.DefaultStatusCode(204),
+		)
+
+		r := httptest.NewRequest("GET", "/", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 204, w.Code)
+	})
+
+	t.Run("must return 500 when an error is being sent, even with no body", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		fuego.Get(s, "/", func(_ fuego.ContextNoBody) (any, error) {
+			return nil, errors.New("error")
+		},
+			option.DefaultStatusCode(204),
+		)
+
+		r := httptest.NewRequest("GET", "/", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 500, w.Code)
 	})
 }
