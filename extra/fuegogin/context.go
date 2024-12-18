@@ -7,10 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/internal"
 )
 
 type ContextWithBody[B any] interface {
-	fuego.CommonCtx[B]
+	internal.CommonCtx[B]
 
 	Request() *http.Request
 	Response() gin.ResponseWriter
@@ -18,6 +19,8 @@ type ContextWithBody[B any] interface {
 	// Original Gin context
 	Context() *gin.Context
 }
+
+var _ internal.CommonCtx[string] = (ContextWithBody[string])(nil) // Check that ContextWithBody[string] implements CommonCtx.
 
 type ContextNoBody = ContextWithBody[any]
 
