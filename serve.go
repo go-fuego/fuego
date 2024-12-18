@@ -139,12 +139,12 @@ func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, control
 		}
 		w.Header().Add("Server-Timing", Timing{"controller", time.Since(timeController), ""}.String())
 
-		if reflect.TypeOf(ans) == nil {
-			return
-		}
-
 		if route.DefaultStatusCode != 0 {
 			w.WriteHeader(route.DefaultStatusCode)
+		}
+
+		if reflect.TypeOf(ans) == nil {
+			return
 		}
 
 		// TRANSFORM OUT
