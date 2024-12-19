@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/go-fuego/fuego/internal"
 )
 
 const (
@@ -77,6 +79,12 @@ type ContextWithBody[B any] interface {
 	Header(key string) string                 // Get request header
 	SetHeader(key, value string)              // Sets response header
 
+	// Returns the underlying net/http, gin or echo context.
+	//
+	// Usage:
+	//  ctx := c.Context() // net/http: the [context.Context] of the *http.Request
+	//  ctx := c.Context().(*gin.Context) // gin: Safe because the underlying context is always a [gin.Context]
+	//  ctx := c.Context().(echo.Context) // echo: Safe because the underlying context is always a [echo.Context]
 	Context() context.Context
 
 	Request() *http.Request        // Request returns the underlying HTTP request.
@@ -98,6 +106,9 @@ type ContextWithBody[B any] interface {
 // NewNetHTTPContext returns a new context. It is used internally by Fuego. You probably want to use Ctx[B] instead.
 func NewNetHTTPContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) ContextWithBody[B] {
 	c := &netHttpContext[B]{
+		CommonContext: internal.CommonContext[B]{
+			CommonCtx: r.Context(),
+		},
 		Res: w,
 		Req: r,
 		readOptions: readOptions{
@@ -119,6 +130,8 @@ var (
 // has a Body. The Body type parameter represents the expected data type
 // from http.Request.Body. Please do not use a pointer as a type parameter.
 type netHttpContext[Body any] struct {
+	internal.CommonContext[Body]
+
 	body *Body // Cache the body in request context, because it is not possible to read an HTTP request body multiple times.
 
 	Req *http.Request
@@ -150,31 +163,6 @@ func (c netHttpContext[B]) Redirect(code int, url string) (any, error) {
 	http.Redirect(c.Res, c.Req, url, code)
 
 	return nil, nil
-}
-
-// ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c netHttpContext[B]) Deadline() (deadline time.Time, ok bool) {
-	return c.Req.Context().Deadline()
-}
-
-// ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c netHttpContext[B]) Done() <-chan struct{} {
-	return c.Req.Context().Done()
-}
-
-// ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c netHttpContext[B]) Err() error {
-	return c.Req.Context().Err()
-}
-
-// ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c netHttpContext[B]) Value(key any) any {
-	return c.Req.Context().Value(key)
-}
-
-// ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c netHttpContext[B]) Context() context.Context {
-	return c.Req.Context()
 }
 
 // Get request header
