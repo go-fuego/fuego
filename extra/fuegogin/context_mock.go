@@ -8,7 +8,7 @@ import (
 )
 
 type ContextTest[B any] struct {
-	contextWithBody[B]
+	ginContext[B]
 	BodyInjected  B
 	ErrorInjected error
 

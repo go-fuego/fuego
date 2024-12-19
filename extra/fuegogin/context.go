@@ -1,6 +1,7 @@
 package fuegogin
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 
@@ -10,45 +11,32 @@ import (
 	"github.com/go-fuego/fuego/internal"
 )
 
-type ContextWithBody[B any] interface {
-	internal.CommonCtx[B]
-
-	Request() *http.Request
-	Response() gin.ResponseWriter
-
-	// Original Gin context
-	Context() *gin.Context
-}
-
-var _ internal.CommonCtx[string] = (ContextWithBody[string])(nil) // Check that ContextWithBody[string] implements CommonCtx.
-
-type ContextNoBody = ContextWithBody[any]
-
-type contextWithBody[B any] struct {
+type ginContext[B any] struct {
+	internal.CommonContext[B]
 	ginCtx *gin.Context
 }
 
-var _ ContextWithBody[any] = &contextWithBody[any]{}
+var _ fuego.ContextWithBody[any] = &ginContext[any]{}
 
-func (c *contextWithBody[B]) Body() (B, error) {
+func (c ginContext[B]) Body() (B, error) {
 	var body B
 	err := c.ginCtx.Bind(&body)
 	return body, err
 }
 
-func (c *contextWithBody[B]) Context() *gin.Context {
+func (c ginContext[B]) Context() context.Context {
 	return c.ginCtx
 }
 
-func (c *contextWithBody[B]) Cookie(name string) (*http.Cookie, error) {
+func (c ginContext[B]) Cookie(name string) (*http.Cookie, error) {
 	panic("unimplemented")
 }
 
-func (c *contextWithBody[B]) Header(key string) string {
+func (c ginContext[B]) Header(key string) string {
 	return c.ginCtx.GetHeader(key)
 }
 
-func (c *contextWithBody[B]) MustBody() B {
+func (c ginContext[B]) MustBody() B {
 	body, err := c.Body()
 	if err != nil {
 		panic(err)
@@ -56,70 +44,70 @@ func (c *contextWithBody[B]) MustBody() B {
 	return body
 }
 
-func (c *contextWithBody[B]) PathParam(name string) string {
+func (c ginContext[B]) PathParam(name string) string {
 	return c.ginCtx.Param(name)
 }
 
-func (c *contextWithBody[B]) QueryParam(name string) string {
+func (c ginContext[B]) QueryParam(name string) string {
 	return c.ginCtx.Query(name)
 }
 
-func (c *contextWithBody[B]) QueryParamArr(name string) []string {
+func (c ginContext[B]) QueryParamArr(name string) []string {
 	panic("unimplemented")
 }
 
-func (c *contextWithBody[B]) QueryParamBool(name string) bool {
+func (c ginContext[B]) QueryParamBool(name string) bool {
 	panic("unimplemented")
 }
 
-func (c *contextWithBody[B]) QueryParamBoolErr(name string) (bool, error) {
+func (c ginContext[B]) QueryParamBoolErr(name string) (bool, error) {
 	panic("unimplemented")
 }
 
-func (c *contextWithBody[B]) QueryParamInt(name string) int {
+func (c ginContext[B]) QueryParamInt(name string) int {
 	panic("unimplemented")
 }
 
-func (c *contextWithBody[B]) QueryParamIntErr(name string) (int, error) {
+func (c ginContext[B]) QueryParamIntErr(name string) (int, error) {
 	panic("unimplemented")
 }
 
-func (c *contextWithBody[B]) QueryParams() url.Values {
+func (c ginContext[B]) QueryParams() url.Values {
 	return c.ginCtx.Request.URL.Query()
 }
 
-func (c *contextWithBody[B]) MainLang() string {
+func (c ginContext[B]) MainLang() string {
 	panic("unimplemented")
 }
 
-func (c *contextWithBody[B]) MainLocale() string {
+func (c ginContext[B]) MainLocale() string {
 	panic("unimplemented")
 }
 
-func (c *contextWithBody[B]) Redirect(code int, url string) (any, error) {
+func (c ginContext[B]) Redirect(code int, url string) (any, error) {
 	c.ginCtx.Redirect(code, url)
 	return nil, nil
 }
 
-func (c *contextWithBody[B]) Render(templateToExecute string, data any, templateGlobsToOverride ...string) (fuego.CtxRenderer, error) {
+func (c ginContext[B]) Render(templateToExecute string, data any, templateGlobsToOverride ...string) (fuego.CtxRenderer, error) {
 	panic("unimplemented")
 }
 
-func (c *contextWithBody[B]) Request() *http.Request {
+func (c ginContext[B]) Request() *http.Request {
 	return c.ginCtx.Request
 }
 
-func (c *contextWithBody[B]) Response() gin.ResponseWriter {
+func (c ginContext[B]) Response() http.ResponseWriter {
 	return c.ginCtx.Writer
 }
 
-func (c *contextWithBody[B]) SetCookie(cookie http.Cookie) {
+func (c ginContext[B]) SetCookie(cookie http.Cookie) {
 }
 
-func (c *contextWithBody[B]) SetHeader(key, value string) {
+func (c ginContext[B]) SetHeader(key, value string) {
 	c.ginCtx.Header(key, value)
 }
 
-func (c *contextWithBody[B]) SetStatus(code int) {
+func (c ginContext[B]) SetStatus(code int) {
 	c.ginCtx.Status(code)
 }
