@@ -351,7 +351,7 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextNoBody", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := NewContextNoBody(w, req, readOptions{})
+		ctx := NewNetHTTPContext[any](w, req, readOptions{})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -361,7 +361,7 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextNoBody", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := NewContextNoBody(w, req, readOptions{})
+		ctx := NewNetHTTPContext[any](w, req, readOptions{})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -371,7 +371,7 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextWithBody[string]", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := NewContextNoBody(w, req, readOptions{})
+		ctx := NewNetHTTPContext[any](w, req, readOptions{})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -381,7 +381,7 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextWithBody[struct]", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := NewContextNoBody(w, req, readOptions{})
+		ctx := NewNetHTTPContext[any](w, req, readOptions{})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
