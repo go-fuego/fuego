@@ -25,7 +25,7 @@ func dummyMiddleware(handler http.Handler) http.Handler {
 	})
 }
 
-func helloWorld(ctx *fuego.ContextNoBody) (string, error) {
+func helloWorld(ctx fuego.ContextNoBody) (string, error) {
 	return "hello world", nil
 }
 
@@ -38,7 +38,7 @@ type Resp struct {
 	Message string `json:"message"`
 }
 
-func dummyController(_ *fuego.ContextWithBody[ReqBody]) (Resp, error) {
+func dummyController(_ fuego.ContextWithBody[ReqBody]) (Resp, error) {
 	return Resp{Message: "hello world"}, nil
 }
 
@@ -58,11 +58,11 @@ func orderMiddleware(s string) func(http.Handler) http.Handler {
 func TestPerRouteMiddleware(t *testing.T) {
 	s := fuego.NewServer()
 
-	fuego.Get(s, "/withMiddleware", func(ctx *fuego.ContextNoBody) (string, error) {
+	fuego.Get(s, "/withMiddleware", func(ctx fuego.ContextNoBody) (string, error) {
 		return "withmiddleware", nil
 	}, fuego.OptionMiddleware(dummyMiddleware))
 
-	fuego.Get(s, "/withoutMiddleware", func(ctx *fuego.ContextNoBody) (string, error) {
+	fuego.Get(s, "/withoutMiddleware", func(ctx fuego.ContextNoBody) (string, error) {
 		return "withoutmiddleware", nil
 	})
 
@@ -93,7 +93,7 @@ func TestUse(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		s := fuego.NewServer()
 		fuego.Use(s, orderMiddleware("First!"))
-		fuego.Get(s, "/test", func(ctx *fuego.ContextNoBody) (string, error) {
+		fuego.Get(s, "/test", func(ctx fuego.ContextNoBody) (string, error) {
 			return "test", nil
 		})
 
@@ -110,7 +110,7 @@ func TestUse(t *testing.T) {
 		s := fuego.NewServer()
 		fuego.Use(s, orderMiddleware("First!"))
 		fuego.Use(s, orderMiddleware("Second!"))
-		fuego.Get(s, "/test", func(ctx *fuego.ContextNoBody) (string, error) {
+		fuego.Get(s, "/test", func(ctx fuego.ContextNoBody) (string, error) {
 			return "test", nil
 		})
 
@@ -127,7 +127,7 @@ func TestUse(t *testing.T) {
 		s := fuego.NewServer()
 		fuego.Use(s, orderMiddleware("First!"))
 		fuego.Use(s, orderMiddleware("Second!"), orderMiddleware("Third!"))
-		fuego.Get(s, "/test", func(ctx *fuego.ContextNoBody) (string, error) {
+		fuego.Get(s, "/test", func(ctx fuego.ContextNoBody) (string, error) {
 			return "test", nil
 		})
 
@@ -144,7 +144,7 @@ func TestUse(t *testing.T) {
 		s := fuego.NewServer()
 		fuego.Use(s, orderMiddleware("First!"))
 		fuego.Use(s, orderMiddleware("Second!"), orderMiddleware("Third!"))
-		fuego.Get(s, "/test", func(ctx *fuego.ContextNoBody) (string, error) {
+		fuego.Get(s, "/test", func(ctx fuego.ContextNoBody) (string, error) {
 			return "test", nil
 		},
 			fuego.OptionMiddleware(orderMiddleware("Fourth!")),
@@ -829,7 +829,7 @@ func TestOptionDescription(t *testing.T) {
 			option.Middleware(dummyMiddleware), // 7th middleware, should not be included
 		)
 
-		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- more middleware...\n\n---\n\nanother description", route.Operation.Description)
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- more middleware…\n\n---\n\nanother description", route.Operation.Description)
 	})
 }
 
