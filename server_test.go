@@ -477,8 +477,6 @@ func TestGroupParamsInMainServerInstance(t *testing.T) {
 	route := Get(s, "/test", controller)
 
 	require.Equal(t, "test-value", route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Description)
-	// expectedParams := map[string]OpenAPIParam{"X-Test-Header": {Name: "X-Test-Header", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: ""}}}
-	// require.Equal(t, expectedParams, route.Params)
 }
 
 func TestHideGroupAfterGroupParam(t *testing.T) {

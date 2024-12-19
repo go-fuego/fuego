@@ -3,7 +3,7 @@ package fuego
 import "fmt"
 
 func validateParams[B any](c netHttpContext[B]) error {
-	for k, param := range c.params {
+	for k, param := range c.OpenAPIParams {
 		if param.Default != nil {
 			// skip: param has a default
 			continue
@@ -12,7 +12,7 @@ func validateParams[B any](c netHttpContext[B]) error {
 		if param.Required {
 			switch param.Type {
 			case QueryParamType:
-				if !c.urlValues.Has(k) {
+				if !c.UrlValues.Has(k) {
 					err := fmt.Errorf("%s is a required query param", k)
 					return BadRequestError{
 						Title:  "Query Param Not Found",
