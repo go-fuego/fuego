@@ -4,9 +4,11 @@ import (
 	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
+
+	"github.com/go-fuego/fuego/internal"
 )
 
-type ParamType string // Query, Header, Cookie
+type ParamType = internal.ParamType // Query, Header, Cookie
 
 const (
 	PathParamType   ParamType = "path"
@@ -15,28 +17,7 @@ const (
 	CookieParamType ParamType = "cookie"
 )
 
-type OpenAPIParam struct {
-	Name        string
-	Description string
-	OpenAPIParamOption
-}
-
-type OpenAPIParamOption struct {
-	Required bool
-	Nullable bool
-	// Default value for the parameter.
-	// Type is checked at start-time.
-	Default  any
-	Example  string
-	Examples map[string]any
-	Type     ParamType
-	// integer, string, bool
-	GoType string
-	// Status codes for which this parameter is required.
-	// Only used for response parameters.
-	// If empty, it is required for 200 status codes.
-	StatusCodes []int
-}
+type OpenAPIParam = internal.OpenAPIParam
 
 // Registers a response for the route, only if error for this code is not already set.
 func addResponseIfNotSet(openapi *OpenAPI, operation *openapi3.Operation, code int, description string, response Response) {
