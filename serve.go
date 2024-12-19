@@ -98,22 +98,20 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 			templates = template.Must(s.template.Clone())
 		}
 
-		ctx := &contextWithBodyImpl[Body]{
-			contextNoBodyImpl: contextNoBodyImpl{
-				Req: r,
-				Res: w,
-				readOptions: readOptions{
-					DisallowUnknownFields: s.DisallowUnknownFields,
-					MaxBodySize:           s.maxBodySize,
-				},
-				fs:        s.fs,
-				templates: templates,
-				params:    route.Params,
-				urlValues: r.URL.Query(),
+		ctx := &netHttpContext[Body]{
+			Req: r,
+			Res: w,
+			readOptions: readOptions{
+				DisallowUnknownFields: s.DisallowUnknownFields,
+				MaxBodySize:           s.maxBodySize,
 			},
+			fs:        s.fs,
+			templates: templates,
+			params:    route.Params,
+			urlValues: r.URL.Query(),
 		}
 
-		err := validateParams(ctx.contextNoBodyImpl)
+		err := validateParams(*ctx)
 		if err != nil {
 			err = s.ErrorHandler(err)
 			s.SerializeError(w, r, err)
