@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/internal"
 )
 
 func GetGin(s *fuego.OpenAPI, e gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
@@ -17,15 +18,15 @@ func PostGin(s *fuego.OpenAPI, e gin.IRouter, path string, handler gin.HandlerFu
 	return handleGin(s, e, http.MethodPost, path, handler, options...)
 }
 
-func Get[T, B any](s *fuego.OpenAPI, e gin.IRouter, path string, handler func(c ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+func Get[T, B any](s *fuego.OpenAPI, e gin.IRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	return handleFuego(s, e, http.MethodGet, path, handler, options...)
 }
 
-func Post[T, B any](s *fuego.OpenAPI, e gin.IRouter, path string, handler func(c ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+func Post[T, B any](s *fuego.OpenAPI, e gin.IRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	return handleFuego(s, e, http.MethodPost, path, handler, options...)
 }
 
-func handleFuego[T, B any](openapi *fuego.OpenAPI, e gin.IRouter, method, path string, fuegoHandler func(c ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+func handleFuego[T, B any](openapi *fuego.OpenAPI, e gin.IRouter, method, path string, fuegoHandler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	baseRoute := fuego.NewBaseRoute(method, path, fuegoHandler, openapi, options...)
 	return handle(openapi, e, &fuego.Route[T, B]{BaseRoute: baseRoute}, GinHandler(fuegoHandler))
 }
@@ -51,9 +52,12 @@ func handle[T, B any](openapi *fuego.OpenAPI, e gin.IRouter, route *fuego.Route[
 }
 
 // Convert a Fuego handler to a Gin handler.
-func GinHandler[B, T any](handler func(c ContextWithBody[B]) (T, error)) gin.HandlerFunc {
+func GinHandler[B, T any](handler func(c fuego.ContextWithBody[B]) (T, error)) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		context := &contextWithBody[B]{
+		context := &ginContext[B]{
+			CommonContext: internal.CommonContext[B]{
+				CommonCtx: c,
+			},
 			ginCtx: c,
 		}
 
