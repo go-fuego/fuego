@@ -2,7 +2,7 @@ package fuego
 
 import "fmt"
 
-func validateParams(c ContextNoBody) error {
+func validateParams[B any](c netHttpContext[B]) error {
 	for k, param := range c.params {
 		if param.Default != nil {
 			// skip: param has a default

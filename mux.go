@@ -24,7 +24,7 @@ import (
 //		return ans{Ans: "users"}, nil
 //	})
 //	s.Run()
-func Group(s *Server, path string, options ...func(*BaseRoute)) *Server {
+func Group(s *Server, path string, routeOptions ...func(*BaseRoute)) *Server {
 	if path == "/" {
 		path = ""
 	} else if path != "" && path[len(path)-1] == '/' {
@@ -34,72 +34,38 @@ func Group(s *Server, path string, options ...func(*BaseRoute)) *Server {
 	ss := *s
 	newServer := &ss
 	newServer.basePath += path
-	newServer.groupTag = strings.TrimLeft(path, "/")
-	if newServer.groupTag != "" {
-		s.OpenApiSpec.Tags = append(s.OpenApiSpec.Tags, &openapi3.Tag{Name: newServer.groupTag})
-	}
-	newServer.mainRouter = s
 
-	baseRoute := BaseRoute{
-		Params:    make(map[string]OpenAPIParam),
-		Operation: openapi3.NewOperation(),
-	}
-	for _, option := range options {
-		option(&baseRoute)
+	if autoTag := strings.TrimLeft(path, "/"); !s.disableAutoGroupTags && autoTag != "" {
+		newServer.routeOptions = append(s.routeOptions, OptionTags(autoTag))
 	}
 
-	// Copy the params from the parent server, and add the new ones
-	newServer.params = make(map[string]OpenAPIParam, len(baseRoute.Params))
-	for k, v := range s.params {
-		newServer.params[k] = v
-	}
-	for k, v := range baseRoute.Params {
-		newServer.params[k] = v
-	}
+	newServer.routeOptions = append(newServer.routeOptions, routeOptions...)
 
 	return newServer
 }
 
-type Route[ResponseBody any, RequestBody any] struct {
-	BaseRoute
-}
-
-type BaseRoute struct {
-	Operation            *openapi3.Operation // GENERATED OpenAPI operation, do not set manually in Register function. You can change it after the route is registered.
-	Method               string              // HTTP method (GET, POST, PUT, PATCH, DELETE)
-	Path                 string              // URL path. Will be prefixed by the base path of the server and the group path if any
-	Handler              http.Handler        // handler executed for this route
-	FullName             string              // namespace and name of the function to execute
-	Params               map[string]OpenAPIParam
-	Middlewares          []func(http.Handler) http.Handler
-	AcceptedContentTypes []string // Content types accepted for the request body. If nil, all content types (*/*) are accepted.
-	Hidden               bool     // If true, the route will not be documented in the OpenAPI spec
-
-	mainRouter *Server // ref to the main router, used to register the route in the OpenAPI spec
-}
-
 // Capture all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
-func All[ReturnType, Body any, Contexted ctx[Body]](s *Server, path string, controller func(Contexted) (ReturnType, error), options ...func(*BaseRoute)) *Route[ReturnType, Body] {
+func All[T, B any](s *Server, path string, controller func(ContextWithBody[B]) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
 	return registerFuegoController(s, "", path, controller, options...)
 }
 
-func Get[T, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
+func Get[T, B any](s *Server, path string, controller func(ContextWithBody[B]) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
 	return registerFuegoController(s, http.MethodGet, path, controller, options...)
 }
 
-func Post[T, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
+func Post[T, B any](s *Server, path string, controller func(ContextWithBody[B]) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
 	return registerFuegoController(s, http.MethodPost, path, controller, options...)
 }
 
-func Delete[T, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
+func Delete[T, B any](s *Server, path string, controller func(ContextWithBody[B]) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
 	return registerFuegoController(s, http.MethodDelete, path, controller, options...)
 }
 
-func Put[T, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
+func Put[T, B any](s *Server, path string, controller func(ContextWithBody[B]) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
 	return registerFuegoController(s, http.MethodPut, path, controller, options...)
 }
 
-func Patch[T, B any, Contexted ctx[B]](s *Server, path string, controller func(Contexted) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
+func Patch[T, B any](s *Server, path string, controller func(ContextWithBody[B]) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
 	return registerFuegoController(s, http.MethodPatch, path, controller, options...)
 }
 
@@ -109,42 +75,25 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 		o(&route.BaseRoute)
 	}
 	route.Handler = controller
+	route.Path = s.basePath + route.Path
 
-	fullPath := s.basePath + route.Path
+	fullPath := route.Path
 	if route.Method != "" {
 		fullPath = route.Method + " " + fullPath
 	}
 	slog.Debug("registering controller " + fullPath)
 
-	allMiddlewares := append(s.middlewares, route.Middlewares...)
-	s.Mux.Handle(fullPath, withMiddlewares(route.Handler, allMiddlewares...))
+	route.Middlewares = append(s.middlewares, route.Middlewares...)
+	s.Mux.Handle(fullPath, withMiddlewares(route.Handler, route.Middlewares...))
 
 	if s.DisableOpenapi || route.Hidden || route.Method == "" {
 		return &route
 	}
 
-	route.Path = s.basePath + route.Path
-
-	var err error
-	route.Operation, err = RegisterOpenAPIOperation(s, route)
+	err := route.RegisterOpenAPIOperation(s.OpenAPI)
 	if err != nil {
 		slog.Warn("error documenting openapi operation", "error", err)
 	}
-
-	if route.FullName == "" {
-		route.FullName = route.Path
-	}
-
-	if route.Operation.Summary == "" {
-		route.Operation.Summary = route.NameFromNamespace(camelToHuman)
-	}
-
-	route.Operation.Description = "controller: `" + route.FullName + "`\n\n---\n\n" + route.Operation.Description
-
-	if route.Operation.OperationID == "" {
-		route.Operation.OperationID = route.Method + "_" + strings.ReplaceAll(strings.ReplaceAll(route.Path, "{", ":"), "}", "")
-	}
-	route.mainRouter = s
 
 	return &route
 }
@@ -192,48 +141,20 @@ func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http
 	return registerStdController(s, http.MethodPatch, path, controller, options...)
 }
 
-func registerFuegoController[T, B any, Contexted ctx[B]](s *Server, method, path string, controller func(Contexted) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
-	route := BaseRoute{
-		Method:     method,
-		Path:       path,
-		Params:     make(map[string]OpenAPIParam),
-		FullName:   FuncName(controller),
-		Operation:  openapi3.NewOperation(),
-		mainRouter: s.mainRouter,
-	}
-	// Copy the params from the server/group, and add the route ones
-	for k, v := range s.params {
-		route.Params[k] = v
-	}
-	if route.mainRouter == nil {
-		route.mainRouter = s
-	}
-	route.AcceptedContentTypes = route.mainRouter.acceptedContentTypes
+func registerFuegoController[T, B any](s *Server, method, path string, controller func(ContextWithBody[B]) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
+	route := NewRoute[T, B](method, path, controller, s.OpenAPI, append(s.routeOptions, options...)...)
 
 	acceptHeaderParameter := openapi3.NewHeaderParameter("Accept")
 	acceptHeaderParameter.Schema = openapi3.NewStringSchema().NewRef()
 	route.Operation.AddParameter(acceptHeaderParameter)
 
-	for _, o := range options {
-		o(&route)
-	}
-
-	return Register(s, Route[T, B]{BaseRoute: route}, HTTPHandler(s, controller, &route))
+	return Register(s, route, HTTPHandler(s, controller, &route.BaseRoute))
 }
 
 func registerStdController(s *Server, method, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
-	route := BaseRoute{
-		Method:    method,
-		Path:      path,
-		FullName:  FuncName(controller),
-		Operation: openapi3.NewOperation(),
-	}
+	route := NewRoute[any, any](method, path, controller, s.OpenAPI, append(s.routeOptions, options...)...)
 
-	for _, o := range options {
-		o(&route)
-	}
-
-	return Register(s, Route[any, any]{BaseRoute: route}, http.HandlerFunc(controller))
+	return Register(s, route, http.HandlerFunc(controller))
 }
 
 func withMiddlewares(controller http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
@@ -254,8 +175,8 @@ func FuncName(f interface{}) string {
 //
 // The output can be further modified with a list of optional
 // string manipulation funcs (i.e func(string) string)
-func (r Route[T, B]) NameFromNamespace(opts ...func(string) string) string {
-	ss := strings.Split(r.FullName, ".")
+func (route Route[T, B]) NameFromNamespace(opts ...func(string) string) string {
+	ss := strings.Split(route.FullName, ".")
 	name := ss[len(ss)-1]
 	for _, o := range opts {
 		name = o(name)
@@ -277,4 +198,25 @@ func camelToHuman(s string) string {
 		}
 	}
 	return result.String()
+}
+
+// DefaultDescription returns a default .md description for a controller
+func DefaultDescription[T any](handler string, middlewares []T) string {
+	description := "#### Controller: \n\n`" +
+		handler + "`"
+
+	if len(middlewares) > 0 {
+		description += "\n\n#### Middlewares:\n"
+
+		for i, fn := range middlewares {
+			description += "\n- `" + FuncName(fn) + "`"
+
+			if i == 4 {
+				description += "\n- more middleware..."
+				break
+			}
+		}
+	}
+
+	return description + "\n\n---\n\n"
 }

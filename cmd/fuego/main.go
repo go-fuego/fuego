@@ -20,6 +20,7 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			commands.Controller(),
+			commands.Service(),
 		},
 	}
 

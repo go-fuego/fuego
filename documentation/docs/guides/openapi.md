@@ -29,7 +29,7 @@ Result for this simple example at [http://localhost:9999/swagger/index.html](htt
 The core idea of Fuego is to generate the OpenAPI specification automatically,
 so you don't have to worry about it. However, you can customize it if you want.
 
-## Operations
+## Route Options
 
 Each route can be customized to add more information to the OpenAPI specification.
 
@@ -53,6 +53,52 @@ func main() {
 		option.Query("name", "Name to greet", param.Required(), param.Default("World")),
 		option.Tags("Hello"),
 		option.Deprecated(),
+	)
+
+	s.Run()
+}
+
+func helloWorld(c fuego.ContextNoBody) (string, error) {
+	return "Hello, World!", nil
+}
+```
+
+## Group Options, Options Groups & Custom Options
+
+You can also customize the OpenAPI specification for a group of routes.
+
+```go
+package main
+
+import (
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
+)
+
+// Define a reusable group of options
+var optionPagination = option.Group(
+	option.QueryInt("page", "Page number", param.Default(1)),
+	option.QueryInt("limit", "Items per page", param.Default(10)),
+)
+
+// Custom options for the group
+var customOption = func(r *fuego.BaseRoute) {
+	r.XXX  = YYY // Direct access to the route struct to inject custom behavior
+}
+
+func main() {
+	s := fuego.NewServer()
+
+	api := fuego.Group(s, "/users",
+		option.Summary("Users routes"),
+		option.Description("Default description for all Users routes"),
+		option.Tags("users"),
+	)
+
+	fuego.Get(api, "/", helloWorld,
+		optionPagination,
+		customOption,
+		option.Summary("A simple hello world"), // Replace the default summary
 	)
 
 	s.Run()

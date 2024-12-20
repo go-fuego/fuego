@@ -12,13 +12,13 @@
 
 > The framework for busy Go developers
 
-**Build your API or web application in minutes!**
+🚀 **Explore and contribute to our [2025 Roadmap](https://github.com/go-fuego/fuego/discussions/263)!** 🚀
 
-Go framework generating OpenAPI documentation from code.
+Production-ready Go API framework generating OpenAPI documentation from code.
 Inspired by Nest, built for Go developers.
 
-Also empowers `html/template`, `a-h/templ` and `maragudk/gomponents`:
-see [the example](./examples/full-app-gourmet) - actually running [in prod](https://gourmet.quimerch.com)!
+Also empowers templating with `html/template`, `a-h/templ` and `maragudk/gomponents`:
+see [the example](./examples/full-app-gourmet) [running live](https://gourmet.quimerch.com).
 
 ## Sponsors
 
@@ -105,19 +105,22 @@ func main() {
 	s := fuego.NewServer()
 
 	// Automatically generates OpenAPI documentation for this route
-	fuego.Post(s, "/", func(c *fuego.ContextWithBody[MyInput]) (MyOutput, error) {
-		body, err := c.Body()
-		if err != nil {
-			return MyOutput{}, err
-		}
-
-		return MyOutput{
-			Message: "Hello, " + body.Name,
-		}, nil
-	})
+	fuego.Post(s, "/user/{user}", myController)
 
 	s.Run()
 }
+
+func myController(c fuego.ContextWithBody[MyInput]) (MyOutput, error) {
+	body, err := c.Body()
+	if err != nil {
+		return MyOutput{}, err
+	}
+
+	return MyOutput{
+		Message: "Hello, " + body.Name,
+	}, nil
+}
+
 ```
 
 ### With transformation & custom validation
@@ -254,7 +257,7 @@ func main() {
 	fuego.Use(s, chiMiddleware.Compress(5, "text/html", "text/css"))
 
 	// Fuego 🔥 handler with automatic OpenAPI generation, validation, (de)serialization and error handling
-	fuego.Post(s, "/", func(c *fuego.ContextWithBody[Received]) (MyResponse, error) {
+	fuego.Post(s, "/", func(c fuego.ContextWithBody[Received]) (MyResponse, error) {
 		data, err := c.Body()
 		if err != nil {
 			return MyResponse{}, err

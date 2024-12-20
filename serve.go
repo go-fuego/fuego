@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"fmt"
 	"html/template"
 	"log/slog"
 	"net"
@@ -54,18 +53,15 @@ func (s *Server) setupDefaultListener() error {
 		return nil
 	}
 	listener, err := net.Listen("tcp", s.Addr)
-	if err != nil {
-		return err
-	}
 	s.listener = listener
-	return nil
+	return err
 }
 
 func (s *Server) printStartupMessage() {
 	if !s.disableStartupMessages {
 		elapsed := time.Since(s.startTime)
 		slog.Debug("Server started in "+elapsed.String(), "info", "time between since server creation (fuego.NewServer) and server startup (fuego.Run). Depending on your implementation, there might be things that do not depend on fuego slowing start time")
-		slog.Info("Server running ✅ on "+s.proto()+"://"+s.Addr, "started in", elapsed.String())
+		slog.Info("Server running ✅ on "+s.url(), "started in", elapsed.String())
 	}
 }
 
@@ -76,42 +72,14 @@ func (s *Server) proto() string {
 	return "http"
 }
 
-// initializes any Context type with the base ContextNoBody context.
-//
-//	var ctx ContextWithBody[any] // does not work because it will create a ContextWithBody[any] with a nil value
-func initContext[Contextable ctx[Body], Body any](baseContext ContextNoBody) (Contextable, error) {
-	var c Contextable
-
-	err := validateParams(baseContext)
-	if err != nil {
-		return c, err
-	}
-
-	switch any(c).(type) {
-	case ContextNoBody:
-		return any(baseContext).(Contextable), nil
-	case *ContextNoBody:
-		return any(&baseContext).(Contextable), nil
-	case *ContextWithBody[Body]:
-		return any(&ContextWithBody[Body]{
-			ContextNoBody: baseContext,
-		}).(Contextable), nil
-	default:
-		panic("unknown type")
-	}
+func (s *Server) url() string {
+	return s.proto() + "://" + s.Server.Addr
 }
 
 // HTTPHandler converts a Fuego controller into a http.HandlerFunc.
 // Uses Server for configuration.
 // Uses Route for route configuration. Optional.
-func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, controller func(c Contextable) (ReturnType, error), route *BaseRoute) http.HandlerFunc {
-	// Just a check, not used at request time
-	baseContext := *new(Contextable)
-	if reflect.TypeOf(baseContext) == nil {
-		slog.Info(fmt.Sprintf("context is nil: %v %T", baseContext, baseContext))
-		panic("ctx must be provided as concrete type (not interface). ContextNoBody, ContextWithBody[any], ContextFull[any, any], ContextWithQueryParams[any] are supported")
-	}
-
+func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithBody[Body]) (ReturnType, error), route *BaseRoute) http.HandlerFunc {
 	if route == nil {
 		route = &BaseRoute{}
 	}
@@ -127,7 +95,7 @@ func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, control
 			templates = template.Must(s.template.Clone())
 		}
 
-		ctx, err := initContext[Contextable](ContextNoBody{
+		ctx := &netHttpContext[Body]{
 			Req: r,
 			Res: w,
 			readOptions: readOptions{
@@ -138,7 +106,9 @@ func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, control
 			templates: templates,
 			params:    route.Params,
 			urlValues: r.URL.Query(),
-		})
+		}
+
+		err := validateParams(*ctx)
 		if err != nil {
 			err = s.ErrorHandler(err)
 			s.SerializeError(w, r, err)
@@ -156,6 +126,10 @@ func HTTPHandler[ReturnType, Body any, Contextable ctx[Body]](s *Server, control
 			return
 		}
 		w.Header().Add("Server-Timing", Timing{"controller", time.Since(timeController), ""}.String())
+
+		if route.DefaultStatusCode != 0 {
+			w.WriteHeader(route.DefaultStatusCode)
+		}
 
 		if reflect.TypeOf(ans) == nil {
 			return
