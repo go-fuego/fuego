@@ -390,13 +390,7 @@ func TestIni(t *testing.T) {
 }
 
 func TestServer_Run(t *testing.T) {
-	// This is not a standard test, it is here to ensure that the server can run.
-	// Please do not run this kind of test for your controllers, it is NOT unit testing.
-	t.Run("can run server", func(t *testing.T) {
-		s := NewServer(
-			WithoutLogger(),
-		)
-
+	runServer := func(s *Server) (*Server, func()) {
 		Get(s, "/test", func(ctx ContextNoBody) (string, error) {
 			return "OK", nil
 		})
@@ -404,13 +398,21 @@ func TestServer_Run(t *testing.T) {
 		go func() {
 			s.Run()
 		}()
-		defer func() { // stop our test server when we are done
+		return s, func() { // stop our test server when we are done
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			if err := s.Server.Shutdown(ctx); err != nil {
 				t.Log(err)
 			}
 			cancel()
-		}()
+		}
+	}
+	// This is not a standard test, it is here to ensure that the server can run.
+	// Please do not run this kind of test for your controllers, it is NOT unit testing.
+	t.Run("can run server", func(t *testing.T) {
+		s, shutdown := runServer(NewServer(
+			WithoutLogger(),
+		))
+		defer shutdown()
 
 		require.Eventually(t, func() bool {
 			req := httptest.NewRequest("GET", "/test", nil)
@@ -419,6 +421,30 @@ func TestServer_Run(t *testing.T) {
 
 			return w.Body.String() == `OK`
 		}, 5*time.Second, 500*time.Millisecond)
+	})
+
+	t.Run("can run server WithListener", func(t *testing.T) {
+		listener, err := net.Listen("tcp", ":8080")
+		require.NoError(t, err)
+		s, shutdown := runServer(NewServer(
+			WithListener(listener),
+		))
+		defer shutdown()
+
+		require.Eventually(t, func() bool {
+			req := httptest.NewRequest("GET", "/test", nil)
+			w := httptest.NewRecorder()
+			s.Mux.ServeHTTP(w, req)
+
+			return w.Body.String() == `OK`
+		}, 5*time.Second, 500*time.Millisecond)
+	})
+
+	t.Run("invalid address", func(t *testing.T) {
+		s := NewServer(
+			WithAddr("----:nope"),
+		)
+		require.Error(t, s.Run())
 	})
 }
 
