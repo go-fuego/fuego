@@ -105,8 +105,9 @@ type ContextWithBody[B any] interface {
 func NewNetHTTPContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) ContextWithBody[B] {
 	c := &netHttpContext[B]{
 		CommonContext: internal.CommonContext[B]{
-			CommonCtx: r.Context(),
-			UrlValues: r.URL.Query(),
+			CommonCtx:     r.Context(),
+			UrlValues:     r.URL.Query(),
+			OpenAPIParams: make(map[string]OpenAPIParam),
 		},
 		Res: w,
 		Req: r,
