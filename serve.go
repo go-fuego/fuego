@@ -53,11 +53,8 @@ func (s *Server) setupDefaultListener() error {
 		return nil
 	}
 	listener, err := net.Listen("tcp", s.Addr)
-	if err != nil {
-		return err
-	}
 	s.listener = listener
-	return nil
+	return err
 }
 
 func (s *Server) printStartupMessage() {

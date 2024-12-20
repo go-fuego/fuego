@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -336,6 +337,22 @@ func TestWithRequestContentType(t *testing.T) {
 		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/xml").Schema.Ref)
 		_, ok := s.OpenAPI.Description().Components.RequestBodies["ReqBody"]
 		require.False(t, ok)
+	})
+}
+
+func TestWithListener(t *testing.T) {
+	t.Run("with custom listener", func(t *testing.T) {
+		listener, err := net.Listen("tcp", ":8080")
+		require.NoError(t, err)
+		s := NewServer(
+			WithListener(listener),
+		)
+		require.NotNil(t, s.listener)
+	})
+
+	t.Run("no custom listener", func(t *testing.T) {
+		s := NewServer()
+		require.Nil(t, s.listener)
 	})
 }
 
