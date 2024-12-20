@@ -1,6 +1,7 @@
 package fuegogin
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 
@@ -28,7 +29,7 @@ func Post[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, path string, ha
 
 func handleFuego[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, method, path string, fuegoHandler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	baseRoute := fuego.NewBaseRoute(method, path, fuegoHandler, engine.OpenAPI, options...)
-	return handle(engine, ginRouter, &fuego.Route[T, B]{BaseRoute: baseRoute}, GinHandler(fuegoHandler))
+	return handle(engine, ginRouter, &fuego.Route[T, B]{BaseRoute: baseRoute}, GinHandler(engine, fuegoHandler))
 }
 
 func handleGin(engine *fuego.Engine, ginRouter gin.IRouter, method, path string, ginHandler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
@@ -52,7 +53,7 @@ func handle[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, route *fuego.
 }
 
 // Convert a Fuego handler to a Gin handler.
-func GinHandler[B, T any](handler func(c fuego.ContextWithBody[B]) (T, error)) gin.HandlerFunc {
+func GinHandler[B, T any](engine *fuego.Engine, handler func(c fuego.ContextWithBody[B]) (T, error)) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		context := &ginContext[B]{
 			CommonContext: internal.CommonContext[B]{
@@ -65,7 +66,8 @@ func GinHandler[B, T any](handler func(c fuego.ContextWithBody[B]) (T, error)) g
 
 		resp, err := handler(context)
 		if err != nil {
-			c.Error(err)
+			err = engine.ErrorHandler(err)
+			c.JSON(getErrorCode(err), err)
 			return
 		}
 
@@ -76,4 +78,12 @@ func GinHandler[B, T any](handler func(c fuego.ContextWithBody[B]) (T, error)) g
 
 		c.JSON(200, resp)
 	}
+}
+
+func getErrorCode(err error) int {
+	var status fuego.ErrorWithStatus
+	if errors.As(err, &status) {
+		return status.StatusCode()
+	}
+	return 500
 }
