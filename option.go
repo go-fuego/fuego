@@ -293,7 +293,7 @@ func OptionOperationID(operationID string) func(*BaseRoute) {
 	}
 }
 
-// Deprecated marks the route as deprecated.
+// OptionDeprecated marks the route as deprecated.
 func OptionDeprecated() func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		r.Operation.Deprecated = true
