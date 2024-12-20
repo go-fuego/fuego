@@ -19,7 +19,7 @@ var _ fuego.ContextWithBody[any] = &ginContext[any]{}
 
 func (c ginContext[B]) Body() (B, error) {
 	var body B
-	err := c.ginCtx.Bind(&body)
+	err := c.ginCtx.BindJSON(&body)
 	return body, err
 }
 

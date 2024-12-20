@@ -25,6 +25,10 @@ func fuegoControllerPost(c fuego.ContextWithBody[HelloRequest]) (HelloResponse, 
 		return HelloResponse{}, err
 	}
 
+	if body.Word == "forbidden" {
+		return HelloResponse{}, fuego.BadRequestError{Title: "Forbidden word"}
+	}
+
 	ctx := c.Context().(*gin.Context)
 	fmt.Printf("%#v", ctx)
 
