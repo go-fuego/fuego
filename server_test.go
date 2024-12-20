@@ -264,20 +264,6 @@ func TestWithAddr(t *testing.T) {
 	}
 }
 
-func TestWithPort(t *testing.T) {
-	t.Run("with custom port, that port is used", func(t *testing.T) {
-		s := NewServer(
-			WithPort(8488),
-		)
-		require.Equal(t, "localhost:8488", s.Server.Addr)
-	})
-
-	t.Run("no port provided, default is used (9999)", func(t *testing.T) {
-		s := NewServer()
-		require.Equal(t, "localhost:9999", s.Server.Addr)
-	})
-}
-
 func TestWithoutStartupMessages(t *testing.T) {
 	s := NewServer(
 		WithoutStartupMessages(),
@@ -491,8 +477,6 @@ func TestGroupParamsInMainServerInstance(t *testing.T) {
 	route := Get(s, "/test", controller)
 
 	require.Equal(t, "test-value", route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Description)
-	// expectedParams := map[string]OpenAPIParam{"X-Test-Header": {Name: "X-Test-Header", Description: "test-value", OpenAPIParamOption: OpenAPIParamOption{Required: false, Example: "", Type: ""}}}
-	// require.Equal(t, expectedParams, route.Params)
 }
 
 func TestHideGroupAfterGroupParam(t *testing.T) {

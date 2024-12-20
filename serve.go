@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"reflect"
 	"time"
+
+	"github.com/go-fuego/fuego/internal"
 )
 
 // Run starts the server.
@@ -96,6 +98,11 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 		}
 
 		ctx := &netHttpContext[Body]{
+			CommonContext: internal.CommonContext[Body]{
+				CommonCtx:     r.Context(),
+				UrlValues:     r.URL.Query(),
+				OpenAPIParams: route.Params,
+			},
 			Req: r,
 			Res: w,
 			readOptions: readOptions{
@@ -104,8 +111,6 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 			},
 			fs:        s.fs,
 			templates: templates,
-			params:    route.Params,
-			urlValues: r.URL.Query(),
 		}
 
 		err := validateParams(*ctx)

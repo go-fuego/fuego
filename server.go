@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"fmt"
 	"html/template"
 	"io"
 	"io/fs"
@@ -58,8 +57,7 @@ type Server struct {
 	disableAutoGroupTags   bool
 	basePath               string // Base path of the group
 
-	// Points to the server OpenAPI struct.
-	OpenAPI *OpenAPI
+	*Engine
 
 	listener net.Listener
 
@@ -69,16 +67,16 @@ type Server struct {
 	fs       fs.FS
 	template *template.Template // TODO: use preparsed templates
 
-	acceptedContentTypes []string
-
 	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
 	DisableOpenapi        bool // If true, the routes within the server will not generate an OpenAPI spec.
 	maxBodySize           int64
 
-	Serialize      Sender                // Custom serializer that overrides the default one.
-	SerializeError ErrorSender           // Used to serialize the error response. Defaults to [SendError].
-	ErrorHandler   func(err error) error // Used to transform any error into a unified error type structure with status code. Defaults to [ErrorHandler]
-	startTime      time.Time
+	// Custom serializer that overrides the default one.
+	Serialize Sender
+	// Used to serialize the error response. Defaults to [SendError].
+	SerializeError ErrorSender
+
+	startTime time.Time
 
 	OpenAPIConfig OpenAPIConfig
 
@@ -103,8 +101,8 @@ func NewServer(options ...func(*Server)) *Server {
 			WriteTimeout:      30 * time.Second,
 			IdleTimeout:       30 * time.Second,
 		},
-		Mux:     http.NewServeMux(),
-		OpenAPI: NewOpenAPI(),
+		Mux:    http.NewServeMux(),
+		Engine: NewEngine(),
 
 		OpenAPIConfig: defaultOpenAPIConfig,
 
@@ -117,7 +115,6 @@ func NewServer(options ...func(*Server)) *Server {
 		WithDisallowUnknownFields(true),
 		WithSerializer(Send),
 		WithErrorSerializer(SendError),
-		WithErrorHandler(ErrorHandler),
 		WithRouteOptions(
 			OptionAddResponse(http.StatusBadRequest, "Bad Request _(validation or deserialization error)_", Response{Type: HTTPError{}}),
 			OptionAddResponse(http.StatusInternalServerError, "Internal Server Error _(panics)_", Response{Type: HTTPError{}}),
@@ -305,15 +302,6 @@ func WithAutoAuth(verifyUserInfo func(user, password string) (jwt.Claims, error)
 // Defaults to true.
 func WithDisallowUnknownFields(b bool) func(*Server) {
 	return func(c *Server) { c.DisallowUnknownFields = b }
-}
-
-// WithPort sets the port of the server. For example, 8080.
-// If not specified, the default port is 9999.
-// If you want to use a different address, use [WithAddr] instead.
-//
-// Deprecated: Please use [WithAddr]
-func WithPort(port int) func(*Server) {
-	return func(s *Server) { s.Server.Addr = fmt.Sprintf("localhost:%d", port) }
 }
 
 // WithAddr optionally specifies the TCP address for the server to listen on, in the form "host:port".

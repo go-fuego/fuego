@@ -6,12 +6,12 @@ import (
 	"html/template"
 	"io"
 	"io/fs"
-	"log/slog"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
+
+	"github.com/go-fuego/fuego/internal"
 )
 
 const (
@@ -77,6 +77,12 @@ type ContextWithBody[B any] interface {
 	Header(key string) string                 // Get request header
 	SetHeader(key, value string)              // Sets response header
 
+	// Returns the underlying net/http, gin or echo context.
+	//
+	// Usage:
+	//  ctx := c.Context() // net/http: the [context.Context] of the *http.Request
+	//  ctx := c.Context().(*gin.Context) // gin: Safe because the underlying context is always a [gin.Context]
+	//  ctx := c.Context().(echo.Context) // echo: Safe because the underlying context is always a [echo.Context]
 	Context() context.Context
 
 	Request() *http.Request        // Request returns the underlying HTTP request.
@@ -98,13 +104,17 @@ type ContextWithBody[B any] interface {
 // NewNetHTTPContext returns a new context. It is used internally by Fuego. You probably want to use Ctx[B] instead.
 func NewNetHTTPContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) ContextWithBody[B] {
 	c := &netHttpContext[B]{
+		CommonContext: internal.CommonContext[B]{
+			CommonCtx:     r.Context(),
+			UrlValues:     r.URL.Query(),
+			OpenAPIParams: make(map[string]OpenAPIParam),
+		},
 		Res: w,
 		Req: r,
 		readOptions: readOptions{
 			DisallowUnknownFields: options.DisallowUnknownFields,
 			MaxBodySize:           options.MaxBodySize,
 		},
-		urlValues: r.URL.Query(),
 	}
 
 	return c
@@ -119,6 +129,8 @@ var (
 // has a Body. The Body type parameter represents the expected data type
 // from http.Request.Body. Please do not use a pointer as a type parameter.
 type netHttpContext[Body any] struct {
+	internal.CommonContext[Body]
+
 	body *Body // Cache the body in request context, because it is not possible to read an HTTP request body multiple times.
 
 	Req *http.Request
@@ -126,9 +138,6 @@ type netHttpContext[Body any] struct {
 
 	fs        fs.FS
 	templates *template.Template
-
-	params    map[string]OpenAPIParam // list of expected query parameters (declared in the OpenAPI spec)
-	urlValues url.Values
 
 	readOptions readOptions
 }
@@ -150,31 +159,6 @@ func (c netHttpContext[B]) Redirect(code int, url string) (any, error) {
 	http.Redirect(c.Res, c.Req, url, code)
 
 	return nil, nil
-}
-
-// ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c netHttpContext[B]) Deadline() (deadline time.Time, ok bool) {
-	return c.Req.Context().Deadline()
-}
-
-// ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c netHttpContext[B]) Done() <-chan struct{} {
-	return c.Req.Context().Done()
-}
-
-// ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c netHttpContext[B]) Err() error {
-	return c.Req.Context().Err()
-}
-
-// ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c netHttpContext[B]) Value(key any) any {
-	return c.Req.Context().Value(key)
-}
-
-// ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c netHttpContext[B]) Context() context.Context {
-	return c.Req.Context()
 }
 
 // Get request header
@@ -229,155 +213,6 @@ func (c netHttpContext[B]) Render(templateToExecute string, data any, layoutsGlo
 // PathParams returns the path parameters of the request.
 func (c netHttpContext[B]) PathParam(name string) string {
 	return c.Req.PathValue(name)
-}
-
-type QueryParamNotFoundError struct {
-	ParamName string
-}
-
-func (e QueryParamNotFoundError) Error() string {
-	return fmt.Errorf("param %s not found", e.ParamName).Error()
-}
-
-type QueryParamInvalidTypeError struct {
-	ParamName    string
-	ParamValue   string
-	ExpectedType string
-	Err          error
-}
-
-func (e QueryParamInvalidTypeError) Error() string {
-	return fmt.Errorf("param %s=%s is not of type %s: %w", e.ParamName, e.ParamValue, e.ExpectedType, e.Err).Error()
-}
-
-// QueryParams returns the query parameters of the request. It is a shortcut for c.Req.URL.Query().
-func (c netHttpContext[B]) QueryParams() url.Values {
-	return c.urlValues
-}
-
-// QueryParamsArr returns an slice of string from the given query parameter.
-func (c netHttpContext[B]) QueryParamArr(name string) []string {
-	_, ok := c.params[name]
-	if !ok {
-		slog.Warn("query parameter not expected in OpenAPI spec", "param", name)
-	}
-	return c.urlValues[name]
-}
-
-// QueryParam returns the query parameter with the given name.
-// If it does not exist, it returns an empty string, unless there is a default value declared in the OpenAPI spec.
-//
-// Example:
-//
-//	fuego.Get(s, "/test", myController,
-//	  option.Query("name", "Name", param.Default("hey"))
-//	)
-func (c netHttpContext[B]) QueryParam(name string) string {
-	_, ok := c.params[name]
-	if !ok {
-		slog.Warn("query parameter not expected in OpenAPI spec", "param", name, "expected_one_of", c.params)
-	}
-
-	if !c.urlValues.Has(name) {
-		defaultValue, _ := c.params[name].Default.(string)
-		return defaultValue
-	}
-	return c.urlValues.Get(name)
-}
-
-func (c netHttpContext[B]) QueryParamIntErr(name string) (int, error) {
-	param := c.QueryParam(name)
-	if param == "" {
-		defaultValue, ok := c.params[name].Default.(int)
-		if ok {
-			return defaultValue, nil
-		}
-
-		return 0, QueryParamNotFoundError{ParamName: name}
-	}
-
-	i, err := strconv.Atoi(param)
-	if err != nil {
-		return 0, QueryParamInvalidTypeError{
-			ParamName:    name,
-			ParamValue:   param,
-			ExpectedType: "int",
-			Err:          err,
-		}
-	}
-
-	return i, nil
-}
-
-// QueryParamInt returns the query parameter with the given name as an int.
-// If it does not exist, it returns the default value declared in the OpenAPI spec.
-// For example, if the query parameter is declared as:
-//
-//	fuego.Get(s, "/test", myController,
-//	  option.QueryInt("page", "Page number", param.Default(1))
-//	)
-//
-// and the query parameter does not exist, it will return 1.
-// If the query parameter does not exist and there is no default value, or if it is not an int, it returns 0.
-func (c netHttpContext[B]) QueryParamInt(name string) int {
-	param, err := c.QueryParamIntErr(name)
-	if err != nil {
-		return 0
-	}
-
-	return param
-}
-
-// QueryParamBool returns the query parameter with the given name as a bool.
-// If the query parameter does not exist or is not a bool, it returns the default value declared in the OpenAPI spec.
-// For example, if the query parameter is declared as:
-//
-//	fuego.Get(s, "/test", myController,
-//	  option.QueryBool("is_ok", "Is OK?", param.Default(true))
-//	)
-//
-// and the query parameter does not exist in the HTTP request, it will return true.
-// Accepted values are defined as [strconv.ParseBool]
-func (c netHttpContext[B]) QueryParamBoolErr(name string) (bool, error) {
-	param := c.QueryParam(name)
-	if param == "" {
-		defaultValue, ok := c.params[name].Default.(bool)
-		if ok {
-			return defaultValue, nil
-		}
-
-		return false, QueryParamNotFoundError{ParamName: name}
-	}
-
-	b, err := strconv.ParseBool(param)
-	if err != nil {
-		return false, QueryParamInvalidTypeError{
-			ParamName:    name,
-			ParamValue:   param,
-			ExpectedType: "bool",
-			Err:          err,
-		}
-	}
-	return b, nil
-}
-
-// QueryParamBool returns the query parameter with the given name as a bool.
-// If the query parameter does not exist or is not a bool, it returns false.
-// Accepted values are defined as [strconv.ParseBool]
-// Example:
-//
-//	fuego.Get(s, "/test", myController,
-//	  option.QueryBool("is_ok", "Is OK?", param.Default(true))
-//	)
-//
-// and the query parameter does not exist in the HTTP request, it will return true.
-func (c netHttpContext[B]) QueryParamBool(name string) bool {
-	param, err := c.QueryParamBoolErr(name)
-	if err != nil {
-		return false
-	}
-
-	return param
 }
 
 func (c netHttpContext[B]) MainLang() string {
