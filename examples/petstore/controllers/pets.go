@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"encoding/json"
 	"log/slog"
+	"net/http"
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/petstore/models"
@@ -13,11 +15,21 @@ import (
 var optionPagination = option.Group(
 	option.QueryInt("per_page", "Number of items per page", param.Required()),
 	option.QueryInt("page", "Page number", param.Default(1), param.Example("1st page", 1), param.Example("42nd page", 42), param.Example("100th page", 100)),
+	option.ResponseHeader("Content-Range", "Total number of pets", param.StatusCodes(200, 206), param.Example("42 pets", "0-10/42")),
 )
 
 type PetsResources struct {
 	PetsService PetsService
 }
+
+type PetsError struct {
+	Err     error  `json:"-" xml:"-"`
+	Message string `json:"message" xml:"message"`
+}
+
+var _ error = PetsError{}
+
+func (e PetsError) Error() string { return e.Err.Error() }
 
 func (rs PetsResources) Routes(s *fuego.Server) {
 	petsGroup := fuego.Group(s, "/pets", option.Header("X-Header", "header description"))
@@ -35,12 +47,20 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		option.Description("Get all pets"),
 	)
 
-	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge, option.Description("Returns an array of pets grouped by age"))
+	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge,
+		option.Description("Returns an array of pets grouped by age"),
+		option.Middleware(dummyMiddleware),
+	)
 	fuego.Post(petsGroup, "/", rs.postPets,
-		option.AddError(409, "Conflict: Pet with the same name already exists"),
+		option.DefaultStatusCode(201),
+		option.AddResponse(409, "Conflict: Pet with the same name already exists", fuego.Response{Type: PetsError{}}),
 	)
 
-	fuego.Get(petsGroup, "/{id}", rs.getPets)
+	fuego.Get(petsGroup, "/{id}", rs.getPets,
+		option.OverrideDescription("Replace description with this sentence."),
+		option.OperationID("getPet"),
+		option.Path("id", "Pet ID", param.Example("example", "123")),
+	)
 	fuego.Get(petsGroup, "/by-name/{name...}", rs.getPetByName)
 	fuego.Put(petsGroup, "/{id}", rs.putPets)
 	fuego.Put(petsGroup, "/{id}/json", rs.putPets,
@@ -48,6 +68,26 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		option.RequestContentType("application/json"),
 	)
 	fuego.Delete(petsGroup, "/{id}", rs.deletePets)
+
+	stdPetsGroup := fuego.Group(petsGroup, "/std")
+
+	fuego.GetStd(stdPetsGroup, "/all", func(w http.ResponseWriter, r *http.Request) {
+		pets, err := rs.PetsService.GetAllPets()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(pets); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}, option.AddResponse(http.StatusOK, "all the pets",
+		fuego.Response{
+			Type:         []models.Pets{},
+			ContentTypes: []string{"application/json"},
+		},
+	))
 }
 
 func (rs PetsResources) getAllPets(c fuego.ContextNoBody) ([]models.Pets, error) {
@@ -68,7 +108,7 @@ func (rs PetsResources) getAllPetsByAge(c fuego.ContextNoBody) ([][]models.Pets,
 	return rs.PetsService.GetAllPetsByAge()
 }
 
-func (rs PetsResources) postPets(c *fuego.ContextWithBody[models.PetsCreate]) (models.Pets, error) {
+func (rs PetsResources) postPets(c fuego.ContextWithBody[models.PetsCreate]) (models.Pets, error) {
 	body, err := c.Body()
 	if err != nil {
 		return models.Pets{}, err
@@ -89,7 +129,7 @@ func (rs PetsResources) getPetByName(c fuego.ContextNoBody) (models.Pets, error)
 	return rs.PetsService.GetPetByName(name)
 }
 
-func (rs PetsResources) putPets(c *fuego.ContextWithBody[models.PetsUpdate]) (models.Pets, error) {
+func (rs PetsResources) putPets(c fuego.ContextWithBody[models.PetsUpdate]) (models.Pets, error) {
 	id := c.PathParam("id")
 
 	body, err := c.Body()
@@ -100,7 +140,7 @@ func (rs PetsResources) putPets(c *fuego.ContextWithBody[models.PetsUpdate]) (mo
 	return rs.PetsService.UpdatePets(id, body)
 }
 
-func (rs PetsResources) deletePets(c *fuego.ContextNoBody) (any, error) {
+func (rs PetsResources) deletePets(c fuego.ContextNoBody) (any, error) {
 	return rs.PetsService.DeletePets(c.PathParam("id"))
 }
 

@@ -8,19 +8,31 @@ import (
 )
 
 // ErrorWithStatus is an interface that can be implemented by an error to provide
-// additional information about the error.
+// a status code
 type ErrorWithStatus interface {
 	error
 	StatusCode() int
 }
 
+// ErrorWithDetail is an interface that can be implemented by an error to provide
+// an additional detail message about the error
+type ErrorWithDetail interface {
+	error
+	DetailMsg() string
+}
+
 // HTTPError is the error response used by the serialization part of the framework.
 type HTTPError struct {
-	Err      error       `json:"-" xml:"-"`                                                                                                                   // Developer readable error message. Not shown to the user to avoid security leaks.
-	Type     string      `json:"type,omitempty" xml:"type,omitempty" description:"URL of the error type. Can be used to lookup the error in a documentation"` // URL of the error type. Can be used to lookup the error in a documentation
-	Title    string      `json:"title,omitempty" xml:"title,omitempty" description:"Short title of the error"`                                                // Short title of the error
-	Status   int         `json:"status,omitempty" xml:"status,omitempty" description:"HTTP status code" example:"403"`                                        // HTTP status code. If using a different type than [HTTPError], for example [BadRequestError], this will be automatically overridden after Fuego error handling.
-	Detail   string      `json:"detail,omitempty" xml:"detail,omitempty" description:"Human readable error message"`                                          // Human readable error message
+	// Developer readable error message. Not shown to the user to avoid security leaks.
+	Err error `json:"-" xml:"-"`
+	// URL of the error type. Can be used to lookup the error in a documentation
+	Type string `json:"type,omitempty" xml:"type,omitempty" description:"URL of the error type. Can be used to lookup the error in a documentation"`
+	// Short title of the error
+	Title string `json:"title,omitempty" xml:"title,omitempty" description:"Short title of the error"`
+	// HTTP status code. If using a different type than [HTTPError], for example [BadRequestError], this will be automatically overridden after Fuego error handling.
+	Status int `json:"status,omitempty" xml:"status,omitempty" description:"HTTP status code" example:"403"`
+	// Human readable error message
+	Detail   string      `json:"detail,omitempty" xml:"detail,omitempty" description:"Human readable error message"`
 	Instance string      `json:"instance,omitempty" xml:"instance,omitempty"`
 	Errors   []ErrorItem `json:"errors,omitempty" xml:"errors,omitempty"`
 }
@@ -40,7 +52,7 @@ func (e HTTPError) Error() string {
 			title = "HTTP Error"
 		}
 	}
-	return fmt.Sprintf("%d %s: %s", code, title, e.Detail)
+	return fmt.Sprintf("%d %s: %s", code, title, e.DetailMsg())
 }
 
 func (e HTTPError) StatusCode() int {
@@ -48,6 +60,10 @@ func (e HTTPError) StatusCode() int {
 		return http.StatusInternalServerError
 	}
 	return e.Status
+}
+
+func (e HTTPError) DetailMsg() string {
+	return e.Detail
 }
 
 func (e HTTPError) Unwrap() error { return e.Err }
@@ -122,9 +138,23 @@ func (e NotAcceptableError) StatusCode() int { return http.StatusNotAcceptable }
 func (e NotAcceptableError) Unwrap() error { return HTTPError(e) }
 
 // ErrorHandler is the default error handler used by the framework.
-// It transforms any error into the unified error type [HTTPError],
-// Using the [ErrorWithStatus] interface.
+// If the error is an [HTTPError] that error is returned.
+// If the error adheres to the [ErrorWithStatus] and/or [ErrorWithDetail] interface
+// the error is transformed to a [HTTPError].
+// If the error is not an [HTTPError] nor does it adhere to an
+// interface the error is returned as is.
 func ErrorHandler(err error) error {
+	var errorStatus ErrorWithStatus
+	switch {
+	case errors.As(err, &HTTPError{}),
+		errors.As(err, &errorStatus):
+		return handleHTTPError(err)
+	}
+
+	return err
+}
+
+func handleHTTPError(err error) HTTPError {
 	errResponse := HTTPError{
 		Err: err,
 	}
@@ -135,17 +165,22 @@ func ErrorHandler(err error) error {
 	}
 
 	// Check status code
-	errResponse.Status = http.StatusInternalServerError
 	var errorStatus ErrorWithStatus
 	if errors.As(err, &errorStatus) {
 		errResponse.Status = errorStatus.StatusCode()
+	}
+
+	// Check for detail
+	var errorDetail ErrorWithDetail
+	if errors.As(err, &errorDetail) {
+		errResponse.Detail = errorDetail.DetailMsg()
 	}
 
 	if errResponse.Title == "" {
 		errResponse.Title = http.StatusText(errResponse.Status)
 	}
 
-	slog.Error("Error "+errResponse.Title, "status", errResponse.StatusCode(), "detail", errResponse.Detail, "error", errResponse.Err)
+	slog.Error("Error "+errResponse.Title, "status", errResponse.StatusCode(), "detail", errResponse.DetailMsg(), "error", errResponse.Err)
 
 	return errResponse
 }

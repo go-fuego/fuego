@@ -64,7 +64,30 @@ var Header = fuego.OptionHeader
 // The list of options is in the param package.
 var Cookie = fuego.OptionCookie
 
-// Registers a parameter for the route. Prefer using the [Query], [QueryInt], [Header], [Cookie] shortcuts.
+// Declare a path parameter for the route.
+// This will be added to the OpenAPI spec.
+// It will be marked as required by default by Fuego.
+// If not set explicitly, the parameter will still be declared on the spec.
+// Example:
+//
+//	Path("id", "ID of the item", param.Required())
+//
+// The list of options is in the param package.
+var Path = fuego.OptionPath
+
+// Declare a response header for the route.
+// This will be added to the OpenAPI spec, under the given default status code response.
+// Example:
+//
+//	ResponseHeader("Content-Range", "Pagination range", ParamExample("42 pets", "unit 0-9/42"), ParamDescription("https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Range"))
+//	ResponseHeader("Set-Cookie", "Session cookie", ParamExample("session abc123", "session=abc123; Expires=Wed, 09 Jun 2021 10:18:14 GMT"))
+//
+// The list of options is in the param package.
+var ResponseHeader = fuego.OptionResponseHeader
+
+// Registers a parameter for the route.
+//
+// Deprecated: Use [Query], [QueryInt], [Header], [Cookie], [Path] instead.
 var Param = fuego.OptionParam
 
 // Tags adds one or more tags to the route.
@@ -74,7 +97,54 @@ var Tags = fuego.OptionTags
 var Summary = fuego.OptionSummary
 
 // Description adds a description to the route.
+// By default, the description is set by Fuego with some info,
+// like the controller function name and the package name.
+// If you want to add a description, please use [AddDescription] instead.
 var Description = fuego.OptionDescription
+
+// AddDescription adds a description to the route.
+// By default, the description is set by Fuego with some info,
+// like the controller function name and the package name.
+//
+// Deprecated: Use [Description] instead.
+var AddDescription = fuego.OptionAddDescription
+
+// OverrideDescription overrides the default description set by Fuego.
+// By default, the description is set by Fuego with some info,
+// like the controller function name and the package name.
+var OverrideDescription = fuego.OptionOverrideDescription
+
+// Security configures security requirements to the route.
+//
+// Single Scheme (AND Logic):
+//
+//	Add a single security requirement with multiple schemes.
+//	All schemes must be satisfied:
+//	Security(openapi3.SecurityRequirement{
+//	  "basic": [],        // Requires basic auth
+//	  "oauth2": ["read"]  // AND requires oauth with read scope
+//	})
+//
+// Multiple Schemes (OR Logic):
+//
+//	Add multiple security requirements.
+//	At least one requirement must be satisfied:
+//	Security(
+//	  openapi3.SecurityRequirement{"basic": []},        // First option
+//	  openapi3.SecurityRequirement{"oauth2": ["read"]}  // Alternative option
+//	})
+//
+// Mixing Approaches:
+//
+//	Combine AND logic within requirements and OR logic between requirements:
+//	Security(
+//	  openapi3.SecurityRequirement{
+//	    "basic": [],             // Requires basic auth
+//	    "oauth2": ["read:user"]  // AND oauth with read:user scope
+//	  },
+//	  openapi3.SecurityRequirement{"apiKey": []}  // OR alternative with API key
+//	})
+var Security = fuego.OptionSecurity
 
 // OperationID adds an operation ID to the route.
 var OperationID = fuego.OptionOperationID
@@ -83,7 +153,14 @@ var OperationID = fuego.OptionOperationID
 var Deprecated = fuego.OptionDeprecated
 
 // AddError adds an error to the route.
+// Deprecated: Use [AddResponse] instead.
 var AddError = fuego.OptionAddError
+
+// AddResponse adds a response to a route by status code
+// It replaces any existing response set by any status code, this will override 200.
+// Required: fuego.Response.Type must be set
+// Optional: fuego.Response.ContentTypes will default to `application/json` and `application/xml` if not set
+var AddResponse = fuego.OptionAddResponse
 
 // RequestContentType sets the accepted content types for the route.
 // By default, the accepted content types is */*.
@@ -92,3 +169,6 @@ var RequestContentType = fuego.OptionRequestContentType
 
 // Hide hides the route from the OpenAPI spec.
 var Hide = fuego.OptionHide
+
+// DefaultStatusCode sets the default status code for the route.
+var DefaultStatusCode = fuego.OptionDefaultStatusCode

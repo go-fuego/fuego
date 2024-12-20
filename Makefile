@@ -37,7 +37,7 @@ lint:
 	golangci-lint run ${FIX} ./...
 
 lint-markdown:
-	markdownlint --ignore documentation/node_modules --dot .
+	markdownlint ${FIX} --ignore documentation/node_modules --dot .
 
 # Update golden files
 golden-update:
@@ -45,7 +45,7 @@ golden-update:
 
 # Check OpenAPI spec generated for the Petstore example. Uses https://github.com/daveshanley/vacuum
 openapi-check:
-	vacuum lint -d examples/petstore/testdata/doc/openapi.json
+	vacuum lint -d examples/petstore/lib/testdata/doc/openapi.json
 
 # Examples
 example:

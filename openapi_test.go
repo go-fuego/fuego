@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
@@ -192,7 +193,7 @@ func Test_tagFromType(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			tag := SchemaTagFromType(s, tc.inputType)
+			tag := SchemaTagFromType(s.OpenAPI, tc.inputType)
 			require.Equal(t, tc.expectedTagValue, tag.Name, tc.description)
 			if tc.expectedTagValueType != nil {
 				require.NotNil(t, tag.Value)
@@ -204,16 +205,16 @@ func Test_tagFromType(t *testing.T) {
 
 func TestServer_generateOpenAPI(t *testing.T) {
 	s := NewServer()
-	Get(s, "/", func(*ContextNoBody) (MyStruct, error) {
+	Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 		return MyStruct{}, nil
 	})
-	Post(s, "/post", func(*ContextWithBody[MyStruct]) ([]MyStruct, error) {
+	Post(s, "/post", func(ContextWithBody[MyStruct]) ([]MyStruct, error) {
 		return nil, nil
 	})
-	Get(s, "/post/{id}", func(*ContextNoBody) (MyOutputStruct, error) {
+	Get(s, "/post/{id}", func(ContextNoBody) (MyOutputStruct, error) {
 		return MyOutputStruct{}, nil
 	})
-	Post(s, "/multidimensional/post", func(*ContextWithBody[MyStruct]) ([][]MyStruct, error) {
+	Post(s, "/multidimensional/post", func(ContextWithBody[MyStruct]) ([][]MyStruct, error) {
 		return nil, nil
 	})
 	document := s.OutputOpenAPISpec()
@@ -250,7 +251,7 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 				},
 			),
 		)
-		Get(s, "/", func(*ContextNoBody) (MyStruct, error) {
+		Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 			return MyStruct{}, nil
 		})
 
@@ -272,7 +273,7 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 				},
 			),
 		)
-		Get(s, "/", func(*ContextNoBody) (MyStruct, error) {
+		Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 			return MyStruct{}, nil
 		})
 
@@ -293,7 +294,7 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 				},
 			),
 		)
-		Get(s, "/", func(*ContextNoBody) (MyStruct, error) {
+		Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 			return MyStruct{}, nil
 		})
 
@@ -314,7 +315,7 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 				},
 			),
 		)
-		Get(s, "/", func(*ContextNoBody) (MyStruct, error) {
+		Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 			return MyStruct{}, nil
 		})
 
@@ -349,7 +350,7 @@ func BenchmarkRoutesRegistration(b *testing.B) {
 			return MyStruct{}, nil
 		})
 		for j := 0; j < 100; j++ {
-			Post(s, fmt.Sprintf("/post/%d", j), func(*ContextWithBody[MyStruct]) ([]MyStruct, error) {
+			Post(s, fmt.Sprintf("/post/%d", j), func(ContextWithBody[MyStruct]) ([]MyStruct, error) {
 				return nil, nil
 			})
 		}
@@ -370,7 +371,7 @@ func BenchmarkServer_generateOpenAPI(b *testing.B) {
 			return MyStruct{}, nil
 		})
 		for j := 0; j < 100; j++ {
-			Post(s, fmt.Sprintf("/post/%d", j), func(*ContextWithBody[MyStruct]) ([]MyStruct, error) {
+			Post(s, fmt.Sprintf("/post/%d", j), func(ContextWithBody[MyStruct]) ([]MyStruct, error) {
 				return nil, nil
 			})
 		}
@@ -429,22 +430,22 @@ func TestAutoGroupTags(t *testing.T) {
 			DisableSwagger:   true,
 		}),
 	)
-	Get(s, "/a", func(*ContextNoBody) (MyStruct, error) {
+	Get(s, "/a", func(ContextNoBody) (MyStruct, error) {
 		return MyStruct{}, nil
 	})
 
 	group := Group(s, "/group")
-	Get(group, "/b", func(*ContextNoBody) (MyStruct, error) {
+	Get(group, "/b", func(ContextNoBody) (MyStruct, error) {
 		return MyStruct{}, nil
 	})
 
 	subGroup := Group(group, "/subgroup")
-	Get(subGroup, "/c", func(*ContextNoBody) (MyStruct, error) {
+	Get(subGroup, "/c", func(ContextNoBody) (MyStruct, error) {
 		return MyStruct{}, nil
 	})
 
 	otherGroup := Group(s, "/other")
-	Get(otherGroup, "/d", func(*ContextNoBody) (MyStruct, error) {
+	Get(otherGroup, "/d", func(ContextNoBody) (MyStruct, error) {
 		return MyStruct{}, nil
 	})
 
@@ -452,7 +453,7 @@ func TestAutoGroupTags(t *testing.T) {
 	require.NotNil(t, document)
 	require.Nil(t, document.Paths.Find("/a").Get.Tags)
 	require.Equal(t, []string{"group"}, document.Paths.Find("/group/b").Get.Tags)
-	require.Equal(t, []string{"subgroup"}, document.Paths.Find("/group/subgroup/c").Get.Tags)
+	require.Equal(t, []string{"group", "subgroup"}, document.Paths.Find("/group/subgroup/c").Get.Tags)
 	require.Equal(t, []string{"other"}, document.Paths.Find("/other/d").Get.Tags)
 }
 
@@ -502,7 +503,7 @@ func TestEmbeddedStructHandling(t *testing.T) {
 	}
 
 	// Register a route that returns OuterStruct
-	Get(s, "/embedded", func(*ContextNoBody) (OuterStruct, error) {
+	Get(s, "/embedded", func(ContextNoBody) (OuterStruct, error) {
 		return OuterStruct{}, nil
 	})
 
@@ -525,4 +526,27 @@ func TestEmbeddedStructHandling(t *testing.T) {
 	require.Equal(t, &openapi3.Types{"integer"}, outerSchema.Properties["field_b"].Value.Type)
 	require.Equal(t, 100, outerSchema.Properties["field_b"].Value.Example)
 	require.Equal(t, "B field in the outer struct", outerSchema.Properties["field_b"].Value.Description)
+}
+
+func TestDeclareCustom200Response(t *testing.T) {
+	// A custom option to add a custom response to the OpenAPI spec.
+	// The route returns a PNG image.
+	optionReturnsPNG := func(br *BaseRoute) {
+		response := openapi3.NewResponse()
+		response.WithDescription("Generated image")
+		response.WithContent(openapi3.NewContentWithSchema(nil, []string{"image/png"}))
+		br.Operation.AddResponse(200, response)
+	}
+
+	s := NewServer()
+
+	GetStd(s, "/image", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/png")
+		w.Write([]byte("PNG image"))
+	}, optionReturnsPNG)
+
+	openAPIResponse := s.OpenAPI.Description().Paths.Find("/image").Get.Responses.Value("200")
+	require.Nil(t, openAPIResponse.Value.Content.Get("application/json"))
+	require.NotNil(t, openAPIResponse.Value.Content.Get("image/png"))
+	require.Equal(t, "Generated image", *openAPIResponse.Value.Description)
 }

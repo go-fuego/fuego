@@ -18,10 +18,14 @@ const (
 	maxBodySize = 1048576
 )
 
+type ContextNoBody = ContextWithBody[any]
+
 // ctx is the context of the request.
 // It contains the request body, the path parameters, the query parameters, and the HTTP request.
 // Please do not use a pointer type as parameter.
-type ctx[B any] interface {
+type ContextWithBody[B any] interface {
+	context.Context
+
 	// Body returns the body of the request.
 	// If (*B) implements [InTransformer], it will be transformed after deserialization.
 	// It caches the result, so it can be called multiple times.
@@ -91,34 +95,32 @@ type ctx[B any] interface {
 	Redirect(code int, url string) (any, error)
 }
 
-// NewContext returns a new context. It is used internally by Fuego. You probably want to use Ctx[B] instead.
-func NewContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) *ContextWithBody[B] {
-	c := &ContextWithBody[B]{
-		ContextNoBody: ContextNoBody{
-			Res: w,
-			Req: r,
-			readOptions: readOptions{
-				DisallowUnknownFields: options.DisallowUnknownFields,
-				MaxBodySize:           options.MaxBodySize,
-			},
-			urlValues: r.URL.Query(),
+// NewNetHTTPContext returns a new context. It is used internally by Fuego. You probably want to use Ctx[B] instead.
+func NewNetHTTPContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) ContextWithBody[B] {
+	c := &netHttpContext[B]{
+		Res: w,
+		Req: r,
+		readOptions: readOptions{
+			DisallowUnknownFields: options.DisallowUnknownFields,
+			MaxBodySize:           options.MaxBodySize,
 		},
+		urlValues: r.URL.Query(),
 	}
 
 	return c
 }
 
+var (
+	_ ContextWithBody[any]    = &netHttpContext[any]{}    // Check that ContextWithBody implements Ctx.
+	_ ContextWithBody[string] = &netHttpContext[string]{} // Check that ContextWithBody implements Ctx.
+)
+
 // ContextWithBody is the same as fuego.ContextNoBody, but
 // has a Body. The Body type parameter represents the expected data type
 // from http.Request.Body. Please do not use a pointer as a type parameter.
-type ContextWithBody[Body any] struct {
+type netHttpContext[Body any] struct {
 	body *Body // Cache the body in request context, because it is not possible to read an HTTP request body multiple times.
-	ContextNoBody
-}
 
-// ContextNoBody is used when the controller does not have a body.
-// It is used as a base context for other Context types.
-type ContextNoBody struct {
 	Req *http.Request
 	Res http.ResponseWriter
 
@@ -131,27 +133,9 @@ type ContextNoBody struct {
 	readOptions readOptions
 }
 
-var (
-	_ ctx[any]        = ContextNoBody{} // Check that ContextNoBody implements Ctx.
-	_ context.Context = ContextNoBody{} // Check that ContextNoBody implements context.Context.
-)
-
-func (c ContextNoBody) Body() (any, error) {
-	slog.Warn("this method should not be called. It probably happened because you passed the context to another controller.")
-	return body[map[string]any](c)
-}
-
-func (c ContextNoBody) MustBody() any {
-	b, err := c.Body()
-	if err != nil {
-		panic(err)
-	}
-	return b
-}
-
 // SetStatus sets the status code of the response.
 // Alias to http.ResponseWriter.WriteHeader.
-func (c ContextNoBody) SetStatus(code int) {
+func (c netHttpContext[B]) SetStatus(code int) {
 	c.Res.WriteHeader(code)
 }
 
@@ -162,72 +146,65 @@ type readOptions struct {
 	LogBody               bool
 }
 
-var (
-	_ ctx[any]    = &ContextWithBody[any]{}    // Check that ContextWithBody[any] implements Ctx.
-	_ ctx[string] = &ContextWithBody[string]{} // Check that ContextWithBody[string] implements Ctx.
-	_ ctx[any]    = &ContextNoBody{}           // Check that ContextNoBody implements Ctx.
-	_ ctx[any]    = ContextNoBody{}            // Check that ContextNoBody implements Ctx.
-)
-
-func (c ContextNoBody) Redirect(code int, url string) (any, error) {
+func (c netHttpContext[B]) Redirect(code int, url string) (any, error) {
 	http.Redirect(c.Res, c.Req, url, code)
 
 	return nil, nil
 }
 
 // ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c ContextNoBody) Deadline() (deadline time.Time, ok bool) {
+func (c netHttpContext[B]) Deadline() (deadline time.Time, ok bool) {
 	return c.Req.Context().Deadline()
 }
 
 // ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c ContextNoBody) Done() <-chan struct{} {
+func (c netHttpContext[B]) Done() <-chan struct{} {
 	return c.Req.Context().Done()
 }
 
 // ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c ContextNoBody) Err() error {
+func (c netHttpContext[B]) Err() error {
 	return c.Req.Context().Err()
 }
 
 // ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c ContextNoBody) Value(key any) any {
+func (c netHttpContext[B]) Value(key any) any {
 	return c.Req.Context().Value(key)
 }
 
 // ContextNoBody implements the context interface via [net/http.Request.Context]
-func (c ContextNoBody) Context() context.Context {
+func (c netHttpContext[B]) Context() context.Context {
 	return c.Req.Context()
 }
 
 // Get request header
-func (c ContextNoBody) Header(key string) string {
+func (c netHttpContext[B]) Header(key string) string {
 	return c.Request().Header.Get(key)
 }
 
 // Has request header
-func (c ContextNoBody) HasHeader(key string) bool {
+func (c netHttpContext[B]) HasHeader(key string) bool {
 	return c.Header(key) != ""
 }
 
 // Sets response header
-func (c ContextNoBody) SetHeader(key, value string) {
+func (c netHttpContext[B]) SetHeader(key, value string) {
 	c.Response().Header().Set(key, value)
 }
 
 // Get request cookie
-func (c ContextNoBody) Cookie(name string) (*http.Cookie, error) {
+func (c netHttpContext[B]) Cookie(name string) (*http.Cookie, error) {
 	return c.Request().Cookie(name)
 }
 
 // Has request cookie
-func (c ContextNoBody) HasCookie(name string) bool {
+func (c netHttpContext[B]) HasCookie(name string) bool {
 	_, err := c.Cookie(name)
 	return err == nil
 }
 
 // Sets response cookie
-func (c ContextNoBody) SetCookie(cookie http.Cookie) {
+func (c netHttpContext[B]) SetCookie(cookie http.Cookie) {
 	http.SetCookie(c.Response(), &cookie)
 }
 
@@ -239,7 +216,7 @@ func (c ContextNoBody) SetCookie(cookie http.Cookie) {
 // that the templates will be parsed only once, removing
 // the need to parse the templates on each request but also preventing
 // to dynamically use new templates.
-func (c ContextNoBody) Render(templateToExecute string, data any, layoutsGlobs ...string) (CtxRenderer, error) {
+func (c netHttpContext[B]) Render(templateToExecute string, data any, layoutsGlobs ...string) (CtxRenderer, error) {
 	return &StdRenderer{
 		templateToExecute: templateToExecute,
 		templates:         c.templates,
@@ -250,7 +227,7 @@ func (c ContextNoBody) Render(templateToExecute string, data any, layoutsGlobs .
 }
 
 // PathParams returns the path parameters of the request.
-func (c ContextNoBody) PathParam(name string) string {
+func (c netHttpContext[B]) PathParam(name string) string {
 	return c.Req.PathValue(name)
 }
 
@@ -274,12 +251,12 @@ func (e QueryParamInvalidTypeError) Error() string {
 }
 
 // QueryParams returns the query parameters of the request. It is a shortcut for c.Req.URL.Query().
-func (c ContextNoBody) QueryParams() url.Values {
+func (c netHttpContext[B]) QueryParams() url.Values {
 	return c.urlValues
 }
 
 // QueryParamsArr returns an slice of string from the given query parameter.
-func (c ContextNoBody) QueryParamArr(name string) []string {
+func (c netHttpContext[B]) QueryParamArr(name string) []string {
 	_, ok := c.params[name]
 	if !ok {
 		slog.Warn("query parameter not expected in OpenAPI spec", "param", name)
@@ -295,7 +272,7 @@ func (c ContextNoBody) QueryParamArr(name string) []string {
 //	fuego.Get(s, "/test", myController,
 //	  option.Query("name", "Name", param.Default("hey"))
 //	)
-func (c ContextNoBody) QueryParam(name string) string {
+func (c netHttpContext[B]) QueryParam(name string) string {
 	_, ok := c.params[name]
 	if !ok {
 		slog.Warn("query parameter not expected in OpenAPI spec", "param", name, "expected_one_of", c.params)
@@ -308,7 +285,7 @@ func (c ContextNoBody) QueryParam(name string) string {
 	return c.urlValues.Get(name)
 }
 
-func (c ContextNoBody) QueryParamIntErr(name string) (int, error) {
+func (c netHttpContext[B]) QueryParamIntErr(name string) (int, error) {
 	param := c.QueryParam(name)
 	if param == "" {
 		defaultValue, ok := c.params[name].Default.(int)
@@ -342,7 +319,7 @@ func (c ContextNoBody) QueryParamIntErr(name string) (int, error) {
 //
 // and the query parameter does not exist, it will return 1.
 // If the query parameter does not exist and there is no default value, or if it is not an int, it returns 0.
-func (c ContextNoBody) QueryParamInt(name string) int {
+func (c netHttpContext[B]) QueryParamInt(name string) int {
 	param, err := c.QueryParamIntErr(name)
 	if err != nil {
 		return 0
@@ -361,7 +338,7 @@ func (c ContextNoBody) QueryParamInt(name string) int {
 //
 // and the query parameter does not exist in the HTTP request, it will return true.
 // Accepted values are defined as [strconv.ParseBool]
-func (c ContextNoBody) QueryParamBoolErr(name string) (bool, error) {
+func (c netHttpContext[B]) QueryParamBoolErr(name string) (bool, error) {
 	param := c.QueryParam(name)
 	if param == "" {
 		defaultValue, ok := c.params[name].Default.(bool)
@@ -394,7 +371,7 @@ func (c ContextNoBody) QueryParamBoolErr(name string) (bool, error) {
 //	)
 //
 // and the query parameter does not exist in the HTTP request, it will return true.
-func (c ContextNoBody) QueryParamBool(name string) bool {
+func (c netHttpContext[B]) QueryParamBool(name string) bool {
 	param, err := c.QueryParamBoolErr(name)
 	if err != nil {
 		return false
@@ -403,26 +380,26 @@ func (c ContextNoBody) QueryParamBool(name string) bool {
 	return param
 }
 
-func (c ContextNoBody) MainLang() string {
+func (c netHttpContext[B]) MainLang() string {
 	return strings.Split(c.MainLocale(), "-")[0]
 }
 
-func (c ContextNoBody) MainLocale() string {
+func (c netHttpContext[B]) MainLocale() string {
 	return strings.Split(c.Req.Header.Get("Accept-Language"), ",")[0]
 }
 
 // Request returns the HTTP request.
-func (c ContextNoBody) Request() *http.Request {
+func (c netHttpContext[B]) Request() *http.Request {
 	return c.Req
 }
 
 // Response returns the HTTP response writer.
-func (c ContextNoBody) Response() http.ResponseWriter {
+func (c netHttpContext[B]) Response() http.ResponseWriter {
 	return c.Res
 }
 
 // MustBody works like Body, but panics if there is an error.
-func (c *ContextWithBody[B]) MustBody() B {
+func (c *netHttpContext[B]) MustBody() B {
 	b, err := c.Body()
 	if err != nil {
 		panic(err)
@@ -435,17 +412,17 @@ func (c *ContextWithBody[B]) MustBody() B {
 // It caches the result, so it can be called multiple times.
 // The reason the body is cached is that it is impossible to read an HTTP request body multiple times, not because of performance.
 // For decoding, it uses the Content-Type header. If it is not set, defaults to application/json.
-func (c *ContextWithBody[B]) Body() (B, error) {
+func (c *netHttpContext[B]) Body() (B, error) {
 	if c.body != nil {
 		return *c.body, nil
 	}
 
-	body, err := body[B](c.ContextNoBody)
+	body, err := body[B](*c)
 	c.body = &body
 	return body, err
 }
 
-func body[B any](c ContextNoBody) (B, error) {
+func body[B any](c netHttpContext[B]) (B, error) {
 	// Limit the size of the request body.
 	if c.readOptions.MaxBodySize != 0 {
 		c.Req.Body = http.MaxBytesReader(nil, c.Req.Body, c.readOptions.MaxBodySize)
