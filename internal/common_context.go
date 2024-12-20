@@ -13,9 +13,6 @@ type OpenAPIParam struct {
 	Name        string
 	Description string
 
-	Required bool
-	Nullable bool
-
 	// Default value for the parameter.
 	// Type is checked at start-time.
 	Default  any
@@ -30,6 +27,9 @@ type OpenAPIParam struct {
 	// Only used for response parameters.
 	// If empty, it is required for 200 status codes.
 	StatusCodes []int
+
+	Required bool
+	Nullable bool
 }
 
 // Base context shared by all adaptors (net/http, gin, echo, etc...)
