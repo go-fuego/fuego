@@ -371,6 +371,13 @@ func OptionHide() func(*BaseRoute) {
 	}
 }
 
+// Show shows the route from the OpenAPI spec.
+func OptionShow() func(*BaseRoute) {
+	return func(r *BaseRoute) {
+		r.Hidden = false
+	}
+}
+
 // OptionDefaultStatusCode sets the default status code for the route.
 func OptionDefaultStatusCode(defaultStatusCode int) func(*BaseRoute) {
 	return func(r *BaseRoute) {
@@ -429,5 +436,11 @@ func OptionSecurity(securityRequirements ...openapi3.SecurityRequirement) func(*
 
 		// Append all provided security requirements
 		*r.Operation.Security = append(*r.Operation.Security, securityRequirements...)
+	}
+}
+
+func OptionShowInOpenAPI(show bool) func(*BaseRoute) {
+	return func(r *BaseRoute) {
+
 	}
 }

@@ -67,8 +67,8 @@ type Server struct {
 
 	acceptedContentTypes []string
 
-	DisallowUnknownFields bool // If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
-	DisableOpenapi        bool // If true, the routes within the server will not generate an OpenAPI spec.
+	// If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
+	DisallowUnknownFields bool
 	maxBodySize           int64
 
 	Serialize      Sender                // Custom serializer that overrides the default one.
