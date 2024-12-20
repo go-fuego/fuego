@@ -9,6 +9,7 @@ use (
 	./examples/custom-serializer
 	./examples/full-app-gourmet
 	./examples/generate-opengraph-image
+	./examples/gin-compat
 	./examples/hello-world
 	./examples/openapi
 	./extra/fuegogin

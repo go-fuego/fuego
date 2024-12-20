@@ -56,7 +56,9 @@ func GinHandler[B, T any](handler func(c fuego.ContextWithBody[B]) (T, error)) g
 	return func(c *gin.Context) {
 		context := &ginContext[B]{
 			CommonContext: internal.CommonContext[B]{
-				CommonCtx: c,
+				CommonCtx:     c,
+				UrlValues:     c.Request.URL.Query(),
+				OpenAPIParams: map[string]fuego.OpenAPIParam{},
 			},
 			ginCtx: c,
 		}
