@@ -37,16 +37,6 @@ type RequestResponseLogger struct {
 	response http.HandlerFunc
 }
 
-func NewRequestResponseLogger(req, resp http.HandlerFunc) *RequestResponseLogger {
-	if req == nil {
-		req = func(w http.ResponseWriter, r *http.Request) {}
-	}
-	if resp == nil {
-		resp = func(w http.ResponseWriter, r *http.Request) {}
-	}
-	return &RequestResponseLogger{req, resp}
-}
-
 type Server struct {
 	// The underlying HTTP server
 	*http.Server
@@ -122,7 +112,10 @@ func NewServer(options ...func(*Server)) *Server {
 
 		Security: NewSecurity(),
 
-		requestResponseLogger: NewRequestResponseLogger(RequestLog, ResponseLog),
+		requestResponseLogger: &RequestResponseLogger{
+			request:  RequestLog,
+			response: ResponseLog,
+		},
 	}
 
 	// Default options that can be overridden
@@ -163,7 +156,7 @@ func NewServer(options ...func(*Server)) *Server {
 		)
 	}
 
-	if s.requestResponseLogger != nil {
+	if s.requestResponseLogger.request != nil && s.requestResponseLogger.response != nil {
 		s.middlewares = append(s.middlewares, s.requestResponseLogger.Log)
 	}
 
@@ -349,9 +342,29 @@ func WithLogHandler(handler slog.Handler) func(*Server) {
 	}
 }
 
-func WithRequestResponseLog(logger *RequestResponseLogger) func(*Server) {
+func WithResponseLog(enabled bool, res ...http.HandlerFunc) func(*Server) {
 	return func(c *Server) {
-		c.requestResponseLogger = logger
+		if !enabled {
+			c.requestResponseLogger.response = nil
+			return
+		}
+		if res[0] == nil {
+			return
+		}
+		c.requestResponseLogger.response = res[0]
+	}
+}
+
+func WithRequestLog(enabled bool, req ...http.HandlerFunc) func(*Server) {
+	return func(c *Server) {
+		if !enabled {
+			c.requestResponseLogger.request = nil
+			return
+		}
+		if req[0] == nil {
+			return
+		}
+		c.requestResponseLogger.request = req[0]
 	}
 }
 
