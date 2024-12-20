@@ -392,7 +392,6 @@ func WithoutLogger() func(*Server) {
 func WithListener(listener net.Listener) func(*Server) {
 	return func(s *Server) {
 		s.listener = listener
-		s.Addr = s.listener.Addr().String()
 	}
 }
 
