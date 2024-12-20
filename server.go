@@ -32,6 +32,21 @@ var defaultOpenAPIConfig = OpenAPIConfig{
 	UIHandler:    DefaultOpenAPIHandler,
 }
 
+type RequestResponseLogger struct {
+	request  http.HandlerFunc
+	response http.HandlerFunc
+}
+
+func NewRequestResponseLogger(req, resp http.HandlerFunc) *RequestResponseLogger {
+	if req == nil {
+		req = func(w http.ResponseWriter, r *http.Request) {}
+	}
+	if resp == nil {
+		resp = func(w http.ResponseWriter, r *http.Request) {}
+	}
+	return &RequestResponseLogger{req, resp}
+}
+
 type Server struct {
 	// The underlying HTTP server
 	*http.Server
@@ -73,6 +88,8 @@ type Server struct {
 	// Used to serialize the error response. Defaults to [SendError].
 	SerializeError ErrorSender
 
+	requestResponseLogger *RequestResponseLogger
+
 	startTime time.Time
 
 	OpenAPIConfig OpenAPIConfig
@@ -104,6 +121,8 @@ func NewServer(options ...func(*Server)) *Server {
 		OpenAPIConfig: defaultOpenAPIConfig,
 
 		Security: NewSecurity(),
+
+		requestResponseLogger: NewRequestResponseLogger(RequestLog, ResponseLog),
 	}
 
 	// Default options that can be overridden
@@ -142,6 +161,10 @@ func NewServer(options ...func(*Server)) *Server {
 			OptionTags("Auth"),
 			OptionSummary("Refresh"),
 		)
+	}
+
+	if s.requestResponseLogger != nil {
+		s.middlewares = append(s.middlewares, s.requestResponseLogger.Log)
 	}
 
 	return s
@@ -326,6 +349,12 @@ func WithLogHandler(handler slog.Handler) func(*Server) {
 	}
 }
 
+func WithRequestResponseLog(logger *RequestResponseLogger) func(*Server) {
+	return func(c *Server) {
+		c.requestResponseLogger = logger
+	}
+}
+
 // WithRequestContentType sets the accepted content types for the server.
 // By default, the accepted content types is */*.
 func WithRequestContentType(consumes ...string) func(*Server) {
@@ -344,7 +373,7 @@ func WithErrorSerializer(serializer ErrorSender) func(*Server) {
 	return func(c *Server) { c.SerializeError = serializer }
 }
 
-// WithErrorHandler sets a customer error handler for the server
+// WithErrorHandler sets a custom error handler for the server
 func WithErrorHandler(errorHandler func(err error) error) func(*Server) {
 	return func(c *Server) { c.ErrorHandler = errorHandler }
 }
