@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"fmt"
 	"html/template"
 	"io"
 	"io/fs"
@@ -302,15 +301,6 @@ func WithAutoAuth(verifyUserInfo func(user, password string) (jwt.Claims, error)
 // Defaults to true.
 func WithDisallowUnknownFields(b bool) func(*Server) {
 	return func(c *Server) { c.DisallowUnknownFields = b }
-}
-
-// WithPort sets the port of the server. For example, 8080.
-// If not specified, the default port is 9999.
-// If you want to use a different address, use [WithAddr] instead.
-//
-// Deprecated: Please use [WithAddr]
-func WithPort(port int) func(*Server) {
-	return func(s *Server) { s.Server.Addr = fmt.Sprintf("localhost:%d", port) }
 }
 
 // WithAddr optionally specifies the TCP address for the server to listen on, in the form "host:port".
