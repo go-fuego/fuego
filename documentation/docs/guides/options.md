@@ -41,22 +41,6 @@ func main() {
 }
 ```
 
-### Port (Deprecated)
-
-**Deprecated** in favor of `WithAddr` shown above.
-
-You can change the port of the server with the `WithPort` option.
-
-```go
-import "github.com/go-fuego/fuego"
-
-func main() {
-	s := fuego.NewServer(
-		fuego.WithPort(8080),
-	)
-}
-```
-
 ### CORS
 
 CORS middleware is not registered as a usual middleware,
