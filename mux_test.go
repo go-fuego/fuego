@@ -487,7 +487,6 @@ func TestHideOpenapiRoutes(t *testing.T) {
 		s.Hide()
 		Get(s, "/test", func(ctx ContextNoBody) (string, error) { return "", nil })
 
-		require.Equal(t, s.DisableOpenapi, true)
 		require.True(t, s.OpenAPI.Description().Paths.Find("/not-hidden") != nil)
 		require.True(t, s.OpenAPI.Description().Paths.Find("/test") == nil)
 	})
@@ -499,7 +498,6 @@ func TestHideOpenapiRoutes(t *testing.T) {
 		g := Group(s, "/group").Hide()
 		Get(g, "/test", func(ctx ContextNoBody) (string, error) { return "", nil })
 
-		require.Equal(t, g.DisableOpenapi, true)
 		require.True(t, s.OpenAPI.Description().Paths.Find("/not-hidden") != nil)
 		require.True(t, s.OpenAPI.Description().Paths.Find("/group/test") == nil)
 	})
@@ -512,8 +510,6 @@ func TestHideOpenapiRoutes(t *testing.T) {
 		g2 := Group(s, "/group2")
 		Get(g2, "/test", func(ctx ContextNoBody) (string, error) { return "test", nil })
 
-		require.Equal(t, true, g.DisableOpenapi)
-		require.Equal(t, false, g2.DisableOpenapi)
 		require.True(t, s.OpenAPI.Description().Paths.Find("/group/test") == nil)
 		require.True(t, s.OpenAPI.Description().Paths.Find("/group2/test") != nil)
 	})
@@ -526,7 +522,6 @@ func TestHideOpenapiRoutes(t *testing.T) {
 		g2 := Group(g, "/sub").Show()
 		Get(g2, "/test", func(ctx ContextNoBody) (string, error) { return "test", nil })
 
-		require.Equal(t, true, g.DisableOpenapi)
 		require.True(t, s.OpenAPI.Description().Paths.Find("/group/test") == nil)
 		require.True(t, s.OpenAPI.Description().Paths.Find("/group/sub/test") != nil)
 	})
