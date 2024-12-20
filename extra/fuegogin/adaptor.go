@@ -10,40 +10,40 @@ import (
 	"github.com/go-fuego/fuego/internal"
 )
 
-func GetGin(s *fuego.OpenAPI, e gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
-	return handleGin(s, e, http.MethodGet, path, handler, options...)
+func GetGin(engine *fuego.Engine, ginRouter gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	return handleGin(engine, ginRouter, http.MethodGet, path, handler, options...)
 }
 
-func PostGin(s *fuego.OpenAPI, e gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
-	return handleGin(s, e, http.MethodPost, path, handler, options...)
+func PostGin(engine *fuego.Engine, ginRouter gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	return handleGin(engine, ginRouter, http.MethodPost, path, handler, options...)
 }
 
-func Get[T, B any](s *fuego.OpenAPI, e gin.IRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
-	return handleFuego(s, e, http.MethodGet, path, handler, options...)
+func Get[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+	return handleFuego(engine, ginRouter, http.MethodGet, path, handler, options...)
 }
 
-func Post[T, B any](s *fuego.OpenAPI, e gin.IRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
-	return handleFuego(s, e, http.MethodPost, path, handler, options...)
+func Post[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+	return handleFuego(engine, ginRouter, http.MethodPost, path, handler, options...)
 }
 
-func handleFuego[T, B any](openapi *fuego.OpenAPI, e gin.IRouter, method, path string, fuegoHandler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
-	baseRoute := fuego.NewBaseRoute(method, path, fuegoHandler, openapi, options...)
-	return handle(openapi, e, &fuego.Route[T, B]{BaseRoute: baseRoute}, GinHandler(fuegoHandler))
+func handleFuego[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, method, path string, fuegoHandler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+	baseRoute := fuego.NewBaseRoute(method, path, fuegoHandler, engine.OpenAPI, options...)
+	return handle(engine, ginRouter, &fuego.Route[T, B]{BaseRoute: baseRoute}, GinHandler(fuegoHandler))
 }
 
-func handleGin(openapi *fuego.OpenAPI, e gin.IRouter, method, path string, ginHandler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
-	baseRoute := fuego.NewBaseRoute(method, path, ginHandler, openapi, options...)
-	return handle(openapi, e, &fuego.Route[any, any]{BaseRoute: baseRoute}, ginHandler)
+func handleGin(engine *fuego.Engine, ginRouter gin.IRouter, method, path string, ginHandler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	baseRoute := fuego.NewBaseRoute(method, path, ginHandler, engine.OpenAPI, options...)
+	return handle(engine, ginRouter, &fuego.Route[any, any]{BaseRoute: baseRoute}, ginHandler)
 }
 
-func handle[T, B any](openapi *fuego.OpenAPI, e gin.IRouter, route *fuego.Route[T, B], fuegoHandler gin.HandlerFunc) *fuego.Route[T, B] {
-	if _, ok := e.(*gin.RouterGroup); ok {
-		route.Path = e.(*gin.RouterGroup).BasePath() + route.Path
+func handle[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, route *fuego.Route[T, B], fuegoHandler gin.HandlerFunc) *fuego.Route[T, B] {
+	if _, ok := ginRouter.(*gin.RouterGroup); ok {
+		route.Path = ginRouter.(*gin.RouterGroup).BasePath() + route.Path
 	}
 
-	e.Handle(route.Method, route.Path, fuegoHandler)
+	ginRouter.Handle(route.Method, route.Path, fuegoHandler)
 
-	err := route.RegisterOpenAPIOperation(openapi)
+	err := route.RegisterOpenAPIOperation(engine.OpenAPI)
 	if err != nil {
 		slog.Warn("error documenting openapi operation", "error", err)
 	}
