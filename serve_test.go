@@ -9,10 +9,8 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"errors"
-	"fmt"
 	"io"
 	"math/big"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -511,29 +509,13 @@ func TestServer_RunTLS(t *testing.T) {
 				cancel()
 			}()
 
-			// wait for the server to start
-			conn, err := net.DialTimeout("tcp", s.Server.Addr, 5*time.Second)
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer conn.Close()
+			require.Eventually(t, func() bool {
+				req := httptest.NewRequest("GET", "https://localhost:3005/test", nil)
+				w := httptest.NewRecorder()
+				s.Mux.ServeHTTP(w, req)
 
-			client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
-			req, err := http.NewRequest("GET", fmt.Sprintf("https://%s/test", s.Server.Addr), nil)
-			if err != nil {
-				t.Fatal(err)
-			}
-			req.Header.Set("Accept", "text/plain")
-
-			resp, err := client.Do(req)
-			if err != nil {
-				t.Fatal(err)
-			}
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				t.Fatal(err)
-			}
-			require.Equal(t, []byte("OK"), body)
+				return w.Body.String() == `OK`
+			}, 5*time.Second, 500*time.Millisecond)
 		})
 	}
 }
