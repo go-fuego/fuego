@@ -86,7 +86,7 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 	route.Middlewares = append(s.middlewares, route.Middlewares...)
 	s.Mux.Handle(fullPath, withMiddlewares(route.Handler, route.Middlewares...))
 
-	if s.DisableOpenapi || route.Hidden || route.Method == "" {
+	if route.Hidden || route.Method == "" {
 		return &route
 	}
 

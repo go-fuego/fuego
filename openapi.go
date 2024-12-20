@@ -85,15 +85,21 @@ func NewOpenApiSpec() openapi3.T {
 }
 
 // Hide prevents the routes in this server or group from being included in the OpenAPI spec.
+// Deprecated: Please use [OptionHide] with [WithRouteOptions]
 func (s *Server) Hide() *Server {
-	s.DisableOpenapi = true
+	WithRouteOptions(
+		OptionHide(),
+	)(s)
 	return s
 }
 
 // Show allows displaying the routes. Activated by default so useless in most cases,
 // but this can be useful if you deactivated the parent group.
+// Deprecated: Please use [OptionShow] with [WithRouteOptions]
 func (s *Server) Show() *Server {
-	s.DisableOpenapi = false
+	WithRouteOptions(
+		OptionShow(),
+	)(s)
 	return s
 }
 
