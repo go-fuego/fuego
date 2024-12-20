@@ -3,7 +3,6 @@ package fuegogin
 import (
 	"context"
 	"net/http"
-	"net/url"
 
 	"github.com/gin-gonic/gin"
 
@@ -46,34 +45,6 @@ func (c ginContext[B]) MustBody() B {
 
 func (c ginContext[B]) PathParam(name string) string {
 	return c.ginCtx.Param(name)
-}
-
-func (c ginContext[B]) QueryParam(name string) string {
-	return c.ginCtx.Query(name)
-}
-
-func (c ginContext[B]) QueryParamArr(name string) []string {
-	panic("unimplemented")
-}
-
-func (c ginContext[B]) QueryParamBool(name string) bool {
-	panic("unimplemented")
-}
-
-func (c ginContext[B]) QueryParamBoolErr(name string) (bool, error) {
-	panic("unimplemented")
-}
-
-func (c ginContext[B]) QueryParamInt(name string) int {
-	panic("unimplemented")
-}
-
-func (c ginContext[B]) QueryParamIntErr(name string) (int, error) {
-	panic("unimplemented")
-}
-
-func (c ginContext[B]) QueryParams() url.Values {
-	return c.ginCtx.Request.URL.Query()
 }
 
 func (c ginContext[B]) MainLang() string {
