@@ -20,7 +20,7 @@ const (
 
 type ContextNoBody = ContextWithBody[any]
 
-// ctx is the context of the request.
+// ContextWithBody is the context of the request.
 // It contains the request body, the path parameters, the query parameters, and the HTTP request.
 // Please do not use a pointer type as parameter.
 type ContextWithBody[B any] interface {
