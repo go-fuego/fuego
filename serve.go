@@ -129,7 +129,7 @@ func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c Context
 	}
 
 	timeController := time.Now()
-	ctx.SetHeader("Server-Timing", Timing{"fuegoReqInit", timeController.Sub(timeCtxInit), ""}.String())
+	ctx.SetHeader("Server-Timing", Timing{"fuegoReqInit", "", timeController.Sub(timeCtxInit)}.String())
 
 	// CONTROLLER
 	ans, err := controller(ctx)
@@ -138,7 +138,7 @@ func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c Context
 		ctx.SerializeError(err)
 		return
 	}
-	ctx.SetHeader("Server-Timing", Timing{"controller", time.Since(timeController), ""}.String())
+	ctx.SetHeader("Server-Timing", Timing{"controller", "", time.Since(timeController)}.String())
 
 	ctx.SetDefaultStatusCode()
 
@@ -155,7 +155,7 @@ func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c Context
 		return
 	}
 	timeAfterTransformOut := time.Now()
-	ctx.SetHeader("Server-Timing", Timing{"transformOut", timeAfterTransformOut.Sub(timeTransformOut), "transformOut"}.String())
+	ctx.SetHeader("Server-Timing", Timing{"transformOut", "transformOut", timeAfterTransformOut.Sub(timeTransformOut)}.String())
 
 	// SERIALIZATION
 	err = ctx.Serialize(ans)
@@ -163,5 +163,5 @@ func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c Context
 		err = s.ErrorHandler(err)
 		ctx.SerializeError(err)
 	}
-	ctx.SetHeader("Server-Timing", Timing{"serialize", time.Since(timeAfterTransformOut), ""}.String())
+	ctx.SetHeader("Server-Timing", Timing{"serialize", "", time.Since(timeAfterTransformOut)}.String())
 }
