@@ -37,12 +37,12 @@ func handleGin(engine *fuego.Engine, ginRouter gin.IRouter, method, path string,
 	return handle(engine, ginRouter, &fuego.Route[any, any]{BaseRoute: baseRoute}, ginHandler)
 }
 
-func handle[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, route *fuego.Route[T, B], fuegoHandler gin.HandlerFunc) *fuego.Route[T, B] {
+func handle[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, route *fuego.Route[T, B], ginHandler gin.HandlerFunc) *fuego.Route[T, B] {
 	if _, ok := ginRouter.(*gin.RouterGroup); ok {
 		route.Path = ginRouter.(*gin.RouterGroup).BasePath() + route.Path
 	}
 
-	ginRouter.Handle(route.Method, route.Path, fuegoHandler)
+	ginRouter.Handle(route.Method, route.Path, ginHandler)
 
 	err := route.RegisterOpenAPIOperation(engine.OpenAPI)
 	if err != nil {

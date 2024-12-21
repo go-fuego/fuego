@@ -51,6 +51,7 @@ func server() (*gin.Engine, *fuego.OpenAPI) {
 		option.OperationID("SomeOperationID"),
 		option.AddError(409, "Name Already Exists"),
 		option.DefaultStatusCode(201),
+		option.Tags("Fuego"),
 
 		// Add some parameters.
 		option.Query("name", "Your name", param.Example("name example", "John Carmack")),
