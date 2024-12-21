@@ -150,8 +150,8 @@ func (c netHttpContext[B]) SetStatus(code int) {
 
 // readOptions are options for reading the request body.
 type readOptions struct {
-	DisallowUnknownFields bool
 	MaxBodySize           int64
+	DisallowUnknownFields bool
 	LogBody               bool
 }
 
@@ -295,7 +295,7 @@ func body[B any](c netHttpContext[B]) (B, error) {
 		body, err = readJSON[B](c.Req.Context(), c.Req.Body, c.readOptions)
 	}
 
-	c.Res.Header().Add("Server-Timing", Timing{"deserialize", time.Since(timeDeserialize), "controller > deserialize"}.String())
+	c.Res.Header().Add("Server-Timing", Timing{"deserialize", "controller > deserialize", time.Since(timeDeserialize)}.String())
 
 	return body, err
 }

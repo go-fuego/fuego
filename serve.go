@@ -102,7 +102,7 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 		}
 
 		timeController := time.Now()
-		w.Header().Set("Server-Timing", Timing{"fuegoReqInit", timeController.Sub(timeCtxInit), ""}.String())
+		w.Header().Set("Server-Timing", Timing{"fuegoReqInit", "", timeController.Sub(timeCtxInit)}.String())
 
 		// CONTROLLER
 		ans, err := controller(ctx)
@@ -111,7 +111,7 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 			s.SerializeError(w, r, err)
 			return
 		}
-		w.Header().Add("Server-Timing", Timing{"controller", time.Since(timeController), ""}.String())
+		w.Header().Add("Server-Timing", Timing{"controller", "", time.Since(timeController)}.String())
 
 		if route.DefaultStatusCode != 0 {
 			w.WriteHeader(route.DefaultStatusCode)
@@ -130,7 +130,7 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 			return
 		}
 		timeAfterTransformOut := time.Now()
-		w.Header().Add("Server-Timing", Timing{"transformOut", timeAfterTransformOut.Sub(timeTransformOut), "transformOut"}.String())
+		w.Header().Add("Server-Timing", Timing{"transformOut", "transformOut", timeAfterTransformOut.Sub(timeTransformOut)}.String())
 
 		// SERIALIZATION
 		err = s.Serialize(w, r, ans)
@@ -138,6 +138,6 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 			err = s.ErrorHandler(err)
 			s.SerializeError(w, r, err)
 		}
-		w.Header().Add("Server-Timing", Timing{"serialize", time.Since(timeAfterTransformOut), ""}.String())
+		w.Header().Add("Server-Timing", Timing{"serialize", "", time.Since(timeAfterTransformOut)}.String())
 	}
 }
