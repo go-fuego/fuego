@@ -3,8 +3,6 @@ package fuegogin
 import (
 	"net/http"
 	"net/url"
-
-	"github.com/gin-gonic/gin"
 )
 
 type ContextTest[B any] struct {
@@ -23,7 +21,7 @@ func (c *ContextTest[B]) Request() *http.Request {
 	return c.ginCtx.Request
 }
 
-func (c *ContextTest[B]) Response() gin.ResponseWriter {
+func (c *ContextTest[B]) Response() http.ResponseWriter {
 	return c.ginCtx.Writer
 }
 
