@@ -26,6 +26,8 @@ type ContextNoBody = ContextWithBody[any]
 type ContextWithBody[B any] interface {
 	context.Context
 
+	ValidableCtx
+
 	// Body returns the body of the request.
 	// If (*B) implements [InTransformer], it will be transformed after deserialization.
 	// It caches the result, so it can be called multiple times.
@@ -99,22 +101,22 @@ type ContextWithBody[B any] interface {
 	//   	return c.Redirect(301, "/recipes-list")
 	//   })
 	Redirect(code int, url string) (any, error)
+
+	Serialize(data any) error // Serialize serializes the given data to the response. It uses the Content-Type header to determine the serialization format.
+	SerializeError(err error) // SerializeError serializes the given error to the response. It uses the Content-Type header to determine the serialization format.
 }
 
 // NewNetHTTPContext returns a new context. It is used internally by Fuego. You probably want to use Ctx[B] instead.
-func NewNetHTTPContext[B any](w http.ResponseWriter, r *http.Request, options readOptions) ContextWithBody[B] {
+func NewNetHTTPContext[B any](route BaseRoute, w http.ResponseWriter, r *http.Request, options readOptions) *netHttpContext[B] {
 	c := &netHttpContext[B]{
 		CommonContext: internal.CommonContext[B]{
 			CommonCtx:     r.Context(),
 			UrlValues:     r.URL.Query(),
-			OpenAPIParams: make(map[string]OpenAPIParam),
+			OpenAPIParams: route.Params,
 		},
-		Res: w,
-		Req: r,
-		readOptions: readOptions{
-			DisallowUnknownFields: options.DisallowUnknownFields,
-			MaxBodySize:           options.MaxBodySize,
-		},
+		Req:         r,
+		Res:         w,
+		readOptions: options,
 	}
 
 	return c
@@ -134,7 +136,9 @@ type netHttpContext[Body any] struct {
 	fs        fs.FS
 	templates *template.Template
 
-	readOptions readOptions
+	readOptions    readOptions
+	serializer     Sender
+	serializeError ErrorSender
 }
 
 var (
@@ -256,6 +260,23 @@ func (c *netHttpContext[B]) Body() (B, error) {
 	body, err := body[B](*c)
 	c.body = &body
 	return body, err
+}
+
+// Serialize serializes the given data to the response. It uses the Content-Type header to determine the serialization format.
+func (c netHttpContext[B]) Serialize(data any) error {
+	if c.serializer == nil {
+		return Send(c.Res, c.Req, data)
+	}
+	return c.serializer(c.Res, c.Req, data)
+}
+
+// SerializeError serializes the given error to the response. It uses the Content-Type header to determine the serialization format.
+func (c netHttpContext[B]) SerializeError(err error) {
+	if c.serializeError == nil {
+		SendError(c.Res, c.Req, err)
+		return
+	}
+	c.serializeError(c.Res, c.Req, err)
 }
 
 func body[B any](c netHttpContext[B]) (B, error) {
