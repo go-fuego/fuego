@@ -64,19 +64,7 @@ func GinHandler[B, T any](engine *fuego.Engine, handler func(c fuego.ContextWith
 			ginCtx: c,
 		}
 
-		resp, err := handler(context)
-		if err != nil {
-			err = engine.ErrorHandler(err)
-			c.JSON(getErrorCode(err), err)
-			return
-		}
-
-		if c.Request.Header.Get("Accept") == "application/xml" {
-			c.XML(200, resp)
-			return
-		}
-
-		c.JSON(200, resp)
+		fuego.Flow(engine, context, handler)
 	}
 }
 

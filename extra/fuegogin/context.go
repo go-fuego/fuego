@@ -16,7 +16,10 @@ type ginContext[B any] struct {
 	ginCtx *gin.Context
 }
 
-var _ fuego.ContextWithBody[any] = &ginContext[any]{}
+var (
+	_ fuego.ContextWithBody[any] = &ginContext[any]{}
+	_ fuego.ContextFlowable[any] = &ginContext[any]{}
+)
 
 func (c ginContext[B]) Body() (B, error) {
 	var body B
@@ -77,10 +80,36 @@ func (c ginContext[B]) SetCookie(cookie http.Cookie) {
 	c.ginCtx.SetCookie(cookie.Name, cookie.Value, cookie.MaxAge, cookie.Path, cookie.Domain, cookie.Secure, cookie.HttpOnly)
 }
 
+func (c ginContext[B]) HasCookie(name string) bool {
+	_, err := c.Cookie(name)
+	return err == nil
+}
+
+func (c ginContext[B]) HasHeader(key string) bool {
+	_, ok := c.ginCtx.Request.Header[key]
+	return ok
+}
+
 func (c ginContext[B]) SetHeader(key, value string) {
 	c.ginCtx.Header(key, value)
 }
 
 func (c ginContext[B]) SetStatus(code int) {
 	c.ginCtx.Status(code)
+}
+
+func (c ginContext[B]) Serialize(data any) error {
+	c.ginCtx.JSON(http.StatusOK, data)
+	return nil
+}
+
+func (c ginContext[B]) SerializeError(err error) {
+	c.ginCtx.JSON(http.StatusInternalServerError, err)
+}
+
+func (c ginContext[B]) SetDefaultStatusCode() {
+	if c.DefaultStatusCode == 0 {
+		c.DefaultStatusCode = http.StatusOK
+	}
+	c.SetStatus(c.DefaultStatusCode)
 }
