@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"time"
-
-	"github.com/go-fuego/fuego/internal"
 )
 
 // Run starts the server.
@@ -87,77 +85,87 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("X-Powered-By", "Fuego")
-		w.Header().Set("Trailer", "Server-Timing")
-
-		// CONTEXT INITIALIZATION
-		timeCtxInit := time.Now()
 		var templates *template.Template
 		if s.template != nil {
 			templates = template.Must(s.template.Clone())
 		}
 
-		ctx := &netHttpContext[Body]{
-			CommonContext: internal.CommonContext[Body]{
-				CommonCtx:     r.Context(),
-				UrlValues:     r.URL.Query(),
-				OpenAPIParams: route.Params,
-			},
-			Req: r,
-			Res: w,
-			readOptions: readOptions{
-				DisallowUnknownFields: s.DisallowUnknownFields,
-				MaxBodySize:           s.maxBodySize,
-			},
-			fs:        s.fs,
-			templates: templates,
-		}
+		// CONTEXT INITIALIZATION
+		ctx := NewNetHTTPContext[Body](*route, w, r, readOptions{
+			DisallowUnknownFields: s.DisallowUnknownFields,
+			MaxBodySize:           s.maxBodySize,
+		})
+		ctx.serializer = s.Serialize
+		ctx.errorSerializer = s.SerializeError
+		ctx.fs = s.fs
+		ctx.templates = templates
 
-		// PARAMS VALIDATION
-		err := ValidateParams(ctx)
-		if err != nil {
-			err = s.ErrorHandler(err)
-			s.SerializeError(w, r, err)
-			return
-		}
-
-		timeController := time.Now()
-		w.Header().Set("Server-Timing", Timing{"fuegoReqInit", timeController.Sub(timeCtxInit), ""}.String())
-
-		// CONTROLLER
-		ans, err := controller(ctx)
-		if err != nil {
-			err = s.ErrorHandler(err)
-			s.SerializeError(w, r, err)
-			return
-		}
-		w.Header().Add("Server-Timing", Timing{"controller", time.Since(timeController), ""}.String())
-
-		if route.DefaultStatusCode != 0 {
-			w.WriteHeader(route.DefaultStatusCode)
-		}
-
-		if reflect.TypeOf(ans) == nil {
-			return
-		}
-
-		// TRANSFORM OUT
-		timeTransformOut := time.Now()
-		ans, err = transformOut(r.Context(), ans)
-		if err != nil {
-			err = s.ErrorHandler(err)
-			s.SerializeError(w, r, err)
-			return
-		}
-		timeAfterTransformOut := time.Now()
-		w.Header().Add("Server-Timing", Timing{"transformOut", timeAfterTransformOut.Sub(timeTransformOut), "transformOut"}.String())
-
-		// SERIALIZATION
-		err = s.Serialize(w, r, ans)
-		if err != nil {
-			err = s.ErrorHandler(err)
-			s.SerializeError(w, r, err)
-		}
-		w.Header().Add("Server-Timing", Timing{"serialize", time.Since(timeAfterTransformOut), ""}.String())
+		Flow(s.Engine, ctx, controller)
 	}
+}
+
+// Contains the logic for the flow of a Fuego controller.
+// Extends ContextWithBody with methods not exposed in the Controllers.
+type ContextFlowable[B any] interface {
+	ContextWithBody[B]
+
+	// SetDefaultStatusCode sets the status code of the response defined in the options.
+	SetDefaultStatusCode()
+	// Serialize serializes the given data to the response.
+	Serialize(data any) error
+	// SerializeError serializes the given error to the response.
+	SerializeError(err error)
+}
+
+// Generic handler for Fuego controllers.
+func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c ContextWithBody[B]) (T, error)) {
+	ctx.SetHeader("X-Powered-By", "Fuego")
+	ctx.SetHeader("Trailer", "Server-Timing")
+
+	timeCtxInit := time.Now()
+
+	// PARAMS VALIDATION
+	err := ValidateParams(ctx)
+	if err != nil {
+		err = s.ErrorHandler(err)
+		ctx.SerializeError(err)
+		return
+	}
+
+	timeController := time.Now()
+	ctx.SetHeader("Server-Timing", Timing{"fuegoReqInit", timeController.Sub(timeCtxInit), ""}.String())
+
+	// CONTROLLER
+	ans, err := controller(ctx)
+	if err != nil {
+		err = s.ErrorHandler(err)
+		ctx.SerializeError(err)
+		return
+	}
+	ctx.SetHeader("Server-Timing", Timing{"controller", time.Since(timeController), ""}.String())
+
+	ctx.SetDefaultStatusCode()
+
+	if reflect.TypeOf(ans) == nil {
+		return
+	}
+
+	// TRANSFORM OUT
+	timeTransformOut := time.Now()
+	ans, err = transformOut(ctx.Context(), ans)
+	if err != nil {
+		err = s.ErrorHandler(err)
+		ctx.SerializeError(err)
+		return
+	}
+	timeAfterTransformOut := time.Now()
+	ctx.SetHeader("Server-Timing", Timing{"transformOut", timeAfterTransformOut.Sub(timeTransformOut), "transformOut"}.String())
+
+	// SERIALIZATION
+	err = ctx.Serialize(ans)
+	if err != nil {
+		err = s.ErrorHandler(err)
+		ctx.SerializeError(err)
+	}
+	ctx.SetHeader("Server-Timing", Timing{"serialize", time.Since(timeAfterTransformOut), ""}.String())
 }
