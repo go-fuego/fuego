@@ -42,6 +42,11 @@ type CommonContext[B any] struct {
 
 type ParamType string // Query, Header, Cookie
 
+// GetOpenAPIParams returns the OpenAPI parameters declared in the OpenAPI spec.
+func (c CommonContext[B]) GetOpenAPIParams() map[string]OpenAPIParam {
+	return c.OpenAPIParams
+}
+
 func (c CommonContext[B]) Context() context.Context {
 	return c.CommonCtx
 }
@@ -69,6 +74,12 @@ func (c CommonContext[B]) Value(key any) any {
 // QueryParams returns the query parameters of the request. It is a shortcut for c.Req.URL.Query().
 func (c CommonContext[B]) QueryParams() url.Values {
 	return c.UrlValues
+}
+
+// HasQueryParam returns true if the query parameter with the given name exists.
+func (c CommonContext[B]) HasQueryParam(name string) bool {
+	_, ok := c.UrlValues[name]
+	return ok
 }
 
 // QueryParam returns the query parameter with the given name.
