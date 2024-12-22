@@ -29,7 +29,7 @@ func Post[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, path string, ha
 
 func handleFuego[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, method, path string, fuegoHandler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	baseRoute := fuego.NewBaseRoute(method, path, fuegoHandler, engine.OpenAPI, options...)
-	return handle(engine, ginRouter, &fuego.Route[T, B]{BaseRoute: baseRoute}, GinHandler(engine, fuegoHandler))
+	return handle(engine, ginRouter, &fuego.Route[T, B]{BaseRoute: baseRoute}, GinHandler(engine, fuegoHandler, baseRoute))
 }
 
 func handleGin(engine *fuego.Engine, ginRouter gin.IRouter, method, path string, ginHandler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
@@ -53,13 +53,13 @@ func handle[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, route *fuego.
 }
 
 // Convert a Fuego handler to a Gin handler.
-func GinHandler[B, T any](engine *fuego.Engine, handler func(c fuego.ContextWithBody[B]) (T, error)) gin.HandlerFunc {
+func GinHandler[B, T any](engine *fuego.Engine, handler func(c fuego.ContextWithBody[B]) (T, error), route fuego.BaseRoute) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		context := &ginContext[B]{
 			CommonContext: internal.CommonContext[B]{
 				CommonCtx:     c,
 				UrlValues:     c.Request.URL.Query(),
-				OpenAPIParams: map[string]fuego.OpenAPIParam{},
+				OpenAPIParams: route.Params,
 			},
 			ginCtx: c,
 		}

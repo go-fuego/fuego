@@ -19,22 +19,22 @@ func fuegoControllerGet(c fuego.ContextNoBody) (HelloResponse, error) {
 	}, nil
 }
 
-func fuegoControllerPost(c fuego.ContextWithBody[HelloRequest]) (HelloResponse, error) {
+func fuegoControllerPost(c fuego.ContextWithBody[HelloRequest]) (*HelloResponse, error) {
 	body, err := c.Body()
 	if err != nil {
-		return HelloResponse{}, err
+		return nil, err
 	}
 
 	if body.Word == "forbidden" {
-		return HelloResponse{}, fuego.BadRequestError{Title: "Forbidden word"}
+		return nil, fuego.BadRequestError{Title: "Forbidden word"}
 	}
 
-	ctx := c.Context().(*gin.Context)
-	fmt.Printf("%#v", ctx)
+	_ = c.Context().(*gin.Context) // Access to the Gin context
 
 	name := c.QueryParam("name")
+	_ = c.QueryParam("not-exising-param-raises-warning")
 
-	return HelloResponse{
+	return &HelloResponse{
 		Message: fmt.Sprintf("Hello %s, %s", body.Word, name),
 	}, nil
 }
