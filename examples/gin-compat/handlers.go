@@ -32,7 +32,7 @@ func fuegoControllerPost(c fuego.ContextWithBody[HelloRequest]) (*HelloResponse,
 	_ = c.Context().(*gin.Context) // Access to the Gin context
 
 	name := c.QueryParam("name")
-	_ = c.QueryParam("not-exising-param-raises-warning")
+	_ = c.QueryParam("not-existing-param-raises-warning")
 
 	return &HelloResponse{
 		Message: fmt.Sprintf("Hello %s, %s", body.Word, name),
