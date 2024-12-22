@@ -15,13 +15,13 @@ import (
 )
 
 type OpenAPIConfig struct {
+	UIHandler        func(specURL string) http.Handler // Handler to serve the OpenAPI UI from spec URL
+	SwaggerUrl       string                            // URL to serve the swagger UI
+	JsonUrl          string                            // URL to serve the OpenAPI JSON spec
+	JsonFilePath     string                            // Local path to save the OpenAPI JSON spec
 	DisableSwagger   bool                              // If true, the server will not serve the Swagger UI nor the OpenAPI JSON spec
 	DisableSwaggerUI bool                              // If true, the server will not serve the Swagger UI
 	DisableLocalSave bool                              // If true, the server will not save the OpenAPI JSON spec locally
-	SwaggerUrl       string                            // URL to serve the swagger UI
-	UIHandler        func(specURL string) http.Handler // Handler to serve the OpenAPI UI from spec URL
-	JsonUrl          string                            // URL to serve the OpenAPI JSON spec
-	JsonFilePath     string                            // Local path to save the OpenAPI JSON spec
 	PrettyFormatJson bool                              // Pretty prints the OpenAPI spec with proper JSON indentation
 }
 
@@ -33,6 +33,10 @@ var defaultOpenAPIConfig = OpenAPIConfig{
 }
 
 type Server struct {
+	startTime time.Time
+
+	fs fs.FS
+
 	// The underlying HTTP server
 	*http.Server
 
@@ -46,38 +50,37 @@ type Server struct {
 	// For example, it allows OPTIONS /foo even if it is not declared (only GET /foo is declared).
 	corsMiddleware func(http.Handler) http.Handler
 
-	// routeOptions is used to store the options
-	// that will be applied of the route.
-	routeOptions []func(*BaseRoute)
-
-	middlewares []func(http.Handler) http.Handler
-
-	disableStartupMessages bool
-	disableAutoGroupTags   bool
-	basePath               string // Base path of the group
-
 	*Engine
 
-	Security Security
-
-	autoAuth AutoAuthConfig
-	fs       fs.FS
 	template *template.Template // TODO: use preparsed templates
-
-	// If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
-	DisallowUnknownFields bool
-	maxBodySize           int64
 
 	// Custom serializer that overrides the default one.
 	Serialize Sender
 	// Used to serialize the error response. Defaults to [SendError].
 	SerializeError ErrorSender
 
-	startTime time.Time
+	Security Security
+
+	autoAuth AutoAuthConfig
+
+	basePath string // Base path of the group
 
 	OpenAPIConfig OpenAPIConfig
 
-	isTLS bool
+	// routeOptions is used to store the options
+	// that will be applied of the route.
+	routeOptions []func(*BaseRoute)
+
+	middlewares []func(http.Handler) http.Handler
+
+	maxBodySize int64
+
+	// If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
+	DisallowUnknownFields bool
+
+	disableStartupMessages bool
+	disableAutoGroupTags   bool
+	isTLS                  bool
 }
 
 // NewServer creates a new server with the given options.
