@@ -93,9 +93,6 @@ type ContextWithBody[B any] interface {
 	// SetStatus sets the status code of the response.
 	// Alias to http.ResponseWriter.WriteHeader.
 	SetStatus(code int)
-	// SetDefaultStatusCode sets the status code of the response defined in the options.
-	// Is automatically done by Fuego but you might need it.
-	SetDefaultStatusCode()
 
 	// Redirect redirects to the given url with the given status code.
 	// Example:
@@ -104,13 +101,6 @@ type ContextWithBody[B any] interface {
 	//   	return c.Redirect(301, "/recipes-list")
 	//   })
 	Redirect(code int, url string) (any, error)
-
-	// Serialize serializes the given data to the response.
-	// Is automatically done by Fuego but you might need it.
-	Serialize(data any) error
-	// SerializeError serializes the given error to the response.
-	// Is automatically done by Fuego but you might need it.
-	SerializeError(err error)
 }
 
 // NewNetHTTPContext returns a new context. It is used internally by Fuego. You probably want to use Ctx[B] instead.
@@ -144,9 +134,9 @@ type netHttpContext[Body any] struct {
 	fs        fs.FS
 	templates *template.Template
 
-	readOptions    readOptions
-	serializer     Sender
-	serializeError ErrorSender
+	readOptions     readOptions
+	serializer      Sender
+	errorSerializer ErrorSender
 }
 
 var (
@@ -280,14 +270,14 @@ func (c netHttpContext[B]) Serialize(data any) error {
 
 // SerializeError serializes the given error to the response. It uses the Content-Type header to determine the serialization format.
 func (c netHttpContext[B]) SerializeError(err error) {
-	if c.serializeError == nil {
+	if c.errorSerializer == nil {
 		SendError(c.Res, c.Req, err)
 		return
 	}
-	c.serializeError(c.Res, c.Req, err)
+	c.errorSerializer(c.Res, c.Req, err)
 }
 
-// SetDefaultStatusCode sets the default status code of the response.
+// setDefaultStatusCode sets the default status code of the response.
 func (c netHttpContext[B]) SetDefaultStatusCode() {
 	if c.DefaultStatusCode != 0 {
 		c.SetStatus(c.DefaultStatusCode)

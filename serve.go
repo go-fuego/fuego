@@ -77,16 +77,29 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 			MaxBodySize:           s.maxBodySize,
 		})
 		ctx.serializer = s.Serialize
-		ctx.serializeError = s.SerializeError
+		ctx.errorSerializer = s.SerializeError
 		ctx.fs = s.fs
 		ctx.templates = templates
 
-		flow(s.Engine, ctx, controller)
+		Flow(s.Engine, ctx, controller)
 	}
 }
 
+// Contains the logic for the flow of a Fuego controller.
+// Extends ContextWithBody with methods not exposed in the Controllers.
+type ContextFlowable[B any] interface {
+	ContextWithBody[B]
+
+	// SetDefaultStatusCode sets the status code of the response defined in the options.
+	SetDefaultStatusCode()
+	// Serialize serializes the given data to the response.
+	Serialize(data any) error
+	// SerializeError serializes the given error to the response.
+	SerializeError(err error)
+}
+
 // Generic handler for Fuego controllers.
-func flow[B, T any](s *Engine, ctx ContextWithBody[B], controller func(c ContextWithBody[B]) (T, error)) {
+func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c ContextWithBody[B]) (T, error)) {
 	ctx.SetHeader("X-Powered-By", "Fuego")
 	ctx.SetHeader("Trailer", "Server-Timing")
 
