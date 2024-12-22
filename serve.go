@@ -94,7 +94,8 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 			templates: templates,
 		}
 
-		err := validateParams(*ctx)
+		// PARAMS VALIDATION
+		err := ValidateParams(ctx)
 		if err != nil {
 			err = s.ErrorHandler(err)
 			s.SerializeError(w, r, err)

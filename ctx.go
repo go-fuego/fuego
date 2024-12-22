@@ -120,11 +120,6 @@ func NewNetHTTPContext[B any](w http.ResponseWriter, r *http.Request, options re
 	return c
 }
 
-var (
-	_ ContextWithBody[any]    = &netHttpContext[any]{}    // Check that ContextWithBody implements Ctx.
-	_ ContextWithBody[string] = &netHttpContext[string]{} // Check that ContextWithBody implements Ctx.
-)
-
 // ContextWithBody is the same as fuego.ContextNoBody, but
 // has a Body. The Body type parameter represents the expected data type
 // from http.Request.Body. Please do not use a pointer as a type parameter.
@@ -141,6 +136,12 @@ type netHttpContext[Body any] struct {
 
 	readOptions readOptions
 }
+
+var (
+	_ ContextWithBody[any]    = &netHttpContext[any]{}    // Check that ContextWithBody implements Ctx.
+	_ ContextWithBody[string] = &netHttpContext[string]{} // Check that ContextWithBody implements Ctx.
+	_ ValidableCtx            = &netHttpContext[any]{}    // Check that ContextWithBody implements ValidableCtx.
+)
 
 // SetStatus sets the status code of the response.
 // Alias to http.ResponseWriter.WriteHeader.
