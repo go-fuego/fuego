@@ -49,9 +49,6 @@ type BaseRoute struct {
 	// URL path. Will be prefixed by the base path of the server and the group path if any
 	Path string
 
-	// handler executed for this route
-	Handler http.Handler
-
 	// namespace and name of the function to execute
 	FullName    string
 	Params      map[string]OpenAPIParam
