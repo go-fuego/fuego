@@ -148,7 +148,7 @@ func registerFuegoController[T, B any](s *Server, method, path string, controlle
 	acceptHeaderParameter.Schema = openapi3.NewStringSchema().NewRef()
 	route.Operation.AddParameter(acceptHeaderParameter)
 
-	return Register(s, route, HTTPHandler(s, controller, &route.BaseRoute))
+	return Register(s, route, HTTPHandler(s, controller, route.BaseRoute))
 }
 
 func registerStdController(s *Server, method, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {

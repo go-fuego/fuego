@@ -79,11 +79,7 @@ func (s *Server) url() string {
 // HTTPHandler converts a Fuego controller into a http.HandlerFunc.
 // Uses Server for configuration.
 // Uses Route for route configuration. Optional.
-func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithBody[Body]) (ReturnType, error), route *BaseRoute) http.HandlerFunc {
-	if route == nil {
-		route = &BaseRoute{}
-	}
-
+func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithBody[Body]) (ReturnType, error), route BaseRoute) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var templates *template.Template
 		if s.template != nil {
@@ -91,7 +87,7 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 		}
 
 		// CONTEXT INITIALIZATION
-		ctx := NewNetHTTPContext[Body](*route, w, r, readOptions{
+		ctx := NewNetHTTPContext[Body](route, w, r, readOptions{
 			DisallowUnknownFields: s.DisallowUnknownFields,
 			MaxBodySize:           s.maxBodySize,
 		})
