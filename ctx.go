@@ -93,6 +93,9 @@ type ContextWithBody[B any] interface {
 	// SetStatus sets the status code of the response.
 	// Alias to http.ResponseWriter.WriteHeader.
 	SetStatus(code int)
+	// SetDefaultStatusCode sets the status code of the response defined in the options.
+	// Is automatically done by Fuego but you might need it.
+	SetDefaultStatusCode()
 
 	// Redirect redirects to the given url with the given status code.
 	// Example:
@@ -102,17 +105,22 @@ type ContextWithBody[B any] interface {
 	//   })
 	Redirect(code int, url string) (any, error)
 
-	Serialize(data any) error // Serialize serializes the given data to the response. It uses the Content-Type header to determine the serialization format.
-	SerializeError(err error) // SerializeError serializes the given error to the response. It uses the Content-Type header to determine the serialization format.
+	// Serialize serializes the given data to the response.
+	// Is automatically done by Fuego but you might need it.
+	Serialize(data any) error
+	// SerializeError serializes the given error to the response.
+	// Is automatically done by Fuego but you might need it.
+	SerializeError(err error)
 }
 
 // NewNetHTTPContext returns a new context. It is used internally by Fuego. You probably want to use Ctx[B] instead.
 func NewNetHTTPContext[B any](route BaseRoute, w http.ResponseWriter, r *http.Request, options readOptions) *netHttpContext[B] {
 	c := &netHttpContext[B]{
 		CommonContext: internal.CommonContext[B]{
-			CommonCtx:     r.Context(),
-			UrlValues:     r.URL.Query(),
-			OpenAPIParams: route.Params,
+			CommonCtx:         r.Context(),
+			UrlValues:         r.URL.Query(),
+			OpenAPIParams:     route.Params,
+			DefaultStatusCode: route.DefaultStatusCode,
 		},
 		Req:         r,
 		Res:         w,
@@ -277,6 +285,13 @@ func (c netHttpContext[B]) SerializeError(err error) {
 		return
 	}
 	c.serializeError(c.Res, c.Req, err)
+}
+
+// SetDefaultStatusCode sets the default status code of the response.
+func (c netHttpContext[B]) SetDefaultStatusCode() {
+	if c.DefaultStatusCode != 0 {
+		c.SetStatus(c.DefaultStatusCode)
+	}
 }
 
 func body[B any](c netHttpContext[B]) (B, error) {

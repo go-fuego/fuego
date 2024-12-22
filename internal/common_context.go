@@ -38,6 +38,9 @@ type CommonContext[B any] struct {
 
 	UrlValues     url.Values
 	OpenAPIParams map[string]OpenAPIParam // list of expected query parameters (declared in the OpenAPI spec)
+
+	// default status code for the response
+	DefaultStatusCode int
 }
 
 type ParamType string // Query, Header, Cookie
