@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -12,8 +14,10 @@ import (
 )
 
 type HelloRequest struct {
-	Word string `json:"word"`
+	Word string `json:"word" validate:"required,min=2"`
 }
+
+var _ fuego.InTransformer = &HelloRequest{}
 
 type HelloResponse struct {
 	Message string `json:"message"`
@@ -38,13 +42,22 @@ func server() (*gin.Engine, *fuego.OpenAPI) {
 	ginRouter.GET("/gin", ginController)
 
 	// Incrementally add OpenAPI spec
-	// Level 1: Register Gin controller to Gin router, plugs Fuego OpenAPI route declaration
+	// 1️⃣ Level 1: Register Gin controller to Gin router, plugs Fuego OpenAPI route declaration
 	fuegogin.GetGin(engine, ginRouter, "/gin-with-openapi", ginController)
 
-	// Level 2: Register Fuego controller to Gin router. Fuego take care of serialization/deserialization, error handling, content-negotiation, etc.
+	// 2️⃣ Level 2: Register Gin controller to Gin router, manually add options (not checked inside the Gin controller)
+	fuegogin.GetGin(engine, ginRouter, "/gin-with-openapi-and-options", ginController,
+		// OpenAPI options
+		option.Summary("Gin controller with options"),
+		option.Description("Some description"),
+		option.OperationID("MyCustomOperationID"),
+		option.Tags("Gin"),
+	)
+
+	// 3️⃣ Level 3: Register Fuego controller to Gin router. Fuego take care of serialization/deserialization, error handling, content-negotiation, etc.
 	fuegogin.Get(engine, ginRouter, "/fuego", fuegoControllerGet)
 
-	// Add some options to the POST endpoint
+	// 4️⃣ Level 4: Add some options to the POST endpoint (checks at start-time + validations at request time)
 	fuegogin.Post(engine, ginRouter, "/fuego-with-options", fuegoControllerPost,
 		// OpenAPI options
 		option.Description("Some description"),
@@ -63,6 +76,7 @@ func server() (*gin.Engine, *fuego.OpenAPI) {
 	group := ginRouter.Group("/my-group/:id")
 	fuegogin.Get(engine, group, "/fuego", fuegoControllerGet,
 		option.Summary("Route with group and id"),
+		option.Tags("Fuego"),
 	)
 
 	// Serve the OpenAPI spec
@@ -70,4 +84,21 @@ func server() (*gin.Engine, *fuego.OpenAPI) {
 	ginRouter.GET("/swagger", DefaultOpenAPIHandler("/openapi.json"))
 
 	return ginRouter, engine.OpenAPI
+}
+
+func (h *HelloRequest) InTransform(ctx context.Context) error {
+	// Transformation
+	h.Word = strings.ToLower(h.Word)
+
+	// Custom validation
+	if h.Word == "apple" {
+		return fuego.BadRequestError{Title: "Please don't use the word 'apple'"}
+	}
+
+	// Context-based transformation
+	if user := ctx.Value("user"); user == "secret agent" {
+		h.Word = "*****"
+	}
+
+	return nil
 }
