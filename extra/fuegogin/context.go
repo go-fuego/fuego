@@ -3,6 +3,7 @@ package fuegogin
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -28,7 +29,7 @@ func (c ginContext[B]) Context() context.Context {
 }
 
 func (c ginContext[B]) Cookie(name string) (*http.Cookie, error) {
-	panic("unimplemented")
+	return c.ginCtx.Request.Cookie(name)
 }
 
 func (c ginContext[B]) Header(key string) string {
@@ -48,11 +49,11 @@ func (c ginContext[B]) PathParam(name string) string {
 }
 
 func (c ginContext[B]) MainLang() string {
-	panic("unimplemented")
+	return strings.Split(c.MainLocale(), "-")[0]
 }
 
 func (c ginContext[B]) MainLocale() string {
-	panic("unimplemented")
+	return strings.Split(c.Request().Header.Get("Accept-Language"), ",")[0]
 }
 
 func (c ginContext[B]) Redirect(code int, url string) (any, error) {
@@ -73,6 +74,7 @@ func (c ginContext[B]) Response() http.ResponseWriter {
 }
 
 func (c ginContext[B]) SetCookie(cookie http.Cookie) {
+	c.ginCtx.SetCookie(cookie.Name, cookie.Value, cookie.MaxAge, cookie.Path, cookie.Domain, cookie.Secure, cookie.HttpOnly)
 }
 
 func (c ginContext[B]) SetHeader(key, value string) {
