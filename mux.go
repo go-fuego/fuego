@@ -86,10 +86,6 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 	route.Middlewares = append(s.middlewares, route.Middlewares...)
 	s.Mux.Handle(fullPath, withMiddlewares(route.Handler, route.Middlewares...))
 
-	if route.Hidden || route.Method == "" {
-		return &route
-	}
-
 	err := route.RegisterOpenAPIOperation(s.OpenAPI)
 	if err != nil {
 		slog.Warn("error documenting openapi operation", "error", err)

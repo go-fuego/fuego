@@ -208,6 +208,10 @@ func validateSwaggerUrl(swaggerUrl string) bool {
 // RegisterOpenAPIOperation registers the route to the OpenAPI description.
 // Modifies the route's Operation.
 func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(openapi *OpenAPI) error {
+	if route.Hidden || route.Method == "" {
+		return nil
+	}
+
 	operation, err := RegisterOpenAPIOperation(openapi, *route)
 	route.Operation = operation
 	return err
