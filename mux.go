@@ -74,7 +74,7 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 	for _, o := range options {
 		o(&route.BaseRoute)
 	}
-	route.Handler = controller
+
 	route.Path = s.basePath + route.Path
 
 	fullPath := route.Path
@@ -84,7 +84,7 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 	slog.Debug("registering controller " + fullPath)
 
 	route.Middlewares = append(s.middlewares, route.Middlewares...)
-	s.Mux.Handle(fullPath, withMiddlewares(route.Handler, route.Middlewares...))
+	s.Mux.Handle(fullPath, withMiddlewares(controller, route.Middlewares...))
 
 	err := route.RegisterOpenAPIOperation(s.OpenAPI)
 	if err != nil {
