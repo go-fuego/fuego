@@ -15,21 +15,26 @@ import (
 )
 
 type OpenAPIConfig struct {
-	DisableSwagger   bool                              // If true, the server will not serve the Swagger UI nor the OpenAPI JSON spec
-	DisableSwaggerUI bool                              // If true, the server will not serve the Swagger UI
-	DisableLocalSave bool                              // If true, the server will not save the OpenAPI JSON spec locally
-	SwaggerUrl       string                            // URL to serve the swagger UI
-	UIHandler        func(specURL string) http.Handler // Handler to serve the OpenAPI UI from spec URL
-	JsonUrl          string                            // URL to serve the OpenAPI JSON spec
-	JsonFilePath     string                            // Local path to save the OpenAPI JSON spec
-	PrettyFormatJson bool                              // Pretty prints the OpenAPI spec with proper JSON indentation
+	EngineOpenAPIConfig
+	// If true, the server will not serve the Swagger UI nor the OpenAPI JSON spec
+	DisableSwagger bool
+	// If true, the server will not serve the Swagger UI
+	DisableSwaggerUI bool
+	// URL to serve the swagger UI
+	SwaggerUrl string
+	// Handler to serve the OpenAPI UI from spec URL
+	UIHandler func(specURL string) http.Handler
+	// URL to serve the OpenAPI JSON spec
+	JsonUrl string
 }
 
 var defaultOpenAPIConfig = OpenAPIConfig{
-	SwaggerUrl:   "/swagger",
-	JsonUrl:      "/swagger/openapi.json",
-	JsonFilePath: "doc/openapi.json",
-	UIHandler:    DefaultOpenAPIHandler,
+	SwaggerUrl: "/swagger",
+	JsonUrl:    "/swagger/openapi.json",
+	UIHandler:  DefaultOpenAPIHandler,
+	EngineOpenAPIConfig: EngineOpenAPIConfig{
+		JsonFilePath: "doc/openapi.json",
+	},
 }
 
 type Server struct {
@@ -102,8 +107,6 @@ func NewServer(options ...func(*Server)) *Server {
 		},
 		Mux:    http.NewServeMux(),
 		Engine: NewEngine(),
-
-		OpenAPIConfig: defaultOpenAPIConfig,
 
 		Security: NewSecurity(),
 
@@ -359,7 +362,10 @@ func WithErrorHandler(errorHandler func(err error) error) func(*Server) {
 
 // WithoutStartupMessages disables the startup message
 func WithoutStartupMessages() func(*Server) {
-	return func(c *Server) { c.disableStartupMessages = true }
+	return func(c *Server) {
+		c.disableStartupMessages = true
+		c.OpenAPIConfig.DisableMessages = true
+	}
 }
 
 // WithoutLogger disables the default logger.
@@ -371,36 +377,7 @@ func WithoutLogger() func(*Server) {
 
 func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
 	return func(s *Server) {
-		if openapiConfig.JsonUrl != "" {
-			s.OpenAPIConfig.JsonUrl = openapiConfig.JsonUrl
-		}
-
-		if openapiConfig.SwaggerUrl != "" {
-			s.OpenAPIConfig.SwaggerUrl = openapiConfig.SwaggerUrl
-		}
-
-		if openapiConfig.JsonFilePath != "" {
-			s.OpenAPIConfig.JsonFilePath = openapiConfig.JsonFilePath
-		}
-
-		if openapiConfig.UIHandler != nil {
-			s.OpenAPIConfig.UIHandler = openapiConfig.UIHandler
-		}
-
-		s.OpenAPIConfig.DisableSwagger = openapiConfig.DisableSwagger
-		s.OpenAPIConfig.DisableSwaggerUI = openapiConfig.DisableSwaggerUI
-		s.OpenAPIConfig.DisableLocalSave = openapiConfig.DisableLocalSave
-		s.OpenAPIConfig.PrettyFormatJson = openapiConfig.PrettyFormatJson
-
-		if !validateJsonSpecUrl(s.OpenAPIConfig.JsonUrl) {
-			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIConfig.JsonSpecUrl' option is not valid", "url", s.OpenAPIConfig.JsonUrl)
-			return
-		}
-
-		if !validateSwaggerUrl(s.OpenAPIConfig.SwaggerUrl) {
-			slog.Error("Error serving swagger ui. Value of 's.OpenAPIConfig.SwaggerUrl' option is not valid", "url", s.OpenAPIConfig.SwaggerUrl)
-			return
-		}
+		s.Engine.setOpenAPIConfig(openapiConfig)
 	}
 }
 
