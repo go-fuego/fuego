@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"bytes"
 	"errors"
 	"html/template"
 	"io"
@@ -599,5 +600,99 @@ func TestWithSecurity(t *testing.T) {
 
 		require.NotNil(t, s.OpenAPI.Description().Components.SecuritySchemes)
 		require.Contains(t, s.OpenAPI.Description().Components.SecuritySchemes, "bearerAuth")
+	})
+}
+
+func TestDefaultMiddlewareLogging(t *testing.T) {
+	var buf bytes.Buffer
+	logger := slog.NewTextHandler(&buf, nil)
+
+	handler := func(c ContextNoBody) (string, error) {
+		return "ok", nil
+	}
+
+	t.Run("default logging enabled", func(t *testing.T) {
+		s := NewServer(WithLogHandler(logger))
+		Get(s, "/test", handler)
+
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/test", nil)
+		s.Mux.ServeHTTP(rec, req)
+
+		logs := buf.String()
+		require.Contains(t, logs, "<- request")
+		require.Contains(t, logs, "response ->")
+	})
+
+	t.Run("disable all logging", func(t *testing.T) {
+		buf.Reset()
+
+		s := NewServer(
+			WithLogHandler(logger),
+			WithoutLogging(),
+		)
+		Get(s, "/test", handler)
+
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/test", nil)
+		s.Mux.ServeHTTP(rec, req)
+
+		require.Empty(t, buf.String(), "expected no logs when logging disabled")
+	})
+
+	t.Run("disable only request logging", func(t *testing.T) {
+		buf.Reset()
+
+		s := NewServer(
+			WithLogHandler(logger),
+			WithoutRequestLogging(),
+		)
+		Get(s, "/test", handler)
+
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/test", nil)
+		s.Mux.ServeHTTP(rec, req)
+
+		logs := buf.String()
+		require.NotContains(t, logs, "<- request")
+		require.Contains(t, logs, "response ->")
+	})
+
+	t.Run("disable only response logging", func(t *testing.T) {
+		buf.Reset()
+
+		s := NewServer(
+			WithLogHandler(logger),
+			WithoutResponseLogging(),
+		)
+		Get(s, "/test", handler)
+
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/test", nil)
+		s.Mux.ServeHTTP(rec, req)
+
+		logs := buf.String()
+		require.Contains(t, logs, "<- request")
+		require.NotContains(t, logs, "response ->")
+	})
+
+	t.Run("custom request logging impl", func(t *testing.T) {
+		buf.Reset()
+
+		s := NewServer(
+			WithLogHandler(logger),
+			WithCustomReqLogging(func(w http.ResponseWriter, r *http.Request) {
+				slog.Info("custom request log")
+			}),
+		)
+		Get(s, "/test", handler)
+
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/test", nil)
+		s.Mux.ServeHTTP(rec, req)
+
+		logs := buf.String()
+		require.Contains(t, logs, "custom request log")
+		require.Contains(t, logs, "response ->")
 	})
 }

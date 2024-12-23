@@ -77,6 +77,8 @@ type Server struct {
 
 	OpenAPIConfig OpenAPIConfig
 
+	LoggingConfig LoggingConfig
+
 	isTLS bool
 }
 
@@ -104,6 +106,10 @@ func NewServer(options ...func(*Server)) *Server {
 		OpenAPIConfig: defaultOpenAPIConfig,
 
 		Security: NewSecurity(),
+
+		LoggingConfig: LoggingConfig{
+			Enabled: true,
+		},
 	}
 
 	// Default options that can be overridden
@@ -142,6 +148,10 @@ func NewServer(options ...func(*Server)) *Server {
 			OptionTags("Auth"),
 			OptionSummary("Refresh"),
 		)
+	}
+
+	if s.LoggingConfig.Enabled {
+		s.middlewares = append(s.middlewares, defaultLoggingMiddleware(s))
 	}
 
 	return s
@@ -421,5 +431,35 @@ func WithValidator(newValidator *validator.Validate) func(*Server) {
 func WithRouteOptions(options ...func(*BaseRoute)) func(*Server) {
 	return func(s *Server) {
 		s.routeOptions = append(s.routeOptions, options...)
+	}
+}
+
+func WithoutLogging() func(*Server) {
+	return func(s *Server) {
+		s.LoggingConfig.Enabled = false
+	}
+}
+
+func WithoutRequestLogging() func(*Server) {
+	return func(s *Server) {
+		s.LoggingConfig.DisableRequest = true
+	}
+}
+
+func WithoutResponseLogging() func(*Server) {
+	return func(s *Server) {
+		s.LoggingConfig.DisableResponse = true
+	}
+}
+
+func WithCustomReqLogging(logger func(w http.ResponseWriter, r *http.Request)) func(*Server) {
+	return func(s *Server) {
+		s.LoggingConfig.RequestLogger = logger
+	}
+}
+
+func WithCustomResLogging(logger func(w http.ResponseWriter, r *http.Request)) func(*Server) {
+	return func(s *Server) {
+		s.LoggingConfig.ResponseLogger = logger
 	}
 }
