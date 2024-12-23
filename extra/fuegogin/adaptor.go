@@ -1,7 +1,6 @@
 package fuegogin
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
 
@@ -66,12 +65,4 @@ func GinHandler[B, T any](engine *fuego.Engine, handler func(c fuego.ContextWith
 
 		fuego.Flow(engine, context, handler)
 	}
-}
-
-func getErrorCode(err error) int {
-	var status fuego.ErrorWithStatus
-	if errors.As(err, &status) {
-		return status.StatusCode()
-	}
-	return 500
 }
