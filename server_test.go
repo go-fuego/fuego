@@ -83,12 +83,14 @@ func TestWithOpenAPIConfig(t *testing.T) {
 	t.Run("with custom values", func(t *testing.T) {
 		s := NewServer(
 			WithOpenAPIConfig(OpenAPIConfig{
-				SwaggerUrl:       "/api",
-				JsonUrl:          "/api/openapi.json",
-				JsonFilePath:     "openapi.json",
-				DisableSwagger:   true,
-				DisableLocalSave: true,
-				PrettyFormatJson: true,
+				SwaggerUrl:     "/api",
+				JsonUrl:        "/api/openapi.json",
+				DisableSwagger: true,
+				EngineOpenAPIConfig: EngineOpenAPIConfig{
+					JsonFilePath:     "openapi.json",
+					DisableLocalSave: true,
+					PrettyFormatJson: true,
+				},
 			}),
 		)
 
@@ -104,18 +106,22 @@ func TestWithOpenAPIConfig(t *testing.T) {
 		t.Run("with invalid path", func(t *testing.T) {
 			NewServer(
 				WithOpenAPIConfig(OpenAPIConfig{
-					JsonFilePath: "path/to/jsonSpec",
-					SwaggerUrl:   "p   i",
-					JsonUrl:      "pi/op  enapi.json",
+					SwaggerUrl: "p   i",
+					JsonUrl:    "pi/op  enapi.json",
+					EngineOpenAPIConfig: EngineOpenAPIConfig{
+						JsonFilePath: "path/to/jsonSpec",
+					},
 				}),
 			)
 		})
 		t.Run("with invalid url", func(t *testing.T) {
 			NewServer(
 				WithOpenAPIConfig(OpenAPIConfig{
-					JsonFilePath: "path/to/jsonSpec.json",
-					JsonUrl:      "pi/op  enapi.json",
-					SwaggerUrl:   "p   i",
+					JsonUrl:    "pi/op  enapi.json",
+					SwaggerUrl: "p   i",
+					EngineOpenAPIConfig: EngineOpenAPIConfig{
+						JsonFilePath: "path/to/jsonSpec.json",
+					},
 				}),
 			)
 		})
@@ -123,9 +129,11 @@ func TestWithOpenAPIConfig(t *testing.T) {
 		t.Run("with invalid url", func(t *testing.T) {
 			NewServer(
 				WithOpenAPIConfig(OpenAPIConfig{
-					JsonFilePath: "path/to/jsonSpec.json",
-					JsonUrl:      "/api/openapi.json",
-					SwaggerUrl:   "invalid path",
+					JsonUrl:    "/api/openapi.json",
+					SwaggerUrl: "invalid path",
+					EngineOpenAPIConfig: EngineOpenAPIConfig{
+						JsonFilePath: "path/to/jsonSpec.json",
+					},
 				}),
 			)
 		})
@@ -269,6 +277,7 @@ func TestWithoutStartupMessages(t *testing.T) {
 	)
 
 	require.True(t, s.disableStartupMessages)
+	require.True(t, s.Engine.OpenAPIConfig.DisableMessages)
 }
 
 func TestWithoutAutoGroupTags(t *testing.T) {
