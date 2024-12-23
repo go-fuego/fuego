@@ -2,8 +2,16 @@ package fuego
 
 import "fmt"
 
-func validateParams[B any](c netHttpContext[B]) error {
-	for k, param := range c.OpenAPIParams {
+type ValidableCtx interface {
+	GetOpenAPIParams() map[string]OpenAPIParam
+	HasQueryParam(key string) bool
+	HasHeader(key string) bool
+	HasCookie(key string) bool
+}
+
+// ValidateParams checks if all required parameters are present in the request.
+func ValidateParams(c ValidableCtx) error {
+	for k, param := range c.GetOpenAPIParams() {
 		if param.Default != nil {
 			// skip: param has a default
 			continue
@@ -12,7 +20,7 @@ func validateParams[B any](c netHttpContext[B]) error {
 		if param.Required {
 			switch param.Type {
 			case QueryParamType:
-				if !c.UrlValues.Has(k) {
+				if !c.HasQueryParam(k) {
 					err := fmt.Errorf("%s is a required query param", k)
 					return BadRequestError{
 						Title:  "Query Param Not Found",

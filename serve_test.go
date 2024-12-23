@@ -9,10 +9,8 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"errors"
-	"fmt"
 	"io"
 	"math/big"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -85,14 +83,14 @@ func TestHttpHandler(t *testing.T) {
 	s := NewServer()
 
 	t.Run("can create std http handler from fuego controller", func(t *testing.T) {
-		handler := HTTPHandler(s, testController, nil)
+		handler := HTTPHandler(s, testController, BaseRoute{})
 		if handler == nil {
 			t.Error("handler is nil")
 		}
 	})
 
 	t.Run("can run http handler from fuego controller", func(t *testing.T) {
-		handler := HTTPHandler(s, testController, nil)
+		handler := HTTPHandler(s, testController, BaseRoute{})
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -103,7 +101,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can handle errors in http handler from fuego controller", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerWithError, nil)
+		handler := HTTPHandler(s, testControllerWithError, BaseRoute{})
 		if handler == nil {
 			t.Error("handler is nil")
 		}
@@ -117,7 +115,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can outTransform before serializing a value", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerWithOutTransformer, nil)
+		handler := HTTPHandler(s, testControllerWithOutTransformer, BaseRoute{})
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -128,7 +126,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can outTransform before serializing a pointer value", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerWithOutTransformerStar, nil)
+		handler := HTTPHandler(s, testControllerWithOutTransformerStar, BaseRoute{})
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -139,7 +137,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can handle errors in outTransform", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerWithOutTransformerStarError, nil)
+		handler := HTTPHandler(s, testControllerWithOutTransformerStarError, BaseRoute{})
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -150,7 +148,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("can handle nil in outTransform", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerWithOutTransformerStarNil, nil)
+		handler := HTTPHandler(s, testControllerWithOutTransformerStarNil, BaseRoute{})
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -161,7 +159,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("returns correct content-type when returning string", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerReturningString, nil)
+		handler := HTTPHandler(s, testControllerReturningString, BaseRoute{})
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -171,7 +169,7 @@ func TestHttpHandler(t *testing.T) {
 	})
 
 	t.Run("returns correct content-type when returning ptr to string", func(t *testing.T) {
-		handler := HTTPHandler(s, testControllerReturningPtrToString, nil)
+		handler := HTTPHandler(s, testControllerReturningPtrToString, BaseRoute{})
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		req.Header.Set("Accept", "text/plain")
@@ -189,7 +187,7 @@ func TestSetStatusBeforeSend(t *testing.T) {
 		handler := HTTPHandler(s, func(c ContextNoBody) (ans, error) {
 			c.Response().WriteHeader(201)
 			return ans{Ans: "Hello World"}, nil
-		}, nil)
+		}, BaseRoute{})
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -205,7 +203,7 @@ func TestSetStatusBeforeSend(t *testing.T) {
 		handler := HTTPHandler(s, func(c ContextNoBody) (ans, error) {
 			c.SetStatus(202)
 			return ans{Ans: "Hello World"}, nil
-		}, nil)
+		}, BaseRoute{})
 
 		req := httptest.NewRequest("GET", "/testing", nil)
 		w := httptest.NewRecorder()
@@ -351,7 +349,7 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextNoBody", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := NewNetHTTPContext[any](w, req, readOptions{})
+		ctx := NewNetHTTPContext[any](BaseRoute{}, w, req, readOptions{})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -361,7 +359,7 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextNoBody", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := NewNetHTTPContext[any](w, req, readOptions{})
+		ctx := NewNetHTTPContext[any](BaseRoute{}, w, req, readOptions{})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -371,7 +369,7 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextWithBody[string]", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := NewNetHTTPContext[any](w, req, readOptions{})
+		ctx := NewNetHTTPContext[any](BaseRoute{}, w, req, readOptions{})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -381,7 +379,7 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextWithBody[struct]", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := NewNetHTTPContext[any](w, req, readOptions{})
+		ctx := NewNetHTTPContext[any](BaseRoute{}, w, req, readOptions{})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -511,29 +509,13 @@ func TestServer_RunTLS(t *testing.T) {
 				cancel()
 			}()
 
-			// wait for the server to start
-			conn, err := net.DialTimeout("tcp", s.Server.Addr, 5*time.Second)
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer conn.Close()
+			require.Eventually(t, func() bool {
+				req := httptest.NewRequest("GET", "https://localhost:3005/test", nil)
+				w := httptest.NewRecorder()
+				s.Mux.ServeHTTP(w, req)
 
-			client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
-			req, err := http.NewRequest("GET", fmt.Sprintf("https://%s/test", s.Server.Addr), nil)
-			if err != nil {
-				t.Fatal(err)
-			}
-			req.Header.Set("Accept", "text/plain")
-
-			resp, err := client.Do(req)
-			if err != nil {
-				t.Fatal(err)
-			}
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				t.Fatal(err)
-			}
-			require.Equal(t, []byte("OK"), body)
+				return w.Body.String() == `OK`
+			}, 5*time.Second, 500*time.Millisecond)
 		})
 	}
 }

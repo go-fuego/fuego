@@ -74,7 +74,7 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 	for _, o := range options {
 		o(&route.BaseRoute)
 	}
-	route.Handler = controller
+
 	route.Path = s.basePath + route.Path
 
 	fullPath := route.Path
@@ -84,11 +84,7 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 	slog.Debug("registering controller " + fullPath)
 
 	route.Middlewares = append(s.middlewares, route.Middlewares...)
-	s.Mux.Handle(fullPath, withMiddlewares(route.Handler, route.Middlewares...))
-
-	if s.DisableOpenapi || route.Hidden || route.Method == "" {
-		return &route
-	}
+	s.Mux.Handle(fullPath, withMiddlewares(controller, route.Middlewares...))
 
 	err := route.RegisterOpenAPIOperation(s.OpenAPI)
 	if err != nil {
@@ -148,7 +144,7 @@ func registerFuegoController[T, B any](s *Server, method, path string, controlle
 	acceptHeaderParameter.Schema = openapi3.NewStringSchema().NewRef()
 	route.Operation.AddParameter(acceptHeaderParameter)
 
-	return Register(s, route, HTTPHandler(s, controller, &route.BaseRoute))
+	return Register(s, route, HTTPHandler(s, controller, route.BaseRoute))
 }
 
 func registerStdController(s *Server, method, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
@@ -212,7 +208,7 @@ func DefaultDescription[T any](handler string, middlewares []T) string {
 			description += "\n- `" + FuncName(fn) + "`"
 
 			if i == 4 {
-				description += "\n- more middleware..."
+				description += "\n- more middleware…"
 				break
 			}
 		}

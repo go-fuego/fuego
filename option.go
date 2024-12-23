@@ -293,7 +293,7 @@ func OptionOperationID(operationID string) func(*BaseRoute) {
 	}
 }
 
-// Deprecated marks the route as deprecated.
+// OptionDeprecated marks the route as deprecated.
 func OptionDeprecated() func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		r.Operation.Deprecated = true
@@ -368,6 +368,13 @@ func OptionRequestContentType(consumes ...string) func(*BaseRoute) {
 func OptionHide() func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		r.Hidden = true
+	}
+}
+
+// Show shows the route from the OpenAPI spec.
+func OptionShow() func(*BaseRoute) {
+	return func(r *BaseRoute) {
+		r.Hidden = false
 	}
 }
 

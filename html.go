@@ -49,7 +49,7 @@ type Renderer interface {
 type Gomponent = Renderer
 
 // HTML is a marker type used to differentiate between a string response and an HTML response.
-// To use templating, use [Ctx.Render].
+// To use templating, use [Context.Render].
 type HTML string
 
 // H is a shortcut for map[string]any
