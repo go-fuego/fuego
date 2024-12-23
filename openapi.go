@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -112,29 +111,8 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 		Description: "local server",
 	})
 
-	s.OpenAPI.computeTags()
-
-	// Validate
-	err := s.OpenAPI.Description().Validate(context.Background())
-	if err != nil {
-		slog.Error("Error validating spec", "error", err)
-	}
-
-	// Marshal spec to JSON
-	jsonSpec, err := s.marshalSpec()
-	if err != nil {
-		slog.Error("Error marshaling spec to JSON", "error", err)
-	}
-
 	if !s.OpenAPIConfig.DisableSwagger {
-		s.registerOpenAPIRoutes(jsonSpec)
-	}
-
-	if !s.OpenAPIConfig.DisableLocalSave {
-		err := s.saveOpenAPIToFile(s.OpenAPIConfig.JsonFilePath, jsonSpec)
-		if err != nil {
-			slog.Error("Error saving spec to local path", "error", err, "path", s.OpenAPIConfig.JsonFilePath)
-		}
+		s.registerOpenAPIRoutes(s.Engine.OutputOpenAPISpec())
 	}
 
 	return *s.OpenAPI.Description()
@@ -186,12 +164,6 @@ func (s *Server) registerOpenAPIRoutes(jsonSpec []byte) {
 			},
 		}, s.OpenAPIConfig.UIHandler(s.OpenAPIConfig.JsonUrl))
 		s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s%s/index.html", s.url(), s.OpenAPIConfig.SwaggerUrl))
-	}
-}
-
-func (s *Server) printOpenAPIMessage(msg string) {
-	if !s.disableStartupMessages {
-		slog.Info(msg)
 	}
 }
 
