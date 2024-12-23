@@ -77,7 +77,7 @@ type Server struct {
 
 	OpenAPIConfig OpenAPIConfig
 
-	LoggingConfig LoggingConfig
+	loggingConfig loggingConfig
 
 	isTLS bool
 }
@@ -107,7 +107,7 @@ func NewServer(options ...func(*Server)) *Server {
 
 		Security: NewSecurity(),
 
-		LoggingConfig: LoggingConfig{
+		loggingConfig: loggingConfig{
 			Enabled: true,
 		},
 	}
@@ -150,7 +150,7 @@ func NewServer(options ...func(*Server)) *Server {
 		)
 	}
 
-	if s.LoggingConfig.Enabled {
+	if s.loggingConfig.Enabled {
 		s.middlewares = append(s.middlewares, defaultLoggingMiddleware(s))
 	}
 
@@ -436,30 +436,30 @@ func WithRouteOptions(options ...func(*BaseRoute)) func(*Server) {
 
 func WithoutLogging() func(*Server) {
 	return func(s *Server) {
-		s.LoggingConfig.Enabled = false
+		s.loggingConfig.Enabled = false
 	}
 }
 
 func WithoutRequestLogging() func(*Server) {
 	return func(s *Server) {
-		s.LoggingConfig.DisableRequest = true
+		s.loggingConfig.DisableRequest = true
 	}
 }
 
 func WithoutResponseLogging() func(*Server) {
 	return func(s *Server) {
-		s.LoggingConfig.DisableResponse = true
+		s.loggingConfig.DisableResponse = true
 	}
 }
 
 func WithCustomReqLogging(logger func(w http.ResponseWriter, r *http.Request)) func(*Server) {
 	return func(s *Server) {
-		s.LoggingConfig.RequestLogger = logger
+		s.loggingConfig.RequestLogger = logger
 	}
 }
 
 func WithCustomResLogging(logger func(w http.ResponseWriter, r *http.Request)) func(*Server) {
 	return func(s *Server) {
-		s.LoggingConfig.ResponseLogger = logger
+		s.loggingConfig.ResponseLogger = logger
 	}
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-type LoggingConfig struct {
+type loggingConfig struct {
 	Enabled         bool
 	DisableRequest  bool
 	DisableResponse bool
@@ -17,15 +17,15 @@ type LoggingConfig struct {
 func defaultLoggingMiddleware(s *Server) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if !s.LoggingConfig.Enabled {
+			if !s.loggingConfig.Enabled {
 				next.ServeHTTP(w, r)
 				return
 			}
 
 			// Placeholders (will flesh this out later)
-			if !s.LoggingConfig.DisableRequest {
-				if s.LoggingConfig.RequestLogger != nil {
-					s.LoggingConfig.RequestLogger(w, r)
+			if !s.loggingConfig.DisableRequest {
+				if s.loggingConfig.RequestLogger != nil {
+					s.loggingConfig.RequestLogger(w, r)
 				} else {
 					slog.Info("<- request")
 				}
@@ -33,9 +33,9 @@ func defaultLoggingMiddleware(s *Server) func(http.Handler) http.Handler {
 
 			next.ServeHTTP(w, r)
 
-			if !s.LoggingConfig.DisableResponse {
-				if s.LoggingConfig.ResponseLogger != nil {
-					s.LoggingConfig.ResponseLogger(w, r)
+			if !s.loggingConfig.DisableResponse {
+				if s.loggingConfig.ResponseLogger != nil {
+					s.loggingConfig.ResponseLogger(w, r)
 				} else {
 					slog.Info("response ->")
 				}
