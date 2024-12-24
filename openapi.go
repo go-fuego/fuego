@@ -142,7 +142,7 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 
 func (s *Server) marshalSpec() ([]byte, error) {
 	if s.OpenAPIConfig.PrettyFormatJson {
-		return json.MarshalIndent(s.OpenAPI.Description(), "", "	")
+		return json.MarshalIndent(s.OpenAPI.Description(), "", "\t")
 	}
 	return json.Marshal(s.OpenAPI.Description())
 }
