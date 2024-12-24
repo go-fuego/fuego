@@ -148,7 +148,7 @@ func NewServer(options ...func(*Server)) *Server {
 		)
 	}
 
-	if !s.loggingConfig.Disabled {
+	if !s.loggingConfig.Disabled() {
 		s.middlewares = append(s.middlewares, defaultLoggingMiddleware(s))
 	}
 
@@ -434,11 +434,6 @@ func WithRouteOptions(options ...func(*BaseRoute)) func(*Server) {
 
 func WithLoggingConfig(loggingConfig LoggingConfig) func(*Server) {
 	return func(s *Server) {
-		if loggingConfig.Disabled {
-			s.loggingConfig.Disabled = true
-			return
-		}
-
 		if loggingConfig.RequestLogger != nil {
 			s.loggingConfig.RequestLogger = loggingConfig.RequestLogger
 		}

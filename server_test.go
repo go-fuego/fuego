@@ -630,7 +630,8 @@ func TestDefaultMiddlewareLogging(t *testing.T) {
 		s := NewServer(
 			WithLogHandler(logger),
 			WithLoggingConfig(LoggingConfig{
-				Disabled: true,
+				DisableRequest:  true,
+				DisableResponse: true,
 			}),
 		)
 		Get(s, "/test", handler)
@@ -682,7 +683,7 @@ func TestDefaultMiddlewareLogging(t *testing.T) {
 		require.NotContains(t, logs, "response ->")
 	})
 
-	t.Run("custom request logging impl", func(t *testing.T) {
+	t.Run("custom request logging with disabled response logging", func(t *testing.T) {
 		buf.Reset()
 
 		s := NewServer(

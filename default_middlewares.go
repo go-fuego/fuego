@@ -6,7 +6,6 @@ import (
 )
 
 type LoggingConfig struct {
-	Disabled        bool
 	DisableRequest  bool
 	DisableResponse bool
 
@@ -14,10 +13,13 @@ type LoggingConfig struct {
 	ResponseLogger func(w http.ResponseWriter, r *http.Request)
 }
 
+func (l *LoggingConfig) Disabled() bool {
+	return l.DisableRequest && l.DisableResponse
+}
+
 var defaultLoggingConfig = LoggingConfig{
-	Disabled:       false,
-	RequestLogger:  defaultRequestLog,
-	ResponseLogger: defaultResponseLog,
+	RequestLogger:  logRequest,
+	ResponseLogger: logResponse,
 }
 
 func defaultLoggingMiddleware(s *Server) func(http.Handler) http.Handler {
@@ -36,9 +38,10 @@ func defaultLoggingMiddleware(s *Server) func(http.Handler) http.Handler {
 	}
 }
 
-func defaultRequestLog(w http.ResponseWriter, r *http.Request) {
+func logRequest(w http.ResponseWriter, r *http.Request) {
 	slog.Info("<- request")
 }
-func defaultResponseLog(w http.ResponseWriter, r *http.Request) {
+
+func logResponse(w http.ResponseWriter, r *http.Request) {
 	slog.Info("response ->")
 }
