@@ -30,7 +30,13 @@ type Engine struct {
 	acceptedContentTypes []string
 }
 
-type EngineOpenAPIConfig struct {
+var defaultOpenAPIConfig = OpenAPIConfig{
+	JSONFilePath: "doc/openapi.json",
+}
+
+type OpenAPIConfig struct {
+	// If true, the server will not serve or generate and OpenAPI resources
+	Disabled bool
 	// If true, the engine will not print messages
 	DisableMessages bool
 	// If true, the engine will not save the OpenAPI JSON spec locally
@@ -43,36 +49,13 @@ type EngineOpenAPIConfig struct {
 
 func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 	return func(e *Engine) {
-		if config.JsonURL != "" {
-			e.OpenAPIConfig.JsonURL = config.JsonURL
-		}
-
-		if config.SwaggerURL != "" {
-			e.OpenAPIConfig.SwaggerURL = config.SwaggerURL
-		}
-
 		if config.JSONFilePath != "" {
 			e.OpenAPIConfig.JSONFilePath = config.JSONFilePath
 		}
 
-		if config.UIHandler != nil {
-			e.OpenAPIConfig.UIHandler = config.UIHandler
-		}
-
-		e.OpenAPIConfig.DisableSwagger = config.DisableSwagger
-		e.OpenAPIConfig.DisableSwaggerUI = config.DisableSwaggerUI
+		e.OpenAPIConfig.Disabled = config.Disabled
 		e.OpenAPIConfig.DisableLocalSave = config.DisableLocalSave
 		e.OpenAPIConfig.PrettyFormatJSON = config.PrettyFormatJSON
-
-		if !validateJsonSpecUrl(e.OpenAPIConfig.JsonURL) {
-			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIConfig.JsonSpecUrl' option is not valid", "url", e.OpenAPIConfig.JsonURL)
-			return
-		}
-
-		if !validateSwaggerUrl(e.OpenAPIConfig.SwaggerURL) {
-			slog.Error("Error serving swagger ui. Value of 's.OpenAPIConfig.SwaggerUrl' option is not valid", "url", e.OpenAPIConfig.SwaggerURL)
-			return
-		}
 	}
 }
 

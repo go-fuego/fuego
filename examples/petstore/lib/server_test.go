@@ -14,14 +14,12 @@ import (
 func TestPetstoreOpenAPIGeneration(t *testing.T) {
 	server := NewPetStoreServer(
 		fuego.WithoutStartupMessages(),
-		fuego.WithEngineOptions(
-			fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
-				EngineOpenAPIConfig: fuego.EngineOpenAPIConfig{
-					JSONFilePath:     "testdata/doc/openapi.json",
-					PrettyFormatJSON: true,
-				},
-			}),
-		),
+		fuego.WithEngine(fuego.NewEngine(fuego.WithOpenAPIConfig(
+			fuego.OpenAPIConfig{
+				JSONFilePath:     "testdata/doc/openapi.json",
+				PrettyFormatJSON: true,
+			},
+		))),
 	)
 
 	server.OutputOpenAPISpec()

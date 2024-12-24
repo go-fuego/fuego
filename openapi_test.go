@@ -245,15 +245,13 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 	docPath := "doc/openapi.json"
 	t.Run("base", func(t *testing.T) {
 		s := NewServer(
-			WithEngineOptions(
+			WithEngine(NewEngine(
 				WithOpenAPIConfig(
 					OpenAPIConfig{
-						EngineOpenAPIConfig: EngineOpenAPIConfig{
-							JSONFilePath: docPath,
-						},
+						JSONFilePath: docPath,
 					},
 				),
-			),
+			)),
 		)
 		Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 			return MyStruct{}, nil
@@ -270,16 +268,14 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 	})
 	t.Run("do not print file", func(t *testing.T) {
 		s := NewServer(
-			WithEngineOptions(
+			WithEngine(NewEngine(
 				WithOpenAPIConfig(
 					OpenAPIConfig{
-						EngineOpenAPIConfig: EngineOpenAPIConfig{
-							JSONFilePath:     docPath,
-							DisableLocalSave: true,
-						},
+						JSONFilePath:     docPath,
+						DisableLocalSave: true,
 					},
 				),
-			),
+			)),
 		)
 		Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 			return MyStruct{}, nil
@@ -294,17 +290,15 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 	})
 	t.Run("swagger disabled", func(t *testing.T) {
 		s := NewServer(
-			WithEngineOptions(
+			WithEngine(NewEngine(
 				WithOpenAPIConfig(
 					OpenAPIConfig{
-						EngineOpenAPIConfig: EngineOpenAPIConfig{
-							JSONFilePath:     docPath,
-							DisableLocalSave: true,
-						},
-						DisableSwagger: true,
+						JSONFilePath:     docPath,
+						DisableLocalSave: true,
+						Disabled:         true,
 					},
 				),
-			),
+			)),
 		)
 		Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 			return MyStruct{}, nil
@@ -320,16 +314,14 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 	})
 	t.Run("pretty format json file", func(t *testing.T) {
 		s := NewServer(
-			WithEngineOptions(
+			WithEngine(NewEngine(
 				WithOpenAPIConfig(
 					OpenAPIConfig{
-						EngineOpenAPIConfig: EngineOpenAPIConfig{
-							JSONFilePath:     docPath,
-							PrettyFormatJSON: true,
-						},
+						JSONFilePath:     docPath,
+						PrettyFormatJSON: true,
 					},
 				),
-			),
+			)),
 		)
 		Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 			return MyStruct{}, nil
@@ -441,13 +433,15 @@ func TestLocalSave(t *testing.T) {
 
 func TestAutoGroupTags(t *testing.T) {
 	s := NewServer(
-		WithEngineOptions(
-			WithOpenAPIConfig(OpenAPIConfig{
-				EngineOpenAPIConfig: EngineOpenAPIConfig{
-					DisableLocalSave: true,
-				},
-				DisableSwagger: true,
-			}),
+		WithEngine(
+			NewEngine(
+				WithOpenAPIConfig(
+					OpenAPIConfig{
+						DisableLocalSave: true,
+						Disabled:         true,
+					},
+				),
+			),
 		),
 	)
 	Get(s, "/a", func(ContextNoBody) (MyStruct, error) {

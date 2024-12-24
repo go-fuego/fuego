@@ -23,7 +23,7 @@ func TestUIHandler(t *testing.T) {
 
 		s.OutputOpenAPISpec()
 
-		require.NotNil(t, s.OpenAPIConfig.UIHandler)
+		require.NotNil(t, s.OpenAPIServerConfig.UIHandler)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/swagger/index.html", nil)
@@ -37,17 +37,15 @@ func TestUIHandler(t *testing.T) {
 
 	t.Run("wrap DefaultOpenAPIHandler behind a middleware", func(t *testing.T) {
 		s := NewServer(
-			WithEngineOptions(
-				WithOpenAPIConfig(OpenAPIConfig{
-					UIHandler: func(specURL string) http.Handler {
-						return dummyMiddleware(DefaultOpenAPIHandler(specURL))
-					},
-				}),
-			),
+			WithOpenAPIServerConfig(OpenAPIServerConfig{
+				UIHandler: func(specURL string) http.Handler {
+					return dummyMiddleware(DefaultOpenAPIHandler(specURL))
+				},
+			}),
 		)
 		s.OutputOpenAPISpec()
 
-		require.NotNil(t, s.OpenAPIConfig.UIHandler)
+		require.NotNil(t, s.OpenAPIServerConfig.UIHandler)
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/swagger/index.html", nil)
@@ -61,11 +59,9 @@ func TestUIHandler(t *testing.T) {
 
 	t.Run("disabling UI", func(t *testing.T) {
 		s := NewServer(
-			WithEngineOptions(
-				WithOpenAPIConfig(OpenAPIConfig{
-					DisableSwaggerUI: true,
-				}),
-			),
+			WithOpenAPIServerConfig(OpenAPIServerConfig{
+				DisableSwaggerUI: true,
+			}),
 		)
 
 		s.OutputOpenAPISpec()

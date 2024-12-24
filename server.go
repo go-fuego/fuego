@@ -14,10 +14,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type OpenAPIConfig struct {
-	EngineOpenAPIConfig
-	// If true, the server will not serve the Swagger UI nor the OpenAPI JSON spec
-	DisableSwagger bool
+type OpenAPIServerConfig struct {
 	// If true, the server will not serve the Swagger UI
 	DisableSwaggerUI bool
 	// URL to serve the swagger UI
@@ -28,13 +25,10 @@ type OpenAPIConfig struct {
 	JsonURL string
 }
 
-var defaultOpenAPIConfig = OpenAPIConfig{
+var defaultOpenAPIServerConfig = OpenAPIServerConfig{
 	SwaggerURL: "/swagger",
 	JsonURL:    "/swagger/openapi.json",
 	UIHandler:  DefaultOpenAPIHandler,
-	EngineOpenAPIConfig: EngineOpenAPIConfig{
-		JSONFilePath: "doc/openapi.json",
-	},
 }
 
 type Server struct {
@@ -80,6 +74,8 @@ type Server struct {
 
 	startTime time.Time
 
+	OpenAPIServerConfig OpenAPIServerConfig
+
 	isTLS bool
 }
 
@@ -103,6 +99,8 @@ func NewServer(options ...func(*Server)) *Server {
 		},
 		Mux:    http.NewServeMux(),
 		Engine: NewEngine(),
+
+		OpenAPIServerConfig: defaultOpenAPIServerConfig,
 
 		Security: NewSecurity(),
 	}
@@ -354,7 +352,7 @@ func WithErrorHandler(errorHandler func(err error) error) func(*Server) {
 func WithoutStartupMessages() func(*Server) {
 	return func(c *Server) {
 		c.disableStartupMessages = true
-		c.OpenAPIConfig.DisableMessages = true
+		c.Engine.OpenAPIConfig.DisableMessages = true
 	}
 }
 
@@ -365,12 +363,34 @@ func WithoutLogger() func(*Server) {
 	}
 }
 
-func WithEngineOptions(options ...func(*Engine)) func(*Server) {
+func WithOpenAPIServerConfig(config OpenAPIServerConfig) func(*Server) {
 	return func(s *Server) {
-		for _, option := range options {
-			option(s.Engine)
+		if config.JsonURL != "" {
+			s.OpenAPIServerConfig.JsonURL = config.JsonURL
+		}
+		if config.SwaggerURL != "" {
+			s.OpenAPIServerConfig.SwaggerURL = config.SwaggerURL
+		}
+		if config.UIHandler != nil {
+			s.OpenAPIServerConfig.UIHandler = config.UIHandler
+		}
+
+		s.OpenAPIServerConfig.DisableSwaggerUI = config.DisableSwaggerUI
+
+		if !validateJsonSpecUrl(s.OpenAPIServerConfig.JsonURL) {
+			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIServerConfig.JsonSpecUrl' option is not valid", "url", s.OpenAPIServerConfig.JsonURL)
+			return
+		}
+
+		if !validateSwaggerUrl(s.OpenAPIServerConfig.SwaggerURL) {
+			slog.Error("Error serving swagger ui. Value of 's.OpenAPIServerConfig.SwaggerUrl' option is not valid", "url", s.OpenAPIServerConfig.SwaggerURL)
+			return
 		}
 	}
+}
+
+func WithEngine(engine *Engine) func(*Server) {
+	return func(c *Server) { c.Engine = engine }
 }
 
 // WithValidator sets the validator to be used by the fuego server.
