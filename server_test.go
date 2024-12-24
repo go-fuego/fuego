@@ -629,7 +629,9 @@ func TestDefaultMiddlewareLogging(t *testing.T) {
 
 		s := NewServer(
 			WithLogHandler(logger),
-			WithoutLogging(),
+			WithLoggingConfig(LoggingConfig{
+				Disabled: true,
+			}),
 		)
 		Get(s, "/test", handler)
 
@@ -645,7 +647,9 @@ func TestDefaultMiddlewareLogging(t *testing.T) {
 
 		s := NewServer(
 			WithLogHandler(logger),
-			WithoutRequestLogging(),
+			WithLoggingConfig(LoggingConfig{
+				DisableRequest: true,
+			}),
 		)
 		Get(s, "/test", handler)
 
@@ -663,7 +667,9 @@ func TestDefaultMiddlewareLogging(t *testing.T) {
 
 		s := NewServer(
 			WithLogHandler(logger),
-			WithoutResponseLogging(),
+			WithLoggingConfig(LoggingConfig{
+				DisableResponse: true,
+			}),
 		)
 		Get(s, "/test", handler)
 
@@ -681,8 +687,11 @@ func TestDefaultMiddlewareLogging(t *testing.T) {
 
 		s := NewServer(
 			WithLogHandler(logger),
-			WithCustomReqLogging(func(w http.ResponseWriter, r *http.Request) {
-				slog.Info("custom request log")
+			WithLoggingConfig(LoggingConfig{
+				RequestLogger: func(w http.ResponseWriter, r *http.Request) {
+					slog.Info("custom request log")
+				},
+				DisableResponse: true,
 			}),
 		)
 		Get(s, "/test", handler)
@@ -693,6 +702,6 @@ func TestDefaultMiddlewareLogging(t *testing.T) {
 
 		logs := buf.String()
 		require.Contains(t, logs, "custom request log")
-		require.Contains(t, logs, "response ->")
+		require.NotContains(t, logs, "response ->")
 	})
 }

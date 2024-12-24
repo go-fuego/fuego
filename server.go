@@ -77,7 +77,7 @@ type Server struct {
 
 	OpenAPIConfig OpenAPIConfig
 
-	loggingConfig loggingConfig
+	loggingConfig LoggingConfig
 
 	isTLS bool
 }
@@ -107,15 +107,7 @@ func NewServer(options ...func(*Server)) *Server {
 
 		Security: NewSecurity(),
 
-		loggingConfig: loggingConfig{
-			Enabled: true,
-			RequestLogger: func(w http.ResponseWriter, r *http.Request) {
-				defaultRequestLog(w, r)
-			},
-			ResponseLogger: func(w http.ResponseWriter, r *http.Request) {
-				defaultResponseLog(w, r)
-			},
-		},
+		loggingConfig: defaultLoggingConfig,
 	}
 
 	// Default options that can be overridden
@@ -156,7 +148,7 @@ func NewServer(options ...func(*Server)) *Server {
 		)
 	}
 
-	if s.loggingConfig.Enabled {
+	if !s.loggingConfig.Disabled {
 		s.middlewares = append(s.middlewares, defaultLoggingMiddleware(s))
 	}
 
@@ -440,32 +432,22 @@ func WithRouteOptions(options ...func(*BaseRoute)) func(*Server) {
 	}
 }
 
-func WithoutLogging() func(*Server) {
+func WithLoggingConfig(loggingConfig LoggingConfig) func(*Server) {
 	return func(s *Server) {
-		s.loggingConfig.Enabled = false
-	}
-}
+		if loggingConfig.Disabled {
+			s.loggingConfig.Disabled = true
+			return
+		}
 
-func WithoutRequestLogging() func(*Server) {
-	return func(s *Server) {
-		s.loggingConfig.DisableRequest = true
-	}
-}
+		if loggingConfig.RequestLogger != nil {
+			s.loggingConfig.RequestLogger = loggingConfig.RequestLogger
+		}
 
-func WithoutResponseLogging() func(*Server) {
-	return func(s *Server) {
-		s.loggingConfig.DisableResponse = true
-	}
-}
+		if loggingConfig.ResponseLogger != nil {
+			s.loggingConfig.ResponseLogger = loggingConfig.ResponseLogger
+		}
 
-func WithCustomReqLogging(logger func(w http.ResponseWriter, r *http.Request)) func(*Server) {
-	return func(s *Server) {
-		s.loggingConfig.RequestLogger = logger
-	}
-}
-
-func WithCustomResLogging(logger func(w http.ResponseWriter, r *http.Request)) func(*Server) {
-	return func(s *Server) {
-		s.loggingConfig.ResponseLogger = logger
+		s.loggingConfig.DisableRequest = loggingConfig.DisableRequest
+		s.loggingConfig.DisableResponse = loggingConfig.DisableResponse
 	}
 }

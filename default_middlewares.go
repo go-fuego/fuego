@@ -5,13 +5,19 @@ import (
 	"net/http"
 )
 
-type loggingConfig struct {
-	Enabled         bool
+type LoggingConfig struct {
+	Disabled        bool
 	DisableRequest  bool
 	DisableResponse bool
 
 	RequestLogger  func(w http.ResponseWriter, r *http.Request)
 	ResponseLogger func(w http.ResponseWriter, r *http.Request)
+}
+
+var defaultLoggingConfig = LoggingConfig{
+	Disabled:       false,
+	RequestLogger:  defaultRequestLog,
+	ResponseLogger: defaultResponseLog,
 }
 
 func defaultLoggingMiddleware(s *Server) func(http.Handler) http.Handler {
