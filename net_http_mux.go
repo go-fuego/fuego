@@ -69,7 +69,9 @@ func Patch[T, B any](s *Server, path string, controller func(ContextWithBody[B])
 	return registerFuegoController(s, http.MethodPatch, path, controller, options...)
 }
 
-// Register registers a controller into the default mux and documents it in the OpenAPI spec.
+// Register registers a controller into the default net/http mux.
+//
+// Deprecated: Used internally. Please satisfy the [Registerer] interface instead and pass to [Registers].
 func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, options ...func(*BaseRoute)) *Route[T, B] {
 	for _, o := range options {
 		o(&route.BaseRoute)
@@ -85,11 +87,6 @@ func Register[T, B any](s *Server, route Route[T, B], controller http.Handler, o
 
 	route.Middlewares = append(s.middlewares, route.Middlewares...)
 	s.Mux.Handle(fullPath, withMiddlewares(controller, route.Middlewares...))
-
-	err := route.RegisterOpenAPIOperation(s.OpenAPI)
-	if err != nil {
-		slog.Warn("error documenting openapi operation", "error", err)
-	}
 
 	return &route
 }
@@ -144,13 +141,21 @@ func registerFuegoController[T, B any](s *Server, method, path string, controlle
 	acceptHeaderParameter.Schema = openapi3.NewStringSchema().NewRef()
 	route.Operation.AddParameter(acceptHeaderParameter)
 
-	return Register(s, route, HTTPHandler(s, controller, route.BaseRoute))
+	return Registers(s.Engine, netHttpRouteRegisterer[T, B]{
+		s:          s,
+		route:      route,
+		controller: HTTPHandler(s, controller, route.BaseRoute),
+	})
 }
 
 func registerStdController(s *Server, method, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
 	route := NewRoute[any, any](method, path, controller, s.OpenAPI, append(s.routeOptions, options...)...)
 
-	return Register(s, route, http.HandlerFunc(controller))
+	return Registers(s.Engine, netHttpRouteRegisterer[any, any]{
+		s:          s,
+		route:      route,
+		controller: http.HandlerFunc(controller),
+	})
 }
 
 func withMiddlewares(controller http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
@@ -215,4 +220,16 @@ func DefaultDescription[T any](handler string, middlewares []T) string {
 	}
 
 	return description + "\n\n---\n\n"
+}
+
+type netHttpRouteRegisterer[T, B any] struct {
+	s          *Server
+	controller http.Handler
+	route      Route[T, B]
+}
+
+var _ Registerer[string, any] = netHttpRouteRegisterer[string, any]{}
+
+func (a netHttpRouteRegisterer[T, B]) Register() Route[T, B] {
+	return *Register(a.s, a.route, a.controller)
 }
