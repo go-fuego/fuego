@@ -4,8 +4,8 @@ github.com/gabriel-vasile/mimetype v1.4.7 h1:SKFKl7kD0RiPdbht0s7hFtjl489WcQ1VyPW
 github.com/gabriel-vasile/mimetype v1.4.7/go.mod h1:GDlAgAyIRT27BhFl53XNAFtfjzOkLaF35JdEG0P7LtU=
 github.com/getkin/kin-openapi v0.128.0 h1:jqq3D9vC9pPq1dGcOCv7yOp1DaEe7c/T1vzcLbITSp4=
 github.com/getkin/kin-openapi v0.128.0/go.mod h1:OZrfXzUfGrNbsKj+xmFBx6E5c6yH3At/tAKSc2UszXM=
-github.com/go-fuego/fuego v0.16.2 h1:xEMJBbGEo/8324NTHbT4peLiM1g2dpYAiG08z/d0+dU=
-github.com/go-fuego/fuego v0.16.2/go.mod h1:V4DCdygAVcKYKUyeizhb1J83azstmaCJWDSJNMzeTDE=
+github.com/go-fuego/fuego v0.17.0 h1:UBR0ib0Qq0XkGX8J3OTIwrlvHDGmysBVG3NHowA6UCQ=
+github.com/go-fuego/fuego v0.17.0/go.mod h1:glaJIBAO3AaZx+c4jGYW4pHyhQkeMGuHx8qLchGAH8M=
 github.com/go-openapi/jsonpointer v0.21.0 h1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=
 github.com/go-openapi/jsonpointer v0.21.0/go.mod h1:IUyH9l/+uyhIYQ/PXVA41Rexl+kOkAPDdXEYns6fzUY=
 github.com/go-openapi/swag v0.23.0 h1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=

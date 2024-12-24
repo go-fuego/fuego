@@ -3,7 +3,7 @@ module github.com/go-fuego/fuego/middleware/basicauth
 go 1.23.3
 
 require (
-	github.com/go-fuego/fuego v0.16.2
+	github.com/go-fuego/fuego v0.17.0
 	github.com/stretchr/testify v1.10.0
 )
 
