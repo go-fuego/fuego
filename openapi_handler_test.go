@@ -37,11 +37,13 @@ func TestUIHandler(t *testing.T) {
 
 	t.Run("wrap DefaultOpenAPIHandler behind a middleware", func(t *testing.T) {
 		s := NewServer(
-			WithOpenAPIConfig(OpenAPIConfig{
-				UIHandler: func(specURL string) http.Handler {
-					return dummyMiddleware(DefaultOpenAPIHandler(specURL))
-				},
-			}),
+			WithEngineOptions(
+				WithOpenAPIConfig(OpenAPIConfig{
+					UIHandler: func(specURL string) http.Handler {
+						return dummyMiddleware(DefaultOpenAPIHandler(specURL))
+					},
+				}),
+			),
 		)
 		s.OutputOpenAPISpec()
 
@@ -59,9 +61,11 @@ func TestUIHandler(t *testing.T) {
 
 	t.Run("disabling UI", func(t *testing.T) {
 		s := NewServer(
-			WithOpenAPIConfig(OpenAPIConfig{
-				DisableSwaggerUI: true,
-			}),
+			WithEngineOptions(
+				WithOpenAPIConfig(OpenAPIConfig{
+					DisableSwaggerUI: true,
+				}),
+			),
 		)
 
 		s.OutputOpenAPISpec()
