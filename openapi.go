@@ -1,13 +1,9 @@
 package fuego
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
-	"path/filepath"
 	"reflect"
 	"regexp"
 	"slices"
@@ -116,36 +112,6 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 	}
 
 	return *s.OpenAPI.Description()
-}
-
-func (s *Server) marshalSpec() ([]byte, error) {
-	if s.OpenAPIConfig.PrettyFormatJson {
-		return json.MarshalIndent(s.OpenAPI.Description(), "", "\t")
-	}
-	return json.Marshal(s.OpenAPI.Description())
-}
-
-func (s *Server) saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) error {
-	jsonFolder := filepath.Dir(jsonSpecLocalPath)
-
-	err := os.MkdirAll(jsonFolder, 0o750)
-	if err != nil {
-		return errors.New("error creating docs directory")
-	}
-
-	f, err := os.Create(jsonSpecLocalPath) // #nosec G304 (file path provided by developer, not by user)
-	if err != nil {
-		return errors.New("error creating file")
-	}
-	defer f.Close()
-
-	_, err = f.Write(jsonSpec)
-	if err != nil {
-		return errors.New("error writing file ")
-	}
-
-	s.printOpenAPIMessage("JSON file: " + jsonSpecLocalPath)
-	return nil
 }
 
 // Registers the routes to serve the OpenAPI spec and Swagger UI.
