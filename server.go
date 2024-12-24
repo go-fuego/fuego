@@ -21,19 +21,19 @@ type OpenAPIConfig struct {
 	// If true, the server will not serve the Swagger UI
 	DisableSwaggerUI bool
 	// URL to serve the swagger UI
-	SwaggerUrl string
+	SwaggerURL string
 	// Handler to serve the OpenAPI UI from spec URL
 	UIHandler func(specURL string) http.Handler
 	// URL to serve the OpenAPI JSON spec
-	JsonUrl string
+	JsonURL string
 }
 
 var defaultOpenAPIConfig = OpenAPIConfig{
-	SwaggerUrl: "/swagger",
-	JsonUrl:    "/swagger/openapi.json",
+	SwaggerURL: "/swagger",
+	JsonURL:    "/swagger/openapi.json",
 	UIHandler:  DefaultOpenAPIHandler,
 	EngineOpenAPIConfig: EngineOpenAPIConfig{
-		JsonFilePath: "doc/openapi.json",
+		JSONFilePath: "doc/openapi.json",
 	},
 }
 
