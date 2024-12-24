@@ -109,6 +109,12 @@ func NewServer(options ...func(*Server)) *Server {
 
 		loggingConfig: loggingConfig{
 			Enabled: true,
+			RequestLogger: func(w http.ResponseWriter, r *http.Request) {
+				defaultRequestLog(w, r)
+			},
+			ResponseLogger: func(w http.ResponseWriter, r *http.Request) {
+				defaultResponseLog(w, r)
+			},
 		},
 	}
 
