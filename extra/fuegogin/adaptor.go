@@ -1,7 +1,6 @@
 package fuegogin
 
 import (
-	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -28,27 +27,36 @@ func Post[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, path string, ha
 
 func handleFuego[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, method, path string, fuegoHandler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	baseRoute := fuego.NewBaseRoute(method, path, fuegoHandler, engine.OpenAPI, options...)
-	return handle(engine, ginRouter, &fuego.Route[T, B]{BaseRoute: baseRoute}, GinHandler(engine, fuegoHandler, baseRoute))
+	return fuego.Registers(engine, ginRouteRegisterer[T, B]{
+		ginRouter:  ginRouter,
+		route:      fuego.Route[T, B]{BaseRoute: baseRoute},
+		ginHandler: GinHandler(engine, fuegoHandler, baseRoute),
+	})
 }
 
 func handleGin(engine *fuego.Engine, ginRouter gin.IRouter, method, path string, ginHandler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
 	baseRoute := fuego.NewBaseRoute(method, path, ginHandler, engine.OpenAPI, options...)
-	return handle(engine, ginRouter, &fuego.Route[any, any]{BaseRoute: baseRoute}, ginHandler)
+	return fuego.Registers(engine, ginRouteRegisterer[any, any]{
+		ginRouter:  ginRouter,
+		route:      fuego.Route[any, any]{BaseRoute: baseRoute},
+		ginHandler: ginHandler,
+	})
 }
 
-func handle[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, route *fuego.Route[T, B], ginHandler gin.HandlerFunc) *fuego.Route[T, B] {
-	if _, ok := ginRouter.(*gin.RouterGroup); ok {
-		route.Path = ginRouter.(*gin.RouterGroup).BasePath() + route.Path
+type ginRouteRegisterer[T, B any] struct {
+	ginRouter  gin.IRouter
+	ginHandler gin.HandlerFunc
+	route      fuego.Route[T, B]
+}
+
+func (a ginRouteRegisterer[T, B]) Register() fuego.Route[T, B] {
+	if _, ok := a.ginRouter.(*gin.RouterGroup); ok {
+		a.route.Path = a.ginRouter.(*gin.RouterGroup).BasePath() + a.route.Path
 	}
 
-	ginRouter.Handle(route.Method, route.Path, ginHandler)
+	a.ginRouter.Handle(a.route.Method, a.route.Path, a.ginHandler)
 
-	err := route.RegisterOpenAPIOperation(engine.OpenAPI)
-	if err != nil {
-		slog.Warn("error documenting openapi operation", "error", err)
-	}
-
-	return route
+	return a.route
 }
 
 // Convert a Fuego handler to a Gin handler.
