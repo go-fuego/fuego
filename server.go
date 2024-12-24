@@ -375,9 +375,11 @@ func WithoutLogger() func(*Server) {
 	}
 }
 
-func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
+func WithEngineOptions(options ...func(*Engine)) func(*Server) {
 	return func(s *Server) {
-		s.Engine.setOpenAPIConfig(openapiConfig)
+		for _, option := range options {
+			option(s.Engine)
+		}
 	}
 }
 
