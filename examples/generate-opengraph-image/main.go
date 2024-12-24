@@ -24,7 +24,7 @@ func main() {
 		fuego.WithEngineOptions(
 			fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
 				EngineOpenAPIConfig: fuego.EngineOpenAPIConfig{
-					PrettyFormatJson: true,
+					PrettyFormatJSON: true,
 				},
 			}),
 		),

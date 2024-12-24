@@ -36,23 +36,23 @@ type EngineOpenAPIConfig struct {
 	// If true, the engine will not save the OpenAPI JSON spec locally
 	DisableLocalSave bool
 	// Local path to save the OpenAPI JSON spec
-	JsonFilePath string
+	JSONFilePath string
 	// Pretty prints the OpenAPI spec with proper JSON indentation
-	PrettyFormatJson bool
+	PrettyFormatJSON bool
 }
 
 func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 	return func(e *Engine) {
-		if config.JsonUrl != "" {
-			e.OpenAPIConfig.JsonUrl = config.JsonUrl
+		if config.JsonURL != "" {
+			e.OpenAPIConfig.JsonURL = config.JsonURL
 		}
 
-		if config.SwaggerUrl != "" {
-			e.OpenAPIConfig.SwaggerUrl = config.SwaggerUrl
+		if config.SwaggerURL != "" {
+			e.OpenAPIConfig.SwaggerURL = config.SwaggerURL
 		}
 
-		if config.JsonFilePath != "" {
-			e.OpenAPIConfig.JsonFilePath = config.JsonFilePath
+		if config.JSONFilePath != "" {
+			e.OpenAPIConfig.JSONFilePath = config.JSONFilePath
 		}
 
 		if config.UIHandler != nil {
@@ -62,15 +62,15 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 		e.OpenAPIConfig.DisableSwagger = config.DisableSwagger
 		e.OpenAPIConfig.DisableSwaggerUI = config.DisableSwaggerUI
 		e.OpenAPIConfig.DisableLocalSave = config.DisableLocalSave
-		e.OpenAPIConfig.PrettyFormatJson = config.PrettyFormatJson
+		e.OpenAPIConfig.PrettyFormatJSON = config.PrettyFormatJSON
 
-		if !validateJsonSpecUrl(e.OpenAPIConfig.JsonUrl) {
-			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIConfig.JsonSpecUrl' option is not valid", "url", e.OpenAPIConfig.JsonUrl)
+		if !validateJsonSpecUrl(e.OpenAPIConfig.JsonURL) {
+			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIConfig.JsonSpecUrl' option is not valid", "url", e.OpenAPIConfig.JsonURL)
 			return
 		}
 
-		if !validateSwaggerUrl(e.OpenAPIConfig.SwaggerUrl) {
-			slog.Error("Error serving swagger ui. Value of 's.OpenAPIConfig.SwaggerUrl' option is not valid", "url", e.OpenAPIConfig.SwaggerUrl)
+		if !validateSwaggerUrl(e.OpenAPIConfig.SwaggerURL) {
+			slog.Error("Error serving swagger ui. Value of 's.OpenAPIConfig.SwaggerUrl' option is not valid", "url", e.OpenAPIConfig.SwaggerURL)
 			return
 		}
 	}
@@ -93,9 +93,9 @@ func (e *Engine) OutputOpenAPISpec() []byte {
 	}
 
 	if !e.OpenAPIConfig.DisableLocalSave {
-		err := e.saveOpenAPIToFile(e.OpenAPIConfig.JsonFilePath, jsonSpec)
+		err := e.saveOpenAPIToFile(e.OpenAPIConfig.JSONFilePath, jsonSpec)
 		if err != nil {
-			slog.Error("Error saving spec to local path", "error", err, "path", e.OpenAPIConfig.JsonFilePath)
+			slog.Error("Error saving spec to local path", "error", err, "path", e.OpenAPIConfig.JSONFilePath)
 		}
 	}
 	return jsonSpec
@@ -125,7 +125,7 @@ func (e *Engine) saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) er
 }
 
 func (s *Engine) marshalSpec() ([]byte, error) {
-	if s.OpenAPIConfig.PrettyFormatJson {
+	if s.OpenAPIConfig.PrettyFormatJSON {
 		return json.MarshalIndent(s.OpenAPI.Description(), "", "	")
 	}
 	return json.Marshal(s.OpenAPI.Description())

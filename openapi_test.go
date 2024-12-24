@@ -249,7 +249,7 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 				WithOpenAPIConfig(
 					OpenAPIConfig{
 						EngineOpenAPIConfig: EngineOpenAPIConfig{
-							JsonFilePath: docPath,
+							JSONFilePath: docPath,
 						},
 					},
 				),
@@ -274,7 +274,7 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 				WithOpenAPIConfig(
 					OpenAPIConfig{
 						EngineOpenAPIConfig: EngineOpenAPIConfig{
-							JsonFilePath:     docPath,
+							JSONFilePath:     docPath,
 							DisableLocalSave: true,
 						},
 					},
@@ -298,7 +298,7 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 				WithOpenAPIConfig(
 					OpenAPIConfig{
 						EngineOpenAPIConfig: EngineOpenAPIConfig{
-							JsonFilePath:     docPath,
+							JSONFilePath:     docPath,
 							DisableLocalSave: true,
 						},
 						DisableSwagger: true,
@@ -324,8 +324,8 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 				WithOpenAPIConfig(
 					OpenAPIConfig{
 						EngineOpenAPIConfig: EngineOpenAPIConfig{
-							JsonFilePath:     docPath,
-							PrettyFormatJson: true,
+							JSONFilePath:     docPath,
+							PrettyFormatJSON: true,
 						},
 					},
 				),
