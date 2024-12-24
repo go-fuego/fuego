@@ -9,19 +9,16 @@ import (
 	"path/filepath"
 )
 
-func NewEngine(config ...OpenAPIConfig) *Engine {
-	if len(config) > 1 {
-		panic("config should not be more than one")
-	}
-	engine := &Engine{
+func NewEngine(options ...func(*Engine)) *Engine {
+	e := &Engine{
 		OpenAPI:       NewOpenAPI(),
 		OpenAPIConfig: defaultOpenAPIConfig,
 		ErrorHandler:  ErrorHandler,
 	}
-	if len(config) > 0 {
-		engine.setOpenAPIConfig(config[0])
+	for _, option := range options {
+		option(e)
 	}
-	return engine
+	return e
 }
 
 // The Engine is the main struct of the framework.
@@ -42,6 +39,41 @@ type EngineOpenAPIConfig struct {
 	JsonFilePath string
 	// Pretty prints the OpenAPI spec with proper JSON indentation
 	PrettyFormatJson bool
+}
+
+func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
+	return func(e *Engine) {
+		if config.JsonUrl != "" {
+			e.OpenAPIConfig.JsonUrl = config.JsonUrl
+		}
+
+		if config.SwaggerUrl != "" {
+			e.OpenAPIConfig.SwaggerUrl = config.SwaggerUrl
+		}
+
+		if config.JsonFilePath != "" {
+			e.OpenAPIConfig.JsonFilePath = config.JsonFilePath
+		}
+
+		if config.UIHandler != nil {
+			e.OpenAPIConfig.UIHandler = config.UIHandler
+		}
+
+		e.OpenAPIConfig.DisableSwagger = config.DisableSwagger
+		e.OpenAPIConfig.DisableSwaggerUI = config.DisableSwaggerUI
+		e.OpenAPIConfig.DisableLocalSave = config.DisableLocalSave
+		e.OpenAPIConfig.PrettyFormatJson = config.PrettyFormatJson
+
+		if !validateJsonSpecUrl(e.OpenAPIConfig.JsonUrl) {
+			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIConfig.JsonSpecUrl' option is not valid", "url", e.OpenAPIConfig.JsonUrl)
+			return
+		}
+
+		if !validateSwaggerUrl(e.OpenAPIConfig.SwaggerUrl) {
+			slog.Error("Error serving swagger ui. Value of 's.OpenAPIConfig.SwaggerUrl' option is not valid", "url", e.OpenAPIConfig.SwaggerUrl)
+			return
+		}
+	}
 }
 
 // OutputOpenAPISpec takes the OpenAPI spec and outputs it to a JSON file
@@ -97,39 +129,6 @@ func (s *Engine) marshalSpec() ([]byte, error) {
 		return json.MarshalIndent(s.OpenAPI.Description(), "", "	")
 	}
 	return json.Marshal(s.OpenAPI.Description())
-}
-
-func (e *Engine) setOpenAPIConfig(config OpenAPIConfig) {
-	if config.JsonUrl != "" {
-		e.OpenAPIConfig.JsonUrl = config.JsonUrl
-	}
-
-	if config.SwaggerUrl != "" {
-		e.OpenAPIConfig.SwaggerUrl = config.SwaggerUrl
-	}
-
-	if config.JsonFilePath != "" {
-		e.OpenAPIConfig.JsonFilePath = config.JsonFilePath
-	}
-
-	if config.UIHandler != nil {
-		e.OpenAPIConfig.UIHandler = config.UIHandler
-	}
-
-	e.OpenAPIConfig.DisableSwagger = config.DisableSwagger
-	e.OpenAPIConfig.DisableSwaggerUI = config.DisableSwaggerUI
-	e.OpenAPIConfig.DisableLocalSave = config.DisableLocalSave
-	e.OpenAPIConfig.PrettyFormatJson = config.PrettyFormatJson
-
-	if !validateJsonSpecUrl(e.OpenAPIConfig.JsonUrl) {
-		slog.Error("Error serving openapi json spec. Value of 's.OpenAPIConfig.JsonSpecUrl' option is not valid", "url", e.OpenAPIConfig.JsonUrl)
-		return
-	}
-
-	if !validateSwaggerUrl(e.OpenAPIConfig.SwaggerUrl) {
-		slog.Error("Error serving swagger ui. Value of 's.OpenAPIConfig.SwaggerUrl' option is not valid", "url", e.OpenAPIConfig.SwaggerUrl)
-		return
-	}
 }
 
 func (e *Engine) printOpenAPIMessage(msg string) {
