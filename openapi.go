@@ -157,12 +157,16 @@ func (s *Server) registerOpenAPIRoutes(jsonSpec []byte) {
 	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s%s", s.url(), s.OpenAPIConfig.JsonUrl))
 
 	if !s.OpenAPIConfig.DisableSwaggerUI {
-		Register(s, Route[any, any]{
-			BaseRoute: BaseRoute{
-				Method: http.MethodGet,
-				Path:   s.OpenAPIConfig.SwaggerUrl + "/",
+		Registers(s.Engine, netHttpRouteRegisterer[any, any]{
+			s: s,
+			route: Route[any, any]{
+				BaseRoute: BaseRoute{
+					Method: http.MethodGet,
+					Path:   s.OpenAPIConfig.SwaggerUrl + "/",
+				},
 			},
-		}, s.OpenAPIConfig.UIHandler(s.OpenAPIConfig.JsonUrl))
+			controller: s.OpenAPIConfig.UIHandler(s.OpenAPIConfig.JsonUrl),
+		})
 		s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s%s/index.html", s.url(), s.OpenAPIConfig.SwaggerUrl))
 	}
 }
