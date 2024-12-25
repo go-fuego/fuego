@@ -34,7 +34,7 @@ jobs:
           # What benchmark tool the output.txt came from
           tool: 'go'
           # Where the output from the benchmark tool is stored
-          output-file-path: output.txt
+          output-file-path: ./output.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
           # Show alert with commit comment on detecting possible performance regression
@@ -49,7 +49,7 @@ jobs:
         with:
           name: Go Benchmark
           tool: 'go'
-          output-file-path: output.txt
+          output-file-path: ./output.txt
           github-token: ${{ secrets.BENCHMARK_ACTION_BOT_TOKEN }}
           auto-push: true
           # Show alert with commit comment on detecting possible performance regression
