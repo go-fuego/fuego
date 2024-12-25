@@ -23,8 +23,11 @@ var (
 
 func (c ginContext[B]) Body() (B, error) {
 	var body B
-	err := c.ginCtx.BindJSON(&body)
-	return body, err
+	err := c.ginCtx.Bind(&body)
+	if err != nil {
+		return body, err
+	}
+	return fuego.TransformAndValidate(c, body)
 }
 
 func (c ginContext[B]) Context() context.Context {
