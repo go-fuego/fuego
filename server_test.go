@@ -74,8 +74,8 @@ func TestWithOpenAPIConfig(t *testing.T) {
 			WithOpenAPIServerConfig(OpenAPIServerConfig{}),
 		)
 
-		require.Equal(t, "/swagger", s.SwaggerURL)
-		require.Equal(t, "/swagger/openapi.json", s.SpecURL)
+		require.Equal(t, "/swagger", s.OpenAPIServerConfig.SwaggerURL)
+		require.Equal(t, "/swagger/openapi.json", s.OpenAPIServerConfig.SpecURL)
 		require.Equal(t, "doc/openapi.json", s.OpenAPIConfig.JSONFilePath)
 		require.False(t, s.OpenAPIConfig.PrettyFormatJSON)
 	})
@@ -96,8 +96,8 @@ func TestWithOpenAPIConfig(t *testing.T) {
 			),
 		)
 
-		require.Equal(t, "/api", s.SwaggerURL)
-		require.Equal(t, "/api/openapi.json", s.SpecURL)
+		require.Equal(t, "/api", s.OpenAPIServerConfig.SwaggerURL)
+		require.Equal(t, "/api/openapi.json", s.OpenAPIServerConfig.SpecURL)
 		require.Equal(t, "openapi.json", s.OpenAPIConfig.JSONFilePath)
 		require.True(t, s.Engine.OpenAPIConfig.Disabled)
 		require.True(t, s.OpenAPIConfig.DisableLocalSave)
