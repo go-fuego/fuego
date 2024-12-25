@@ -16,10 +16,8 @@ func TestPetstoreOpenAPIGeneration(t *testing.T) {
 		fuego.WithoutStartupMessages(),
 		fuego.WithEngineOptions(
 			fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
-				EngineOpenAPIConfig: fuego.EngineOpenAPIConfig{
-					JSONFilePath:     "testdata/doc/openapi.json",
-					PrettyFormatJSON: true,
-				},
+				JSONFilePath:     "testdata/doc/openapi.json",
+				PrettyFormatJSON: true,
 			}),
 		),
 	)

@@ -23,9 +23,7 @@ func main() {
 	s := fuego.NewServer(
 		fuego.WithEngineOptions(
 			fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
-				EngineOpenAPIConfig: fuego.EngineOpenAPIConfig{
-					PrettyFormatJSON: true,
-				},
+				PrettyFormatJSON: true,
 			}),
 		),
 	)
