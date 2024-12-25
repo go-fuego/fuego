@@ -74,9 +74,9 @@ type Server struct {
 
 	startTime time.Time
 
-	OpenAPIConfig OpenAPIConfig
-
 	loggingConfig LoggingConfig
+
+	OpenAPIServerConfig OpenAPIServerConfig
 
 	isTLS bool
 }
