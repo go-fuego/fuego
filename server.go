@@ -22,12 +22,12 @@ type OpenAPIServerConfig struct {
 	// Handler to serve the OpenAPI UI from spec URL
 	UIHandler func(specURL string) http.Handler
 	// URL to serve the OpenAPI JSON spec
-	JsonURL string
+	SpecURL string
 }
 
 var defaultOpenAPIServerConfig = OpenAPIServerConfig{
 	SwaggerURL: "/swagger",
-	JsonURL:    "/swagger/openapi.json",
+	SpecURL:    "/swagger/openapi.json",
 	UIHandler:  DefaultOpenAPIHandler,
 }
 
@@ -365,8 +365,8 @@ func WithoutLogger() func(*Server) {
 
 func WithOpenAPIServerConfig(config OpenAPIServerConfig) func(*Server) {
 	return func(s *Server) {
-		if config.JsonURL != "" {
-			s.OpenAPIServerConfig.JsonURL = config.JsonURL
+		if config.SpecURL != "" {
+			s.OpenAPIServerConfig.SpecURL = config.SpecURL
 		}
 		if config.SwaggerURL != "" {
 			s.OpenAPIServerConfig.SwaggerURL = config.SwaggerURL
@@ -377,12 +377,12 @@ func WithOpenAPIServerConfig(config OpenAPIServerConfig) func(*Server) {
 
 		s.OpenAPIServerConfig.DisableSwaggerUI = config.DisableSwaggerUI
 
-		if !validateJsonSpecUrl(s.OpenAPIServerConfig.JsonURL) {
-			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIServerConfig.JsonURL' option is not valid", "url", s.OpenAPIServerConfig.JsonURL)
+		if !validateSpecURL(s.OpenAPIServerConfig.SpecURL) {
+			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIServerConfig.SpecURL' option is not valid", "url", s.OpenAPIServerConfig.SpecURL)
 			return
 		}
 
-		if !validateSwaggerUrl(s.OpenAPIServerConfig.SwaggerURL) {
+		if !validateSwaggerURL(s.OpenAPIServerConfig.SwaggerURL) {
 			slog.Error("Error serving swagger ui. Value of 's.OpenAPIServerConfig.SwaggerURL' option is not valid", "url", s.OpenAPIServerConfig.SwaggerURL)
 			return
 		}
