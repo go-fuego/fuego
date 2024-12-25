@@ -116,11 +116,11 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 
 // Registers the routes to serve the OpenAPI spec and Swagger UI.
 func (s *Server) registerOpenAPIRoutes(jsonSpec []byte) {
-	GetStd(s, s.JsonURL, func(w http.ResponseWriter, r *http.Request) {
+	GetStd(s, s.SpecURL, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write(jsonSpec)
 	})
-	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s%s", s.url(), s.JsonURL))
+	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s%s", s.url(), s.SpecURL))
 
 	if s.DisableSwaggerUI {
 		return
@@ -133,20 +133,19 @@ func (s *Server) registerOpenAPIRoutes(jsonSpec []byte) {
 				Path:   s.SwaggerURL + "/",
 			},
 		},
-		controller: s.UIHandler(s.JsonURL),
+		controller: s.UIHandler(s.SpecURL),
 	})
 	s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s%s/index.html", s.url(), s.SwaggerURL))
-
 }
 
-func validateJsonSpecUrl(jsonSpecUrl string) bool {
-	jsonSpecUrlRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_]+(.json)$`)
-	return jsonSpecUrlRegexp.MatchString(jsonSpecUrl)
+func validateSpecURL(specURL string) bool {
+	specURLRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_]+(.json)$`)
+	return specURLRegexp.MatchString(specURL)
 }
 
-func validateSwaggerUrl(swaggerUrl string) bool {
-	swaggerUrlRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_]+[a-zA-Z0-9\-\_]$`)
-	return swaggerUrlRegexp.MatchString(swaggerUrl)
+func validateSwaggerURL(swaggerURL string) bool {
+	swaggerURLRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_]+[a-zA-Z0-9\-\_]$`)
+	return swaggerURLRegexp.MatchString(swaggerURL)
 }
 
 // RegisterOpenAPIOperation registers the route to the OpenAPI description.

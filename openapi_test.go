@@ -459,26 +459,26 @@ func BenchmarkServer_generateOpenAPI(b *testing.B) {
 	}
 }
 
-func TestValidateJsonSpecUrl(t *testing.T) {
-	require.Equal(t, true, validateJsonSpecUrl("/path/to/jsonSpec.json"))
-	require.Equal(t, true, validateJsonSpecUrl("/spec.json"))
-	require.Equal(t, true, validateJsonSpecUrl("/path_/jsonSpec.json"))
-	require.Equal(t, false, validateJsonSpecUrl("path/to/jsonSpec.json"))
-	require.Equal(t, false, validateJsonSpecUrl("/path/to/jsonSpec"))
-	require.Equal(t, false, validateJsonSpecUrl("/path/to/jsonSpec.jsn"))
+func TestValidateJsonSpecURL(t *testing.T) {
+	require.Equal(t, true, validateSpecURL("/path/to/jsonSpec.json"))
+	require.Equal(t, true, validateSpecURL("/spec.json"))
+	require.Equal(t, true, validateSpecURL("/path_/jsonSpec.json"))
+	require.Equal(t, false, validateSpecURL("path/to/jsonSpec.json"))
+	require.Equal(t, false, validateSpecURL("/path/to/jsonSpec"))
+	require.Equal(t, false, validateSpecURL("/path/to/jsonSpec.jsn"))
 }
 
 func TestValidateSwaggerUrl(t *testing.T) {
-	require.Equal(t, true, validateSwaggerUrl("/path/to/jsonSpec"))
-	require.Equal(t, true, validateSwaggerUrl("/swagger"))
-	require.Equal(t, true, validateSwaggerUrl("/Super-useful_swagger-2000"))
-	require.Equal(t, true, validateSwaggerUrl("/Super-useful_swagger-"))
-	require.Equal(t, true, validateSwaggerUrl("/Super-useful_swagger__"))
-	require.Equal(t, true, validateSwaggerUrl("/Super-useful_swaggeR"))
-	require.Equal(t, false, validateSwaggerUrl("/spec.json"))
-	require.Equal(t, false, validateSwaggerUrl("/path_/swagger.json"))
-	require.Equal(t, false, validateSwaggerUrl("path/to/jsonSpec."))
-	require.Equal(t, false, validateSwaggerUrl("path/to/jsonSpec%"))
+	require.Equal(t, true, validateSwaggerURL("/path/to/jsonSpec"))
+	require.Equal(t, true, validateSwaggerURL("/swagger"))
+	require.Equal(t, true, validateSwaggerURL("/Super-useful_swagger-2000"))
+	require.Equal(t, true, validateSwaggerURL("/Super-useful_swagger-"))
+	require.Equal(t, true, validateSwaggerURL("/Super-useful_swagger__"))
+	require.Equal(t, true, validateSwaggerURL("/Super-useful_swaggeR"))
+	require.Equal(t, false, validateSwaggerURL("/spec.json"))
+	require.Equal(t, false, validateSwaggerURL("/path_/swagger.json"))
+	require.Equal(t, false, validateSwaggerURL("path/to/jsonSpec."))
+	require.Equal(t, false, validateSwaggerURL("path/to/jsonSpec%"))
 }
 
 func TestLocalSave(t *testing.T) {
