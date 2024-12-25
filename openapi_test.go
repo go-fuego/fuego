@@ -316,9 +316,7 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 			WithEngineOptions(
 				WithOpenAPIConfig(
 					OpenAPIConfig{
-						EngineOpenAPIConfig: EngineOpenAPIConfig{
-							JSONFilePath: docPath,
-						},
+						JSONFilePath: docPath,
 					},
 				),
 			),
@@ -339,14 +337,10 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 	t.Run("do not print file", func(t *testing.T) {
 		s := NewServer(
 			WithEngineOptions(
-				WithOpenAPIConfig(
-					OpenAPIConfig{
-						EngineOpenAPIConfig: EngineOpenAPIConfig{
-							JSONFilePath:     docPath,
-							DisableLocalSave: true,
-						},
-					},
-				),
+				WithOpenAPIConfig(OpenAPIConfig{
+					JSONFilePath:     docPath,
+					DisableLocalSave: true,
+				}),
 			),
 		)
 		Get(s, "/", func(ContextNoBody) (MyStruct, error) {
@@ -365,11 +359,9 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 			WithEngineOptions(
 				WithOpenAPIConfig(
 					OpenAPIConfig{
-						EngineOpenAPIConfig: EngineOpenAPIConfig{
-							JSONFilePath:     docPath,
-							DisableLocalSave: true,
-						},
-						DisableSwagger: true,
+						JSONFilePath:     docPath,
+						DisableLocalSave: true,
+						Disabled:         true,
 					},
 				),
 			),
@@ -391,10 +383,8 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 			WithEngineOptions(
 				WithOpenAPIConfig(
 					OpenAPIConfig{
-						EngineOpenAPIConfig: EngineOpenAPIConfig{
-							JSONFilePath:     docPath,
-							PrettyFormatJSON: true,
-						},
+						JSONFilePath:     docPath,
+						PrettyFormatJSON: true,
 					},
 				),
 			),
@@ -511,10 +501,8 @@ func TestAutoGroupTags(t *testing.T) {
 	s := NewServer(
 		WithEngineOptions(
 			WithOpenAPIConfig(OpenAPIConfig{
-				EngineOpenAPIConfig: EngineOpenAPIConfig{
-					DisableLocalSave: true,
-				},
-				DisableSwagger: true,
+				DisableLocalSave: true,
+				Disabled:         true,
 			}),
 		),
 	)

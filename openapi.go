@@ -107,7 +107,7 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 		Description: "local server",
 	})
 
-	if !s.OpenAPIConfig.DisableSwagger {
+	if !s.OpenAPIConfig.Disabled {
 		s.registerOpenAPIRoutes(s.Engine.OutputOpenAPISpec())
 	}
 
@@ -116,25 +116,27 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 
 // Registers the routes to serve the OpenAPI spec and Swagger UI.
 func (s *Server) registerOpenAPIRoutes(jsonSpec []byte) {
-	GetStd(s, s.OpenAPIConfig.JsonURL, func(w http.ResponseWriter, r *http.Request) {
+	GetStd(s, s.JsonURL, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write(jsonSpec)
 	})
-	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s%s", s.url(), s.OpenAPIConfig.JsonURL))
+	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s%s", s.url(), s.JsonURL))
 
-	if !s.OpenAPIConfig.DisableSwaggerUI {
-		Registers(s.Engine, netHttpRouteRegisterer[any, any]{
-			s: s,
-			route: Route[any, any]{
-				BaseRoute: BaseRoute{
-					Method: http.MethodGet,
-					Path:   s.OpenAPIConfig.SwaggerURL + "/",
-				},
-			},
-			controller: s.OpenAPIConfig.UIHandler(s.OpenAPIConfig.JsonURL),
-		})
-		s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s%s/index.html", s.url(), s.OpenAPIConfig.SwaggerURL))
+	if s.DisableSwaggerUI {
+		return
 	}
+	Registers(s.Engine, netHttpRouteRegisterer[any, any]{
+		s: s,
+		route: Route[any, any]{
+			BaseRoute: BaseRoute{
+				Method: http.MethodGet,
+				Path:   s.SwaggerURL + "/",
+			},
+		},
+		controller: s.UIHandler(s.JsonURL),
+	})
+	s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s%s/index.html", s.url(), s.SwaggerURL))
+
 }
 
 func validateJsonSpecUrl(jsonSpecUrl string) bool {
