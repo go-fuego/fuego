@@ -90,12 +90,13 @@ func TestWithOpenAPIConfig(t *testing.T) {
 				SpecURL:    "/api/openapi.json",
 			}),
 			WithEngineOptions(
-				WithOpenAPIConfig(OpenAPIConfig{
-					JSONFilePath:     "openapi.json",
-					DisableLocalSave: true,
-					PrettyFormatJSON: true,
-					Disabled:         true,
-				}),
+				WithOpenAPIConfig(
+					OpenAPIConfig{
+						JSONFilePath:     "openapi.json",
+						DisableLocalSave: true,
+						PrettyFormatJSON: true,
+						Disabled:         true,
+					}),
 			),
 		)
 
