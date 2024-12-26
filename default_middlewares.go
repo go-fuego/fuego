@@ -21,15 +21,15 @@ var defaultLoggingConfig = LoggingConfig{
 // For example:
 //
 //	config := fuego.LoggingConfig{
-//		    DisableRequest:  false,
+//		    DisableRequest:  true,
 //		    RequestIDFunc: func() string {
 //		        return fmt.Sprintf("custom-%d", time.Now().UnixNano())
 //		    },
 //		}
 //
 // The above configuration will disable the debug request logging and
-// override the default request ID generator with a custom one that
-// appends the current Unix time in nanoseconds
+// override the default request ID generator (UUID) with a custom one that
+// appends the current Unix time in nanoseconds for response logs
 type LoggingConfig struct {
 	// If true, request logging is disabled
 	DisableRequest bool
