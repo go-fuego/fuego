@@ -286,7 +286,7 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 		require.Error(t, err)
 		require.Nil(t, file)
 	})
-	t.Run("swagger disabled", func(t *testing.T) {
+	t.Run("OpenAPI disabled", func(t *testing.T) {
 		s := NewServer(
 			WithEngineOptions(
 				WithOpenAPIConfig(
@@ -303,7 +303,7 @@ func TestServer_OutputOpenApiSpec(t *testing.T) {
 		})
 
 		document := s.OutputOpenAPISpec()
-		require.Len(t, document.Paths.Map(), 1)
+		require.Empty(t, document.Paths.Map())
 		require.NotNil(t, document)
 
 		file, err := os.Open(docPath)
@@ -434,7 +434,7 @@ func TestAutoGroupTags(t *testing.T) {
 		WithEngineOptions(
 			WithOpenAPIConfig(OpenAPIConfig{
 				DisableLocalSave: true,
-				Disabled:         true,
+				Disabled:         false,
 			}),
 		),
 	)
