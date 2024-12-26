@@ -771,5 +771,4 @@ func TestDefaultLoggingMiddleware(t *testing.T) {
 			handler.AssertEmpty()
 		})
 	}
-
 }

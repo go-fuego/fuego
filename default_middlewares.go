@@ -39,13 +39,13 @@ type LoggingConfig struct {
 	RequestIDFunc func() string
 }
 
+func (l *LoggingConfig) Disabled() bool {
+	return l.DisableRequest && l.DisableResponse
+}
+
 // defaultRequestIDFunc generates a UUID as the default request ID if none exist in X-Request-ID header
 func defaultRequestIDFunc() string {
 	return uuid.New().String()
-}
-
-func (l *LoggingConfig) Disabled() bool {
-	return l.DisableRequest && l.DisableResponse
 }
 
 // responseWriter wraps [http.ResponseWriter] to capture response metadata.
@@ -100,35 +100,41 @@ func logResponse(r *http.Request, rw *responseWriter, requestID string, duration
 	)
 }
 
-// defaultLoggingMiddleware is this default middleware that logs incoming requests and outgoing responses.
+type defaultLogger struct {
+	s *Server
+}
+
+func newDefaultLogger(s *Server) defaultLogger {
+	return defaultLogger{s: s}
+}
+
+// defaultLogger.middleware is the default middleware that logs incoming requests and outgoing responses.
 //
 // By default, request logging will be logged at the debug level, and response
 // logging will be logged at the info level
 //
 // Log levels managed by [WithLogHandler]
-func defaultLoggingMiddleware(s *Server) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			start := time.Now()
+func (l defaultLogger) middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 
-			requestID := r.Header.Get("X-Request-ID")
-			if requestID == "" {
-				requestID = s.loggingConfig.RequestIDFunc()
-			}
-			w.Header().Set("X-Request-ID", requestID)
+		requestID := r.Header.Get("X-Request-ID")
+		if requestID == "" {
+			requestID = l.s.loggingConfig.RequestIDFunc()
+		}
+		w.Header().Set("X-Request-ID", requestID)
 
-			wrapped := newResponseWriter(w)
+		wrapped := newResponseWriter(w)
 
-			if !s.loggingConfig.DisableRequest {
-				logRequest(requestID, r)
-			}
+		if !l.s.loggingConfig.DisableRequest {
+			logRequest(requestID, r)
+		}
 
-			next.ServeHTTP(wrapped, r)
+		next.ServeHTTP(wrapped, r)
 
-			if !s.loggingConfig.DisableResponse {
-				duration := time.Since(start)
-				logResponse(r, wrapped, requestID, duration)
-			}
-		})
-	}
+		if !l.s.loggingConfig.DisableResponse {
+			duration := time.Since(start)
+			logResponse(r, wrapped, requestID, duration)
+		}
+	})
 }
