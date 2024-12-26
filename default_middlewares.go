@@ -60,10 +60,6 @@ func newResponseWriter(w http.ResponseWriter) *responseWriter {
 	return &responseWriter{ResponseWriter: w}
 }
 
-func (rw *responseWriter) Status() int {
-	return rw.status
-}
-
 func (rw *responseWriter) WriteHeader(code int) {
 	if rw.wroteHeader {
 		return
