@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"html/template"
@@ -10,6 +9,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/thejerf/slogassert"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-playground/validator/v10"
@@ -605,9 +606,8 @@ func TestWithSecurity(t *testing.T) {
 }
 
 func TestDefaultLoggingMiddleware(t *testing.T) {
-	var buf bytes.Buffer
 	// By default request logging is Debug level
-	logger := slog.NewTextHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug})
+	handler := slogassert.New(t, slog.LevelDebug, nil)
 
 	type testCase struct {
 		name         string
@@ -665,16 +665,6 @@ func TestDefaultLoggingMiddleware(t *testing.T) {
 			wantBody:     "ok",
 		},
 		{
-			name:         "custom request ID propagation",
-			config:       LoggingConfig{},
-			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
-			requestID:    "test-id",
-			wantRequest:  true,
-			wantResponse: true,
-			wantStatus:   http.StatusOK,
-			wantBody:     "ok",
-		},
-		{
 			name:   "error status code capture",
 			config: LoggingConfig{},
 			handler: func(c ContextNoBody) (string, error) {
@@ -697,16 +687,29 @@ func TestDefaultLoggingMiddleware(t *testing.T) {
 			wantStatus:   http.StatusCreated,
 			wantBody:     "created",
 		},
+		{
+			name: "custom request id generator",
+			config: LoggingConfig{
+				RequestIDFunc: func() string {
+					return "custom-func-id"
+				},
+			},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  true,
+			wantResponse: true,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			buf.Reset()
 			s := NewServer(
-				WithLogHandler(logger),
+				WithLogHandler(handler),
 				WithLoggingMiddleware(tc.config),
 			)
 			Get(s, "/test", tc.handler)
+			handler.AssertMessage("registering controller GET /test")
 
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "/test", nil)
@@ -716,30 +719,57 @@ func TestDefaultLoggingMiddleware(t *testing.T) {
 
 			s.Mux.ServeHTTP(rec, req)
 
-			logs := buf.String()
 			if tc.wantRequest {
-				require.Contains(t, logs, "incoming request")
-				require.Contains(t, logs, "method=GET")
-				require.Contains(t, logs, "path=/test")
-			} else {
-				require.NotContains(t, logs, "incoming request")
+				expectedReqAttrs := map[string]any{
+					"method": "GET",
+					"path":   "/test",
+				}
+
+				if tc.requestID != "" {
+					expectedReqAttrs["request_id"] = tc.requestID
+				}
+
+				handler.AssertPrecise(slogassert.LogMessageMatch{
+					Message: "incoming request",
+					Level:   slog.LevelDebug,
+					Attrs:   expectedReqAttrs,
+				})
 			}
 
 			if tc.wantResponse {
-				require.Contains(t, logs, "outgoing response")
-				require.Contains(t, logs, fmt.Sprintf("status_code=%d", tc.wantStatus))
-				require.Contains(t, logs, "duration_ms=")
-			} else {
-				require.NotContains(t, logs, "outgoing response")
+				expectedResAttrs := map[string]any{
+					"method":      "GET",
+					"path":        "/test",
+					"status_code": tc.wantStatus,
+				}
+
+				if tc.requestID != "" {
+					expectedResAttrs["request_id"] = tc.requestID
+				}
+
+				handler.AssertPrecise(slogassert.LogMessageMatch{
+					Message: "outgoing response",
+					Level:   slog.LevelInfo,
+					Attrs:   expectedResAttrs,
+				})
 			}
 
 			require.Equal(t, tc.wantStatus, rec.Code)
 			require.Contains(t, rec.Body.String(), tc.wantBody)
 
+			// Check request id being propagated to response
 			if tc.requestID != "" {
-				require.Contains(t, logs, fmt.Sprintf("request_id=%s", tc.requestID))
 				require.Equal(t, tc.requestID, rec.Header().Get("X-Request-ID"))
 			}
+
+			// Check case of custom request id generator is propagated to response
+			if tc.config.RequestIDFunc != nil {
+				require.Equal(t, "custom-func-id", rec.Header().Get("X-Request-ID"))
+			}
+
+			// all logs should be handled here
+			handler.AssertEmpty()
 		})
 	}
+
 }
