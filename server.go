@@ -89,7 +89,7 @@ type Server struct {
 //		fuego.WithoutLogger(),
 //	)
 //
-// Option all begin with `With`.
+// Options all begin with `With`.
 // Some default options are set in the function body.
 func NewServer(options ...func(*Server)) *Server {
 	s := &Server{
@@ -397,6 +397,20 @@ func WithOpenAPIServerConfig(config OpenAPIServerConfig) func(*Server) {
 	}
 }
 
+// WithEngineOptions allows for setting of Engine options
+//
+//	app := fuego.NewServer(
+//		fuego.WithAddr(":8080"),
+//		fuego.WithEngineOptions(
+//			WithOpenAPIConfig(
+//				OpenAPIConfig{
+//					PrettyFormatJSON: true,
+//				},
+//			),
+//		),
+//	)
+//
+// Options all begin with `With`.
 func WithEngineOptions(options ...func(*Engine)) func(*Server) {
 	return func(s *Server) {
 		for _, option := range options {
