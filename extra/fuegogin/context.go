@@ -2,6 +2,7 @@ package fuegogin
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -102,12 +103,27 @@ func (c ginContext[B]) SetStatus(code int) {
 }
 
 func (c ginContext[B]) Serialize(data any) error {
-	c.ginCtx.JSON(http.StatusOK, data)
+	if c.DefaultStatusCode == 0 {
+		c.DefaultStatusCode = http.StatusOK
+	}
+	status := c.ginCtx.Writer.Status()
+	if status == 0 {
+		status = c.DefaultStatusCode
+	}
+	if status == 0 {
+		status = 200
+	}
+	c.ginCtx.JSON(status, data)
 	return nil
 }
 
 func (c ginContext[B]) SerializeError(err error) {
-	c.ginCtx.JSON(http.StatusInternalServerError, err)
+	statusCode := http.StatusInternalServerError
+	var errorWithStatusCode fuego.ErrorWithStatus
+	if errors.As(err, &errorWithStatusCode) {
+		statusCode = errorWithStatusCode.StatusCode()
+	}
+	c.ginCtx.JSON(statusCode, err)
 }
 
 func (c ginContext[B]) SetDefaultStatusCode() {
