@@ -9,6 +9,18 @@ import (
 	"path/filepath"
 )
 
+// NewEngine creates a new Engine with the given options.
+// For example:
+//
+//	engine := fuego.NewEngin(
+//		WithOpenAPIConfig(
+//			OpenAPIConfig{
+//				PrettyFormatJSON: true,
+//			},
+//		),
+//	)
+//
+// Options all begin with `With`.
 func NewEngine(options ...func(*Engine)) *Engine {
 	e := &Engine{
 		OpenAPI:       NewOpenAPI(),
