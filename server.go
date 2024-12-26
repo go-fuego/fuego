@@ -149,7 +149,7 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	if !s.loggingConfig.Disabled() {
-		s.middlewares = append(s.middlewares, defaultLoggingMiddleware(s))
+		s.middlewares = append(s.middlewares, newDefaultLogger(s).middleware)
 	}
 
 	return s
