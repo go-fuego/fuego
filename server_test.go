@@ -1,7 +1,9 @@
 package fuego
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
 	"html/template"
 	"io"
 	"log/slog"
@@ -600,4 +602,144 @@ func TestWithSecurity(t *testing.T) {
 		require.NotNil(t, s.OpenAPI.Description().Components.SecuritySchemes)
 		require.Contains(t, s.OpenAPI.Description().Components.SecuritySchemes, "bearerAuth")
 	})
+}
+
+func TestDefaultLoggingMiddleware(t *testing.T) {
+	var buf bytes.Buffer
+	// By default request logging is Debug level
+	logger := slog.NewTextHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug})
+
+	type testCase struct {
+		name         string
+		config       LoggingConfig
+		handler      func(ContextNoBody) (string, error)
+		requestID    string
+		wantRequest  bool
+		wantResponse bool
+		wantStatus   int
+		wantBody     string
+	}
+
+	tests := []testCase{
+		{
+			name:         "default logging enabled",
+			config:       LoggingConfig{},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  true,
+			wantResponse: true,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+		{
+			name: "disable all logging",
+			config: LoggingConfig{
+				DisableRequest:  true,
+				DisableResponse: true,
+			},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  false,
+			wantResponse: false,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+		{
+			name: "disable only request logging",
+			config: LoggingConfig{
+				DisableRequest: true,
+			},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  false,
+			wantResponse: true,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+		{
+			name: "disable only response logging",
+			config: LoggingConfig{
+				DisableResponse: true,
+			},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  true,
+			wantResponse: false,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+		{
+			name:         "custom request ID propagation",
+			config:       LoggingConfig{},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			requestID:    "test-id",
+			wantRequest:  true,
+			wantResponse: true,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+		{
+			name:   "error status code capture",
+			config: LoggingConfig{},
+			handler: func(c ContextNoBody) (string, error) {
+				return "", fmt.Errorf("test error")
+			},
+			wantRequest:  true,
+			wantResponse: true,
+			wantStatus:   http.StatusInternalServerError,
+			wantBody:     "",
+		},
+		{
+			name:   "custom status code",
+			config: LoggingConfig{},
+			handler: func(c ContextNoBody) (string, error) {
+				c.SetStatus(http.StatusCreated)
+				return "created", nil
+			},
+			wantRequest:  true,
+			wantResponse: true,
+			wantStatus:   http.StatusCreated,
+			wantBody:     "created",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			buf.Reset()
+			s := NewServer(
+				WithLogHandler(logger),
+				WithLoggingMiddleware(tc.config),
+			)
+			Get(s, "/test", tc.handler)
+
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, "/test", nil)
+			if tc.requestID != "" {
+				req.Header.Set("X-Request-ID", tc.requestID)
+			}
+
+			s.Mux.ServeHTTP(rec, req)
+
+			logs := buf.String()
+			if tc.wantRequest {
+				require.Contains(t, logs, "incoming request")
+				require.Contains(t, logs, "method=GET")
+				require.Contains(t, logs, "path=/test")
+			} else {
+				require.NotContains(t, logs, "incoming request")
+			}
+
+			if tc.wantResponse {
+				require.Contains(t, logs, "outgoing response")
+				require.Contains(t, logs, fmt.Sprintf("status_code=%d", tc.wantStatus))
+				require.Contains(t, logs, "duration_ms=")
+			} else {
+				require.NotContains(t, logs, "outgoing response")
+			}
+
+			require.Equal(t, tc.wantStatus, rec.Code)
+			require.Contains(t, rec.Body.String(), tc.wantBody)
+
+			if tc.requestID != "" {
+				require.Contains(t, logs, fmt.Sprintf("request_id=%s", tc.requestID))
+				require.Equal(t, tc.requestID, rec.Header().Get("X-Request-ID"))
+			}
+		})
+	}
 }
