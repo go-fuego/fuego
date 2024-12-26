@@ -437,5 +437,8 @@ func WithLoggingMiddleware(loggingConfig LoggingConfig) func(*Server) {
 	return func(s *Server) {
 		s.loggingConfig.DisableRequest = loggingConfig.DisableRequest
 		s.loggingConfig.DisableResponse = loggingConfig.DisableResponse
+		if loggingConfig.RequestIDFunc != nil {
+			s.loggingConfig.RequestIDFunc = loggingConfig.RequestIDFunc
+		}
 	}
 }

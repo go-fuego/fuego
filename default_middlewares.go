@@ -8,9 +8,44 @@ import (
 	"github.com/google/uuid"
 )
 
+// By default, all logging is enabled
+var defaultLoggingConfig = LoggingConfig{
+	RequestIDFunc: defaultRequestIDFunc,
+}
+
+// LoggingConfig is the configuration for the default logging middleware
+//
+// It allows for request and response logging to be disabled independently,
+// and for a custom request ID generator to be used
+//
+// For example:
+//
+//	config := fuego.LoggingConfig{
+//		    DisableRequest:  false,
+//		    RequestIDFunc: func() string {
+//		        return fmt.Sprintf("custom-%d", time.Now().UnixNano())
+//		    },
+//		}
+//
+// The above configuration will disable the debug request logging and
+// override the default request ID generator with a custom one that
+// appends the current Unix time in nanoseconds
 type LoggingConfig struct {
-	DisableRequest  bool // If true, request logging is disabled
-	DisableResponse bool // If true, response logging is disabled
+	// If true, request logging is disabled
+	DisableRequest bool
+	// If true, response logging is disabled
+	DisableResponse bool
+	// Optional custom request ID generator
+	RequestIDFunc func() string
+}
+
+// defaultRequestIDFunc generates a UUID as the default request ID if none exist in X-Request-ID header
+func defaultRequestIDFunc() string {
+	return uuid.New().String()
+}
+
+func (l *LoggingConfig) Disabled() bool {
+	return l.DisableRequest && l.DisableResponse
 }
 
 // responseWriter wraps [http.ResponseWriter] to capture response metadata.
@@ -21,7 +56,7 @@ type responseWriter struct {
 	wroteHeader bool
 }
 
-func wrapResponseWriter(w http.ResponseWriter) *responseWriter {
+func newResponseWriter(w http.ResponseWriter) *responseWriter {
 	return &responseWriter{ResponseWriter: w}
 }
 
@@ -46,46 +81,6 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 	return rw.ResponseWriter.Write(b)
 }
 
-func (l *LoggingConfig) Disabled() bool {
-	return l.DisableRequest && l.DisableResponse
-}
-
-// By default, all logging is enabled
-var defaultLoggingConfig = LoggingConfig{}
-
-// defaultLoggingMiddleware is this default middleware that logs incoming requests and outgoing responses.
-//
-// By default, request logging will be logged at the debug level, and response
-// logging will be logged at the info level
-//
-// Log levels managed by [WithLogHandler]
-func defaultLoggingMiddleware(s *Server) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			start := time.Now()
-
-			requestID := r.Header.Get("X-Request-ID")
-			if requestID == "" {
-				requestID = uuid.New().String()
-			}
-			w.Header().Set("X-Request-ID", requestID)
-
-			wrapped := wrapResponseWriter(w)
-
-			if !s.loggingConfig.DisableRequest {
-				logRequest(requestID, r)
-			}
-
-			next.ServeHTTP(wrapped, r)
-
-			if !s.loggingConfig.DisableResponse {
-				duration := time.Since(start)
-				logResponse(r, wrapped, requestID, duration)
-			}
-		})
-	}
-}
-
 func logRequest(requestID string, r *http.Request) {
 	slog.Debug("incoming request",
 		"request_id", requestID,
@@ -103,7 +98,41 @@ func logResponse(r *http.Request, rw *responseWriter, requestID string, duration
 		"method", r.Method,
 		"path", r.URL.Path,
 		"timestamp", time.Now().Format(time.RFC3339),
+		"remote_addr", r.RemoteAddr,
 		"duration_ms", duration.Milliseconds(),
 		"status_code", rw.status,
 	)
+}
+
+// defaultLoggingMiddleware is this default middleware that logs incoming requests and outgoing responses.
+//
+// By default, request logging will be logged at the debug level, and response
+// logging will be logged at the info level
+//
+// Log levels managed by [WithLogHandler]
+func defaultLoggingMiddleware(s *Server) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
+
+			requestID := r.Header.Get("X-Request-ID")
+			if requestID == "" {
+				requestID = s.loggingConfig.RequestIDFunc()
+			}
+			w.Header().Set("X-Request-ID", requestID)
+
+			wrapped := newResponseWriter(w)
+
+			if !s.loggingConfig.DisableRequest {
+				logRequest(requestID, r)
+			}
+
+			next.ServeHTTP(wrapped, r)
+
+			if !s.loggingConfig.DisableResponse {
+				duration := time.Since(start)
+				logResponse(r, wrapped, requestID, duration)
+			}
+		})
+	}
 }
