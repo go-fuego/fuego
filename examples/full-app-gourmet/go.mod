@@ -3,7 +3,6 @@ module github.com/go-fuego/fuego/examples/full-app-gourmet
 go 1.23.3
 
 require (
-	github.com/a-h/templ v0.2.793
 	github.com/go-chi/chi/v5 v5.2.0
 	github.com/go-fuego/fuego v0.17.0
 	github.com/go-fuego/fuego/extra/markdown v0.0.0-20241224084710-c2dec210f703

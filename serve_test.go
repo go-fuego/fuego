@@ -519,6 +519,13 @@ func TestServer_RunTLS(t *testing.T) {
 			}, 5*time.Second, 500*time.Millisecond)
 		})
 	}
+
+	t.Run("invalid address", func(t *testing.T) {
+		s := NewServer(
+			WithAddr("----:nope"),
+		)
+		require.Error(t, s.RunTLS("", ""))
+	})
 }
 
 type tlsTestHelper struct {
