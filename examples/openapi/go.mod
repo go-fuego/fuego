@@ -2,7 +2,7 @@ module github.com/go-fuego/fuego/examples/openapi
 
 go 1.23.3
 
-require github.com/go-fuego/fuego v0.16.2
+require github.com/go-fuego/fuego v0.17.0
 
 require (
 	github.com/gabriel-vasile/mimetype v1.4.7 // indirect

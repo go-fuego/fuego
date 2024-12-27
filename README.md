@@ -65,6 +65,7 @@ to develop APIs and web applications.
 - **Rendering**: Fuego provides a simple and fast rendering system based on
   `html/template` - you can still also use your own template system like
   `templ` or `gomponents`
+- **Adaptors**: [Experimental] Fuego can be used with Gin.
 
 ## Examples
 
