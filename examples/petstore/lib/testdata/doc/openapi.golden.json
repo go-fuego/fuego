@@ -73,6 +73,19 @@
 					"name": {
 						"example": "Napoleon",
 						"type": "string"
+					},
+					"references": {
+						"properties": {
+							"type": {
+								"description": "type of reference",
+								"example": "pet-123456",
+								"type": "string"
+							},
+							"value": {
+								"type": "string"
+							}
+						},
+						"type": "object"
 					}
 				},
 				"required": [
@@ -100,6 +113,19 @@
 						"maxLength": 100,
 						"minLength": 1,
 						"type": "string"
+					},
+					"references": {
+						"properties": {
+							"type": {
+								"description": "type of reference",
+								"example": "pet-123456",
+								"type": "string"
+							},
+							"value": {
+								"type": "string"
+							}
+						},
+						"type": "object"
 					}
 				},
 				"required": [
@@ -137,6 +163,19 @@
 						"minLength": 1,
 						"nullable": true,
 						"type": "string"
+					},
+					"references": {
+						"properties": {
+							"type": {
+								"description": "type of reference",
+								"example": "pet-123456",
+								"type": "string"
+							},
+							"value": {
+								"type": "string"
+							}
+						},
+						"type": "object"
 					}
 				},
 				"type": "object"
