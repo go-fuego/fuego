@@ -71,6 +71,17 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 	}
 }
 
+// WithErrorHandler sets a customer error handler for the server
+func WithErrorHandler(errorHandler func(err error) error) func(*Engine) {
+	return func(e *Engine) {
+		if errorHandler == nil {
+			panic("errorHandler cannot be nil")
+		}
+
+		e.ErrorHandler = errorHandler
+	}
+}
+
 // OutputOpenAPISpec takes the OpenAPI spec and outputs it to a JSON file
 func (e *Engine) OutputOpenAPISpec() []byte {
 	e.OpenAPI.computeTags()

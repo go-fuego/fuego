@@ -351,11 +351,6 @@ func WithErrorSerializer(serializer ErrorSender) func(*Server) {
 	return func(c *Server) { c.SerializeError = serializer }
 }
 
-// WithErrorHandler sets a customer error handler for the server
-func WithErrorHandler(errorHandler func(err error) error) func(*Server) {
-	return func(c *Server) { c.ErrorHandler = errorHandler }
-}
-
 // WithoutStartupMessages disables the startup message
 func WithoutStartupMessages() func(*Server) {
 	return func(c *Server) {
