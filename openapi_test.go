@@ -11,12 +11,20 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/require"
+	"gotest.tools/v3/assert"
 )
 
 type MyStruct struct {
 	B string `json:"b"`
-	C int    `json:"c"`
+	C int    `json:"c" example:"8" validate:"min=3,max=10" description:"my description"`
 	D bool   `json:"d"`
+}
+
+type MyStructWithNested struct {
+	E      string   `json:"e" example:"E"`
+	F      int      `json:"f"`
+	G      bool     `json:"g"`
+	Nested MyStruct `json:"nested" description:"my struct"`
 }
 
 type MyOutputStruct struct {
@@ -52,6 +60,14 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   MyStruct{},
 
 			expectedTagValue:     "MyStruct",
+			expectedTagValueType: &openapi3.Types{"object"},
+		},
+		{
+			name:        "nested struct",
+			description: "",
+			inputType:   MyStructWithNested{},
+
+			expectedTagValue:     "MyStructWithNested",
 			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
@@ -201,6 +217,21 @@ func Test_tagFromType(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("struct with nested tags", func(t *testing.T) {
+		s := NewServer()
+		tag := SchemaTagFromType(s.OpenAPI, MyStructWithNested{})
+		nestedProperty := tag.Value.Properties["nested"]
+		require.NotNil(t, nestedProperty)
+		assert.Equal(t, "my struct", nestedProperty.Value.Description)
+		c := nestedProperty.Value.Properties["c"]
+		require.NotNil(t, c)
+		require.NotNil(t, c.Value)
+		assert.Equal(t, "my description", c.Value.Description)
+		assert.Equal(t, 8, c.Value.Example)
+		assert.Equal(t, float64(3), *c.Value.Min)
+		assert.Equal(t, float64(10), *c.Value.Max)
+	})
 }
 
 func TestServer_generateOpenAPI(t *testing.T) {
