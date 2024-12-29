@@ -2,16 +2,19 @@ package fuego
 
 import (
 	"bytes"
+	"encoding/xml"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gotest.tools/v3/assert"
+	"github.com/thejerf/slogassert"
 )
 
 type MyStruct struct {
@@ -34,6 +37,11 @@ type MyStructWithEmbedded struct {
 type MyOutputStruct struct {
 	Name     string `json:"name"`
 	Quantity int    `json:"quantity"`
+}
+
+type InvalidExample struct {
+	XMLName xml.Name `xml:"TestStruct"`
+	MyInt   int      `json:"e" example:"isString" validate:"min=isString,max=isString" `
 }
 
 type testCaseForTagType[V any] struct {
@@ -247,6 +255,19 @@ func Test_tagFromType(t *testing.T) {
 		assert.Equal(t, 8, c.Value.Example)
 		assert.Equal(t, float64(3), *c.Value.Min)
 		assert.Equal(t, float64(10), *c.Value.Max)
+	})
+
+	t.Run("ensure warnings", func(t *testing.T) {
+		handler := slogassert.New(t, slog.LevelWarn, nil)
+		s := NewServer(
+			WithLogHandler(handler),
+		)
+
+		SchemaTagFromType(s.OpenAPI, InvalidExample{})
+		handler.AssertMessage("Property not found in schema")
+		handler.AssertMessage("Example might be incorrect (should be integer)")
+		handler.AssertMessage("Max might be incorrect (should be integer)")
+		handler.AssertMessage("Min might be incorrect (should be integer)")
 	})
 }
 
