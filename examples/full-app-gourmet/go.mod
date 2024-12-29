@@ -6,9 +6,9 @@ require (
 	github.com/a-h/templ v0.2.793
 	github.com/go-chi/chi/v5 v5.2.0
 	github.com/go-fuego/fuego v0.17.0
-	github.com/go-fuego/fuego/extra/markdown v0.0.0-20241224084710-c2dec210f703
+	github.com/go-fuego/fuego/extra/markdown v0.0.0-20241229211651-ce494eb08c06
 	github.com/go-fuego/fuego/middleware/basicauth v0.15.1
-	github.com/go-fuego/fuego/middleware/cache v0.0.0-20241224084710-c2dec210f703
+	github.com/go-fuego/fuego/middleware/cache v0.0.0-20241229211651-ce494eb08c06
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/google/uuid v1.6.0
@@ -53,9 +53,9 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/gc/v3 v3.0.0-20241223112719-96e2e1e4408d // indirect
 	modernc.org/libc v1.61.5 // indirect
-	modernc.org/mathutil v1.7.0 // indirect
+	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.8.0 // indirect
-	modernc.org/strutil v1.2.0 // indirect
+	modernc.org/strutil v1.2.1 // indirect
 	modernc.org/token v1.1.0 // indirect
 )
 
