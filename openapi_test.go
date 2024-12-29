@@ -27,6 +27,10 @@ type MyStructWithNested struct {
 	Nested MyStruct `json:"nested" description:"my struct"`
 }
 
+type MyStructWithEmbedded struct {
+	MyStruct
+}
+
 type MyOutputStruct struct {
 	Name     string `json:"name"`
 	Quantity int    `json:"quantity"`
@@ -217,6 +221,18 @@ func Test_tagFromType(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("struct with embedded struct with tags", func(t *testing.T) {
+		s := NewServer()
+		tag := SchemaTagFromType(s.OpenAPI, MyStructWithEmbedded{})
+		c := tag.Value.Properties["c"]
+		require.NotNil(t, c)
+		require.NotNil(t, c.Value)
+		assert.Equal(t, "my description", c.Value.Description)
+		assert.Equal(t, 8, c.Value.Example)
+		assert.Equal(t, float64(3), *c.Value.Min)
+		assert.Equal(t, float64(10), *c.Value.Max)
+	})
 
 	t.Run("struct with nested tags", func(t *testing.T) {
 		s := NewServer()
