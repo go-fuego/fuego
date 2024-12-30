@@ -125,6 +125,12 @@ func NewServer(options ...func(*Server)) *Server {
 		WithRouteOptions(
 			OptionAddResponse(http.StatusBadRequest, "Bad Request _(validation or deserialization error)_", Response{Type: HTTPError{}}),
 			OptionAddResponse(http.StatusInternalServerError, "Internal Server Error _(panics)_", Response{Type: HTTPError{}}),
+
+			func(r *BaseRoute) {
+				acceptHeaderParameter := openapi3.NewHeaderParameter("Accept")
+				acceptHeaderParameter.Schema = openapi3.NewStringSchema().NewRef()
+				r.Operation.AddParameter(acceptHeaderParameter)
+			},
 		),
 	}
 	options = append(defaultOptions[:], options...)
