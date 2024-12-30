@@ -103,15 +103,12 @@ func (c ginContext[B]) SetStatus(code int) {
 }
 
 func (c ginContext[B]) Serialize(data any) error {
-	if c.DefaultStatusCode == 0 {
-		c.DefaultStatusCode = http.StatusOK
-	}
 	status := c.ginCtx.Writer.Status()
 	if status == 0 {
 		status = c.DefaultStatusCode
 	}
 	if status == 0 {
-		status = 200
+		status = http.StatusOK
 	}
 	c.ginCtx.JSON(status, data)
 	return nil

@@ -91,6 +91,19 @@
 					"name": {
 						"example": "Napoleon",
 						"type": "string"
+					},
+					"references": {
+						"properties": {
+							"type": {
+								"description": "type of reference",
+								"example": "pet-123456",
+								"type": "string"
+							},
+							"value": {
+								"type": "string"
+							}
+						},
+						"type": "object"
 					}
 				},
 				"required": [
@@ -118,6 +131,19 @@
 						"maxLength": 100,
 						"minLength": 1,
 						"type": "string"
+					},
+					"references": {
+						"properties": {
+							"type": {
+								"description": "type of reference",
+								"example": "pet-123456",
+								"type": "string"
+							},
+							"value": {
+								"type": "string"
+							}
+						},
+						"type": "object"
 					}
 				},
 				"required": [
@@ -158,6 +184,19 @@
 						"minLength": 1,
 						"nullable": true,
 						"type": "string"
+					},
+					"references": {
+						"properties": {
+							"type": {
+								"description": "type of reference",
+								"example": "pet-123456",
+								"type": "string"
+							},
+							"value": {
+								"type": "string"
+							}
+						},
+						"type": "object"
 					}
 				},
 				"type": "object"
@@ -176,7 +215,7 @@
 	"paths": {
 		"/pets/": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.filterPets`\n\n---\n\nFilter pets",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.filterPets`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\nFilter pets",
 				"operationId": "GET_/pets/",
 				"parameters": [
 					{
@@ -351,7 +390,7 @@
 				]
 			},
 			"post": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.postPets`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.postPets`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\n",
 				"operationId": "POST_/pets/",
 				"parameters": [
 					{
@@ -469,7 +508,7 @@
 		},
 		"/pets/all": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.getAllPets`\n\n---\n\nGet all pets",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.getAllPets`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\nGet all pets",
 				"operationId": "GET_/pets/all",
 				"parameters": [
 					{
@@ -624,7 +663,7 @@
 		},
 		"/pets/by-age": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.getAllPetsByAge`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego/examples/petstore/controllers.dummyMiddleware`\n\n---\n\nReturns an array of pets grouped by age",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.getAllPetsByAge`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-fuego/fuego/examples/petstore/controllers.dummyMiddleware`\n\n---\n\nReturns an array of pets grouped by age",
 				"operationId": "GET_/pets/by-age",
 				"parameters": [
 					{
@@ -728,7 +767,7 @@
 		},
 		"/pets/by-name/{name...}": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.getPetByName`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.getPetByName`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\n",
 				"operationId": "GET_/pets/by-name/:name...",
 				"parameters": [
 					{
@@ -829,7 +868,7 @@
 		},
 		"/pets/std/all": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.Routes.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.Routes.func1`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\n",
 				"operationId": "GET_/pets/std/all",
 				"parameters": [
 					{
@@ -913,7 +952,7 @@
 		},
 		"/pets/{id}": {
 			"delete": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.deletePets`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.deletePets`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\n",
 				"operationId": "DELETE_/pets/:id",
 				"parameters": [
 					{
@@ -1115,7 +1154,7 @@
 				]
 			},
 			"put": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.putPets`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.putPets`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\n",
 				"operationId": "PUT_/pets/:id",
 				"parameters": [
 					{
@@ -1226,7 +1265,7 @@
 		},
 		"/pets/{id}/json": {
 			"put": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.putPets`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.putPets`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\n",
 				"operationId": "PUT_/pets/:id/json",
 				"parameters": [
 					{

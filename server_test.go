@@ -2,12 +2,15 @@ package fuego
 
 import (
 	"errors"
+	"fmt"
 	"html/template"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/thejerf/slogassert"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-playground/validator/v10"
@@ -600,4 +603,172 @@ func TestWithSecurity(t *testing.T) {
 		require.NotNil(t, s.OpenAPI.Description().Components.SecuritySchemes)
 		require.Contains(t, s.OpenAPI.Description().Components.SecuritySchemes, "bearerAuth")
 	})
+}
+
+func TestDefaultLoggingMiddleware(t *testing.T) {
+	// By default request logging is Debug level
+	handler := slogassert.New(t, slog.LevelDebug, nil)
+
+	type testCase struct {
+		name         string
+		config       LoggingConfig
+		handler      func(ContextNoBody) (string, error)
+		requestID    string
+		wantRequest  bool
+		wantResponse bool
+		wantStatus   int
+		wantBody     string
+	}
+
+	tests := []testCase{
+		{
+			name:         "default logging enabled",
+			config:       LoggingConfig{},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  true,
+			wantResponse: true,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+		{
+			name: "disable all logging",
+			config: LoggingConfig{
+				DisableRequest:  true,
+				DisableResponse: true,
+			},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  false,
+			wantResponse: false,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+		{
+			name: "disable only request logging",
+			config: LoggingConfig{
+				DisableRequest: true,
+			},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  false,
+			wantResponse: true,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+		{
+			name: "disable only response logging",
+			config: LoggingConfig{
+				DisableResponse: true,
+			},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  true,
+			wantResponse: false,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+		{
+			name:   "error status code capture",
+			config: LoggingConfig{},
+			handler: func(c ContextNoBody) (string, error) {
+				return "", fmt.Errorf("test error")
+			},
+			wantRequest:  true,
+			wantResponse: true,
+			wantStatus:   http.StatusInternalServerError,
+			wantBody:     "",
+		},
+		{
+			name:   "custom status code",
+			config: LoggingConfig{},
+			handler: func(c ContextNoBody) (string, error) {
+				c.SetStatus(http.StatusCreated)
+				return "created", nil
+			},
+			wantRequest:  true,
+			wantResponse: true,
+			wantStatus:   http.StatusCreated,
+			wantBody:     "created",
+		},
+		{
+			name: "custom request id generator",
+			config: LoggingConfig{
+				RequestIDFunc: func() string {
+					return "custom-func-id"
+				},
+			},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  true,
+			wantResponse: true,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			s := NewServer(
+				WithLogHandler(handler),
+				WithLoggingMiddleware(tc.config),
+			)
+			Get(s, "/test", tc.handler)
+			handler.AssertMessage("registering controller GET /test")
+
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, "/test", nil)
+			if tc.requestID != "" {
+				req.Header.Set("X-Request-ID", tc.requestID)
+			}
+
+			s.Mux.ServeHTTP(rec, req)
+
+			if tc.wantRequest {
+				expectedReqAttrs := map[string]any{
+					"method": "GET",
+					"path":   "/test",
+				}
+
+				if tc.requestID != "" {
+					expectedReqAttrs["request_id"] = tc.requestID
+				}
+
+				handler.AssertPrecise(slogassert.LogMessageMatch{
+					Message: "incoming request",
+					Level:   slog.LevelDebug,
+					Attrs:   expectedReqAttrs,
+				})
+			}
+
+			if tc.wantResponse {
+				expectedResAttrs := map[string]any{
+					"method":      "GET",
+					"path":        "/test",
+					"status_code": tc.wantStatus,
+				}
+
+				if tc.requestID != "" {
+					expectedResAttrs["request_id"] = tc.requestID
+				}
+
+				handler.AssertPrecise(slogassert.LogMessageMatch{
+					Message: "outgoing response",
+					Level:   slog.LevelInfo,
+					Attrs:   expectedResAttrs,
+				})
+			}
+
+			require.Equal(t, tc.wantStatus, rec.Code)
+			require.Contains(t, rec.Body.String(), tc.wantBody)
+
+			// Check request id being propagated to response
+			if tc.requestID != "" {
+				require.Equal(t, tc.requestID, rec.Header().Get("X-Request-ID"))
+			}
+
+			// Check case of custom request id generator is propagated to response
+			if tc.config.RequestIDFunc != nil {
+				require.Equal(t, "custom-func-id", rec.Header().Get("X-Request-ID"))
+			}
+
+			// all logs should be handled here
+			handler.AssertEmpty()
+		})
+	}
 }

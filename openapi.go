@@ -433,7 +433,6 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 
 	for i := range t.NumField() {
 		field := t.Field(i)
-
 		if field.Anonymous {
 			fieldType := field.Type
 			parseStructTags(fieldType, schemaRef)
@@ -453,6 +452,9 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		if property == nil {
 			slog.Warn("Property not found in schema", "property", jsonFieldName)
 			continue
+		}
+		if field.Type.Kind() == reflect.Struct {
+			parseStructTags(field.Type, property)
 		}
 		propertyCopy := *property
 		propertyValue := *propertyCopy.Value
