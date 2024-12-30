@@ -457,6 +457,39 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		propertyCopy := *property
 		propertyValue := *propertyCopy.Value
 
+		if field.Type.Kind() == reflect.Struct {
+			parseStructTags(field.Type, schemaRef.Value.Properties[jsonFieldName])
+		}
+
+		// basic Xml tag support
+		//
+		// We support the following xml tags:
+		// - "xml" field tag: specifies the XML element name
+		// - "xml=attr" field tag: specifies that the field is an XML attribute
+		// - "xml=wrapped" field tag: specifies that the field is wrapped in an XML element
+		xmlTag, ok := field.Tag.Lookup("xml")
+		if ok {
+			xmlTagName := strings.Split(xmlTag, ",")[0] // remove omitempty, etc
+			// if xml tag name is "-", don't add it to the schema
+			if xmlTagName != "-" {
+				if xmlTagName == "" {
+					xmlTagName = field.Name
+				}
+
+				propertyValue.XML = &openapi3.XML{
+					Name: xmlTagName,
+				}
+
+				xmlTags := strings.Split(xmlTag, ",")
+				if slices.Contains(xmlTags, "attr") {
+					propertyValue.XML.Attribute = true
+				}
+				if slices.Contains(xmlTags, "wrapped") {
+					propertyValue.XML.Wrapped = true
+				}
+			}
+		}
+
 		// Example
 		example, ok := field.Tag.Lookup("example")
 		if ok {
