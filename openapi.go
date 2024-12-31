@@ -463,7 +463,7 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 			parseStructTags(field.Type, schemaRef.Value.Properties[jsonFieldName])
 		}
 
-		// basic Xml tag support
+		// basic XML tag support
 		//
 		// We support the following xml tags:
 		// - "xml" field tag: specifies the XML element name
