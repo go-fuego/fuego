@@ -469,26 +469,25 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		// - "xml" field tag: specifies the XML element name
 		// - "xml=attr" field tag: specifies that the field is an XML attribute
 		// - "xml=wrapped" field tag: specifies that the field is wrapped in an XML element
-		xmlTag, ok := field.Tag.Lookup("xml")
-		if ok {
-			xmlTagName := strings.Split(xmlTag, ",")[0] // remove omitempty, etc
-			// if xml tag name is "-", don't add it to the schema
-			if xmlTagName != "-" {
-				if xmlTagName == "" {
-					xmlTagName = field.Name
-				}
+		xmlField := field.Tag.Get("xml")
+		// if xml tag name is "-", don't add it to the schema
+		if xmlField != "-" && xmlField != "" {
+			xmlFieldName := strings.Split(xmlField, ",")[0] // remove omitempty, etc
 
-				propertyValue.XML = &openapi3.XML{
-					Name: xmlTagName,
-				}
+			if xmlFieldName == "" {
+				xmlFieldName = field.Name
+			}
 
-				xmlTags := strings.Split(xmlTag, ",")
-				if slices.Contains(xmlTags, "attr") {
-					propertyValue.XML.Attribute = true
-				}
-				if slices.Contains(xmlTags, "wrapped") {
-					propertyValue.XML.Wrapped = true
-				}
+			propertyValue.XML = &openapi3.XML{
+				Name: xmlFieldName,
+			}
+
+			xmlFields := strings.Split(xmlField, ",")
+			if slices.Contains(xmlFields, "attr") {
+				propertyValue.XML.Attribute = true
+			}
+			if slices.Contains(xmlFields, "wrapped") {
+				propertyValue.XML.Wrapped = true
 			}
 		}
 
