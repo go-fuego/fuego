@@ -21,10 +21,15 @@ import (
 
 func NewOpenAPI() *OpenAPI {
 	desc := NewOpenApiSpec()
+
+	mp := NewMetadataParsers()
+	mp.InitializeMetadataParsers(DefaultParsers)
+
 	return &OpenAPI{
 		description:            &desc,
 		generator:              openapi3gen.NewGenerator(),
 		globalOpenAPIResponses: []openAPIResponse{},
+		metadataParsers:        mp,
 	}
 }
 
@@ -33,6 +38,7 @@ type OpenAPI struct {
 	description            *openapi3.T
 	generator              *openapi3gen.Generator
 	globalOpenAPIResponses []openAPIResponse
+	metadataParsers        *MetadataParsers
 }
 
 func (openAPI *OpenAPI) Description() *openapi3.T {
@@ -403,159 +409,11 @@ func (openapi *OpenAPI) createSchema(key string, v any) *openapi3.SchemaRef {
 		schemaRef.Value.Description = descriptionable.Description()
 	}
 
-	parseStructTags(reflect.TypeOf(v), schemaRef)
+	openapi.metadataParsers.ParseStructTags(reflect.TypeOf(v), schemaRef)
 
 	openapi.Description().Components.Schemas[key] = schemaRef
 
 	return schemaRef
-}
-
-// parseStructTags parses struct tags and modifies the schema accordingly.
-// t must be a struct type.
-// It adds the following struct tags (tag => OpenAPI schema field):
-// - description => description
-// - example => example
-// - json => nullable (if contains omitempty)
-// - validate:
-//   - required => required
-//   - min=1 => min=1 (for integers)
-//   - min=1 => minLength=1 (for strings)
-//   - max=100 => max=100 (for integers)
-//   - max=100 => maxLength=100 (for strings)
-func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-
-	if t.Kind() != reflect.Struct {
-		return
-	}
-
-	for i := range t.NumField() {
-		field := t.Field(i)
-		if field.Anonymous {
-			fieldType := field.Type
-			parseStructTags(fieldType, schemaRef)
-			continue
-		}
-
-		jsonFieldName := field.Tag.Get("json")
-		jsonFieldName = strings.Split(jsonFieldName, ",")[0] // remove omitempty, etc
-		if jsonFieldName == "-" {
-			continue
-		}
-		if jsonFieldName == "" {
-			jsonFieldName = field.Name
-		}
-
-		property := schemaRef.Value.Properties[jsonFieldName]
-		if property == nil {
-			slog.Warn("Property not found in schema", "property", jsonFieldName)
-			continue
-		}
-		if field.Type.Kind() == reflect.Struct {
-			parseStructTags(field.Type, property)
-		}
-		propertyCopy := *property
-		propertyValue := *propertyCopy.Value
-
-		if field.Type.Kind() == reflect.Struct {
-			parseStructTags(field.Type, schemaRef.Value.Properties[jsonFieldName])
-		}
-
-		// basic XML tag support
-		//
-		// We support the following xml tags:
-		// - "xml" field tag: specifies the XML element name
-		// - "xml=attr" field tag: specifies that the field is an XML attribute
-		// - "xml=wrapped" field tag: specifies that the field is wrapped in an XML element
-		xmlField := field.Tag.Get("xml")
-		// if xml tag name is "-", don't add it to the schema
-		if xmlField != "-" && xmlField != "" {
-			xmlFieldName := strings.Split(xmlField, ",")[0] // remove omitempty, etc
-
-			if xmlFieldName == "" {
-				xmlFieldName = field.Name
-			}
-
-			propertyValue.XML = &openapi3.XML{
-				Name: xmlFieldName,
-			}
-
-			xmlFields := strings.Split(xmlField, ",")
-			if slices.Contains(xmlFields, "attr") {
-				propertyValue.XML.Attribute = true
-			}
-			if slices.Contains(xmlFields, "wrapped") {
-				propertyValue.XML.Wrapped = true
-			}
-		}
-
-		// Example
-		example, ok := field.Tag.Lookup("example")
-		if ok {
-			propertyValue.Example = example
-			if propertyValue.Type.Is(openapi3.TypeInteger) {
-				exNum, err := strconv.Atoi(example)
-				if err != nil {
-					slog.Warn("Example might be incorrect (should be integer)", "error", err)
-				}
-				propertyValue.Example = exNum
-			}
-		}
-
-		// Validation
-		validateTag, ok := field.Tag.Lookup("validate")
-		validateTags := strings.Split(validateTag, ",")
-		if ok && slices.Contains(validateTags, "required") {
-			schemaRef.Value.Required = append(schemaRef.Value.Required, jsonFieldName)
-		}
-		for _, validateTag := range validateTags {
-			if strings.HasPrefix(validateTag, "min=") {
-				min, err := strconv.Atoi(strings.Split(validateTag, "=")[1])
-				if err != nil {
-					slog.Warn("Min might be incorrect (should be integer)", "error", err)
-				}
-
-				if propertyValue.Type.Is(openapi3.TypeInteger) {
-					minPtr := float64(min)
-					propertyValue.Min = &minPtr
-				} else if propertyValue.Type.Is(openapi3.TypeString) {
-					//nolint:gosec // disable G115
-					propertyValue.MinLength = uint64(min)
-				}
-			}
-			if strings.HasPrefix(validateTag, "max=") {
-				max, err := strconv.Atoi(strings.Split(validateTag, "=")[1])
-				if err != nil {
-					slog.Warn("Max might be incorrect (should be integer)", "error", err)
-				}
-				if propertyValue.Type.Is(openapi3.TypeInteger) {
-					maxPtr := float64(max)
-					propertyValue.Max = &maxPtr
-				} else if propertyValue.Type.Is(openapi3.TypeString) {
-					//nolint:gosec // disable G115
-					maxPtr := uint64(max)
-					propertyValue.MaxLength = &maxPtr
-				}
-			}
-		}
-
-		// Description
-		description, ok := field.Tag.Lookup("description")
-		if ok {
-			propertyValue.Description = description
-		}
-		jsonTag, ok := field.Tag.Lookup("json")
-		if ok {
-			if strings.Contains(jsonTag, ",omitempty") {
-				propertyValue.Nullable = true
-			}
-		}
-		propertyCopy.Value = &propertyValue
-
-		schemaRef.Value.Properties[jsonFieldName] = &propertyCopy
-	}
 }
 
 type OpenAPIDescriptioner interface {
