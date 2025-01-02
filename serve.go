@@ -3,6 +3,7 @@ package fuego
 import (
 	"html/template"
 	"log/slog"
+	"net"
 	"net/http"
 	"reflect"
 	"time"
@@ -13,8 +14,10 @@ import (
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) Run() error {
-	s.setup()
-	return s.Server.ListenAndServe()
+	if err := s.setup(); err != nil {
+		return err
+	}
+	return s.Server.Serve(s.listener)
 }
 
 // RunTLS starts the server with a TLS listener
@@ -23,12 +26,16 @@ func (s *Server) Run() error {
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) RunTLS(certFile, keyFile string) error {
 	s.isTLS = true
-
-	s.setup()
-	return s.Server.ListenAndServeTLS(certFile, keyFile)
+	if err := s.setup(); err != nil {
+		return err
+	}
+	return s.Server.ServeTLS(s.listener, certFile, keyFile)
 }
 
-func (s *Server) setup() {
+func (s *Server) setup() error {
+	if err := s.setupDefaultListener(); err != nil {
+		return err
+	}
 	go s.OutputOpenAPISpec()
 	s.printStartupMessage()
 
@@ -36,6 +43,18 @@ func (s *Server) setup() {
 	if s.corsMiddleware != nil {
 		s.Server.Handler = s.corsMiddleware(s.Server.Handler)
 	}
+
+	return nil
+}
+
+func (s *Server) setupDefaultListener() error {
+	if s.listener != nil {
+		s.Addr = s.listener.Addr().String()
+		return nil
+	}
+	listener, err := net.Listen("tcp", s.Addr)
+	s.listener = listener
+	return err
 }
 
 func (s *Server) printStartupMessage() {
