@@ -2,26 +2,46 @@ package fuego
 
 import (
 	"bytes"
+	"encoding/xml"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/thejerf/slogassert"
 )
 
 type MyStruct struct {
 	B string `json:"b"`
-	C int    `json:"c"`
+	C int    `json:"c" example:"8" validate:"min=3,max=10" description:"my description"`
 	D bool   `json:"d"`
+}
+
+type MyStructWithNested struct {
+	E      string   `json:"e" example:"E"`
+	F      int      `json:"f"`
+	G      bool     `json:"g"`
+	Nested MyStruct `json:"nested" description:"my struct"`
+}
+
+type MyStructWithEmbedded struct {
+	MyStruct
 }
 
 type MyOutputStruct struct {
 	Name     string `json:"name"`
 	Quantity int    `json:"quantity"`
+}
+
+type InvalidExample struct {
+	XMLName xml.Name `xml:"TestStruct"`
+	MyInt   int      `json:"e" example:"isString" validate:"min=isString,max=isString" `
 }
 
 type testCaseForTagType[V any] struct {
@@ -52,6 +72,14 @@ func Test_tagFromType(t *testing.T) {
 			inputType:   MyStruct{},
 
 			expectedTagValue:     "MyStruct",
+			expectedTagValueType: &openapi3.Types{"object"},
+		},
+		{
+			name:        "nested struct",
+			description: "",
+			inputType:   MyStructWithNested{},
+
+			expectedTagValue:     "MyStructWithNested",
 			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
@@ -201,6 +229,46 @@ func Test_tagFromType(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("struct with embedded struct with tags", func(t *testing.T) {
+		s := NewServer()
+		tag := SchemaTagFromType(s.OpenAPI, MyStructWithEmbedded{})
+		c := tag.Value.Properties["c"]
+		require.NotNil(t, c)
+		require.NotNil(t, c.Value)
+		assert.Equal(t, "my description", c.Value.Description)
+		assert.Equal(t, 8, c.Value.Example)
+		assert.Equal(t, float64(3), *c.Value.Min)
+		assert.Equal(t, float64(10), *c.Value.Max)
+	})
+
+	t.Run("struct with nested tags", func(t *testing.T) {
+		s := NewServer()
+		tag := SchemaTagFromType(s.OpenAPI, MyStructWithNested{})
+		nestedProperty := tag.Value.Properties["nested"]
+		require.NotNil(t, nestedProperty)
+		assert.Equal(t, "my struct", nestedProperty.Value.Description)
+		c := nestedProperty.Value.Properties["c"]
+		require.NotNil(t, c)
+		require.NotNil(t, c.Value)
+		assert.Equal(t, "my description", c.Value.Description)
+		assert.Equal(t, 8, c.Value.Example)
+		assert.Equal(t, float64(3), *c.Value.Min)
+		assert.Equal(t, float64(10), *c.Value.Max)
+	})
+
+	t.Run("ensure warnings", func(t *testing.T) {
+		handler := slogassert.New(t, slog.LevelWarn, nil)
+		s := NewServer(
+			WithLogHandler(handler),
+		)
+
+		SchemaTagFromType(s.OpenAPI, InvalidExample{})
+		handler.AssertMessage("Property not found in schema")
+		handler.AssertMessage("Example might be incorrect (should be integer)")
+		handler.AssertMessage("Max might be incorrect (should be integer)")
+		handler.AssertMessage("Min might be incorrect (should be integer)")
+	})
 }
 
 func TestServer_generateOpenAPI(t *testing.T) {

@@ -80,6 +80,8 @@ type Server struct {
 
 	OpenAPIConfig OpenAPIConfig
 
+	loggingConfig LoggingConfig
+
 	isTLS bool
 }
 
@@ -107,6 +109,8 @@ func NewServer(options ...func(*Server)) *Server {
 		OpenAPIConfig: defaultOpenAPIConfig,
 
 		Security: NewSecurity(),
+
+		loggingConfig: defaultLoggingConfig,
 	}
 
 	// Default options that can be overridden
@@ -145,6 +149,10 @@ func NewServer(options ...func(*Server)) *Server {
 			OptionTags("Auth"),
 			OptionSummary("Refresh"),
 		)
+	}
+
+	if !s.loggingConfig.Disabled() {
+		s.middlewares = append(s.middlewares, newDefaultLogger(s).middleware)
 	}
 
 	return s
@@ -443,5 +451,16 @@ func WithValidator(newValidator *validator.Validate) func(*Server) {
 func WithRouteOptions(options ...func(*BaseRoute)) func(*Server) {
 	return func(s *Server) {
 		s.routeOptions = append(s.routeOptions, options...)
+	}
+}
+
+// WithLoggingMiddleware configures the default logging middleware for the server.
+func WithLoggingMiddleware(loggingConfig LoggingConfig) func(*Server) {
+	return func(s *Server) {
+		s.loggingConfig.DisableRequest = loggingConfig.DisableRequest
+		s.loggingConfig.DisableResponse = loggingConfig.DisableResponse
+		if loggingConfig.RequestIDFunc != nil {
+			s.loggingConfig.RequestIDFunc = loggingConfig.RequestIDFunc
+		}
 	}
 }
