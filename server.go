@@ -41,11 +41,6 @@ type Server struct {
 	// [http.ServeMux.Handle] can also be used to register routes.
 	Mux *http.ServeMux
 
-	// Not stored with the other middlewares because it is a special case :
-	// it applies on routes that are not registered.
-	// For example, it allows OPTIONS /foo even if it is not declared (only GET /foo is declared).
-	corsMiddleware func(http.Handler) http.Handler
-
 	// globalMiddlewares is used to store the options
 	// that will be applied on ALL routes.
 	globalMiddlewares []func(http.Handler) http.Handler
@@ -196,7 +191,9 @@ func WithGlobalMiddleware(middlewares ...func(http.Handler) http.Handler) func(*
 	}
 }
 
-// WithCorsMiddleware is deprecated: Use WithGlobalMiddleware instead.
+// WithCorsMiddleware adds CORS middleware to the server.
+//
+// Deprecated: Please use [WithGlobalMiddleware] instead.
 func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Server) {
 	return WithGlobalMiddleware(corsMiddleware)
 }
