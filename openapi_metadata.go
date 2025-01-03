@@ -194,9 +194,6 @@ func (mp *MetadataParsers) ParseStructTags(t reflect.Type, schemaRef *openapi3.S
 		jsonFieldName := field.Tag.Get("json")
 		jsonFieldName = strings.Split(jsonFieldName, ",")[0]
 		if jsonFieldName == "-" {
-			continue
-		}
-		if jsonFieldName == "" {
 			jsonFieldName = field.Name
 		}
 
