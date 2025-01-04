@@ -42,7 +42,11 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("cache with base config", func(t *testing.T) {
-		s := fuego.NewServer()
+		s := fuego.NewServer(
+			fuego.WithLoggingMiddleware(fuego.LoggingConfig{
+				DisableResponse: true,
+			}),
+		)
 
 		fuego.Get(s, "/without-cache", baseController)
 
@@ -202,7 +206,11 @@ func TestCache(t *testing.T) {
 }
 
 func BenchmarkCache(b *testing.B) {
-	s := fuego.NewServer()
+	s := fuego.NewServer(
+		fuego.WithLoggingMiddleware(fuego.LoggingConfig{
+			DisableResponse: true,
+		}),
+	)
 
 	fuego.Get(s, "/without-cache", baseController)
 
