@@ -123,11 +123,11 @@ func (mp *MetadataParsers) RegisterMetadataParser(name string, parser MetadataPa
 
 	var err error
 	switch position {
-	case "start":
-		mp.insertAtStart(newEntry)
+	case "prepend":
+		mp.prepend(newEntry)
 		slog.Info("Parser registered at start", "name", name)
-	case "end":
-		mp.insertAtEnd(newEntry)
+	case "append":
+		mp.append(newEntry)
 		slog.Info("Parser registered at end", "name", name)
 	case "before", "after":
 		err = mp.insertRelative(newEntry, position, relativeTo)
@@ -140,11 +140,11 @@ func (mp *MetadataParsers) RegisterMetadataParser(name string, parser MetadataPa
 	return nil
 }
 
-func (mp *MetadataParsers) insertAtStart(entry MetadataParserEntry) {
+func (mp *MetadataParsers) prepend(entry MetadataParserEntry) {
 	mp.registeredParsers = append([]MetadataParserEntry{entry}, mp.registeredParsers...)
 }
 
-func (mp *MetadataParsers) insertAtEnd(entry MetadataParserEntry) {
+func (mp *MetadataParsers) append(entry MetadataParserEntry) {
 	mp.registeredParsers = append(mp.registeredParsers, entry)
 }
 
