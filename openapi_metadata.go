@@ -13,11 +13,11 @@ import (
 )
 
 var DefaultParsers = []MetadataParserEntry{
-	{Name: "exampleParser", Parser: ExampleMetadataParser},
-	{Name: "validationParser", Parser: ValidationMetadataParser},
-	{Name: "descriptionParser", Parser: DescriptionMetadataParser},
-	{Name: "XMLParser", Parser: XMLMetadataParser},
-	{Name: "JSONParser", Parser: JSONMetadataParser},
+	{Name: "exampleParser", Parser: MetadataParserExample},
+	{Name: "validationParser", Parser: MetadataParserValidation},
+	{Name: "descriptionParser", Parser: MetadataParserDescription},
+	{Name: "XMLParser", Parser: MetadataParserXML},
+	{Name: "JSONParser", Parser: MetadataParserJSON},
 }
 
 type MetadataParserParams struct {
@@ -232,7 +232,7 @@ func (mp *MetadataParsers) ParseStructTags(t reflect.Type, schemaRef *openapi3.S
 // ExampleMetadataParser extracts the "example" tag from a struct field and assigns
 // it to the Example property of the OpenAPI schema. If the field's type is an integer,
 // it attempts to convert the example value to an integer, logging a warning if conversion fails.
-func ExampleMetadataParser(params MetadataParserParams) {
+func MetadataParserExample(params MetadataParserParams) {
 	if exampleTag, ok := params.Field.Tag.Lookup("example"); ok {
 		params.Property.Example = exampleTag
 		if params.Property.Type.Is(openapi3.TypeInteger) {
@@ -255,7 +255,7 @@ func ExampleMetadataParser(params MetadataParserParams) {
 //
 // The min and max values are interpreted as integers if the property type is an
 // integer, and as string lengths if the property type is a string.
-func ValidationMetadataParser(params MetadataParserParams) {
+func MetadataParserValidation(params MetadataParserParams) {
 	validateTag, ok := params.Field.Tag.Lookup("validate")
 	validateTags := strings.Split(validateTag, ",")
 	if ok && slices.Contains(validateTags, "required") {
@@ -295,7 +295,7 @@ func ValidationMetadataParser(params MetadataParserParams) {
 
 // DescriptionMetadataParser extracts the "description" tag from a struct field and assigns
 // it to the Description property of the OpenAPI schema.
-func DescriptionMetadataParser(params MetadataParserParams) {
+func MetadataParserDescription(params MetadataParserParams) {
 	description, ok := params.Field.Tag.Lookup("description")
 	if ok {
 		params.Property.Description = description
@@ -307,7 +307,7 @@ func DescriptionMetadataParser(params MetadataParserParams) {
 // without making any changes. The XML field name is determined from the tag or defaults
 // to the field's name. The function also checks for additional XML attributes such as
 // "attr" and "wrapped" to set the corresponding properties in the OpenAPI XML schema.
-func XMLMetadataParser(params MetadataParserParams) {
+func MetadataParserXML(params MetadataParserParams) {
 	xmlField := params.Field.Tag.Get("xml")
 	if xmlField == "-" || xmlField == "" {
 		return
@@ -334,7 +334,7 @@ func XMLMetadataParser(params MetadataParserParams) {
 
 // JSONMetadataParser sets the Nullable property of the OpenAPI schema based on the "json" tag.
 // If the "json" tag contains ",omitempty", the Nullable property is set to true.
-func JSONMetadataParser(params MetadataParserParams) {
+func MetadataParserJSON(params MetadataParserParams) {
 	jsonTag, ok := params.Field.Tag.Lookup("json")
 	if ok {
 		if strings.Contains(jsonTag, ",omitempty") {
