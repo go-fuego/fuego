@@ -251,11 +251,12 @@ func TestRegisterMetadataParserAtStart(t *testing.T) {
 	mp := NewMetadataParsers()
 	mp.InitializeMetadataParsers([]MetadataParserEntry{})
 
-	err := mp.RegisterMetadataParser(parserName, func(params MetadataParserParams) { return }, "start", "")
+	err := mp.RegisterMetadataParser(parserName, func(params MetadataParserParams) { return }, "prepend", "")
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
+
 	registeredParsers := mp.GetRegisteredParsers()
 	if len(registeredParsers) == 0 {
 		t.Error("Expected parser to be registered")
@@ -281,7 +282,7 @@ func TestRegisterMetadataParserInvalidPosition(t *testing.T) {
 		t.Error("Expected error for invalid position, got nil")
 	}
 
-	expectedErr := "Invalid position. Use 'start', 'end', 'before', or 'after'"
+	expectedErr := "Invalid position. Use 'prepend', 'append', 'before', or 'after'"
 	if err.Error() != expectedErr {
 		t.Errorf("Expected error message '%s', got '%s'", expectedErr, err.Error())
 	}
@@ -293,7 +294,7 @@ func TestRegisterMetadataParserAtEndPosition(t *testing.T) {
 	mp.InitializeMetadataParsers([]MetadataParserEntry{})
 
 	mockParser := func(params MetadataParserParams) { return }
-	err := mp.RegisterMetadataParser("unique-parser", mockParser, "end", "")
+	err := mp.RegisterMetadataParser("unique-parser", mockParser, "append", "")
 
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(mp.registeredParsers))
@@ -340,7 +341,7 @@ func TestRegisterDuplicateMetadataParserName(t *testing.T) {
 	})
 
 	mockParser := func(params MetadataParserParams) { return }
-	err := mp.RegisterMetadataParser("existing-parser", mockParser, "start", "")
+	err := mp.RegisterMetadataParser("existing-parser", mockParser, "prepend", "")
 
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(mp.registeredParsers))
