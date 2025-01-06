@@ -80,8 +80,7 @@ func (mp *MetadataParsers) InitializeMetadataParsers(customParsers []MetadataPar
 	mp.registeredParsers = []MetadataParserEntry{}
 	mp.registeredNames = make(map[string]bool)
 
-	var parsersToRegister []MetadataParserEntry
-	parsersToRegister = customParsers
+	var parsersToRegister = customParsers
 
 	for _, entry := range parsersToRegister {
 		if _, exists := mp.registeredNames[entry.Name]; exists {
@@ -272,7 +271,7 @@ func MetadataParserValidation(params MetadataParserParams) {
 				minPtr := float64(min)
 				params.Property.Min = &minPtr
 			} else if params.Property.Type.Is(openapi3.TypeString) {
-
+				//nolint:gosec // disable G115
 				params.Property.MinLength = uint64(min)
 			}
 		}
@@ -285,7 +284,7 @@ func MetadataParserValidation(params MetadataParserParams) {
 				maxPtr := float64(max)
 				params.Property.Max = &maxPtr
 			} else if params.Property.Type.Is(openapi3.TypeString) {
-
+				//nolint:gosec // disable G115
 				maxPtr := uint64(max)
 				params.Property.MaxLength = &maxPtr
 			}
