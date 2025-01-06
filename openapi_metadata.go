@@ -94,16 +94,16 @@ func (mp *MetadataParsers) InitializeMetadataParsers(customParsers []MetadataPar
 
 // RegisterMetadataParser registers a new metadata parser with the given name, parser
 // function, and position string. The position string can be one of the following:
-// "start", "end", "before", or "after". If the position is "before" or "after", you
+// "prepend", "append", "before", or "after". If the position is "before" or "after", you
 // must also provide the name of the parser that you want to place the new parser
 // before or after. If the relative parser is not found, an error is returned. If the
 // parser is already registered, the function does nothing and returns nil. The
 // function is thread-safe and ensures that the registeredParsers slice and
 // registeredNames map are accessed in a thread-safe manner.
 func (mp *MetadataParsers) RegisterMetadataParser(name string, parser MetadataParserFunction, position string, relativeTo string) error {
-	validPositions := map[string]bool{"start": true, "end": true, "before": true, "after": true}
+	validPositions := map[string]bool{"prepend": true, "append": true, "before": true, "after": true}
 	if !validPositions[position] {
-		return fmt.Errorf("Invalid position. Use 'start', 'end', 'before', or 'after'")
+		return fmt.Errorf("Invalid position. Use 'prepend', 'append', 'before', or 'after'")
 	}
 	if (position == "before" || position == "after") && mp.findParserIndex(relativeTo) == -1 {
 		return fmt.Errorf("Relative parser '%s' not found", relativeTo)
@@ -124,17 +124,17 @@ func (mp *MetadataParsers) RegisterMetadataParser(name string, parser MetadataPa
 	switch position {
 	case "prepend":
 		mp.prepend(newEntry)
-		slog.Info("Parser registered at start", "name", name)
+		slog.Debug("Parser registered at beginning", "name", name)
 	case "append":
 		mp.append(newEntry)
-		slog.Info("Parser registered at end", "name", name)
+		slog.Debug("Parser registered at end", "name", name)
 	case "before", "after":
 		err = mp.insertRelative(newEntry, position, relativeTo)
 		if err != nil {
 			slog.Error("Error registering parser", "error", err)
 			return err
 		}
-		slog.Info("Parser registered", "name", name, "position", position, "relativeTo", relativeTo)
+		slog.Debug("Parser registered", "name", name, "position", position, "relativeTo", relativeTo)
 	}
 	return nil
 }
