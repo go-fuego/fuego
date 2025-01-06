@@ -3,7 +3,7 @@ package fuego
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -112,18 +112,18 @@ func (e *Engine) saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) er
 
 	err := os.MkdirAll(jsonFolder, 0o750)
 	if err != nil {
-		return errors.New("error creating docs directory")
+		return fmt.Errorf("error creating docs directory: %w", err)
 	}
 
 	f, err := os.Create(jsonSpecLocalPath) // #nosec G304 (file path provided by developer, not by user)
 	if err != nil {
-		return errors.New("error creating file")
+		return fmt.Errorf("error creating file: %w", err)
 	}
 	defer f.Close()
 
 	_, err = f.Write(jsonSpec)
 	if err != nil {
-		return errors.New("error writing file ")
+		return fmt.Errorf("error writing file: %w", err)
 	}
 
 	e.printOpenAPIMessage("JSON file: " + jsonSpecLocalPath)
