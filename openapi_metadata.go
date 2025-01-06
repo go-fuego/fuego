@@ -12,12 +12,20 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
+const (
+	metadataParserExample     = "exampleParser"
+	metadataParserValidation  = "validationParser"
+	metadataParserDescription = "descriptionParser"
+	metadataParserXML         = "XMLParser"
+	metadataParserJSON        = "JSONParser"
+)
+
 var DefaultParsers = []MetadataParserEntry{
-	{Name: "exampleParser", Parser: MetadataParserExample},
-	{Name: "validationParser", Parser: MetadataParserValidation},
-	{Name: "descriptionParser", Parser: MetadataParserDescription},
-	{Name: "XMLParser", Parser: MetadataParserXML},
-	{Name: "JSONParser", Parser: MetadataParserJSON},
+	{Name: metadataParserExample, Parser: MetadataParserExample},
+	{Name: metadataParserValidation, Parser: MetadataParserValidation},
+	{Name: metadataParserDescription, Parser: MetadataParserDescription},
+	{Name: metadataParserXML, Parser: MetadataParserXML},
+	{Name: metadataParserJSON, Parser: MetadataParserJSON},
 }
 
 type MetadataParserParams struct {
