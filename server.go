@@ -82,6 +82,8 @@ type Server struct {
 }
 
 // NewServer creates a new server with the given options.
+// Fuego's [Server] is built on top of the standard library's [http.Server].
+// The OpenAPI and data flow is handled by the [Engine], a lightweight abstraction available for all kind of routers (net/http, Gin, Echo).
 // For example:
 //
 //	app := fuego.NewServer(
@@ -90,6 +92,7 @@ type Server struct {
 //	)
 //
 // Options all begin with `With`.
+// Some options are at engine level, and can be set with [WithEngineOptions].
 // Some default options are set in the function body.
 func NewServer(options ...func(*Server)) *Server {
 	s := &Server{
@@ -405,7 +408,7 @@ func WithOpenAPIServerConfig(config OpenAPIServerConfig) func(*Server) {
 //		),
 //	)
 //
-// Options all begin with `With`.
+// Engine Options all begin with `With`.
 func WithEngineOptions(options ...func(*Engine)) func(*Server) {
 	return func(s *Server) {
 		for _, option := range options {
