@@ -59,6 +59,12 @@ var defaultOpenAPIConfig = OpenAPIConfig{
 	JSONFilePath: "doc/openapi.json",
 }
 
+// WithRequestContentType sets the accepted content types for the engine.
+// By default, the accepted content types is */*.
+func WithRequestContentType(consumes ...string) func(*Engine) {
+	return func(e *Engine) { e.acceptedContentTypes = consumes }
+}
+
 func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 	return func(e *Engine) {
 		if config.JSONFilePath != "" {
