@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -58,10 +59,14 @@ func TestWithRequestContentType(t *testing.T) {
 		route := Post(s, "/test", dummyController)
 
 		content := route.Operation.RequestBody.Value.Content
-		require.NotNil(t, content.Get("application/json"))
-		require.NotNil(t, content.Get("application/xml"))
-		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/json").Schema.Ref)
-		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/xml").Schema.Ref)
+		require.NotNil(t, content["application/json"])
+		assert.Equal(t, "#/components/schemas/ReqBody", content["application/json"].Schema.Ref)
+
+		require.NotNil(t, content["application/xml"])
+		assert.Equal(t, "#/components/schemas/ReqBody", content["application/xml"].Schema.Ref)
+
+		require.Nil(t, content["application/x-yaml"])
+
 		_, ok := s.OpenAPI.Description().Components.RequestBodies["ReqBody"]
 		require.False(t, ok)
 	})
