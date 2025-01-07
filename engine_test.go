@@ -47,3 +47,31 @@ func TestWithErrorHandler(t *testing.T) {
 		require.Equal(t, "Not Found", errResponse.Error())
 	})
 }
+
+func TestWithRequestContentType(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		e := NewEngine()
+		require.Nil(t, e.acceptedContentTypes)
+	})
+
+	t.Run("input", func(t *testing.T) {
+		arr := []string{"application/json", "application/xml"}
+		e := NewEngine(WithRequestContentType("application/json", "application/xml"))
+		require.ElementsMatch(t, arr, e.acceptedContentTypes)
+	})
+
+	t.Run("ensure applied to route", func(t *testing.T) {
+		s := NewServer(WithEngineOptions(
+			WithRequestContentType("application/json", "application/xml")),
+		)
+		route := Post(s, "/test", dummyController)
+
+		content := route.Operation.RequestBody.Value.Content
+		require.NotNil(t, content.Get("application/json"))
+		require.NotNil(t, content.Get("application/xml"))
+		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/json").Schema.Ref)
+		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/xml").Schema.Ref)
+		_, ok := s.OpenAPI.Description().Components.RequestBodies["ReqBody"]
+		require.False(t, ok)
+	})
+}

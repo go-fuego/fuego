@@ -376,7 +376,9 @@ func TestRequestContentType(t *testing.T) {
 	})
 
 	t.Run("override server", func(t *testing.T) {
-		s := fuego.NewServer(fuego.WithRequestContentType("application/json", "application/xml"))
+		s := fuego.NewServer(fuego.WithEngineOptions(
+			fuego.WithRequestContentType("application/json", "application/xml"),
+		))
 		route := fuego.Post(
 			s, "/test", dummyController,
 			fuego.OptionRequestContentType("my/content-type"),
