@@ -59,7 +59,7 @@ func TestWithRequestContentType(t *testing.T) {
 
 		content := route.Operation.RequestBody.Value.Content
 		require.NotNil(t, content.Get("application/json"))
-		require.NotNil(t, content.Get("application/xml"))
+		require.NotNil(t, content.Get("application/x-yaml"))
 		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/json").Schema.Ref)
 		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/xml").Schema.Ref)
 		_, ok := s.OpenAPI.Description().Components.RequestBodies["ReqBody"]
