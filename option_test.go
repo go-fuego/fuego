@@ -340,8 +340,8 @@ func TestRequestContentType(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, "{\"message\":\"hello world\"}\n", w.Body.String())
-		require.Len(t, route.AcceptedContentTypes, 1)
-		require.Equal(t, "application/json", route.AcceptedContentTypes[0])
+		require.Len(t, route.RequestContentTypes, 1)
+		require.Equal(t, "application/json", route.RequestContentTypes[0])
 	})
 
 	t.Run("base", func(t *testing.T) {

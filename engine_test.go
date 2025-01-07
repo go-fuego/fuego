@@ -43,13 +43,13 @@ func TestWithErrorHandler(t *testing.T) {
 func TestWithRequestContentType(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		e := NewEngine()
-		require.Nil(t, e.acceptedContentTypes)
+		require.Nil(t, e.requestContentTypes)
 	})
 
 	t.Run("input", func(t *testing.T) {
 		arr := []string{"application/json", "application/xml"}
 		e := NewEngine(WithRequestContentType("application/json", "application/xml"))
-		require.ElementsMatch(t, arr, e.acceptedContentTypes)
+		require.ElementsMatch(t, arr, e.requestContentTypes)
 	})
 
 	t.Run("ensure applied to route", func(t *testing.T) {
