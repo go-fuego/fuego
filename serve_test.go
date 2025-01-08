@@ -18,6 +18,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,10 +45,26 @@ func (t *testOutTransformer) OutTransform(ctx context.Context) error {
 	return nil
 }
 
+type testOutTransformerOnNotReceiver struct {
+	Name     string `json:"name"`
+	Password string `json:"ans"`
+}
+
+func (t testOutTransformerOnNotReceiver) OutTransform(ctx context.Context) error {
+	t.Name = "M. " + t.Name
+	t.Password = "redacted"
+	return nil
+}
+
 var _ OutTransformer = &testOutTransformer{}
+var _ OutTransformer = &testOutTransformerOnNotReceiver{}
 
 func testControllerWithOutTransformer(c ContextNoBody) (testOutTransformer, error) {
 	return testOutTransformer{Name: "John"}, nil
+}
+
+func testControllerWithOutTransformerOnValueReceiver(c ContextNoBody) (testOutTransformerOnNotReceiver, error) {
+	return testOutTransformerOnNotReceiver{Name: "John"}, nil
 }
 
 func testControllerWithOutTransformerStar(c ContextNoBody) (*testOutTransformer, error) {
@@ -596,4 +613,40 @@ func newTLSTestHelper() (*tlsTestHelper, error) {
 	}
 	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateKeyBytes})
 	return &tlsTestHelper{cert: certPEM, key: keyPEM}, nil
+}
+
+func TestFlow(t *testing.T) {
+	newTestCtx := func(w *httptest.ResponseRecorder) *netHttpContext[any] {
+		return NewNetHTTPContext[any](
+			BaseRoute{},
+			w,
+			httptest.NewRequest("GET", "/", nil),
+			readOptions{},
+		)
+	}
+
+	t.Run("base", func(t *testing.T) {
+		e := NewEngine()
+		w := httptest.NewRecorder()
+		ctx := newTestCtx(w)
+		Flow(e, ctx, testController)
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, crlf(`{"ans":"Hello World"}`), w.Body.String())
+	})
+	t.Run("with nil return in ErrorHandler", func(t *testing.T) {
+		e := NewEngine(WithErrorHandler(func(err error) error { return nil }))
+		w := httptest.NewRecorder()
+		ctx := newTestCtx(w)
+		Flow(e, ctx, testControllerWithError)
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		assert.Equal(t, crlf(`null`), w.Body.String())
+	})
+	t.Run("transformOut error on value receiver", func(t *testing.T) {
+		e := NewEngine()
+		w := httptest.NewRecorder()
+		ctx := newTestCtx(w)
+		Flow(e, ctx, testControllerWithOutTransformerOnValueReceiver)
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		assert.Equal(t, crlf(`{}`), w.Body.String())
+	})
 }
