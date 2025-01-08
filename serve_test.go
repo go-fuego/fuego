@@ -388,29 +388,32 @@ func TestIni(t *testing.T) {
 	})
 }
 
-func TestServer_Run(t *testing.T) {
-	runServer := func(s *Server) (*Server, func()) {
-		Get(s, "/test", func(ctx ContextNoBody) (string, error) {
-			return "OK", nil
-		})
+// runServer is a helper function to run a server in a goroutine and return a function to stop it.
+func runServer(t testing.TB, s *Server) func() {
+	t.Helper()
 
-		go func() {
-			s.Run()
-		}()
-		return s, func() { // stop our test server when we are done
-			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-			if err := s.Server.Shutdown(ctx); err != nil {
-				t.Log(err)
-			}
-			cancel()
+	Get(s, "/test", func(ctx ContextNoBody) (string, error) {
+		return "OK", nil
+	})
+
+	go func() {
+		s.Run()
+	}()
+	return func() { // stop our test server when we are done
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		if err := s.Server.Shutdown(ctx); err != nil {
+			t.Log(err)
 		}
+		cancel()
 	}
+}
+
+func TestServer_Run(t *testing.T) {
 	// This is not a standard test, it is here to ensure that the server can run.
 	// Please do not run this kind of test for your controllers, it is NOT unit testing.
 	t.Run("can run server", func(t *testing.T) {
-		s, shutdown := runServer(NewServer(
-			WithoutLogger(),
-		))
+		s := NewServer(WithoutLogger())
+		shutdown := runServer(t, s)
 		defer shutdown()
 
 		require.Eventually(t, func() bool {
@@ -425,9 +428,8 @@ func TestServer_Run(t *testing.T) {
 	t.Run("can run server WithListener", func(t *testing.T) {
 		listener, err := net.Listen("tcp", ":8080")
 		require.NoError(t, err)
-		s, shutdown := runServer(NewServer(
-			WithListener(listener),
-		))
+		s := NewServer(WithListener(listener))
+		shutdown := runServer(t, s)
 		defer shutdown()
 
 		require.Eventually(t, func() bool {
