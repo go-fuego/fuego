@@ -33,10 +33,6 @@ var defaultOpenAPIServerConfig = OpenAPIServerConfig{
 }
 
 type Server struct {
-	startTime time.Time
-
-	fs fs.FS
-
 	// The underlying HTTP server
 	*http.Server
 
@@ -61,11 +57,15 @@ type Server struct {
 	// Used to serialize the error response. Defaults to [SendError].
 	SerializeError ErrorSender
 
+	startTime time.Time
+
 	Security Security
 
 	autoAuth AutoAuthConfig
+	fs       fs.FS
 
-	basePath string // Base path of the group
+	// Base path of the group
+	basePath string
 
 	loggingConfig LoggingConfig
 
@@ -78,10 +78,8 @@ type Server struct {
 	middlewares []func(http.Handler) http.Handler
 
 	maxBodySize int64
-
 	// If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
-	DisallowUnknownFields bool
-
+	DisallowUnknownFields  bool
 	disableStartupMessages bool
 	disableAutoGroupTags   bool
 	isTLS                  bool

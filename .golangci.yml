@@ -28,7 +28,7 @@ linters-settings:
     enable-all: true
     disable:
       - shadow
-
+      - fieldalignment
 
   gofumpt:
     extra-rules: true

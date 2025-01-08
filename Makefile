@@ -28,8 +28,6 @@ dependencies-analyze:
 	govulncheck ./...
 
 fmt:
-	which betteralign || go install github.com/dkorunic/betteralign/cmd/betteralign@latest
-	betteralign -fix -apply .
 	which gofumpt || go install mvdan.cc/gofumpt@latest
 	gofumpt -l -w -extra .
 
