@@ -16,14 +16,14 @@ import (
 )
 
 type OpenAPIServerConfig struct {
-	// If true, the server will not serve the Swagger UI
-	DisableSwaggerUI bool
-	// URL to serve the swagger UI
-	SwaggerURL string
 	// Handler to serve the OpenAPI UI from spec URL
 	UIHandler func(specURL string) http.Handler
+	// URL to serve the swagger UI
+	SwaggerURL string
 	// URL to serve the OpenAPI JSON spec
 	SpecURL string
+	// If true, the server will not serve the Swagger UI
+	DisableSwaggerUI bool
 }
 
 var defaultOpenAPIServerConfig = OpenAPIServerConfig{
@@ -46,29 +46,11 @@ type Server struct {
 	// For example, it allows OPTIONS /foo even if it is not declared (only GET /foo is declared).
 	corsMiddleware func(http.Handler) http.Handler
 
-	// routeOptions is used to store the options
-	// that will be applied of the route.
-	routeOptions []func(*BaseRoute)
-
-	middlewares []func(http.Handler) http.Handler
-
-	disableStartupMessages bool
-	disableAutoGroupTags   bool
-	basePath               string // Base path of the group
-
 	*Engine
 
 	listener net.Listener
 
-	Security Security
-
-	autoAuth AutoAuthConfig
-	fs       fs.FS
 	template *template.Template // TODO: use preparsed templates
-
-	// If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
-	DisallowUnknownFields bool
-	maxBodySize           int64
 
 	// Custom serializer that overrides the default one.
 	Serialize Sender
@@ -77,11 +59,30 @@ type Server struct {
 
 	startTime time.Time
 
+	Security Security
+
+	autoAuth AutoAuthConfig
+	fs       fs.FS
+
+	// Base path of the group
+	basePath string
+
 	loggingConfig LoggingConfig
 
 	OpenAPIServerConfig OpenAPIServerConfig
 
-	isTLS bool
+	// routeOptions is used to store the options
+	// that will be applied of the route.
+	routeOptions []func(*BaseRoute)
+
+	middlewares []func(http.Handler) http.Handler
+
+	maxBodySize int64
+	// If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
+	DisallowUnknownFields  bool
+	disableStartupMessages bool
+	disableAutoGroupTags   bool
+	isTLS                  bool
 }
 
 // NewServer creates a new server with the given options.

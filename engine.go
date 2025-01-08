@@ -43,14 +43,14 @@ type Engine struct {
 }
 
 type OpenAPIConfig struct {
+	// Local path to save the OpenAPI JSON spec
+	JSONFilePath string
 	// If true, the server will not serve nor generate any OpenAPI resources
 	Disabled bool
 	// If true, the engine will not print messages
 	DisableMessages bool
 	// If true, the engine will not save the OpenAPI JSON spec locally
 	DisableLocalSave bool
-	// Local path to save the OpenAPI JSON spec
-	JSONFilePath string
 	// Pretty prints the OpenAPI spec with proper JSON indentation
 	PrettyFormatJSON bool
 }
