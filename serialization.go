@@ -58,7 +58,11 @@ func transformOut[T any](ctx context.Context, ans T) (T, error) {
 
 	_, ok := any(ans).(OutTransformer)
 	if ok {
-		return ans, errors.New("OutTransformer must be implemented by a POINTER RECEIVER. Please read the [OutTransformer] documentation")
+		err := errors.New("OutTransformer must be implemented by a POINTER RECEIVER. Please read the [OutTransformer] documentation")
+		slog.Warn(err.Error())
+		return ans, InternalServerError{
+			Err: err,
+		}
 	}
 
 	outTransformer, ok := any(&ans).(OutTransformer)
