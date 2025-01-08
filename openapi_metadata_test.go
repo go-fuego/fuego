@@ -250,8 +250,7 @@ func TestRegisterMetadataParserInvalidPosition(t *testing.T) {
 		return
 	}, "invalid", "")
 
-	require.Error(t, err)
-	assert.Equal(t, expectedErr, err.Error())
+	require.EqualError(t, err, expectedErr)
 }
 
 // Register parser at end position with unique name
