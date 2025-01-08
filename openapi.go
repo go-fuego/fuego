@@ -315,6 +315,7 @@ func dive(openapi *OpenAPI, t reflect.Type, tag SchemaTag, maxDepth int) SchemaT
 		if t.Kind() == reflect.Struct && strings.HasPrefix(tag.Name, "DataOrTemplate") {
 			return dive(openapi, t.Field(0).Type, tag, maxDepth-1)
 		}
+		tag.Name = transformTypeName(tag.Name)
 		tag.Ref = "#/components/schemas/" + tag.Name
 		tag.Value = openapi.getOrCreateSchema(tag.Name, reflect.New(t).Interface())
 
@@ -373,6 +374,8 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 	if t.Kind() != reflect.Struct {
 		return
 	}
+
+	schemaRef.Value.Required = []string{}
 
 	for i := range t.NumField() {
 		field := t.Field(i)
@@ -471,4 +474,30 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 
 type OpenAPIDescriptioner interface {
 	Description() string
+}
+
+// Transform the type name to a more readable & valid OpenAPI 3 format.
+// Useful for generics.
+// Example: "BareSuccessResponse[github.com/go-fuego/fuego/examples/petstore/models.Pets]" -> "BareSuccessResponse_models.Pets"
+func transformTypeName(s string) string {
+	// Find the positions of the '[' and ']'
+	start := strings.Index(s, "[")
+	if start == -1 {
+		return s
+	}
+	end := strings.Index(s, "]")
+	if end == -1 {
+		return s
+	}
+
+	prefix := s[:start]
+
+	inside := s[start+1 : end]
+
+	lastSlash := strings.LastIndex(inside, "/")
+	if lastSlash != -1 {
+		inside = inside[lastSlash+1:]
+	}
+
+	return prefix + "_" + inside
 }
