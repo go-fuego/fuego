@@ -128,7 +128,9 @@ func (mp *MetadataParsers) RegisterMetadataParser(name string, parser MetadataPa
 
 	for _, entry := range mp.registeredParsers {
 		if entry.Name == name {
-			return nil
+			// Remove the existing parser before re-registering
+			mp.remove(entry)
+			break
 		}
 	}
 
@@ -185,6 +187,17 @@ func (mp *MetadataParsers) insertAfter(entry MetadataParserEntry, relativeTo str
 	offset := 1
 	mp.registeredParsers = append(mp.registeredParsers[:index+offset], append([]MetadataParserEntry{entry}, mp.registeredParsers[index+offset:]...)...)
 	return nil
+}
+
+func (mp *MetadataParsers) remove(entry MetadataParserEntry) error {
+	for i, e := range mp.registeredParsers {
+		if e.Name == entry.Name {
+			// Remove the entry by slicing out the matched element
+			mp.registeredParsers = append(mp.registeredParsers[:i], mp.registeredParsers[i+1:]...)
+			return nil
+		}
+	}
+	return fmt.Errorf("parser '%s' not found", entry.Name)
 }
 
 func (mp *MetadataParsers) findParserIndex(name string) int {
