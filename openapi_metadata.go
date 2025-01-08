@@ -379,14 +379,9 @@ func MetadataParserXML(params MetadataParserParams) {
 	} else if params.Field.Type.Kind() == reflect.Slice {
 		elemType := params.Field.Type.Elem()
 		if elemType.Kind() == reflect.Struct {
-			params.Property.Properties = nil
-			params.Property.Type = openapi3.NewArraySchema()
+			params.Property = openapi3.NewArraySchema()
 			params.Property.Items = &openapi3.SchemaRef{
-				Value: &openapi3.Schema{
-					XML: &openapi3.XML{
-						Wrapped: true,
-					},
-				},
+				Value: &openapi3.Schema{},
 			}
 
 			processXMLStructChildren(MetadataParserParams{
