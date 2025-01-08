@@ -349,7 +349,7 @@ func MetadataParserXML(params MetadataParserParams) {
 		elemType := params.Field.Type.Elem()
 		if elemType.Kind() == reflect.Struct {
 			params.Property.Properties = nil
-			params.Property.Type = &openapi3.Types{"array"}
+			params.Property.Type = openapi3.NewArraySchema()
 			params.Property.Items = &openapi3.SchemaRef{
 				Value: &openapi3.Schema{
 					XML: &openapi3.XML{
