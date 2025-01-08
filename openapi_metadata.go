@@ -31,13 +31,13 @@ var DefaultParsers = []MetadataParserEntry{
 
 type MetadataParserParams struct {
 	// Reflective information of a struct field
-	Field      reflect.StructField
+	Field reflect.StructField
 	// Name of the field
-	FieldName  string
+	FieldName string
 	// OpenAPI schema of the field
-	Property   *openapi3.Schema
+	Property *openapi3.Schema
 	// Reference to the OpenAPI schema
-	SchemaRef  *openapi3.SchemaRef
+	SchemaRef *openapi3.SchemaRef
 	// Additional metadata as key-value pairs
 	Additional map[string]interface{}
 }
@@ -142,13 +142,20 @@ func (mp *MetadataParsers) RegisterMetadataParser(name string, parser MetadataPa
 	case "append":
 		mp.append(newEntry)
 		slog.Debug("Parser registered at end", "name", name)
-	case "before", "after":
-		err = mp.insertRelative(newEntry, position, relativeTo)
+	case "before":
+		err = mp.insertBefore(newEntry, relativeTo)
 		if err != nil {
 			slog.Error("Error registering parser", "error", err)
 			return err
 		}
-		slog.Debug("Parser registered", "name", name, "position", position, "relativeTo", relativeTo)
+		slog.Debug("Parser registered", "name", name, "position", "before", "relativeTo", relativeTo)
+	case "after":
+		err = mp.insertAfter(newEntry, relativeTo)
+		if err != nil {
+			slog.Error("Error registering parser", "error", err)
+			return err
+		}
+		slog.Debug("Parser registered", "name", name, "position", "after", "relativeTo", relativeTo)
 	}
 	return nil
 }
@@ -161,15 +168,21 @@ func (mp *MetadataParsers) append(entry MetadataParserEntry) {
 	mp.registeredParsers = append(mp.registeredParsers, entry)
 }
 
-func (mp *MetadataParsers) insertRelative(entry MetadataParserEntry, position string, relativeTo string) error {
+func (mp *MetadataParsers) insertBefore(entry MetadataParserEntry, relativeTo string) error {
 	index := mp.findParserIndex(relativeTo)
 	if index == -1 {
 		return fmt.Errorf("Relative parser '%s' not found", relativeTo)
 	}
-	offset := 0
-	if position == "after" {
-		offset = 1
+	mp.registeredParsers = append(mp.registeredParsers[:index], append([]MetadataParserEntry{entry}, mp.registeredParsers[index:]...)...)
+	return nil
+}
+
+func (mp *MetadataParsers) insertAfter(entry MetadataParserEntry, relativeTo string) error {
+	index := mp.findParserIndex(relativeTo)
+	if index == -1 {
+		return fmt.Errorf("Relative parser '%s' not found", relativeTo)
 	}
+	offset := 1
 	mp.registeredParsers = append(mp.registeredParsers[:index+offset], append([]MetadataParserEntry{entry}, mp.registeredParsers[index+offset:]...)...)
 	return nil
 }
