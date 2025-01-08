@@ -30,11 +30,16 @@ var DefaultParsers = []MetadataParserEntry{
 }
 
 type MetadataParserParams struct {
-	Field      reflect.StructField    // Reflective information of a struct field
-	FieldName  string                 // Name of the field
-	Property   *openapi3.Schema       // OpenAPI schema of the field
-	SchemaRef  *openapi3.SchemaRef    // Reference to the OpenAPI schema
-	Additional map[string]interface{} // Additional metadata as key-value pairs
+	// Reflective information of a struct field
+	Field      reflect.StructField
+	// Name of the field
+	FieldName  string
+	// OpenAPI schema of the field
+	Property   *openapi3.Schema
+	// Reference to the OpenAPI schema
+	SchemaRef  *openapi3.SchemaRef
+	// Additional metadata as key-value pairs
+	Additional map[string]interface{}
 }
 
 type MetadataParserFunction func(params MetadataParserParams)
