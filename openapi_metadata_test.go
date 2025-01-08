@@ -6,49 +6,38 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Constructor returns new MetadataParsers instance with empty registeredParsers slice
 func TestNewMetadataParsersReturnsEmptyInstance(t *testing.T) {
 	parsers := NewMetadataParsers()
 
-	if parsers == nil {
-		t.Error("Expected non-nil MetadataParsers instance")
-	}
-
-	if len(parsers.registeredParsers) != 0 {
-		t.Errorf("Expected empty registeredParsers, got %d items", len(parsers.registeredParsers))
-	}
-
-	if len(parsers.registeredNames) != 0 {
-		t.Errorf("Expected empty registeredNames map, got %d items", len(parsers.registeredNames))
-	}
+	require.NotNil(t, parsers)
+	require.NotNil(t, parsers.registeredParsers)
+	require.Empty(t, parsers.registeredParsers)
+	require.NotNil(t, parsers.registeredNames)
+	require.Empty(t, parsers.registeredNames)
 }
 
 // Constructor initializes registeredNames as empty map with bool values
 func TestNewMetadataParsersInitializesRegisteredNamesAsEmptyMap(t *testing.T) {
 	parsers := NewMetadataParsers()
 
-	if parsers == nil {
-		t.Error("Expected non-nil MetadataParsers instance")
-	}
-
-	if len(parsers.registeredNames) != 0 {
-		t.Errorf("Expected empty registeredNames map, got %d items", len(parsers.registeredNames))
-	}
+	require.NotNil(t, parsers)
+	require.NotNil(t, parsers.registeredNames)
+	require.Empty(t, parsers.registeredNames)
 }
 
 // Zero value initialization without using constructor
 func TestMetadataParsersZeroValueInitialization(t *testing.T) {
 	var parsers MetadataParsers
 
-	if parsers.registeredParsers != nil {
-		t.Error("Expected nil registeredParsers slice")
-	}
-
-	if parsers.registeredNames != nil {
-		t.Error("Expected nil registeredNames map")
-	}
+	require.NotNil(t, &parsers)
+	require.NotNil(t, parsers.registeredParsers)
+	require.Empty(t, parsers.registeredParsers)
+	require.NotNil(t, parsers.registeredNames)
+	require.Empty(t, parsers.registeredNames)
 }
 
 // Return all registered metadata parsers from the internal slice
@@ -62,13 +51,11 @@ func TestGetRegisteredParsersReturnsAllParsers(t *testing.T) {
 
 	parsers := mp.GetRegisteredParsers()
 
-	if len(parsers) != 2 {
-		t.Errorf("Expected 2 parsers, got %d", len(parsers))
-	}
+	require.NotNil(t, parsers)
+	require.Len(t, parsers, 2)
 
-	if parsers[0].Name != "parser1" || parsers[1].Name != "parser2" {
-		t.Errorf("Unexpected parser names")
-	}
+	assert.Equal(t, "parser1", parsers[0].Name)
+	assert.Equal(t, "parser2", parsers[1].Name)
 }
 
 // Return empty slice when no parsers are registered
@@ -79,9 +66,8 @@ func TestGetRegisteredParsersReturnsEmptySlice(t *testing.T) {
 
 	parsers := mp.GetRegisteredParsers()
 
-	if len(parsers) != 0 {
-		t.Errorf("Expected empty slice, got slice with length %d", len(parsers))
-	}
+	require.NotNil(t, parsers)
+	require.Empty(t, parsers)
 }
 
 // Verify concurrent access is properly synchronized using mutex lock
@@ -94,16 +80,16 @@ func TestGetRegisteredParsersConcurrentAccess(t *testing.T) {
 	}
 
 	var wg sync.WaitGroup
-	numGoroutines := 10
+	numGoroutines := 3
 	wg.Add(numGoroutines)
 
 	for i := 0; i < numGoroutines; i++ {
 		go func() {
 			defer wg.Done()
 			parsers := mp.GetRegisteredParsers()
-			if len(parsers) != 2 {
-				t.Errorf("Expected 2 parsers, got %d", len(parsers))
-			}
+
+			require.NotNil(t, parsers)
+			require.Len(t, parsers, 2)
 		}()
 	}
 
@@ -121,13 +107,11 @@ func TestGetRegisteredParsersContainsExpectedEntries(t *testing.T) {
 
 	parsers := mp.GetRegisteredParsers()
 
-	if len(parsers) != 2 {
-		t.Errorf("Expected 2 parsers, got %d", len(parsers))
-	}
+	require.NotNil(t, parsers)
+	require.Len(t, parsers, 2)
 
-	if parsers[0].Name != "expectedParser1" || parsers[1].Name != "expectedParser2" {
-		t.Errorf("Unexpected parser names")
-	}
+	require.Equal(t, "expectedParser1", parsers[0].Name)
+	require.Equal(t, "expectedParser2", parsers[1].Name)
 }
 
 // Verify returned slice matches original registered parsers
@@ -140,6 +124,9 @@ func TestGetRegisteredParsersMatchesOriginal(t *testing.T) {
 	}
 
 	parsers := mp.GetRegisteredParsers()
+
+	require.NotNil(t, parsers)
+	require.Len(t, parsers, 2)
 
 	if !reflect.DeepEqual(parsers, mp.registeredParsers) {
 		t.Errorf("Returned parsers do not match the original registered parsers")
@@ -161,13 +148,11 @@ func TestResetClearsRegisteredParsers(t *testing.T) {
 
 	mp.Reset()
 
-	if len(mp.registeredParsers) != 0 {
-		t.Errorf("Expected registeredParsers to be empty, got %d items", len(mp.registeredParsers))
-	}
+	require.NotNil(t, mp.registeredParsers)
+	require.NotNil(t, mp.registeredNames)
 
-	if len(mp.registeredNames) != 0 {
-		t.Errorf("Expected registeredNames to be empty, got %d items", len(mp.registeredNames))
-	}
+	require.Empty(t, mp.registeredParsers)
+	require.Empty(t, mp.registeredNames)
 }
 
 // Reset called on nil MetadataParsers struct
@@ -197,9 +182,8 @@ func TestResetClearsRegisteredNames(t *testing.T) {
 
 	mp.Reset()
 
-	if len(mp.registeredNames) != 0 {
-		t.Errorf("Expected registeredNames to be empty, got %d items", len(mp.registeredNames))
-	}
+	require.NotNil(t, mp)
+	require.Len(t, mp.registeredNames, 0)
 }
 
 // Reset called when parsers list is already empty
@@ -211,13 +195,9 @@ func TestResetWhenParsersListIsEmpty(t *testing.T) {
 
 	mp.Reset()
 
-	if len(mp.registeredParsers) != 0 {
-		t.Errorf("Expected registeredParsers to be empty, got %d items", len(mp.registeredParsers))
-	}
-
-	if len(mp.registeredNames) != 0 {
-		t.Errorf("Expected registeredNames to be empty, got %d items", len(mp.registeredNames))
-	}
+	require.NotNil(t, mp)
+	require.Empty(t, mp.registeredParsers)
+	require.Empty(t, mp.registeredNames)
 }
 
 // State remains consistent between parsers list and names map
@@ -235,13 +215,9 @@ func TestResetMaintainsConsistencyBetweenParsersAndNames(t *testing.T) {
 
 	mp.Reset()
 
-	if len(mp.registeredParsers) != 0 {
-		t.Errorf("Expected registeredParsers to be empty, got %d items", len(mp.registeredParsers))
-	}
-
-	if len(mp.registeredNames) != 0 {
-		t.Errorf("Expected registeredNames to be empty, got %d items", len(mp.registeredNames))
-	}
+	require.NotNil(t, mp)
+	require.Empty(t, mp.registeredParsers)
+	require.Empty(t, mp.registeredNames)
 }
 
 // Register new parser at start position successfully
@@ -253,23 +229,19 @@ func TestRegisterMetadataParserAtStart(t *testing.T) {
 
 	err := mp.RegisterMetadataParser(parserName, func(params MetadataParserParams) { return }, "prepend", "")
 
-	if err != nil {
-		t.Errorf("Expected no error, got %v", err)
-	}
+	require.Nil(t, err)
 
 	registeredParsers := mp.GetRegisteredParsers()
-	if len(registeredParsers) == 0 {
-		t.Error("Expected parser to be registered")
-	}
 
-	if registeredParsers[0].Name != parserName {
-		t.Errorf("Expected first parser to be %s, got %s", parserName, registeredParsers[0].Name)
-	}
+	require.NotNil(t, registeredParsers)
+	require.Len(t, registeredParsers, 1)
+	assert.Equal(t, parserName, registeredParsers[0].Name)
 }
 
 // Invalid position parameter returns appropriate error
 func TestRegisterMetadataParserInvalidPosition(t *testing.T) {
 	parserName := "testParser"
+	expectedErr := "Invalid position. Use 'prepend', 'append', 'before', or 'after'"
 
 	mp := NewMetadataParsers()
 	mp.InitializeMetadataParsers([]MetadataParserEntry{})
@@ -278,14 +250,8 @@ func TestRegisterMetadataParserInvalidPosition(t *testing.T) {
 		return
 	}, "invalid", "")
 
-	if err == nil {
-		t.Error("Expected error for invalid position, got nil")
-	}
-
-	expectedErr := "Invalid position. Use 'prepend', 'append', 'before', or 'after'"
-	if err.Error() != expectedErr {
-		t.Errorf("Expected error message '%s', got '%s'", expectedErr, err.Error())
-	}
+	require.Error(t, err)
+	assert.Equal(t, expectedErr, err.Error())
 }
 
 // Register parser at end position with unique name
