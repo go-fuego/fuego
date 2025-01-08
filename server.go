@@ -15,22 +15,21 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type OpenAPIConfig struct {
-	DisableSwagger   bool                              // If true, the server will not serve the Swagger UI nor the OpenAPI JSON spec
-	DisableSwaggerUI bool                              // If true, the server will not serve the Swagger UI
-	DisableLocalSave bool                              // If true, the server will not save the OpenAPI JSON spec locally
-	SwaggerUrl       string                            // URL to serve the swagger UI
-	UIHandler        func(specURL string) http.Handler // Handler to serve the OpenAPI UI from spec URL
-	JsonUrl          string                            // URL to serve the OpenAPI JSON spec
-	JsonFilePath     string                            // Local path to save the OpenAPI JSON spec
-	PrettyFormatJson bool                              // Pretty prints the OpenAPI spec with proper JSON indentation
+type OpenAPIServerConfig struct {
+	// If true, the server will not serve the Swagger UI
+	DisableSwaggerUI bool
+	// URL to serve the swagger UI
+	SwaggerURL string
+	// Handler to serve the OpenAPI UI from spec URL
+	UIHandler func(specURL string) http.Handler
+	// URL to serve the OpenAPI JSON spec
+	SpecURL string
 }
 
-var defaultOpenAPIConfig = OpenAPIConfig{
-	SwaggerUrl:   "/swagger",
-	JsonUrl:      "/swagger/openapi.json",
-	JsonFilePath: "doc/openapi.json",
-	UIHandler:    DefaultOpenAPIHandler,
+var defaultOpenAPIServerConfig = OpenAPIServerConfig{
+	SwaggerURL: "/swagger",
+	SpecURL:    "/swagger/openapi.json",
+	UIHandler:  DefaultOpenAPIHandler,
 }
 
 type Server struct {
@@ -78,14 +77,16 @@ type Server struct {
 
 	startTime time.Time
 
-	OpenAPIConfig OpenAPIConfig
-
 	loggingConfig LoggingConfig
+
+	OpenAPIServerConfig OpenAPIServerConfig
 
 	isTLS bool
 }
 
 // NewServer creates a new server with the given options.
+// Fuego's [Server] is built on top of the standard library's [http.Server].
+// The OpenAPI and data flow is handled by the [Engine], a lightweight abstraction available for all kind of routers (net/http, Gin, Echo).
 // For example:
 //
 //	app := fuego.NewServer(
@@ -93,7 +94,8 @@ type Server struct {
 //		fuego.WithoutLogger(),
 //	)
 //
-// Option all begin with `With`.
+// Options all begin with `With`.
+// Some options are at engine level, and can be set with [WithEngineOptions].
 // Some default options are set in the function body.
 func NewServer(options ...func(*Server)) *Server {
 	s := &Server{
@@ -106,7 +108,7 @@ func NewServer(options ...func(*Server)) *Server {
 		Mux:    http.NewServeMux(),
 		Engine: NewEngine(),
 
-		OpenAPIConfig: defaultOpenAPIConfig,
+		OpenAPIServerConfig: defaultOpenAPIServerConfig,
 
 		Security: NewSecurity(),
 
@@ -358,14 +360,12 @@ func WithErrorSerializer(serializer ErrorSender) func(*Server) {
 	return func(c *Server) { c.SerializeError = serializer }
 }
 
-// WithErrorHandler sets a customer error handler for the server
-func WithErrorHandler(errorHandler func(err error) error) func(*Server) {
-	return func(c *Server) { c.ErrorHandler = errorHandler }
-}
-
 // WithoutStartupMessages disables the startup message
 func WithoutStartupMessages() func(*Server) {
-	return func(c *Server) { c.disableStartupMessages = true }
+	return func(c *Server) {
+		c.disableStartupMessages = true
+		c.OpenAPIConfig.DisableMessages = true
+	}
 }
 
 // WithoutLogger disables the default logger.
@@ -391,37 +391,50 @@ func WithListener(listener net.Listener) func(*Server) {
 	}
 }
 
-func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
+func WithOpenAPIServerConfig(config OpenAPIServerConfig) func(*Server) {
 	return func(s *Server) {
-		if openapiConfig.JsonUrl != "" {
-			s.OpenAPIConfig.JsonUrl = openapiConfig.JsonUrl
+		if config.SpecURL != "" {
+			s.OpenAPIServerConfig.SpecURL = config.SpecURL
+		}
+		if config.SwaggerURL != "" {
+			s.OpenAPIServerConfig.SwaggerURL = config.SwaggerURL
+		}
+		if config.UIHandler != nil {
+			s.OpenAPIServerConfig.UIHandler = config.UIHandler
 		}
 
-		if openapiConfig.SwaggerUrl != "" {
-			s.OpenAPIConfig.SwaggerUrl = openapiConfig.SwaggerUrl
-		}
+		s.OpenAPIServerConfig.DisableSwaggerUI = config.DisableSwaggerUI
 
-		if openapiConfig.JsonFilePath != "" {
-			s.OpenAPIConfig.JsonFilePath = openapiConfig.JsonFilePath
-		}
-
-		if openapiConfig.UIHandler != nil {
-			s.OpenAPIConfig.UIHandler = openapiConfig.UIHandler
-		}
-
-		s.OpenAPIConfig.DisableSwagger = openapiConfig.DisableSwagger
-		s.OpenAPIConfig.DisableSwaggerUI = openapiConfig.DisableSwaggerUI
-		s.OpenAPIConfig.DisableLocalSave = openapiConfig.DisableLocalSave
-		s.OpenAPIConfig.PrettyFormatJson = openapiConfig.PrettyFormatJson
-
-		if !validateJsonSpecUrl(s.OpenAPIConfig.JsonUrl) {
-			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIConfig.JsonSpecUrl' option is not valid", "url", s.OpenAPIConfig.JsonUrl)
+		if !validateSpecURL(s.OpenAPIServerConfig.SpecURL) {
+			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIServerConfig.SpecURL' option is not valid", "url", s.OpenAPIServerConfig.SpecURL)
 			return
 		}
 
-		if !validateSwaggerUrl(s.OpenAPIConfig.SwaggerUrl) {
-			slog.Error("Error serving swagger ui. Value of 's.OpenAPIConfig.SwaggerUrl' option is not valid", "url", s.OpenAPIConfig.SwaggerUrl)
+		if !validateSwaggerURL(s.OpenAPIServerConfig.SwaggerURL) {
+			slog.Error("Error serving swagger ui. Value of 's.OpenAPIServerConfig.SwaggerURL' option is not valid", "url", s.OpenAPIServerConfig.SwaggerURL)
 			return
+		}
+	}
+}
+
+// WithEngineOptions allows for setting of Engine options
+//
+//	app := fuego.NewServer(
+//		fuego.WithAddr(":8080"),
+//		fuego.WithEngineOptions(
+//			WithOpenAPIConfig(
+//				OpenAPIConfig{
+//					PrettyFormatJSON: true,
+//				},
+//			),
+//		),
+//	)
+//
+// Engine Options all begin with `With`.
+func WithEngineOptions(options ...func(*Engine)) func(*Server) {
+	return func(s *Server) {
+		for _, option := range options {
+			option(s.Engine)
 		}
 	}
 }

@@ -1,13 +1,9 @@
 package fuego
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
-	"path/filepath"
 	"reflect"
 	"regexp"
 	"slices"
@@ -111,97 +107,45 @@ func (s *Server) OutputOpenAPISpec() openapi3.T {
 		Description: "local server",
 	})
 
-	s.OpenAPI.computeTags()
-
-	// Validate
-	err := s.OpenAPI.Description().Validate(context.Background())
-	if err != nil {
-		slog.Error("Error validating spec", "error", err)
-	}
-
-	// Marshal spec to JSON
-	jsonSpec, err := s.marshalSpec()
-	if err != nil {
-		slog.Error("Error marshaling spec to JSON", "error", err)
-	}
-
-	if !s.OpenAPIConfig.DisableSwagger {
-		s.registerOpenAPIRoutes(jsonSpec)
-	}
-
-	if !s.OpenAPIConfig.DisableLocalSave {
-		err := s.saveOpenAPIToFile(s.OpenAPIConfig.JsonFilePath, jsonSpec)
-		if err != nil {
-			slog.Error("Error saving spec to local path", "error", err, "path", s.OpenAPIConfig.JsonFilePath)
-		}
+	if !s.OpenAPIConfig.Disabled {
+		s.registerOpenAPIRoutes(s.Engine.OutputOpenAPISpec())
 	}
 
 	return *s.OpenAPI.Description()
 }
 
-func (s *Server) marshalSpec() ([]byte, error) {
-	if s.OpenAPIConfig.PrettyFormatJson {
-		return json.MarshalIndent(s.OpenAPI.Description(), "", "\t")
-	}
-	return json.Marshal(s.OpenAPI.Description())
-}
-
-func (s *Server) saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) error {
-	jsonFolder := filepath.Dir(jsonSpecLocalPath)
-
-	err := os.MkdirAll(jsonFolder, 0o750)
-	if err != nil {
-		return fmt.Errorf("error creating docs directory: %w", err)
-	}
-
-	f, err := os.Create(jsonSpecLocalPath) // #nosec G304 (file path provided by developer, not by user)
-	if err != nil {
-		return fmt.Errorf("error creating file: %w", err)
-	}
-	defer f.Close()
-
-	_, err = f.Write(jsonSpec)
-	if err != nil {
-		return fmt.Errorf("error writing file: %w", err)
-	}
-
-	s.printOpenAPIMessage("JSON file: " + jsonSpecLocalPath)
-	return nil
-}
-
 // Registers the routes to serve the OpenAPI spec and Swagger UI.
 func (s *Server) registerOpenAPIRoutes(jsonSpec []byte) {
-	GetStd(s, s.OpenAPIConfig.JsonUrl, func(w http.ResponseWriter, r *http.Request) {
+	GetStd(s, s.OpenAPIServerConfig.SpecURL, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write(jsonSpec)
 	})
-	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s%s", s.url(), s.OpenAPIConfig.JsonUrl))
+	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s%s", s.url(), s.OpenAPIServerConfig.SpecURL))
 
-	if !s.OpenAPIConfig.DisableSwaggerUI {
-		Register(s, Route[any, any]{
+	if s.OpenAPIServerConfig.DisableSwaggerUI {
+		return
+	}
+	Registers(s.Engine, netHttpRouteRegisterer[any, any]{
+		s: s,
+		route: Route[any, any]{
 			BaseRoute: BaseRoute{
 				Method: http.MethodGet,
-				Path:   s.OpenAPIConfig.SwaggerUrl + "/",
+				Path:   s.OpenAPIServerConfig.SwaggerURL + "/",
 			},
-		}, s.OpenAPIConfig.UIHandler(s.OpenAPIConfig.JsonUrl))
-		s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s%s/index.html", s.url(), s.OpenAPIConfig.SwaggerUrl))
-	}
+		},
+		controller: s.OpenAPIServerConfig.UIHandler(s.OpenAPIServerConfig.SpecURL),
+	})
+	s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s%s/index.html", s.url(), s.OpenAPIServerConfig.SwaggerURL))
 }
 
-func (s *Server) printOpenAPIMessage(msg string) {
-	if !s.disableStartupMessages {
-		slog.Info(msg)
-	}
+func validateSpecURL(specURL string) bool {
+	specURLRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_]+(.json)$`)
+	return specURLRegexp.MatchString(specURL)
 }
 
-func validateJsonSpecUrl(jsonSpecUrl string) bool {
-	jsonSpecUrlRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_]+(.json)$`)
-	return jsonSpecUrlRegexp.MatchString(jsonSpecUrl)
-}
-
-func validateSwaggerUrl(swaggerUrl string) bool {
-	swaggerUrlRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_]+[a-zA-Z0-9\-\_]$`)
-	return swaggerUrlRegexp.MatchString(swaggerUrl)
+func validateSwaggerURL(swaggerURL string) bool {
+	swaggerURLRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_]+[a-zA-Z0-9\-\_]$`)
+	return swaggerURLRegexp.MatchString(swaggerURL)
 }
 
 // RegisterOpenAPIOperation registers the route to the OpenAPI description.
