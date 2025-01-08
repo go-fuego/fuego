@@ -44,15 +44,22 @@ type ErrorItem struct {
 }
 
 func (e HTTPError) Error() string {
-	title := e.Title
 	code := e.StatusCode()
+	title := e.Title
 	if title == "" {
 		title = http.StatusText(code)
 		if title == "" {
 			title = "HTTP Error"
 		}
 	}
-	return fmt.Sprintf("%d %s: %s", code, title, e.DetailMsg())
+	msg := fmt.Sprintf("%d %s", code, title)
+
+	detail := e.DetailMsg()
+	if detail == "" {
+		return msg
+	}
+
+	return fmt.Sprintf("%s: %s", msg, e.Detail)
 }
 
 func (e HTTPError) StatusCode() int {

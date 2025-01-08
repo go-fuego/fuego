@@ -9,6 +9,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"io"
 	"math/big"
 	"net"
@@ -359,7 +360,7 @@ func TestServeError(t *testing.T) {
 		s.Mux.ServeHTTP(w, req)
 
 		require.Equal(t, 500, w.Code)
-		require.Equal(t, "500 Internal Server Error: ", w.Body.String())
+		require.Equal(t, "500 Internal Server Error", w.Body.String())
 	})
 }
 
@@ -616,11 +617,11 @@ func newTLSTestHelper() (*tlsTestHelper, error) {
 }
 
 func TestFlow(t *testing.T) {
-	newTestCtx := func(w *httptest.ResponseRecorder) *netHttpContext[any] {
+	newTestCtx := func(w *httptest.ResponseRecorder, r *http.Request) *netHttpContext[any] {
 		return NewNetHTTPContext[any](
 			BaseRoute{},
 			w,
-			httptest.NewRequest("GET", "/", nil),
+			r,
 			readOptions{},
 		)
 	}
@@ -628,7 +629,7 @@ func TestFlow(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		e := NewEngine()
 		w := httptest.NewRecorder()
-		ctx := newTestCtx(w)
+		ctx := newTestCtx(w, httptest.NewRequest("GET", "/", nil))
 		Flow(e, ctx, testController)
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.Equal(t, crlf(`{"ans":"Hello World"}`), w.Body.String())
@@ -636,17 +637,48 @@ func TestFlow(t *testing.T) {
 	t.Run("with nil return in ErrorHandler", func(t *testing.T) {
 		e := NewEngine(WithErrorHandler(func(err error) error { return nil }))
 		w := httptest.NewRecorder()
-		ctx := newTestCtx(w)
+		ctx := newTestCtx(w, httptest.NewRequest("GET", "/", nil))
 		Flow(e, ctx, testControllerWithError)
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.Equal(t, crlf(`null`), w.Body.String())
 	})
 	t.Run("transformOut error on value receiver", func(t *testing.T) {
 		e := NewEngine()
-		w := httptest.NewRecorder()
-		ctx := newTestCtx(w)
-		Flow(e, ctx, testControllerWithOutTransformerOnValueReceiver)
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.Equal(t, crlf(`{}`), w.Body.String())
+		tcs := []struct {
+			accept           string
+			expectedResponse string
+		}{
+			{
+				accept:           "application/json",
+				expectedResponse: crlf(`{"title":"Internal Server Error","status":500}`),
+			},
+			{
+				accept:           "application/xml",
+				expectedResponse: "<HTTPError><title>Internal Server Error</title><status>500</status></HTTPError>",
+			},
+			{
+				accept:           "text/html",
+				expectedResponse: "500 Internal Server Error",
+			},
+			{
+				accept:           "application/x-yaml",
+				expectedResponse: crlf("500 Internal Server Error"),
+			},
+			{
+				accept:           "text/plain",
+				expectedResponse: "500 Internal Server Error",
+			},
+		}
+		for _, tc := range tcs {
+			t.Run(fmt.Sprintf("Content Type %s", tc.accept), func(t *testing.T) {
+				w := httptest.NewRecorder()
+				r := httptest.NewRequest("GET", "/", nil)
+				r.Header.Set("Accept", tc.accept)
+				ctx := newTestCtx(w, r)
+				Flow(e, ctx, testControllerWithOutTransformerOnValueReceiver)
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				assert.Equal(t, tc.expectedResponse, w.Body.String())
+			})
+		}
 	})
 }
