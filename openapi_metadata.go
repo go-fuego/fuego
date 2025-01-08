@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"encoding/xml"
 	"fmt"
 	"log/slog"
 	"reflect"
@@ -190,49 +191,45 @@ func (mp *MetadataParsers) ParseStructTags(t reflect.Type, schemaRef *openapi3.S
 		return
 	}
 
+	if schemaRef.Value.Properties == nil {
+		schemaRef.Value.Properties = make(map[string]*openapi3.SchemaRef)
+	}
+
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
-		if field.Anonymous {
-			fieldType := field.Type
-			mp.ParseStructTags(fieldType, schemaRef)
+
+		if field.Anonymous || (field.Name == "XMLName" && field.Type == reflect.TypeOf(xml.Name{})) {
 			continue
 		}
 
-		jsonFieldName := field.Tag.Get("json")
-		jsonFieldName = strings.Split(jsonFieldName, ",")[0]
-		if jsonFieldName == "-" {
-			jsonFieldName = field.Name
+		fieldName := field.Tag.Get("json")
+		fieldName = strings.Split(fieldName, ",")[0]
+		if fieldName == "-" || fieldName == "" {
+			fieldName = field.Name
 		}
 
-		property := schemaRef.Value.Properties[jsonFieldName]
-		if property == nil {
-			slog.Warn("Property not found in schema", "property", jsonFieldName)
-			continue
+		if _, exists := schemaRef.Value.Properties[fieldName]; !exists {
+			schemaRef.Value.Properties[fieldName] = &openapi3.SchemaRef{
+				Value: &openapi3.Schema{},
+			}
 		}
-		if field.Type.Kind() == reflect.Struct {
+
+		property := schemaRef.Value.Properties[fieldName]
+
+		if field.Type.Kind() == reflect.Struct || (field.Type.Kind() == reflect.Slice && field.Type.Elem().Kind() == reflect.Struct) {
 			mp.ParseStructTags(field.Type, property)
-		}
-		propertyCopy := *property
-		propertyValue := *propertyCopy.Value
-
-		if field.Type.Kind() == reflect.Struct {
-			mp.ParseStructTags(field.Type, schemaRef.Value.Properties[jsonFieldName])
 		}
 
 		params := MetadataParserParams{
 			Field:     field,
-			FieldName: jsonFieldName,
-			Property:  &propertyValue,
+			FieldName: fieldName,
+			Property:  property.Value,
 			SchemaRef: schemaRef,
 		}
 
 		for _, entry := range mp.registeredParsers {
 			entry.Parser(params)
 		}
-
-		propertyCopy.Value = &propertyValue
-
-		schemaRef.Value.Properties[jsonFieldName] = &propertyCopy
 	}
 }
 
@@ -303,10 +300,8 @@ func MetadataParserValidation(params MetadataParserParams) {
 // DescriptionMetadataParser extracts the "description" tag from a struct field and assigns
 // it to the Description property of the OpenAPI schema.
 func MetadataParserDescription(params MetadataParserParams) {
-	description, ok := params.Field.Tag.Lookup("description")
-	if ok {
-		params.Property.Description = description
-	}
+	description := params.Field.Tag.Get("description")
+	params.Property.Description = description
 }
 
 // XMLMetadataParser extracts the "xml" tag from a struct field and sets the XML
@@ -319,23 +314,100 @@ func MetadataParserXML(params MetadataParserParams) {
 	if xmlField == "-" || xmlField == "" {
 		return
 	}
+
+	if params.Property == nil {
+		params.Property = &openapi3.Schema{
+			XML: &openapi3.XML{
+				Attribute: false,
+			},
+		}
+	}
+
 	xmlFieldName := strings.Split(xmlField, ",")[0]
-
-	if xmlFieldName == "" {
-		xmlFieldName = params.Field.Name
+	if xmlFieldName == "-" {
+		return
 	}
-
-	params.Property.XML = &openapi3.XML{
-		Name: xmlFieldName,
+	if xmlFieldName != "" {
+		params.Property.XML = &openapi3.XML{
+			Name: xmlFieldName,
+		}
 	}
-
 	xmlFields := strings.Split(xmlField, ",")
 	if slices.Contains(xmlFields, "attr") {
 		params.Property.XML.Attribute = true
 	}
-
 	if slices.Contains(xmlFields, "wrapped") {
 		params.Property.XML.Wrapped = true
+	}
+
+	if params.Field.Type.Kind() == reflect.Struct {
+		if params.Property.Properties == nil {
+			params.Property.Properties = make(map[string]*openapi3.SchemaRef)
+		}
+		processXMLStructChildren(params)
+	} else if params.Field.Type.Kind() == reflect.Slice {
+		elemType := params.Field.Type.Elem()
+		if elemType.Kind() == reflect.Struct {
+			params.Property.Properties = nil
+			params.Property.Type = &openapi3.Types{"array"}
+			params.Property.Items = &openapi3.SchemaRef{
+				Value: &openapi3.Schema{
+					XML: &openapi3.XML{
+						Wrapped: true,
+					},
+				},
+			}
+
+			processXMLStructChildren(MetadataParserParams{
+				Field:     reflect.StructField{Type: elemType},
+				Property:  params.Property.Items.Value,
+				SchemaRef: params.SchemaRef,
+			})
+		}
+	}
+}
+
+// processStructChildren processes the fields of a struct type and updates the
+// OpenAPI schema properties map. For each field in the struct, it retrieves the
+// "json" tag to determine the field name and adds a corresponding schema
+// reference to the properties map if it doesn't already exist. The function
+// then creates a MetadataParserParams object for the child field and recursively
+// processes each child field using the MetadataParserXML function to apply XML
+// parsing logic.
+func processXMLStructChildren(params MetadataParserParams) {
+	t := params.Field.Type
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	if params.Property.Properties == nil {
+		params.Property.Properties = make(map[string]*openapi3.SchemaRef)
+	}
+
+	for i := 0; i < t.NumField(); i++ {
+		childField := t.Field(i)
+		childName := childField.Tag.Get("json")
+		childName = strings.Split(childName, ",")[0]
+		if childName == "-" || childName == "" {
+			childName = childField.Name
+		}
+
+		if _, exists := params.Property.Properties[childName]; !exists {
+			params.Property.Properties[childName] = &openapi3.SchemaRef{
+				Value: &openapi3.Schema{},
+			}
+		}
+
+		childProperty := params.Property.Properties[childName]
+
+		childParams := MetadataParserParams{
+			Field:     childField,
+			FieldName: childName,
+			Property:  childProperty.Value,
+			SchemaRef: params.SchemaRef,
+		}
+
+		MetadataParserXML(childParams)
 	}
 }
 
