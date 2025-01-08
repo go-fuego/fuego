@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/fs"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -56,6 +57,8 @@ type Server struct {
 	basePath               string // Base path of the group
 
 	*Engine
+
+	listener net.Listener
 
 	Security Security
 
@@ -313,8 +316,11 @@ func WithDisallowUnknownFields(b bool) func(*Server) {
 
 // WithAddr optionally specifies the TCP address for the server to listen on, in the form "host:port".
 // If not specified addr ':9999' will be used.
+// If a listener is explicitly set using WithListener, the provided address will be ignored,
 func WithAddr(addr string) func(*Server) {
-	return func(c *Server) { c.Server.Addr = addr }
+	return func(c *Server) {
+		c.Server.Addr = addr
+	}
 }
 
 // WithXML sets the serializer to XML
@@ -366,6 +372,22 @@ func WithoutStartupMessages() func(*Server) {
 func WithoutLogger() func(*Server) {
 	return func(c *Server) {
 		slog.SetDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
+	}
+}
+
+// WithListener configures the server to use a custom listener.
+// If a listener is provided using this option, any address specified with WithAddr will be ignored.
+//
+// Example:
+//
+//	listener, _ := net.Listen("tcp", ":8080")
+//	server := NewServer(
+//	    WithListener(listener),
+//	    WithAddr(":9999"), // This will be ignored because WithListener takes precedence.
+//	)
+func WithListener(listener net.Listener) func(*Server) {
+	return func(s *Server) {
+		s.listener = listener
 	}
 }
 
