@@ -311,11 +311,10 @@ func dive(openapi *OpenAPI, t reflect.Type, tag SchemaTag, maxDepth int) SchemaT
 		return tag
 
 	default:
-		tag.Name = t.Name()
+		tag.Name = transformTypeName(t.Name())
 		if t.Kind() == reflect.Struct && strings.HasPrefix(tag.Name, "DataOrTemplate") {
 			return dive(openapi, t.Field(0).Type, tag, maxDepth-1)
 		}
-		tag.Name = transformTypeName(tag.Name)
 		tag.Ref = "#/components/schemas/" + tag.Name
 		tag.Value = openapi.getOrCreateSchema(tag.Name, reflect.New(t).Interface())
 
