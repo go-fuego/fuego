@@ -148,7 +148,7 @@ func SendYAMLError(w http.ResponseWriter, _ *http.Request, err error) {
 	}
 
 	w.WriteHeader(status)
-	_ = SendYAML(w, nil, err.Error())
+	_ = SendYAML(w, nil, err)
 }
 
 // SendJSON sends a JSON response.
