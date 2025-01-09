@@ -662,7 +662,7 @@ func TestFlow(t *testing.T) {
 			},
 			{
 				accept:           "application/x-yaml",
-				expectedResponse: crlf("500 Internal Server Error"),
+				expectedResponse: crlf("title: Internal Server Error\nstatus: 500"),
 			},
 			{
 				accept:           "text/plain",
