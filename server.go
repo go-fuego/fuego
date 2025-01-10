@@ -44,7 +44,7 @@ type Server struct {
 	// Not stored with the other middlewares because it is a special case :
 	// it applies on routes that are not registered.
 	// For example, it allows OPTIONS /foo even if it is not declared (only GET /foo is declared).
-	corsMiddleware func(http.Handler) http.Handler
+	globalMiddlewares []func(http.Handler) http.Handler
 
 	*Engine
 
@@ -177,22 +177,22 @@ func WithTemplateFS(fs fs.FS) func(*Server) {
 	return func(c *Server) { c.fs = fs }
 }
 
-// WithCorsMiddleware registers a middleware to handle CORS.
+// WithGlobalMiddleware registers a middleware to handle CORS.
 // It is not handled like other middlewares with [Use] because it applies routes that are not registered.
 // For example:
 //
 //	import "github.com/rs/cors"
 //
 //	s := fuego.NewServer(
-//		WithCorsMiddleware(cors.New(cors.Options{
+//		WithGlobalMiddleware(cors.New(cors.Options{
 //			AllowedOrigins:   []string{"*"},
 //			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 //			AllowedHeaders:   []string{"*"},
 //			AllowCredentials: true,
 //		}).Handler)
 //	)
-func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Server) {
-	return func(c *Server) { c.corsMiddleware = corsMiddleware }
+func WithGlobalMiddleware(globalMiddleware func(http.Handler) http.Handler) func(*Server) {
+	return func(c *Server) { c.globalMiddlewares = append(c.globalMiddlewares, globalMiddleware) }
 }
 
 // WithGlobalResponseTypes adds default response types to the server.
