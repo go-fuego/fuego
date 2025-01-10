@@ -33,9 +33,10 @@ func (s *Server) setup() {
 	s.printStartupMessage()
 
 	s.Server.Handler = s.Mux
-    for _, middleware := range s.globalMiddlewares {
-        s.Server.Handler = middleware(s.Server.Handler)
-    }
+
+	for _, middleware := range s.globalMiddlewares {
+		s.Server.Handler = middleware(s.Server.Handler)
+	}
 }
 
 func (s *Server) printStartupMessage() {
