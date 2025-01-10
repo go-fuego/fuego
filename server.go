@@ -170,7 +170,6 @@ func WithTemplateFS(fs fs.FS) func(*Server) {
 	return func(c *Server) { c.fs = fs }
 }
 
-
 // WithGlobalMiddleware adds middleware(s) that will be executed on ALL requests,
 // even those that don't match any registered routes.
 // For example, to add CORS middleware:
