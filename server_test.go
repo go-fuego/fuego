@@ -74,21 +74,19 @@ func TestWithXML(t *testing.T) {
 func TestWithOpenAPIConfig(t *testing.T) {
 	t.Run("with default values", func(t *testing.T) {
 		s := NewServer(
-			WithOpenAPIServerConfig(OpenAPIServerConfig{}),
+			WithEngineOptions(
+				WithOpenAPIConfig(OpenAPIConfig{}),
+			),
 		)
 
-		require.Equal(t, "/swagger", s.OpenAPIServerConfig.SwaggerURL)
-		require.Equal(t, "/swagger/openapi.json", s.OpenAPIServerConfig.SpecURL)
+		require.Equal(t, "/swagger", s.OpenAPIConfig.SwaggerURL)
+		require.Equal(t, "/swagger/openapi.json", s.OpenAPIConfig.SpecURL)
 		require.Equal(t, "doc/openapi.json", s.OpenAPIConfig.JSONFilePath)
 		require.False(t, s.OpenAPIConfig.PrettyFormatJSON)
 	})
 
 	t.Run("with custom values", func(t *testing.T) {
 		s := NewServer(
-			WithOpenAPIServerConfig(OpenAPIServerConfig{
-				SwaggerURL: "/api",
-				SpecURL:    "/api/openapi.json",
-			}),
 			WithEngineOptions(
 				WithOpenAPIConfig(
 					OpenAPIConfig{
@@ -96,12 +94,14 @@ func TestWithOpenAPIConfig(t *testing.T) {
 						DisableLocalSave: true,
 						PrettyFormatJSON: true,
 						Disabled:         true,
+						SwaggerURL:       "/api",
+						SpecURL:          "/api/openapi.json",
 					}),
 			),
 		)
 
-		require.Equal(t, "/api", s.OpenAPIServerConfig.SwaggerURL)
-		require.Equal(t, "/api/openapi.json", s.OpenAPIServerConfig.SpecURL)
+		require.Equal(t, "/api", s.OpenAPIConfig.SwaggerURL)
+		require.Equal(t, "/api/openapi.json", s.OpenAPIConfig.SpecURL)
 		require.Equal(t, "openapi.json", s.OpenAPIConfig.JSONFilePath)
 		require.True(t, s.Engine.OpenAPIConfig.Disabled)
 		require.True(t, s.OpenAPIConfig.DisableLocalSave)
@@ -111,26 +111,22 @@ func TestWithOpenAPIConfig(t *testing.T) {
 	t.Run("with invalid local path values", func(t *testing.T) {
 		t.Run("with invalid path", func(t *testing.T) {
 			NewServer(
-				WithOpenAPIServerConfig(OpenAPIServerConfig{
-					SwaggerURL: "p   i",
-					SpecURL:    "pi/op  enapi.json",
-				}),
 				WithEngineOptions(
 					WithOpenAPIConfig(OpenAPIConfig{
 						JSONFilePath: "path/to/jsonSpec",
+						SwaggerURL:   "p   i",
+						SpecURL:      "pi/op  enapi.json",
 					}),
 				),
 			)
 		})
 		t.Run("with invalid url", func(t *testing.T) {
 			NewServer(
-				WithOpenAPIServerConfig(OpenAPIServerConfig{
-					SpecURL:    "pi/op  enapi.json",
-					SwaggerURL: "p   i",
-				}),
 				WithEngineOptions(
 					WithOpenAPIConfig(OpenAPIConfig{
 						JSONFilePath: "path/to/jsonSpec.json",
+						SpecURL:      "pi/op  enapi.json",
+						SwaggerURL:   "p   i",
 					}),
 				),
 			)
@@ -138,13 +134,11 @@ func TestWithOpenAPIConfig(t *testing.T) {
 
 		t.Run("with invalid url", func(t *testing.T) {
 			NewServer(
-				WithOpenAPIServerConfig(OpenAPIServerConfig{
-					SpecURL:    "/api/openapi.json",
-					SwaggerURL: "invalid path",
-				}),
 				WithEngineOptions(
 					WithOpenAPIConfig(OpenAPIConfig{
 						JSONFilePath: "path/to/jsonSpec.json",
+						SpecURL:      "/api/openapi.json",
+						SwaggerURL:   "invalid path",
 					}),
 				),
 			)
