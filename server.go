@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"io/fs"
@@ -15,22 +16,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type OpenAPIServerConfig struct {
-	// Handler to serve the OpenAPI UI from spec URL
-	UIHandler func(specURL string) http.Handler
-	// URL to serve the swagger UI
-	SwaggerURL string
-	// URL to serve the OpenAPI JSON spec
-	SpecURL string
-	// If true, the server will not serve the Swagger UI
-	DisableSwaggerUI bool
-}
-
-var defaultOpenAPIServerConfig = OpenAPIServerConfig{
-	SwaggerURL: "/swagger",
-	SpecURL:    "/swagger/openapi.json",
-	UIHandler:  DefaultOpenAPIHandler,
-}
+var _ OpenAPIServable = &Server{}
 
 type Server struct {
 	// The underlying HTTP server
@@ -67,8 +53,6 @@ type Server struct {
 	basePath string
 
 	loggingConfig LoggingConfig
-
-	OpenAPIServerConfig OpenAPIServerConfig
 
 	// routeOptions is used to store the options
 	// that will be applied of the route.
@@ -107,8 +91,6 @@ func NewServer(options ...func(*Server)) *Server {
 		},
 		Mux:    http.NewServeMux(),
 		Engine: NewEngine(),
-
-		OpenAPIServerConfig: defaultOpenAPIServerConfig,
 
 		Security: NewSecurity(),
 
@@ -158,6 +140,17 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	return s
+}
+
+// Registers the routes to serve the OpenAPI spec and Swagger UI.
+func (s *Server) SpecHandler() {
+	Get(s, s.OpenAPIConfig.SpecURL, s.Engine.SpecHandler(), OptionHide())
+	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s%s", s.url(), s.OpenAPIConfig.SpecURL))
+}
+
+func (s *Server) UIHandler() {
+	GetStd(s, s.OpenAPIConfig.SwaggerURL+"/", s.OpenAPIConfig.UIHandler(s.OpenAPIConfig.SpecURL).ServeHTTP, OptionHide())
+	s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s%s/index.html", s.url(), s.OpenAPIConfig.SwaggerURL))
 }
 
 // WithTemplateFS sets the filesystem used to load templates.
@@ -394,32 +387,6 @@ func WithoutLogger() func(*Server) {
 func WithListener(listener net.Listener) func(*Server) {
 	return func(s *Server) {
 		s.listener = listener
-	}
-}
-
-func WithOpenAPIServerConfig(config OpenAPIServerConfig) func(*Server) {
-	return func(s *Server) {
-		if config.SpecURL != "" {
-			s.OpenAPIServerConfig.SpecURL = config.SpecURL
-		}
-		if config.SwaggerURL != "" {
-			s.OpenAPIServerConfig.SwaggerURL = config.SwaggerURL
-		}
-		if config.UIHandler != nil {
-			s.OpenAPIServerConfig.UIHandler = config.UIHandler
-		}
-
-		s.OpenAPIServerConfig.DisableSwaggerUI = config.DisableSwaggerUI
-
-		if !validateSpecURL(s.OpenAPIServerConfig.SpecURL) {
-			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIServerConfig.SpecURL' option is not valid", "url", s.OpenAPIServerConfig.SpecURL)
-			return
-		}
-
-		if !validateSwaggerURL(s.OpenAPIServerConfig.SwaggerURL) {
-			slog.Error("Error serving swagger ui. Value of 's.OpenAPIServerConfig.SwaggerURL' option is not valid", "url", s.OpenAPIServerConfig.SwaggerURL)
-			return
-		}
 	}
 }
 

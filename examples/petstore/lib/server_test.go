@@ -22,6 +22,7 @@ func TestPetstoreOpenAPIGeneration(t *testing.T) {
 		),
 	)
 
+	fuego.RegisterOpenAPIRoutes(server.Engine, server)
 	server.OutputOpenAPISpec()
 	err := server.OpenAPI.Description().Validate(context.Background())
 	require.NoError(t, err)

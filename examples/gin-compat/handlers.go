@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 
@@ -37,17 +36,4 @@ func fuegoControllerPost(c fuego.ContextWithBody[HelloRequest]) (*HelloResponse,
 	return &HelloResponse{
 		Message: fmt.Sprintf("Hello %s, %s", body.Word, name),
 	}, nil
-}
-
-func serveOpenApiJSONDescription(s *fuego.OpenAPI) func(ctx *gin.Context) {
-	return func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, s.Description())
-	}
-}
-
-func DefaultOpenAPIHandler(specURL string) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		ctx.Header("Content-Type", "text/html; charset=utf-8")
-		ctx.String(200, fuego.DefaultOpenAPIHTML(specURL))
-	}
 }
