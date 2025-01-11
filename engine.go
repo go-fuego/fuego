@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 // NewEngine creates a new Engine with the given options.
@@ -53,10 +56,21 @@ type OpenAPIConfig struct {
 	DisableLocalSave bool
 	// Pretty prints the OpenAPI spec with proper JSON indentation
 	PrettyFormatJSON bool
+	// URL to serve the OpenAPI JSON spec
+	SpecURL string
+	// Handler to serve the OpenAPI UI from spec URL
+	UIHandler func(specURL string) http.Handler
+	// URL to serve the swagger UI
+	SwaggerURL string
+	// If true, the server will not serve the Swagger UI
+	DisableSwaggerUI bool
 }
 
 var defaultOpenAPIConfig = OpenAPIConfig{
 	JSONFilePath: "doc/openapi.json",
+	SpecURL:      "/swagger/openapi.json",
+	SwaggerURL:   "/swagger",
+	UIHandler:    DefaultOpenAPIHandler,
 }
 
 // WithRequestContentType sets the accepted content types for the engine.
@@ -70,10 +84,29 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 		if config.JSONFilePath != "" {
 			e.OpenAPIConfig.JSONFilePath = config.JSONFilePath
 		}
+		if config.SpecURL != "" {
+			e.OpenAPIConfig.SpecURL = config.SpecURL
+		}
+		if config.SwaggerURL != "" {
+			e.OpenAPIConfig.SwaggerURL = config.SwaggerURL
+		}
+		if config.UIHandler != nil {
+			e.OpenAPIConfig.UIHandler = config.UIHandler
+		}
 
 		e.OpenAPIConfig.Disabled = config.Disabled
 		e.OpenAPIConfig.DisableLocalSave = config.DisableLocalSave
 		e.OpenAPIConfig.PrettyFormatJSON = config.PrettyFormatJSON
+		e.OpenAPIConfig.DisableSwaggerUI = config.DisableSwaggerUI
+
+		if !validateSpecURL(e.OpenAPIConfig.SpecURL) {
+			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIServerConfig.SpecURL' option is not valid", "url", e.OpenAPIConfig.SpecURL)
+			return
+		}
+		if !validateSwaggerURL(e.OpenAPIConfig.SwaggerURL) {
+			slog.Error("Error serving swagger ui. Value of 's.OpenAPIServerConfig.SwaggerURL' option is not valid", "url", e.OpenAPIConfig.SwaggerURL)
+			return
+		}
 	}
 }
 
@@ -95,8 +128,14 @@ func DisableErrorHandler() func(*Engine) {
 	}
 }
 
+func (e *Engine) SpecHandler() func(c ContextNoBody) (openapi3.T, error) {
+	return func(c ContextNoBody) (openapi3.T, error) {
+		return *e.OpenAPI.Description(), nil
+	}
+}
+
 // OutputOpenAPISpec takes the OpenAPI spec and outputs it to a JSON file
-func (e *Engine) OutputOpenAPISpec() []byte {
+func (e *Engine) OutputOpenAPISpec() *openapi3.T {
 	e.OpenAPI.computeTags()
 
 	// Validate
@@ -117,7 +156,7 @@ func (e *Engine) OutputOpenAPISpec() []byte {
 			slog.Error("Error saving spec to local path", "error", err, "path", e.OpenAPIConfig.JSONFilePath)
 		}
 	}
-	return jsonSpec
+	return e.OpenAPI.Description()
 }
 
 func (e *Engine) saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) error {
