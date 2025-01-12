@@ -41,10 +41,9 @@ type Server struct {
 	// [http.ServeMux.Handle] can also be used to register routes.
 	Mux *http.ServeMux
 
-	// Not stored with the other middlewares because it is a special case :
-	// it applies on routes that are not registered.
-	// For example, it allows OPTIONS /foo even if it is not declared (only GET /foo is declared).
-	corsMiddleware func(http.Handler) http.Handler
+	// globalMiddlewares is used to store the options
+	// that will be applied on ALL routes.
+	globalMiddlewares []func(http.Handler) http.Handler
 
 	*Engine
 
@@ -177,22 +176,31 @@ func WithTemplateFS(fs fs.FS) func(*Server) {
 	return func(c *Server) { c.fs = fs }
 }
 
-// WithCorsMiddleware registers a middleware to handle CORS.
-// It is not handled like other middlewares with [Use] because it applies routes that are not registered.
-// For example:
+// WithGlobalMiddleware adds middleware(s) that will be executed on ALL requests,
+// even those that don't match any registered routes.
+// For example, to add CORS middleware:
 //
 //	import "github.com/rs/cors"
 //
 //	s := fuego.NewServer(
-//		WithCorsMiddleware(cors.New(cors.Options{
+//		WithGlobalMiddleware(cors.New(cors.Options{
 //			AllowedOrigins:   []string{"*"},
 //			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 //			AllowedHeaders:   []string{"*"},
 //			AllowCredentials: true,
-//		}).Handler)
+//		}).Handler),
 //	)
+func WithGlobalMiddleware(middlewares ...func(http.Handler) http.Handler) func(*Server) {
+	return func(c *Server) {
+		c.globalMiddlewares = append(c.globalMiddlewares, middlewares...)
+	}
+}
+
+// WithCorsMiddleware adds CORS middleware to the server.
+//
+// Deprecated: Please use [WithGlobalMiddleware] instead.
 func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Server) {
-	return func(c *Server) { c.corsMiddleware = corsMiddleware }
+	return WithGlobalMiddleware(corsMiddleware)
 }
 
 // WithGlobalResponseTypes adds default response types to the server.
