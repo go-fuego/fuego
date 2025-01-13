@@ -47,7 +47,7 @@ func echo(c fuego.ContextWithBody[ReceivedType]) (string, error) {
 	// whether it's application/json, application/xml, application/x-www-form-urlencoded, etc.
 	received, err := c.Body()
 	if err != nil {
-		return ReceivedType{}, err
+		return "", err
 	}
 
 	return received.Message, nil
