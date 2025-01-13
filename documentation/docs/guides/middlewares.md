@@ -42,7 +42,7 @@ func main() {
 
 ### Apply on group or server
 
-To mimic the well-known `Use` method from `chi` and `Gin`, Fuego provides a `Use` method to add middlewares to a Group or Server. They are treated as an option to the server or group handler and will be applied to all routes.
+To mimic the well-known `Use` method from [`chi`](https://pkg.go.dev/github.com/go-chi/chi/v5#Mux.Use) and [`Gin`](https://pkg.go.dev/github.com/gin-gonic/gin#Engine.Use), Fuego provides a `Use` method to add middlewares to a Group or Server. They are treated as an option to the server or group handler and will be applied to all routes.
 
 But we recommend using the `option.Middleware` method for better readability.
 
