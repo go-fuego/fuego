@@ -17,7 +17,7 @@ Middlewares can be registered at 2 levels:
 
 You can add middlewares to a single route.
 They are treated as an option to the route handler.
-They will be added in the ServeMux in the order they are declared, when registering the route.
+They will be added in the [`http.ServeMux`](https://pkg.go.dev/net/http#ServeMux) in the order they are declared, when registering the route.
 
 ```go title="main.go" showLineNumbers {13-14}
 package main
