@@ -2,173 +2,221 @@ package fuego_test
 
 import (
 	"errors"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/go-fuego/fuego"
 	"github.com/stretchr/testify/assert"
 )
 
-// UserRequest represents the incoming request body
-type UserRequest struct {
-	Name     string `json:"name" validate:"required"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=8"`
-}
-
-// UserResponse represents the API response
-type UserResponse struct {
+// UserProfile represents a user in our system
+type UserProfile struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
 }
 
-// CreateUserController is a typical controller that creates a user
-func CreateUserController(c fuego.ContextWithBody[UserRequest]) (UserResponse, error) {
-	// Get and validate the request body
-	body, err := c.Body()
+// UserService simulates a real service layer
+type UserService interface {
+	CreateUser(name, email string) (UserProfile, error)
+	GetUserByID(id string) (UserProfile, error)
+}
+
+// mockUserService is a mock implementation of UserService
+type mockUserService struct {
+	users map[string]UserProfile
+}
+
+func newMockUserService() *mockUserService {
+	return &mockUserService{
+		users: map[string]UserProfile{
+			"123": {ID: "123", Name: "John Doe", Email: "john@example.com"},
+		},
+	}
+}
+
+func (s *mockUserService) CreateUser(name, email string) (UserProfile, error) {
+	if email == "taken@example.com" {
+		return UserProfile{}, errors.New("email already taken")
+	}
+	user := UserProfile{
+		ID:    "new_id",
+		Name:  name,
+		Email: email,
+	}
+	s.users[user.ID] = user
+	return user, nil
+}
+
+func (s *mockUserService) GetUserByID(id string) (UserProfile, error) {
+	user, exists := s.users[id]
+	if !exists {
+		return UserProfile{}, errors.New("user not found")
+	}
+	return user, nil
+}
+
+// CreateUserRequest represents the request body for user creation
+type CreateUserRequest struct {
+	Name  string `json:"name" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
+}
+
+// UserController handles user-related HTTP endpoints
+type UserController struct {
+	service UserService
+}
+
+func NewUserController(service UserService) *UserController {
+	return &UserController{service: service}
+}
+
+// Create handles user creation
+func (c *UserController) Create(ctx fuego.ContextWithBody[CreateUserRequest]) (UserProfile, error) {
+	req, err := ctx.Body()
 	if err != nil {
-		return UserResponse{}, err
+		return UserProfile{}, err
 	}
 
-	// Check if email is already taken (simulating DB check)
-	if body.Email == "taken@example.com" {
-		return UserResponse{}, errors.New("email already taken")
+	user, err := c.service.CreateUser(req.Name, req.Email)
+	if err != nil {
+		return UserProfile{}, err
 	}
 
-	// In a real app, you would:
-	// 1. Hash the password
-	// 2. Save to database
-	// 3. Generate ID
-	// Here we'll simulate that:
-	user := UserResponse{
-		ID:    "user_123", // Simulated generated ID
-		Name:  body.Name,
-		Email: body.Email,
+	ctx.SetStatus(http.StatusCreated)
+	return user, nil
+}
+
+// GetByID handles fetching a user by ID
+func (c *UserController) GetByID(ctx fuego.ContextWithBody[any]) (UserProfile, error) {
+	id := ctx.PathParam("id")
+	if id == "" {
+		return UserProfile{}, errors.New("id is required")
+	}
+
+	user, err := c.service.GetUserByID(id)
+	if err != nil {
+		if err.Error() == "user not found" {
+			ctx.SetStatus(http.StatusNotFound)
+		}
+		return UserProfile{}, err
 	}
 
 	return user, nil
 }
 
-func TestCreateUserController(t *testing.T) {
-	tests := []struct {
-		name    string
-		request UserRequest
-		want    UserResponse
-		wantErr string
-	}{
-		{
-			name: "successful creation",
-			request: UserRequest{
-				Name:     "John Doe",
-				Email:    "john@example.com",
-				Password: "secure123",
+func TestUserController(t *testing.T) {
+	// Setup
+	service := newMockUserService()
+	controller := NewUserController(service)
+
+	t.Run("create user", func(t *testing.T) {
+		tests := []struct {
+			name    string
+			request CreateUserRequest
+			want    UserProfile
+			wantErr string
+			status  int
+		}{
+			{
+				name: "successful creation",
+				request: CreateUserRequest{
+					Name:  "Jane Doe",
+					Email: "jane@example.com",
+				},
+				want: UserProfile{
+					ID:    "new_id",
+					Name:  "Jane Doe",
+					Email: "jane@example.com",
+				},
+				status: http.StatusCreated,
 			},
-			want: UserResponse{
-				ID:    "user_123",
-				Name:  "John Doe",
-				Email: "john@example.com",
+			{
+				name: "email taken",
+				request: CreateUserRequest{
+					Name:  "Another User",
+					Email: "taken@example.com",
+				},
+				wantErr: "email already taken",
+				status:  http.StatusOK, // Default status when not set
 			},
-		},
-		{
-			name: "email already taken",
-			request: UserRequest{
-				Name:     "Jane Doe",
-				Email:    "taken@example.com",
-				Password: "secure123",
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				// Setup mock context
+				w := httptest.NewRecorder()
+				ctx := fuego.NewMockContext[CreateUserRequest]()
+				ctx.SetBody(tt.request)
+				ctx.SetResponse(w)
+
+				// Call controller
+				got, err := controller.Create(ctx)
+
+				// Assert results
+				if tt.wantErr != "" {
+					assert.Error(t, err)
+					assert.Contains(t, err.Error(), tt.wantErr)
+					return
+				}
+
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, got)
+				assert.Equal(t, tt.status, w.Code)
+			})
+		}
+	})
+
+	t.Run("get user by id", func(t *testing.T) {
+		tests := []struct {
+			name    string
+			userID  string
+			want    UserProfile
+			wantErr string
+			status  int
+		}{
+			{
+				name:   "user found",
+				userID: "123",
+				want: UserProfile{
+					ID:    "123",
+					Name:  "John Doe",
+					Email: "john@example.com",
+				},
+				status: http.StatusOK,
 			},
-			wantErr: "email already taken",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Setup
-			ctx := fuego.NewMockContext[UserRequest]()
-			ctx.SetBody(tt.request)
-
-			// Execute
-			got, err := CreateUserController(ctx)
-
-			// Assert
-			if tt.wantErr != "" {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tt.wantErr)
-				return
-			}
-
-			assert.NoError(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-// Example of testing a controller that uses path parameters
-func GetUserController(c fuego.ContextNoBody) (UserResponse, error) {
-	userID := c.PathParam("id")
-	if userID == "" {
-		return UserResponse{}, errors.New("user ID is required")
-	}
-
-	// Simulate fetching user from database
-	if userID == "not_found" {
-		return UserResponse{}, errors.New("user not found")
-	}
-
-	return UserResponse{
-		ID:    userID,
-		Name:  "John Doe",
-		Email: "john@example.com",
-	}, nil
-}
-
-func TestGetUserController(t *testing.T) {
-	tests := []struct {
-		name    string
-		userID  string
-		want    UserResponse
-		wantErr string
-	}{
-		{
-			name:   "user found",
-			userID: "user_123",
-			want: UserResponse{
-				ID:    "user_123",
-				Name:  "John Doe",
-				Email: "john@example.com",
+			{
+				name:    "user not found",
+				userID:  "999",
+				wantErr: "user not found",
+				status:  http.StatusNotFound,
 			},
-		},
-		{
-			name:    "user not found",
-			userID:  "not_found",
-			wantErr: "user not found",
-		},
-		{
-			name:    "missing user ID",
-			userID:  "",
-			wantErr: "user ID is required",
-		},
-	}
+		}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Setup
-			ctx := fuego.NewMockContext[struct{}]()
-			if tt.userID != "" {
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				// Setup mock context
+				w := httptest.NewRecorder()
+				ctx := fuego.NewMockContext[any]()
 				ctx.SetPathParam("id", tt.userID)
-			}
+				ctx.SetResponse(w)
 
-			// Execute
-			got, err := GetUserController(ctx)
+				// Call controller
+				got, err := controller.GetByID(ctx)
 
-			// Assert
-			if tt.wantErr != "" {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tt.wantErr)
-				return
-			}
+				// Assert results
+				if tt.wantErr != "" {
+					assert.Error(t, err)
+					assert.Contains(t, err.Error(), tt.wantErr)
+					assert.Equal(t, tt.status, w.Code)
+					return
+				}
 
-			assert.NoError(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-} 
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, got)
+				assert.Equal(t, tt.status, w.Code)
+			})
+		}
+	})
+}
