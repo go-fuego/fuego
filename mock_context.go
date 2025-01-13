@@ -102,4 +102,4 @@ func (m *MockContext[B]) Request() *http.Request {
 // SetRequest sets the mock request
 func (m *MockContext[B]) SetRequest(r *http.Request) {
 	m.request = r
-} 
+}
