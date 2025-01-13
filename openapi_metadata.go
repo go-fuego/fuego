@@ -87,7 +87,7 @@ func (mp *MetadataParsers) Reset() {
 // InitializeMetadataParsers initializes the metadata parsers with the given customParsers.
 // It will append the customParsers to the existing DefaultParsers. If a parser with the
 // same name is already registered, it will be skipped.
-func (mp *MetadataParsers) InitializeMetadataParsers(customParsers []MetadataParserEntry) {
+func (mp *MetadataParsers) Initialize(customParsers []MetadataParserEntry) {
 	mp.parserLock.Lock()
 	defer mp.parserLock.Unlock()
 
