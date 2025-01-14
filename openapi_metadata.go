@@ -84,7 +84,7 @@ func (mp *MetadataParsers) Reset() {
 	mp.registeredNames = make(map[string]bool)
 }
 
-// InitializeMetadataParsers initializes the metadata parsers with the given customParsers.
+// Initialize initializes the metadata parsers with the given customParsers.
 // It will append the customParsers to the existing DefaultParsers. If a parser with the
 // same name is already registered, it will be skipped.
 func (mp *MetadataParsers) Initialize(customParsers []MetadataParserEntry) {
