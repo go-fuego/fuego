@@ -18,7 +18,7 @@ func NewOpenAPI() *OpenAPI {
 	desc := NewOpenApiSpec()
 
 	mp := NewMetadataParsers()
-	mp.InitializeMetadataParsers(DefaultParsers)
+	mp.Initialize(DefaultParsers)
 
 	return &OpenAPI{
 		description:            &desc,
