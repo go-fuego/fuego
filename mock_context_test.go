@@ -2,221 +2,161 @@ package fuego_test
 
 import (
 	"errors"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/go-fuego/fuego"
 	"github.com/stretchr/testify/assert"
 )
 
-// UserProfile represents a user in our system
+// UserSearchRequest represents the search criteria for users
+type UserSearchRequest struct {
+	MinAge    int    `json:"minAge" validate:"gte=0,lte=150"`
+	MaxAge    int    `json:"maxAge" validate:"gte=0,lte=150"`
+	NameQuery string `json:"nameQuery" validate:"required"`
+}
+
+// UserSearchResponse represents the search results
+type UserSearchResponse struct {
+	Users       []UserProfile `json:"users"`
+	TotalCount  int           `json:"totalCount"`
+	CurrentPage int           `json:"currentPage"`
+}
+
+// UserProfile represents a user in the system
 type UserProfile struct {
 	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
-
-// UserService simulates a real service layer
-type UserService interface {
-	CreateUser(name, email string) (UserProfile, error)
-	GetUserByID(id string) (UserProfile, error)
-}
-
-// mockUserService is a mock implementation of UserService
-type mockUserService struct {
-	users map[string]UserProfile
-}
-
-func newMockUserService() *mockUserService {
-	return &mockUserService{
-		users: map[string]UserProfile{
-			"123": {ID: "123", Name: "John Doe", Email: "john@example.com"},
-		},
-	}
-}
-
-func (s *mockUserService) CreateUser(name, email string) (UserProfile, error) {
-	if email == "taken@example.com" {
-		return UserProfile{}, errors.New("email already taken")
-	}
-	user := UserProfile{
-		ID:    "new_id",
-		Name:  name,
-		Email: email,
-	}
-	s.users[user.ID] = user
-	return user, nil
-}
-
-func (s *mockUserService) GetUserByID(id string) (UserProfile, error) {
-	user, exists := s.users[id]
-	if !exists {
-		return UserProfile{}, errors.New("user not found")
-	}
-	return user, nil
-}
-
-// CreateUserRequest represents the request body for user creation
-type CreateUserRequest struct {
 	Name  string `json:"name" validate:"required"`
+	Age   int    `json:"age" validate:"gte=0,lte=150"`
 	Email string `json:"email" validate:"required,email"`
 }
 
-// UserController handles user-related HTTP endpoints
-type UserController struct {
-	service UserService
-}
-
-func NewUserController(service UserService) *UserController {
-	return &UserController{service: service}
-}
-
-// Create handles user creation
-func (c *UserController) Create(ctx fuego.ContextWithBody[CreateUserRequest]) (UserProfile, error) {
-	req, err := ctx.Body()
+// SearchUsersController is an example of a real controller that would be used in a Fuego app
+func SearchUsersController(c fuego.ContextWithBody[UserSearchRequest]) (UserSearchResponse, error) {
+	// Get and validate the request body
+	body, err := c.Body()
 	if err != nil {
-		return UserProfile{}, err
+		return UserSearchResponse{}, err
 	}
 
-	user, err := c.service.CreateUser(req.Name, req.Email)
-	if err != nil {
-		return UserProfile{}, err
+	// Get pagination parameters from query
+	page := c.QueryParamInt("page")
+	if page < 1 {
+		page = 1
+	}
+	perPage := c.QueryParamInt("perPage")
+	if perPage < 1 || perPage > 100 {
+		perPage = 20
 	}
 
-	ctx.SetStatus(http.StatusCreated)
-	return user, nil
-}
-
-// GetByID handles fetching a user by ID
-func (c *UserController) GetByID(ctx fuego.ContextWithBody[any]) (UserProfile, error) {
-	id := ctx.PathParam("id")
-	if id == "" {
-		return UserProfile{}, errors.New("id is required")
+	// Example validation beyond struct tags
+	if body.MinAge > body.MaxAge {
+		return UserSearchResponse{}, errors.New("minAge cannot be greater than maxAge")
 	}
 
-	user, err := c.service.GetUserByID(id)
-	if err != nil {
-		if err.Error() == "user not found" {
-			ctx.SetStatus(http.StatusNotFound)
+	// In a real app, this would query a database
+	// Here we just return mock data that matches the criteria
+	users := []UserProfile{
+		{ID: "user_1", Name: "John Doe", Age: 25, Email: "john@example.com"},
+		{ID: "user_2", Name: "Jane Smith", Age: 30, Email: "jane@example.com"},
+	}
+
+	// Filter users based on criteria (simplified example)
+	var filteredUsers []UserProfile
+	for _, user := range users {
+		if user.Age >= body.MinAge && user.Age <= body.MaxAge {
+			filteredUsers = append(filteredUsers, user)
 		}
-		return UserProfile{}, err
 	}
 
-	return user, nil
+	return UserSearchResponse{
+		Users:       filteredUsers,
+		TotalCount:  len(filteredUsers),
+		CurrentPage: page,
+	}, nil
 }
 
-func TestUserController(t *testing.T) {
-	// Setup
-	service := newMockUserService()
-	controller := NewUserController(service)
-
-	t.Run("create user", func(t *testing.T) {
-		tests := []struct {
-			name    string
-			request CreateUserRequest
-			want    UserProfile
-			wantErr string
-			status  int
-		}{
-			{
-				name: "successful creation",
-				request: CreateUserRequest{
-					Name:  "Jane Doe",
-					Email: "jane@example.com",
-				},
-				want: UserProfile{
-					ID:    "new_id",
-					Name:  "Jane Doe",
-					Email: "jane@example.com",
-				},
-				status: http.StatusCreated,
+func TestSearchUsersController(t *testing.T) {
+	tests := []struct {
+		name          string
+		body          UserSearchRequest
+		queryParams   map[string]string
+		expectedError string
+		expected      UserSearchResponse
+	}{
+		{
+			name: "successful search with age range",
+			body: UserSearchRequest{
+				MinAge:    20,
+				MaxAge:    35,
+				NameQuery: "John",
 			},
-			{
-				name: "email taken",
-				request: CreateUserRequest{
-					Name:  "Another User",
-					Email: "taken@example.com",
-				},
-				wantErr: "email already taken",
-				status:  http.StatusOK, // Default status when not set
+			queryParams: map[string]string{
+				"page":    "1",
+				"perPage": "20",
 			},
-		}
+			expected: UserSearchResponse{
+				Users: []UserProfile{
+					{ID: "user_1", Name: "John Doe", Age: 25, Email: "john@example.com"},
+					{ID: "user_2", Name: "Jane Smith", Age: 30, Email: "jane@example.com"},
+				},
+				TotalCount:  2,
+				CurrentPage: 1,
+			},
+		},
+		{
+			name: "invalid age range",
+			body: UserSearchRequest{
+				MinAge:    40,
+				MaxAge:    20,
+				NameQuery: "John",
+			},
+			expectedError: "minAge cannot be greater than maxAge",
+		},
+		{
+			name: "default pagination values",
+			body: UserSearchRequest{
+				MinAge:    20,
+				MaxAge:    35,
+				NameQuery: "John",
+			},
+			expected: UserSearchResponse{
+				Users: []UserProfile{
+					{ID: "user_1", Name: "John Doe", Age: 25, Email: "john@example.com"},
+					{ID: "user_2", Name: "Jane Smith", Age: 30, Email: "jane@example.com"},
+				},
+				TotalCount:  2,
+				CurrentPage: 1,
+			},
+		},
+	}
 
-		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
-				// Setup mock context
-				w := httptest.NewRecorder()
-				ctx := fuego.NewMockContext[CreateUserRequest]()
-				ctx.SetBody(tt.request)
-				ctx.SetResponse(w)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create mock context and set up the test case
+			ctx := fuego.NewMockContext[UserSearchRequest]()
+			ctx.SetBody(tt.body)
 
-				// Call controller
-				got, err := controller.Create(ctx)
-
-				// Assert results
-				if tt.wantErr != "" {
-					assert.Error(t, err)
-					assert.Contains(t, err.Error(), tt.wantErr)
-					return
+			// Set query parameters
+			if tt.queryParams != nil {
+				for key, value := range tt.queryParams {
+					ctx.SetURLValues(map[string][]string{
+						key: {value},
+					})
 				}
+			}
 
-				assert.NoError(t, err)
-				assert.Equal(t, tt.want, got)
-				assert.Equal(t, tt.status, w.Code)
-			})
-		}
-	})
+			// Call the controller
+			response, err := SearchUsersController(ctx)
 
-	t.Run("get user by id", func(t *testing.T) {
-		tests := []struct {
-			name    string
-			userID  string
-			want    UserProfile
-			wantErr string
-			status  int
-		}{
-			{
-				name:   "user found",
-				userID: "123",
-				want: UserProfile{
-					ID:    "123",
-					Name:  "John Doe",
-					Email: "john@example.com",
-				},
-				status: http.StatusOK,
-			},
-			{
-				name:    "user not found",
-				userID:  "999",
-				wantErr: "user not found",
-				status:  http.StatusNotFound,
-			},
-		}
+			// Check error cases
+			if tt.expectedError != "" {
+				assert.EqualError(t, err, tt.expectedError)
+				return
+			}
 
-		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
-				// Setup mock context
-				w := httptest.NewRecorder()
-				ctx := fuego.NewMockContext[any]()
-				ctx.SetPathParam("id", tt.userID)
-				ctx.SetResponse(w)
-
-				// Call controller
-				got, err := controller.GetByID(ctx)
-
-				// Assert results
-				if tt.wantErr != "" {
-					assert.Error(t, err)
-					assert.Contains(t, err.Error(), tt.wantErr)
-					assert.Equal(t, tt.status, w.Code)
-					return
-				}
-
-				assert.NoError(t, err)
-				assert.Equal(t, tt.want, got)
-				assert.Equal(t, tt.status, w.Code)
-			})
-		}
-	})
+			// Check success cases
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, response)
+		})
+	}
 }
