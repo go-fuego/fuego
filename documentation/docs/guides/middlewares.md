@@ -10,8 +10,8 @@ authentication, etc.
 
 Middlewares can be registered at 2 levels:
 
-- **Route middlewares**: applies only on registered routes, easily scopable to a specific group, or several routes.
-- **Global middlewares**: applies on every request, even non-matching routes (useful for CORS for example).
+- **Route middlewares**: applies only to registered routes, is scoped to a specific group, or several routes.
+- **Global middlewares**: applied on every request, even non-matching routes (useful for CORS for example).
 
 ## Route middlewares
 
