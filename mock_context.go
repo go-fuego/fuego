@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
-	"time"
+
+	"github.com/go-fuego/fuego/internal"
 )
 
 // NewMockContext creates a new MockContext instance with initialized maps
@@ -14,12 +14,12 @@ import (
 // as the default context.
 func NewMockContext[B any]() *MockContext[B] {
 	return &MockContext[B]{
-		urlValues:  make(url.Values),
+		CommonContext: internal.CommonContext[B]{
+			CommonCtx: context.Background(),
+		},
 		headers:    make(http.Header),
 		pathParams: make(map[string]string),
-		ctx:        context.Background(),
 		cookies:    make(map[string]*http.Cookie),
-		params:     make(map[string]OpenAPIParam),
 	}
 }
 
@@ -27,32 +27,27 @@ func NewMockContext[B any]() *MockContext[B] {
 // for testing purposes. It allows testing controllers without depending on
 // specific web frameworks like Gin or Echo.
 type MockContext[B any] struct {
-	body       B
-	urlValues  url.Values // query parameters
+	internal.CommonContext[B]
+
+	body B
+
 	headers    http.Header
 	pathParams map[string]string
-	ctx        context.Context
 	response   http.ResponseWriter
 	request    *http.Request
 	cookies    map[string]*http.Cookie
-	params     map[string]OpenAPIParam
 }
 
 var _ ContextWithBody[string] = &MockContext[string]{}
 
-// GetOpenAPIParams returns the OpenAPI parameters for validation
-func (m *MockContext[B]) GetOpenAPIParams() map[string]OpenAPIParam {
-	return m.params
-}
-
 // SetOpenAPIParam sets an OpenAPI parameter for validation
 func (m *MockContext[B]) SetOpenAPIParam(name string, param OpenAPIParam) {
-	m.params[name] = param
+	m.CommonContext.OpenAPIParams[name] = param
 }
 
 // HasQueryParam checks if a query parameter exists
 func (m *MockContext[B]) HasQueryParam(key string) bool {
-	_, exists := m.urlValues[key]
+	_, exists := m.UrlValues[key]
 	return exists
 }
 
@@ -83,19 +78,14 @@ func (m *MockContext[B]) SetBody(body B) {
 	m.body = body
 }
 
-// URLValues returns the mock URL values
-func (m *MockContext[B]) URLValues() url.Values {
-	return m.urlValues
-}
-
 // SetQueryParams sets the mock URL values
 func (m *MockContext[B]) SetQueryParams(values url.Values) {
-	m.urlValues = values
+	m.UrlValues = values
 }
 
 // SetQueryParam sets a single mock URL value
 func (m *MockContext[B]) SetQueryParam(key, value string) {
-	m.urlValues.Set(key, value)
+	m.UrlValues.Set(key, value)
 }
 
 // Header returns the value of the specified header
@@ -123,14 +113,9 @@ func (m *MockContext[B]) SetPathParam(name, value string) {
 	m.pathParams[name] = value
 }
 
-// Context returns the mock context
-func (m *MockContext[B]) Context() context.Context {
-	return m.ctx
-}
-
 // SetContext sets the mock context
 func (m *MockContext[B]) SetContext(ctx context.Context) {
-	m.ctx = ctx
+	m.CommonContext.CommonCtx = ctx
 }
 
 // Response returns the mock response writer
@@ -153,26 +138,6 @@ func (m *MockContext[B]) SetRequest(r *http.Request) {
 	m.request = r
 }
 
-// Deadline implements context.Context
-func (m *MockContext[B]) Deadline() (deadline time.Time, ok bool) {
-	return m.ctx.Deadline()
-}
-
-// Done implements context.Context
-func (m *MockContext[B]) Done() <-chan struct{} {
-	return m.ctx.Done()
-}
-
-// Err implements context.Context
-func (m *MockContext[B]) Err() error {
-	return m.ctx.Err()
-}
-
-// Value implements context.Context
-func (m *MockContext[B]) Value(key any) any {
-	return m.ctx.Value(key)
-}
-
 // Cookie returns a mock cookie
 func (m *MockContext[B]) Cookie(name string) (*http.Cookie, error) {
 	cookie, exists := m.cookies[name]
@@ -185,59 +150,6 @@ func (m *MockContext[B]) Cookie(name string) (*http.Cookie, error) {
 // SetCookie sets a mock cookie
 func (m *MockContext[B]) SetCookie(cookie http.Cookie) {
 	m.cookies[cookie.Name] = &cookie
-}
-
-// QueryParam returns the value of the specified query parameter
-func (m *MockContext[B]) QueryParam(name string) string {
-	return m.urlValues.Get(name)
-}
-
-// QueryParamArr returns the values of the specified query parameter
-func (m *MockContext[B]) QueryParamArr(name string) []string {
-	return m.urlValues[name]
-}
-
-// QueryParamInt returns the value of the specified query parameter as an integer
-func (m *MockContext[B]) QueryParamInt(name string) int {
-	val := m.QueryParam(name)
-	if val == "" {
-		return 0
-	}
-	i, _ := strconv.Atoi(val)
-	return i
-}
-
-// QueryParamIntErr returns the value of the specified query parameter as an integer and any error
-func (m *MockContext[B]) QueryParamIntErr(name string) (int, error) {
-	val := m.QueryParam(name)
-	if val == "" {
-		return 0, nil
-	}
-	return strconv.Atoi(val)
-}
-
-// QueryParamBool returns the value of the specified query parameter as a boolean
-func (m *MockContext[B]) QueryParamBool(name string) bool {
-	val := m.QueryParam(name)
-	if val == "" {
-		return false
-	}
-	b, _ := strconv.ParseBool(val)
-	return b
-}
-
-// QueryParamBoolErr returns the value of the specified query parameter as a boolean and any error
-func (m *MockContext[B]) QueryParamBoolErr(name string) (bool, error) {
-	val := m.QueryParam(name)
-	if val == "" {
-		return false, nil
-	}
-	return strconv.ParseBool(val)
-}
-
-// QueryParams returns all query parameters
-func (m *MockContext[B]) QueryParams() url.Values {
-	return m.urlValues
 }
 
 // MainLang returns the main language from Accept-Language header
@@ -271,5 +183,5 @@ func (m *MockContext[B]) Redirect(code int, url string) (any, error) {
 
 // Render is a mock implementation that does nothing
 func (m *MockContext[B]) Render(templateToExecute string, data any, templateGlobsToOverride ...string) (CtxRenderer, error) {
-	return nil, nil
+	panic("not implemented")
 }
