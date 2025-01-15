@@ -43,6 +43,13 @@ type Engine struct {
 }
 
 type OpenAPIConfig struct {
+	MiddlewareDisplayLimit int
+}
+
+func DefaultOpenAPIConfig() OpenAPIConfig {
+    return OpenAPIConfig{
+        MiddlewareDisplayLimit: 5,
+    }
 	// Local path to save the OpenAPI JSON spec
 	JSONFilePath string
 	// If true, the server will not serve nor generate any OpenAPI resources
@@ -57,6 +64,12 @@ type OpenAPIConfig struct {
 
 var defaultOpenAPIConfig = OpenAPIConfig{
 	JSONFilePath: "doc/openapi.json",
+}
+//implemnt action
+func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
+    return func(e *Engine) {
+        e.openAPIConfig = config
+    }
 }
 
 // WithRequestContentType sets the accepted content types for the engine.
@@ -75,6 +88,14 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 		e.OpenAPIConfig.DisableLocalSave = config.DisableLocalSave
 		e.OpenAPIConfig.PrettyFormatJSON = config.PrettyFormatJSON
 	}
+}
+
+func (e *Engine) DisplayMiddlewares() []Middleware {
+    limit := e.openAPIConfig.MiddlewareDisplayLimit
+    if len(e.middlewares) < limit {
+        return e.middlewares
+    }
+    return e.middlewares[:limit]
 }
 
 // WithErrorHandler sets a customer error handler for the server
@@ -148,6 +169,28 @@ func (s *Engine) marshalSpec() ([]byte, error) {
 		return json.MarshalIndent(s.OpenAPI.Description(), "", "\t")
 	}
 	return json.Marshal(s.OpenAPI.Description())
+}
+
+func TestDefaultMiddlewareLimit(t *testing.T) {
+    engine := NewEngine(DefaultOpenAPIConfig())
+    engine.middlewares = []Middleware{"A", "B", "C", "D", "E", "F"}
+
+    displayed := engine.DisplayMiddlewares()
+    if len(displayed) != 5 {
+        t.Errorf("Expected 5 middlewares, got %d", len(displayed))
+    }
+}
+
+func TestCustomMiddlewareLimit(t *testing.T) {
+    config := DefaultOpenAPIConfig()
+    config.MiddlewareDisplayLimit = 3
+    engine := NewEngine(config)
+    engine.middlewares = []Middleware{"A", "B", "C", "D", "E"}
+
+    displayed := engine.DisplayMiddlewares()
+    if len(displayed) != 3 {
+        t.Errorf("Expected 3 middlewares, got %d", len(displayed))
+    }
 }
 
 func (e *Engine) printOpenAPIMessage(msg string) {
