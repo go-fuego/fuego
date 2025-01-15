@@ -2,10 +2,12 @@ package fuego_test
 
 import (
 	"errors"
+	"net/url"
 	"testing"
 
-	"github.com/go-fuego/fuego"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/go-fuego/fuego"
 )
 
 // UserSearchRequest represents the search criteria for users
@@ -79,7 +81,7 @@ func TestSearchUsersController(t *testing.T) {
 	tests := []struct {
 		name          string
 		body          UserSearchRequest
-		queryParams   map[string]string
+		queryParams   url.Values
 		expectedError string
 		expected      UserSearchResponse
 	}{
@@ -90,9 +92,9 @@ func TestSearchUsersController(t *testing.T) {
 				MaxAge:    35,
 				NameQuery: "John",
 			},
-			queryParams: map[string]string{
-				"page":    "1",
-				"perPage": "20",
+			queryParams: map[string][]string{
+				"page":    {"1"},
+				"perPage": {"20"},
 			},
 			expected: UserSearchResponse{
 				Users: []UserProfile{
@@ -135,15 +137,7 @@ func TestSearchUsersController(t *testing.T) {
 			// Create mock context and set up the test case
 			ctx := fuego.NewMockContext[UserSearchRequest]()
 			ctx.SetBody(tt.body)
-
-			// Set query parameters
-			if tt.queryParams != nil {
-				for key, value := range tt.queryParams {
-					ctx.SetURLValues(map[string][]string{
-						key: {value},
-					})
-				}
-			}
+			ctx.SetQueryParams(tt.queryParams)
 
 			// Call the controller
 			response, err := SearchUsersController(ctx)

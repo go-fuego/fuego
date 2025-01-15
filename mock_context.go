@@ -9,21 +9,6 @@ import (
 	"time"
 )
 
-// MockContext provides a framework-agnostic implementation of ContextWithBody
-// for testing purposes. It allows testing controllers without depending on
-// specific web frameworks like Gin or Echo.
-type MockContext[B any] struct {
-	body       B
-	urlValues  url.Values
-	headers    http.Header
-	pathParams map[string]string
-	ctx        context.Context
-	response   http.ResponseWriter
-	request    *http.Request
-	cookies    map[string]*http.Cookie
-	params     map[string]OpenAPIParam
-}
-
 // NewMockContext creates a new MockContext instance with initialized maps
 // for URL values, headers, and path parameters. It uses context.Background()
 // as the default context.
@@ -37,6 +22,23 @@ func NewMockContext[B any]() *MockContext[B] {
 		params:     make(map[string]OpenAPIParam),
 	}
 }
+
+// MockContext provides a framework-agnostic implementation of ContextWithBody
+// for testing purposes. It allows testing controllers without depending on
+// specific web frameworks like Gin or Echo.
+type MockContext[B any] struct {
+	body       B
+	urlValues  url.Values // query parameters
+	headers    http.Header
+	pathParams map[string]string
+	ctx        context.Context
+	response   http.ResponseWriter
+	request    *http.Request
+	cookies    map[string]*http.Cookie
+	params     map[string]OpenAPIParam
+}
+
+var _ ContextWithBody[string] = &MockContext[string]{}
 
 // GetOpenAPIParams returns the OpenAPI parameters for validation
 func (m *MockContext[B]) GetOpenAPIParams() map[string]OpenAPIParam {
@@ -68,7 +70,7 @@ func (m *MockContext[B]) HasCookie(key string) bool {
 
 // Body returns the previously set body value
 func (m *MockContext[B]) Body() (B, error) {
-	return m.body, nil
+	return TransformAndValidate(m, m.body)
 }
 
 // MustBody returns the body or panics if there's an error
@@ -86,9 +88,14 @@ func (m *MockContext[B]) URLValues() url.Values {
 	return m.urlValues
 }
 
-// SetURLValues sets the mock URL values
-func (m *MockContext[B]) SetURLValues(values url.Values) {
+// SetQueryParams sets the mock URL values
+func (m *MockContext[B]) SetQueryParams(values url.Values) {
 	m.urlValues = values
+}
+
+// SetQueryParam sets a single mock URL value
+func (m *MockContext[B]) SetQueryParam(key, value string) {
+	m.urlValues.Set(key, value)
 }
 
 // Header returns the value of the specified header

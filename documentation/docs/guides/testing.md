@@ -1,10 +1,10 @@
 # Testing Fuego Controllers
 
-Fuego provides a `MockContext` type that makes it easy to test your controllers without setting up a full HTTP server. This guide will show you how to use it effectively.
+Fuego provides a `MockContext` type that makes it easy to test your controllers without using httptest, allowing you to focus on your business logic instead of the HTTP layer.
 
 ## Using MockContext
 
-The `MockContext` type implements the `ContextWithBody` interface, allowing you to test your controllers in isolation. Here's a simple example:
+The `MockContext` type implements the `ContextWithBody` interface. Here's a simple example:
 
 ```go
 func TestMyController(t *testing.T) {
@@ -20,13 +20,23 @@ func TestMyController(t *testing.T) {
     // Call your controller
     response, err := MyController(ctx)
 
-    // Assert the results
+    // Assert the results, using the well-known testify library
     assert.NoError(t, err)
     assert.Equal(t, expectedResponse, response)
+
+    // Or, using the standard library
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    if !reflect.DeepEqual(expectedResponse, response) {
+        t.Fatalf("unexpected response: %v", response)
+    }
 }
 ```
 
 ## Complete Example
+
+Please refer to the [mock_context_test.go](https://github.com/go-fuego/fuego/blob/main/mock_context_test.go) file in the fuego repository for a complete and updated example.
 
 Here's a more complete example showing how to test a controller that uses request body, query parameters, and validation:
 
@@ -63,7 +73,7 @@ func TestSearchUsersController(t *testing.T) {
     tests := []struct {
         name          string
         body          UserSearchRequest
-        queryParams   map[string]string
+        queryParams   url.Values
         expectedError string
         expected      UserSearchResponse
     }{
@@ -74,8 +84,8 @@ func TestSearchUsersController(t *testing.T) {
                 MaxAge:    35,
                 NameQuery: "John",
             },
-            queryParams: map[string]string{
-                "page": "1",
+            queryParams: map[string][]string{
+                "page": {"1"},
             },
             expected: UserSearchResponse{
                 // ... expected response
@@ -97,15 +107,7 @@ func TestSearchUsersController(t *testing.T) {
             // Create mock context and set up the test
             ctx := fuego.NewMockContext[UserSearchRequest]()
             ctx.SetBody(tt.body)
-
-            // Set query parameters
-            if tt.queryParams != nil {
-                for key, value := range tt.queryParams {
-                    ctx.SetURLValues(map[string][]string{
-                        key: {value},
-                    })
-                }
-            }
+            ctx.SetQueryParams(tt.queryParams)
 
             // Call the controller
             response, err := SearchUsersController(ctx)
@@ -126,31 +128,21 @@ func TestSearchUsersController(t *testing.T) {
 
 ## Available Mock Methods
 
-`MockContext` provides several methods to help you test different aspects of your controllers:
+Provide external HTTP elements in `MockContext` with the following setters:
 
-- `SetBody(body B)` - Set the request body
-- `SetURLValues(values url.Values)` - Set query parameters
-- `SetHeader(key, value string)` - Set request headers
-- `SetPathParam(name, value string)` - Set path parameters
-- `SetCookie(cookie http.Cookie)` - Set request cookies
-- `SetContext(ctx context.Context)` - Set a custom context
-- `SetResponse(w http.ResponseWriter)` - Set a custom response writer
-- `SetRequest(r *http.Request)` - Set a custom request
+- `SetBody(body B)`
+- `SetQueryParams(values url.Values)`
+- `SetHeader(key, value string)`
+- `SetPathParam(name, value string)`
+- `SetCookie(cookie http.Cookie)`
+- `SetContext(ctx context.Context)`
+- `SetResponse(w http.ResponseWriter)`
+- `SetRequest(r *http.Request)`
 
 ## Best Practices
 
 1. **Test Edge Cases**: Test both valid and invalid inputs, including validation errors.
 2. **Use Table-Driven Tests**: Structure your tests as a slice of test cases for better organization.
-3. **Mock Only What You Need**: Only set up the mock data that your test actually requires.
+3. **Mock using interfaces**: Use interfaces to mock dependencies and make your controllers testable, just as we're doing here: the controller accept an interface, we're passing a mock implementation of context in the tests.
 4. **Test Business Logic**: Focus on testing your business logic rather than the framework itself.
-5. **Keep Tests Focused**: Each test should verify one specific behavior.
-
-## Why Use MockContext?
-
-We use `MockContext` with setter methods (instead of exported fields) to:
-
-- Maintain encapsulation and consistency with real implementations
-- Allow for future additions like validation or logging without breaking user code
-- Ensure tests reflect how the code will behave in production
-
-This approach makes your tests more maintainable and reliable while keeping them simple to write.
+5. **Fuzz Testing**: Use fuzz testing to automatically find edge cases that you might have missed. User input can be anything!
