@@ -12,10 +12,10 @@ func TestMyController(t *testing.T) {
     ctx := fuego.NewMockContext[MyRequestType]()
 
     // Set the request body
-    ctx.SetBody(MyRequestType{
+    ctx.BodyData = MyRequestType{
         Name: "John",
         Age:  30,
-    })
+    }
 
     // Call your controller
     response, err := MyController(ctx)
@@ -96,15 +96,27 @@ func TestSearchUsersController(t *testing.T) {
         t.Run(tt.name, func(t *testing.T) {
             // Create mock context and set up the test
             ctx := fuego.NewMockContext[UserSearchRequest]()
-            ctx.SetBody(tt.body)
+            ctx.BodyData = tt.body
+
+            // Set up OpenAPI parameters for validation
+            ctx.OpenAPIParams = map[string]internal.OpenAPIParam{
+                "page": {
+                    Name:        "page",
+                    Description: "Page number",
+                    Type:        fuego.QueryParamType,
+                    GoType:      "integer",
+                    Default:     1,
+                },
+                // Add other OpenAPI parameters as needed
+            }
 
             // Set query parameters
             if tt.queryParams != nil {
+                values := make(url.Values)
                 for key, value := range tt.queryParams {
-                    ctx.SetURLValues(map[string][]string{
-                        key: {value},
-                    })
+                    values.Set(key, value)
                 }
+                ctx.UrlValues = values
             }
 
             // Call the controller
@@ -124,18 +136,72 @@ func TestSearchUsersController(t *testing.T) {
 }
 ```
 
-## Available Mock Methods
+## Available Fields and Methods
 
-`MockContext` provides several methods to help you test different aspects of your controllers:
+`MockContext` provides public fields for easy testing:
 
-- `SetBody(body B)` - Set the request body
-- `SetURLValues(values url.Values)` - Set query parameters
-- `SetHeader(key, value string)` - Set request headers
-- `SetPathParam(name, value string)` - Set path parameters
-- `SetCookie(cookie http.Cookie)` - Set request cookies
-- `SetContext(ctx context.Context)` - Set a custom context
-- `SetResponse(w http.ResponseWriter)` - Set a custom response writer
-- `SetRequest(r *http.Request)` - Set a custom request
+- `BodyData` - The request body
+- `HeadersData` - HTTP headers
+- `PathParamsData` - Path parameters
+- `ResponseData` - Response writer
+- `RequestData` - HTTP request
+- `CookiesData` - HTTP cookies
+- `UrlValues` (from CommonContext) - Query parameters
+- `OpenAPIParams` (from CommonContext) - OpenAPI parameter definitions
+
+And implements all the methods from `ContextWithBody`:
+
+- `Body()` - Get the request body
+- `MustBody()` - Get the request body (panics on error)
+- `Header(key string)` - Get request header
+- `HasHeader(key string)` - Check if header exists
+- `PathParam(name string)` - Get path parameter
+- `Cookie(name string)` - Get request cookie
+- `HasCookie(key string)` - Check if cookie exists
+- `Response()` - Get response writer
+- `Request()` - Get request
+
+Additionally, since `MockContext` embeds `CommonContext`, you get access to all the common functionality:
+
+- `QueryParam(name string)` - Get query parameter
+- `QueryParamInt(name string)` - Get query parameter as int
+- `QueryParamBool(name string)` - Get query parameter as bool
+- `QueryParamArr(name string)` - Get query parameter as string array
+- `HasQueryParam(name string)` - Check if query parameter exists
+
+## OpenAPI Parameter Setup
+
+When using query parameters, you should define their OpenAPI specifications to avoid warnings and ensure proper validation:
+
+```go
+ctx.OpenAPIParams = map[string]internal.OpenAPIParam{
+    "page": {
+        Name:        "page",
+        Description: "Page number",
+        Type:        fuego.QueryParamType,
+        GoType:      "integer",
+        Default:     1,
+    },
+    "perPage": {
+        Name:        "perPage",
+        Description: "Items per page",
+        Type:        fuego.QueryParamType,
+        GoType:      "integer",
+        Default:     20,
+    },
+}
+```
+
+Available OpenAPI parameter fields:
+
+- `Name` - Parameter name
+- `Description` - Parameter description
+- `Type` - Parameter type (QueryParamType, HeaderParamType, CookieParamType)
+- `GoType` - Go type ("integer", "string", "boolean")
+- `Default` - Default value
+- `Required` - Whether the parameter is required
+- `Nullable` - Whether the parameter can be null
+- `Examples` - Example values for documentation
 
 ## Best Practices
 
@@ -144,13 +210,15 @@ func TestSearchUsersController(t *testing.T) {
 3. **Mock Only What You Need**: Only set up the mock data that your test actually requires.
 4. **Test Business Logic**: Focus on testing your business logic rather than the framework itself.
 5. **Keep Tests Focused**: Each test should verify one specific behavior.
+6. **Define OpenAPI Parameters**: Always define OpenAPI parameters for query parameters to ensure proper validation.
 
 ## Why Use MockContext?
 
-We use `MockContext` with setter methods (instead of exported fields) to:
+The `MockContext` implementation:
 
-- Maintain encapsulation and consistency with real implementations
-- Allow for future additions like validation or logging without breaking user code
-- Ensure tests reflect how the code will behave in production
+- Embeds `CommonContext` to provide consistent behavior with real implementations
+- Provides public fields for easy testing while maintaining interface compatibility
+- Handles OpenAPI validation and parameter processing through CommonContext
+- Makes tests easy to write and maintain
 
 This approach makes your tests more maintainable and reliable while keeping them simple to write.

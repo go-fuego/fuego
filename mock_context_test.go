@@ -2,9 +2,11 @@ package fuego_test
 
 import (
 	"errors"
+	"net/url"
 	"testing"
 
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/internal"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -134,15 +136,33 @@ func TestSearchUsersController(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create mock context and set up the test case
 			ctx := fuego.NewMockContext[UserSearchRequest]()
-			ctx.SetBody(tt.body)
+			ctx.BodyData = tt.body
+
+			// Set up OpenAPI parameters for pagination
+			ctx.OpenAPIParams = map[string]internal.OpenAPIParam{
+				"page": {
+					Name:        "page",
+					Description: "Page number",
+					Type:        fuego.QueryParamType,
+					GoType:      "integer",
+					Default:     1,
+				},
+				"perPage": {
+					Name:        "perPage",
+					Description: "Items per page",
+					Type:        fuego.QueryParamType,
+					GoType:      "integer",
+					Default:     20,
+				},
+			}
 
 			// Set query parameters
 			if tt.queryParams != nil {
+				values := make(url.Values)
 				for key, value := range tt.queryParams {
-					ctx.SetURLValues(map[string][]string{
-						key: {value},
-					})
+					values.Set(key, value)
 				}
+				ctx.UrlValues = values
 			}
 
 			// Call the controller
