@@ -5,7 +5,6 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/go-fuego/fuego/internal"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/go-fuego/fuego"
