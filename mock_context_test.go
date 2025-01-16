@@ -92,7 +92,7 @@ func TestSearchUsersController(t *testing.T) {
 				MaxAge:    35,
 				NameQuery: "John",
 			},
-			queryParams: map[string][]string{
+			queryParams: url.Values{
 				"page":    {"1"},
 				"perPage": {"20"},
 			},
@@ -134,10 +134,11 @@ func TestSearchUsersController(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create mock context and set up the test case
-			ctx := fuego.NewMockContext[UserSearchRequest]()
-			ctx.SetBody(tt.body)
-			ctx.SetQueryParams(tt.queryParams)
+			// Create mock context with the test body
+			ctx := fuego.NewMockContext(tt.body)
+
+			// Set query parameters directly
+			ctx.UrlValues = tt.queryParams
 
 			// Call the controller
 			response, err := SearchUsersController(ctx)

@@ -8,11 +8,8 @@ The `MockContext` type implements the `ContextWithBody` interface. Here's a simp
 
 ```go
 func TestMyController(t *testing.T) {
-    // Create a new mock context with your request body type
-    ctx := fuego.NewMockContext[MyRequestType]()
-
-    // Set the request body
-    ctx.SetBody(MyRequestType{
+    // Create a new mock context with the request body
+    ctx := fuego.NewMockContext(MyRequestType{
         Name: "John",
         Age:  30,
     })
@@ -20,23 +17,13 @@ func TestMyController(t *testing.T) {
     // Call your controller
     response, err := MyController(ctx)
 
-    // Assert the results, using the well-known testify library
+    // Assert the results
     assert.NoError(t, err)
     assert.Equal(t, expectedResponse, response)
-
-    // Or, using the standard library
-    if err != nil {
-        t.Fatalf("unexpected error: %v", err)
-    }
-    if !reflect.DeepEqual(expectedResponse, response) {
-        t.Fatalf("unexpected response: %v", response)
-    }
 }
 ```
 
 ## Complete Example
-
-Please refer to the [mock_context_test.go](https://github.com/go-fuego/fuego/blob/main/mock_context_test.go) file in the fuego repository for a complete and updated example.
 
 Here's a more complete example showing how to test a controller that uses request body, query parameters, and validation:
 
@@ -84,7 +71,7 @@ func TestSearchUsersController(t *testing.T) {
                 MaxAge:    35,
                 NameQuery: "John",
             },
-            queryParams: map[string][]string{
+            queryParams: url.Values{
                 "page": {"1"},
             },
             expected: UserSearchResponse{
@@ -104,10 +91,11 @@ func TestSearchUsersController(t *testing.T) {
 
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            // Create mock context and set up the test
-            ctx := fuego.NewMockContext[UserSearchRequest]()
-            ctx.SetBody(tt.body)
-            ctx.SetQueryParams(tt.queryParams)
+            // Create mock context with the test body
+            ctx := fuego.NewMockContext(tt.body)
+
+            // Set query parameters directly
+            ctx.UrlValues = tt.queryParams
 
             // Call the controller
             response, err := SearchUsersController(ctx)
@@ -126,23 +114,20 @@ func TestSearchUsersController(t *testing.T) {
 }
 ```
 
-## Available Mock Methods
+## Available Fields
 
-Provide external HTTP elements in `MockContext` with the following setters:
+The `MockContext` type provides the following public fields for testing:
 
-- `SetBody(body B)`
-- `SetQueryParams(values url.Values)`
-- `SetHeader(key, value string)`
-- `SetPathParam(name, value string)`
-- `SetCookie(cookie http.Cookie)`
-- `SetContext(ctx context.Context)`
-- `SetResponse(w http.ResponseWriter)`
-- `SetRequest(r *http.Request)`
+- `RequestBody` - The request body of type B
+- `Headers` - HTTP headers
+- `PathParams` - URL path parameters
+- `Cookies` - HTTP cookies
+- `UrlValues` - Query parameters
 
 ## Best Practices
 
 1. **Test Edge Cases**: Test both valid and invalid inputs, including validation errors.
 2. **Use Table-Driven Tests**: Structure your tests as a slice of test cases for better organization.
-3. **Mock using interfaces**: Use interfaces to mock dependencies and make your controllers testable, just as we're doing here: the controller accept an interface, we're passing a mock implementation of context in the tests.
+3. **Mock using interfaces**: Use interfaces to mock dependencies and make your controllers testable.
 4. **Test Business Logic**: Focus on testing your business logic rather than the framework itself.
-5. **Fuzz Testing**: Use fuzz testing to automatically find edge cases that you might have missed. User input can be anything!
+5. **Fuzz Testing**: Use fuzz testing to automatically find edge cases that you might have missed.
