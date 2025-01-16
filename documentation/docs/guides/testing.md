@@ -12,7 +12,7 @@ func TestMyController(t *testing.T) {
     ctx := fuego.NewMockContext[MyRequestType](MyRequestType{
         Name: "John",
         Age:  30,
-    })
+    }
 
     // Call your controller
     response, err := MyController(ctx)
