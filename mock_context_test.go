@@ -93,7 +93,7 @@ func TestSearchUsersController(t *testing.T) {
 				MaxAge:    35,
 				NameQuery: "John",
 			},
-			queryParams: map[string][]string{
+			queryParams: url.Values{
 				"page":    {"1"},
 				"perPage": {"20"},
 			},
@@ -135,36 +135,11 @@ func TestSearchUsersController(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create mock context and set up the test case
-			ctx := fuego.NewMockContext[UserSearchRequest]()
-			ctx.BodyData = tt.body
+			// Create mock context with the test body
+			ctx := fuego.NewMockContext(tt.body)
 
-			// Set up OpenAPI parameters for pagination
-			ctx.OpenAPIParams = map[string]internal.OpenAPIParam{
-				"page": {
-					Name:        "page",
-					Description: "Page number",
-					Type:        fuego.QueryParamType,
-					GoType:      "integer",
-					Default:     1,
-				},
-				"perPage": {
-					Name:        "perPage",
-					Description: "Items per page",
-					Type:        fuego.QueryParamType,
-					GoType:      "integer",
-					Default:     20,
-				},
-			}
-
-			// Set query parameters
-			if tt.queryParams != nil {
-				values := make(url.Values)
-				for key, value := range tt.queryParams {
-					values.Set(key, value)
-				}
-				ctx.UrlValues = values
-			}
+			// Set query parameters directly
+			ctx.UrlValues = tt.queryParams
 
 			// Call the controller
 			response, err := SearchUsersController(ctx)

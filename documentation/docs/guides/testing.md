@@ -8,11 +8,8 @@ The `MockContext` type implements the `ContextWithBody` interface. Here's a simp
 
 ```go
 func TestMyController(t *testing.T) {
-    // Create a new mock context with your request body type
-    ctx := fuego.NewMockContext[MyRequestType]()
-
-    // Set the request body
-    ctx.BodyData = MyRequestType{
+    // Create a new mock context with the request body
+    ctx := fuego.NewMockContext(MyRequestType{
         Name: "John",
         Age:  30,
     }
@@ -20,23 +17,13 @@ func TestMyController(t *testing.T) {
     // Call your controller
     response, err := MyController(ctx)
 
-    // Assert the results, using the well-known testify library
+    // Assert the results
     assert.NoError(t, err)
     assert.Equal(t, expectedResponse, response)
-
-    // Or, using the standard library
-    if err != nil {
-        t.Fatalf("unexpected error: %v", err)
-    }
-    if !reflect.DeepEqual(expectedResponse, response) {
-        t.Fatalf("unexpected response: %v", response)
-    }
 }
 ```
 
 ## Complete Example
-
-Please refer to the [mock_context_test.go](https://github.com/go-fuego/fuego/blob/main/mock_context_test.go) file in the fuego repository for a complete and updated example.
 
 Here's a more complete example showing how to test a controller that uses request body, query parameters, and validation:
 
@@ -84,7 +71,7 @@ func TestSearchUsersController(t *testing.T) {
                 MaxAge:    35,
                 NameQuery: "John",
             },
-            queryParams: map[string][]string{
+            queryParams: url.Values{
                 "page": {"1"},
             },
             expected: UserSearchResponse{
@@ -104,30 +91,11 @@ func TestSearchUsersController(t *testing.T) {
 
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            // Create mock context and set up the test
-            ctx := fuego.NewMockContext[UserSearchRequest]()
-            ctx.BodyData = tt.body
+            // Create mock context with the test body
+            ctx := fuego.NewMockContext(tt.body)
 
-            // Set up OpenAPI parameters for validation
-            ctx.OpenAPIParams = map[string]internal.OpenAPIParam{
-                "page": {
-                    Name:        "page",
-                    Description: "Page number",
-                    Type:        fuego.QueryParamType,
-                    GoType:      "integer",
-                    Default:     1,
-                },
-                // Add other OpenAPI parameters as needed
-            }
-
-            // Set query parameters
-            if tt.queryParams != nil {
-                values := make(url.Values)
-                for key, value := range tt.queryParams {
-                    values.Set(key, value)
-                }
-                ctx.UrlValues = values
-            }
+            // Set query parameters directly
+            ctx.UrlValues = tt.queryParams
 
             // Call the controller
             response, err := SearchUsersController(ctx)
@@ -146,78 +114,20 @@ func TestSearchUsersController(t *testing.T) {
 }
 ```
 
-## Available Fields and Methods
+## Available Fields
 
-`MockContext` provides public fields for easy testing:
+The `MockContext` type provides the following public fields for testing:
 
-- `BodyData` - The request body
-- `HeadersData` - HTTP headers
-- `PathParamsData` - Path parameters
-- `ResponseData` - Response writer
-- `RequestData` - HTTP request
-- `CookiesData` - HTTP cookies
-- `UrlValues` (from CommonContext) - Query parameters
-- `OpenAPIParams` (from CommonContext) - OpenAPI parameter definitions
-
-And implements all the methods from `ContextWithBody`:
-
-- `Body()` - Get the request body
-- `MustBody()` - Get the request body (panics on error)
-- `Header(key string)` - Get request header
-- `HasHeader(key string)` - Check if header exists
-- `PathParam(name string)` - Get path parameter
-- `Cookie(name string)` - Get request cookie
-- `HasCookie(key string)` - Check if cookie exists
-- `Response()` - Get response writer
-- `Request()` - Get request
-
-Additionally, since `MockContext` embeds `CommonContext`, you get access to all the common functionality:
-
-- `QueryParam(name string)` - Get query parameter
-- `QueryParamInt(name string)` - Get query parameter as int
-- `QueryParamBool(name string)` - Get query parameter as bool
-- `QueryParamArr(name string)` - Get query parameter as string array
-- `HasQueryParam(name string)` - Check if query parameter exists
-
-## OpenAPI Parameter Setup
-
-When using query parameters, you should define their OpenAPI specifications to avoid warnings and ensure proper validation:
-
-```go
-ctx.OpenAPIParams = map[string]internal.OpenAPIParam{
-    "page": {
-        Name:        "page",
-        Description: "Page number",
-        Type:        fuego.QueryParamType,
-        GoType:      "integer",
-        Default:     1,
-    },
-    "perPage": {
-        Name:        "perPage",
-        Description: "Items per page",
-        Type:        fuego.QueryParamType,
-        GoType:      "integer",
-        Default:     20,
-    },
-}
-```
-
-Available OpenAPI parameter fields:
-
-- `Name` - Parameter name
-- `Description` - Parameter description
-- `Type` - Parameter type (QueryParamType, HeaderParamType, CookieParamType)
-- `GoType` - Go type ("integer", "string", "boolean")
-- `Default` - Default value
-- `Required` - Whether the parameter is required
-- `Nullable` - Whether the parameter can be null
-- `Examples` - Example values for documentation
+- `RequestBody` - The request body of type B
+- `Headers` - HTTP headers
+- `PathParams` - URL path parameters
+- `Cookies` - HTTP cookies
+- `UrlValues` - Query parameters
 
 ## Best Practices
 
 1. **Test Edge Cases**: Test both valid and invalid inputs, including validation errors.
 2. **Use Table-Driven Tests**: Structure your tests as a slice of test cases for better organization.
-3. **Mock using interfaces**: Use interfaces to mock dependencies and make your controllers testable, just as we're doing here: the controller accept an interface, we're passing a mock implementation of context in the tests.
+3. **Mock using interfaces**: Use interfaces to mock dependencies and make your controllers testable.
 4. **Test Business Logic**: Focus on testing your business logic rather than the framework itself.
-5. **Fuzz Testing**: Use fuzz testing to automatically find edge cases that you might have missed. User input can be anything!
-6. **Define OpenAPI Parameters**: Always define OpenAPI parameters for query parameters to ensure proper validation.
+5. **Fuzz Testing**: Use fuzz testing to automatically find edge cases that you might have missed.

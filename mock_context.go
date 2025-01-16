@@ -3,7 +3,6 @@ package fuego
 import (
 	"context"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/go-fuego/fuego/internal"
@@ -14,121 +13,122 @@ import (
 // specific web frameworks like Gin or Echo.
 type MockContext[B any] struct {
 	internal.CommonContext[B]
-	BodyData       B // Public for easy testing
-	HeadersData    http.Header
-	PathParamsData map[string]string
-	ResponseData   http.ResponseWriter
-	RequestData    *http.Request
-	CookiesData    map[string]*http.Cookie
+
+	// Public fields for easier testing
+	RequestBody B
+	Headers     http.Header
+	PathParams  map[string]string
+	response    http.ResponseWriter
+	request     *http.Request
+	Cookies     map[string]*http.Cookie
 }
 
-// NewMockContext creates a new MockContext instance with initialized maps
-// for URL values, headers, and path parameters. It uses context.Background()
-// as the default context.
-func NewMockContext[B any]() *MockContext[B] {
+// NewMockContext creates a new MockContext instance with the provided body
+func NewMockContext[B any](body B) *MockContext[B] {
 	return &MockContext[B]{
 		CommonContext: internal.CommonContext[B]{
-			CommonCtx:     context.Background(),
-			UrlValues:     make(url.Values),
-			OpenAPIParams: make(map[string]internal.OpenAPIParam),
+			CommonCtx: context.Background(),
 		},
-		HeadersData:    make(http.Header),
-		PathParamsData: make(map[string]string),
-		CookiesData:    make(map[string]*http.Cookie),
+		RequestBody: body,
+		Headers:     make(http.Header),
+		PathParams:  make(map[string]string),
+		Cookies:     make(map[string]*http.Cookie),
 	}
 }
 
-// Body returns the body value - implements ContextWithBody
+var _ ContextWithBody[string] = &MockContext[string]{}
+
+// Body returns the previously set body value
 func (m *MockContext[B]) Body() (B, error) {
-	return m.BodyData, nil
+	return m.RequestBody, nil
 }
 
-// MustBody returns the body or panics if there's an error - implements ContextWithBody
+// MustBody returns the body or panics if there's an error
 func (m *MockContext[B]) MustBody() B {
-	return m.BodyData
+	return m.RequestBody
 }
 
-// Header returns the value of the specified header - implements ContextWithBody
-func (m *MockContext[B]) Header(key string) string {
-	return m.HeadersData.Get(key)
-}
-
-// HasHeader checks if a header exists - implements ContextWithBody
+// HasHeader checks if a header exists
 func (m *MockContext[B]) HasHeader(key string) bool {
-	_, exists := m.HeadersData[key]
+	_, exists := m.Headers[key]
 	return exists
 }
 
-// HasCookie checks if a cookie exists - implements ContextWithBody
+// HasCookie checks if a cookie exists
 func (m *MockContext[B]) HasCookie(key string) bool {
-	_, exists := m.CookiesData[key]
+	_, exists := m.Cookies[key]
 	return exists
 }
 
-// PathParam returns a mock path parameter - implements ContextWithBody
+// Header returns the value of the specified header
+func (m *MockContext[B]) Header(key string) string {
+	return m.Headers.Get(key)
+}
+
+// SetHeader sets a header in the mock context
+func (m *MockContext[B]) SetHeader(key, value string) {
+	m.Headers.Set(key, value)
+}
+
+// PathParam returns a mock path parameter
 func (m *MockContext[B]) PathParam(name string) string {
-	return m.PathParamsData[name]
+	return m.PathParams[name]
 }
 
-// Response returns the mock response writer - implements ContextWithBody
-func (m *MockContext[B]) Response() http.ResponseWriter {
-	return m.ResponseData
-}
-
-// Request returns the mock request - implements ContextWithBody
+// Request returns the mock request
 func (m *MockContext[B]) Request() *http.Request {
-	return m.RequestData
+	return m.request
 }
 
-// Cookie returns a mock cookie - implements ContextWithBody
+// Response returns the mock response writer
+func (m *MockContext[B]) Response() http.ResponseWriter {
+	return m.response
+}
+
+// SetStatus sets the response status code
+func (m *MockContext[B]) SetStatus(code int) {
+	if m.response != nil {
+		m.response.WriteHeader(code)
+	}
+}
+
+// Cookie returns a mock cookie
 func (m *MockContext[B]) Cookie(name string) (*http.Cookie, error) {
-	cookie, exists := m.CookiesData[name]
+	cookie, exists := m.Cookies[name]
 	if !exists {
 		return nil, http.ErrNoCookie
 	}
 	return cookie, nil
 }
 
-// MainLang returns the main language from Accept-Language header - implements ContextWithBody
+// SetCookie sets a cookie in the mock context
+func (m *MockContext[B]) SetCookie(cookie http.Cookie) {
+	m.Cookies[cookie.Name] = &cookie
+}
+
+// MainLang returns the main language from Accept-Language header
 func (m *MockContext[B]) MainLang() string {
-	lang := m.HeadersData.Get("Accept-Language")
+	lang := m.Headers.Get("Accept-Language")
 	if lang == "" {
 		return ""
 	}
 	return strings.Split(strings.Split(lang, ",")[0], "-")[0]
 }
 
-// MainLocale returns the main locale from Accept-Language header - implements ContextWithBody
+// MainLocale returns the main locale from Accept-Language header
 func (m *MockContext[B]) MainLocale() string {
-	return m.HeadersData.Get("Accept-Language")
+	return m.Headers.Get("Accept-Language")
 }
 
-// Redirect returns a redirect response - implements ContextWithBody
+// Redirect returns a redirect response
 func (m *MockContext[B]) Redirect(code int, url string) (any, error) {
-	if m.ResponseData != nil {
-		http.Redirect(m.ResponseData, m.RequestData, url, code)
+	if m.response != nil {
+		http.Redirect(m.response, m.request, url, code)
 	}
 	return nil, nil
 }
 
-// Render is a mock implementation that does nothing - implements ContextWithBody
+// Render is a mock implementation that does nothing
 func (m *MockContext[B]) Render(templateToExecute string, data any, templateGlobsToOverride ...string) (CtxRenderer, error) {
-	return nil, nil
-}
-
-// SetStatus sets the response status code - implements ContextWithBody
-func (m *MockContext[B]) SetStatus(code int) {
-	if m.ResponseData != nil {
-		m.ResponseData.WriteHeader(code)
-	}
-}
-
-// SetCookie sets a mock cookie - implements ContextWithBody
-func (m *MockContext[B]) SetCookie(cookie http.Cookie) {
-	m.CookiesData[cookie.Name] = &cookie
-}
-
-// SetHeader sets a mock header - implements ContextWithBody
-func (m *MockContext[B]) SetHeader(key, value string) {
-	m.HeadersData.Set(key, value)
+	panic("not implemented")
 }
