@@ -361,9 +361,5 @@ Go instead of Node, I'm happy to use it.
 
 [MIT](./LICENSE.txt)
 
-## Testing
-
-For information about testing your Fuego applications, please see [TESTING.md](TESTING.md).
-
 [gin-gonic-issue]: https://github.com/gin-gonic/gin/issues/155
 [contributors-url]: https://github.com/go-fuego/fuego/graphs/contributors

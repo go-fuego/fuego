@@ -1,10 +1,10 @@
 # Testing Fuego Controllers
 
-Fuego provides a `MockContext` type that makes it easy to test your controllers without setting up a full HTTP server. This guide will show you how to use it effectively.
+Fuego provides a `MockContext` type that makes it easy to test your controllers without using httptest, allowing you to focus on your business logic instead of the HTTP layer.
 
 ## Using MockContext
 
-The `MockContext` type implements the `ContextWithBody` interface, allowing you to test your controllers in isolation. Here's a simple example:
+The `MockContext` type implements the `ContextWithBody` interface. Here's a simple example:
 
 ```go
 func TestMyController(t *testing.T) {
@@ -20,13 +20,23 @@ func TestMyController(t *testing.T) {
     // Call your controller
     response, err := MyController(ctx)
 
-    // Assert the results
+    // Assert the results, using the well-known testify library
     assert.NoError(t, err)
     assert.Equal(t, expectedResponse, response)
+
+    // Or, using the standard library
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    if !reflect.DeepEqual(expectedResponse, response) {
+        t.Fatalf("unexpected response: %v", response)
+    }
 }
 ```
 
 ## Complete Example
+
+Please refer to the [mock_context_test.go](https://github.com/go-fuego/fuego/blob/main/mock_context_test.go) file in the fuego repository for a complete and updated example.
 
 Here's a more complete example showing how to test a controller that uses request body, query parameters, and validation:
 
@@ -63,7 +73,7 @@ func TestSearchUsersController(t *testing.T) {
     tests := []struct {
         name          string
         body          UserSearchRequest
-        queryParams   map[string]string
+        queryParams   url.Values
         expectedError string
         expected      UserSearchResponse
     }{
@@ -74,8 +84,8 @@ func TestSearchUsersController(t *testing.T) {
                 MaxAge:    35,
                 NameQuery: "John",
             },
-            queryParams: map[string]string{
-                "page": "1",
+            queryParams: map[string][]string{
+                "page": {"1"},
             },
             expected: UserSearchResponse{
                 // ... expected response
@@ -207,18 +217,7 @@ Available OpenAPI parameter fields:
 
 1. **Test Edge Cases**: Test both valid and invalid inputs, including validation errors.
 2. **Use Table-Driven Tests**: Structure your tests as a slice of test cases for better organization.
-3. **Mock Only What You Need**: Only set up the mock data that your test actually requires.
+3. **Mock using interfaces**: Use interfaces to mock dependencies and make your controllers testable, just as we're doing here: the controller accept an interface, we're passing a mock implementation of context in the tests.
 4. **Test Business Logic**: Focus on testing your business logic rather than the framework itself.
-5. **Keep Tests Focused**: Each test should verify one specific behavior.
+5. **Fuzz Testing**: Use fuzz testing to automatically find edge cases that you might have missed. User input can be anything!
 6. **Define OpenAPI Parameters**: Always define OpenAPI parameters for query parameters to ensure proper validation.
-
-## Why Use MockContext?
-
-The `MockContext` implementation:
-
-- Embeds `CommonContext` to provide consistent behavior with real implementations
-- Provides public fields for easy testing while maintaining interface compatibility
-- Handles OpenAPI validation and parameter processing through CommonContext
-- Makes tests easy to write and maintain
-
-This approach makes your tests more maintainable and reliable while keeping them simple to write.
