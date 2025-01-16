@@ -9,7 +9,7 @@ The `MockContext` type implements the `ContextWithBody` interface. Here's a simp
 ```go
 func TestMyController(t *testing.T) {
     // Create a new mock context with the request body
-    ctx := fuego.NewMockContext(MyRequestType{
+    ctx := fuego.NewMockContext[MyRequestType](MyRequestType{
         Name: "John",
         Age:  30,
     })
@@ -92,7 +92,7 @@ func TestSearchUsersController(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             // Create mock context with the test body
-            ctx := fuego.NewMockContext(tt.body)
+            ctx := fuego.NewMockContext[UserSearchRequest](tt.body)
 
             // Set query parameters directly
             ctx.UrlValues = tt.queryParams

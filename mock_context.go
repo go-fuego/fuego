@@ -3,6 +3,7 @@ package fuego
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/go-fuego/fuego/internal"
@@ -27,7 +28,10 @@ type MockContext[B any] struct {
 func NewMockContext[B any](body B) *MockContext[B] {
 	return &MockContext[B]{
 		CommonContext: internal.CommonContext[B]{
-			CommonCtx: context.Background(),
+			CommonCtx:         context.Background(),
+			UrlValues:         make(url.Values),
+			OpenAPIParams:     make(map[string]internal.OpenAPIParam),
+			DefaultStatusCode: http.StatusOK,
 		},
 		RequestBody: body,
 		Headers:     make(http.Header),
