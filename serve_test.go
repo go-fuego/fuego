@@ -57,8 +57,10 @@ func (t testOutTransformerOnNotReceiver) OutTransform(ctx context.Context) error
 	return nil
 }
 
-var _ OutTransformer = &testOutTransformer{}
-var _ OutTransformer = &testOutTransformerOnNotReceiver{}
+var (
+	_ OutTransformer = &testOutTransformer{}
+	_ OutTransformer = &testOutTransformerOnNotReceiver{}
+)
 
 func testControllerWithOutTransformer(c ContextNoBody) (testOutTransformer, error) {
 	return testOutTransformer{Name: "John"}, nil
