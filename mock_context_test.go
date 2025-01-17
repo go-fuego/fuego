@@ -2,7 +2,6 @@ package fuego_test
 
 import (
 	"errors"
-	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -81,7 +80,7 @@ func TestSearchUsersController(t *testing.T) {
 	tests := []struct {
 		name          string
 		body          UserSearchRequest
-		queryParams   url.Values
+		setupContext  func(*fuego.MockContext[UserSearchRequest])
 		expectedError string
 		expected      UserSearchResponse
 	}{
@@ -92,9 +91,9 @@ func TestSearchUsersController(t *testing.T) {
 				MaxAge:    35,
 				NameQuery: "John",
 			},
-			queryParams: url.Values{
-				"page":    {"1"},
-				"perPage": {"20"},
+			setupContext: func(ctx *fuego.MockContext[UserSearchRequest]) {
+				ctx.WithQueryParamInt("page", 1, fuego.ParamDescription("Page number"), fuego.ParamDefault(1))
+				ctx.WithQueryParamInt("perPage", 20, fuego.ParamDescription("Items per page"), fuego.ParamDefault(20))
 			},
 			expected: UserSearchResponse{
 				Users: []UserProfile{
@@ -137,8 +136,10 @@ func TestSearchUsersController(t *testing.T) {
 			// Create mock context with the test body
 			ctx := fuego.NewMockContext(tt.body)
 
-			// Set query parameters directly
-			ctx.UrlValues = tt.queryParams
+			// Set up context with query parameters if provided
+			if tt.setupContext != nil {
+				tt.setupContext(ctx)
+			}
 
 			// Call the controller
 			response, err := SearchUsersController(ctx)

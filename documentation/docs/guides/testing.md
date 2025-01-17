@@ -12,7 +12,12 @@ func TestMyController(t *testing.T) {
     ctx := fuego.NewMockContext[MyRequestType](MyRequestType{
         Name: "John",
         Age:  30,
-    }
+    })
+
+    // Add query parameters with OpenAPI validation
+    ctx.WithQueryParamInt("page", 1,
+        fuego.ParamDescription("Page number"),
+        fuego.ParamDefault(1))
 
     // Call your controller
     response, err := MyController(ctx)
@@ -60,7 +65,7 @@ func TestSearchUsersController(t *testing.T) {
     tests := []struct {
         name          string
         body          UserSearchRequest
-        queryParams   url.Values
+        setupContext  func(*fuego.MockContext[UserSearchRequest])
         expectedError string
         expected      UserSearchResponse
     }{
@@ -71,21 +76,18 @@ func TestSearchUsersController(t *testing.T) {
                 MaxAge:    35,
                 NameQuery: "John",
             },
-            queryParams: url.Values{
-                "page": {"1"},
+            setupContext: func(ctx *fuego.MockContext[UserSearchRequest]) {
+                // Add query parameters with OpenAPI validation
+                ctx.WithQueryParamInt("page", 1,
+                    fuego.ParamDescription("Page number"),
+                    fuego.ParamDefault(1))
+                ctx.WithQueryParamInt("perPage", 20,
+                    fuego.ParamDescription("Items per page"),
+                    fuego.ParamDefault(20))
             },
             expected: UserSearchResponse{
                 // ... expected response
             },
-        },
-        {
-            name: "invalid age range",
-            body: UserSearchRequest{
-                MinAge:    40,
-                MaxAge:    20,
-                NameQuery: "John",
-            },
-            expectedError: "minAge cannot be greater than maxAge",
         },
     }
 
@@ -94,8 +96,10 @@ func TestSearchUsersController(t *testing.T) {
             // Create mock context with the test body
             ctx := fuego.NewMockContext[UserSearchRequest](tt.body)
 
-            // Set query parameters directly
-            ctx.UrlValues = tt.queryParams
+            // Set up context with query parameters
+            if tt.setupContext != nil {
+                tt.setupContext(ctx)
+            }
 
             // Call the controller
             response, err := SearchUsersController(ctx)
@@ -114,15 +118,29 @@ func TestSearchUsersController(t *testing.T) {
 }
 ```
 
-## Available Fields
+## Available Fields and Methods
 
-The `MockContext` type provides the following public fields for testing:
+The `MockContext` type provides the following:
+
+Public Fields:
 
 - `RequestBody` - The request body of type B
 - `Headers` - HTTP headers
 - `PathParams` - URL path parameters
 - `Cookies` - HTTP cookies
-- `UrlValues` - Query parameters
+
+Helper Methods for Query Parameters:
+
+- `WithQueryParam(name, value string, options ...func(*OpenAPIParam))` - Add a string query parameter
+- `WithQueryParamInt(name string, value int, options ...func(*OpenAPIParam))` - Add an integer query parameter
+- `WithQueryParamBool(name string, value bool, options ...func(*OpenAPIParam))` - Add a boolean query parameter
+
+Each helper method accepts OpenAPI parameter options like:
+
+- `ParamDescription(description string)` - Add parameter description
+- `ParamDefault(value any)` - Set default value
+- `ParamRequired()` - Mark parameter as required
+- `ParamExample(name string, value any)` - Add example value
 
 ## Best Practices
 

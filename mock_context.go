@@ -2,6 +2,7 @@ package fuego
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -135,4 +136,49 @@ func (m *MockContext[B]) Redirect(code int, url string) (any, error) {
 // Render is a mock implementation that does nothing
 func (m *MockContext[B]) Render(templateToExecute string, data any, templateGlobsToOverride ...string) (CtxRenderer, error) {
 	panic("not implemented")
+}
+
+// WithQueryParam adds a query parameter to the mock context with OpenAPI validation
+func (m *MockContext[B]) WithQueryParam(name string, value string, options ...func(*OpenAPIParam)) *MockContext[B] {
+	param := OpenAPIParam{
+		Name:   name,
+		GoType: "string",
+		Type:   "query",
+	}
+	for _, option := range options {
+		option(&param)
+	}
+	m.CommonContext.OpenAPIParams[name] = param
+	m.CommonContext.UrlValues.Set(name, value)
+	return m
+}
+
+// WithQueryParamInt adds an integer query parameter to the mock context with OpenAPI validation
+func (m *MockContext[B]) WithQueryParamInt(name string, value int, options ...func(*OpenAPIParam)) *MockContext[B] {
+	param := OpenAPIParam{
+		Name:   name,
+		GoType: "integer",
+		Type:   "query",
+	}
+	for _, option := range options {
+		option(&param)
+	}
+	m.CommonContext.OpenAPIParams[name] = param
+	m.CommonContext.UrlValues.Set(name, fmt.Sprintf("%d", value))
+	return m
+}
+
+// WithQueryParamBool adds a boolean query parameter to the mock context with OpenAPI validation
+func (m *MockContext[B]) WithQueryParamBool(name string, value bool, options ...func(*OpenAPIParam)) *MockContext[B] {
+	param := OpenAPIParam{
+		Name:   name,
+		GoType: "boolean",
+		Type:   "query",
+	}
+	for _, option := range options {
+		option(&param)
+	}
+	m.CommonContext.OpenAPIParams[name] = param
+	m.CommonContext.UrlValues.Set(name, fmt.Sprintf("%t", value))
+	return m
 }
