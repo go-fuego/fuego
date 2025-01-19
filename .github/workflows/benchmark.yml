@@ -26,34 +26,34 @@ jobs:
           path: ./cache
           key: ${{ runner.os }}-benchmark
       
-      # Run `github-action-benchmark` action
-      - name: Store benchmark result
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          name: Go Benchmark
-          # What benchmark tool the output.txt came from
-          tool: 'go'
-          # Where the output from the benchmark tool is stored
-          output-file-path: ./output.txt
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: true
-          # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '200%'
-          comment-on-alert: true
-          # Workflow will fail when an alert happens
-          fail-on-alert: true
+      # # Run `github-action-benchmark` action
+      # - name: Store benchmark result
+      #   uses: benchmark-action/github-action-benchmark@v1
+      #   with:
+      #     name: Go Benchmark
+      #     # What benchmark tool the output.txt came from
+      #     tool: 'go'
+      #     # Where the output from the benchmark tool is stored
+      #     output-file-path: ./output.txt
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     auto-push: true
+      #     # Show alert with commit comment on detecting possible performance regression
+      #     alert-threshold: '200%'
+      #     comment-on-alert: true
+      #     # Workflow will fail when an alert happens
+      #     fail-on-alert: true
       
-      # Upload the updated cache file for the next job by actions/cache
-      - name: Store benchmark result - separate results repo
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          name: Go Benchmark
-          tool: 'go'
-          output-file-path: ./output.txt
-          github-token: ${{ secrets.BENCHMARK_ACTION_BOT_TOKEN }}
-          auto-push: true
-          # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '200%'
-          comment-on-alert: true
-          fail-on-alert: true
-          gh-repository: 'github.com/go-fuego/fuego'
+      # # Upload the updated cache file for the next job by actions/cache
+      # - name: Store benchmark result - separate results repo
+      #   uses: benchmark-action/github-action-benchmark@v1
+      #   with:
+      #     name: Go Benchmark
+      #     tool: 'go'
+      #     output-file-path: ./output.txt
+      #     github-token: ${{ secrets.BENCHMARK_ACTION_BOT_TOKEN }}
+      #     auto-push: true
+      #     # Show alert with commit comment on detecting possible performance regression
+      #     alert-threshold: '200%'
+      #     comment-on-alert: true
+      #     fail-on-alert: true
+      #     gh-repository: 'github.com/go-fuego/fuego'
