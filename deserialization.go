@@ -104,21 +104,7 @@ func read[B any](context context.Context, dec decoder) (B, error) {
 	}
 	slog.Debug("Decoded body", "body", body)
 
-	body, err = transform(context, body)
-	if err != nil {
-		return body, BadRequestError{
-			Title:  "Transformation Failed",
-			Err:    err,
-			Detail: "cannot transform request body: " + err.Error(),
-		}
-	}
-
-	err = validate(body)
-	if err != nil {
-		return body, err
-	}
-
-	return body, nil
+	return TransformAndValidate(context, body)
 }
 
 // ReadString reads the request body as string.
@@ -199,24 +185,7 @@ func readURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
 	}
 	slog.Debug("Decoded body", "body", body)
 
-	body, err = transform(r.Context(), body)
-	if err != nil {
-		return body, BadRequestError{
-			Title:  "Transformation Failed",
-			Detail: "cannot transform x-www-form-urlencoded request body: " + err.Error(),
-			Err:    err,
-			Errors: []ErrorItem{
-				{Name: "transformation", Reason: "transformation failed"},
-			},
-		}
-	}
-
-	err = validate(body)
-	if err != nil {
-		return body, fmt.Errorf("cannot validate request body: %w", err)
-	}
-
-	return body, nil
+	return TransformAndValidate(r.Context(), body)
 }
 
 // transforms the input if possible.
@@ -225,13 +194,31 @@ func transform[B any](ctx context.Context, body B) (B, error) {
 		err := inTransformerBody.InTransform(ctx)
 		if err != nil {
 			return body, BadRequestError{
+				Title:  "Transformation Failed",
 				Err:    err,
 				Detail: "cannot transform request body: " + err.Error(),
+				Errors: []ErrorItem{
+					{Name: "transformation", Reason: "transformation failed"},
+				},
 			}
 		}
 		body = *any(inTransformerBody).(*B)
 
 		slog.Debug("InTransformd body", "body", body)
+	}
+
+	return body, nil
+}
+
+func TransformAndValidate[B any](context context.Context, body B) (B, error) {
+	body, err := transform(context, body)
+	if err != nil {
+		return body, err
+	}
+
+	err = validate(body)
+	if err != nil {
+		return body, err
 	}
 
 	return body, nil

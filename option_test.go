@@ -241,7 +241,7 @@ func TestOpenAPI(t *testing.T) {
 		)
 
 		require.Equal(t, "test summary", route.Operation.Summary)
-		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n---\n\ntest description", route.Operation.Description)
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\ntest description", route.Operation.Description)
 		require.Equal(t, []string{"first-tag", "second-tag"}, route.Operation.Tags)
 		require.True(t, route.Operation.Deprecated)
 	})
@@ -340,8 +340,8 @@ func TestRequestContentType(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, "{\"message\":\"hello world\"}\n", w.Body.String())
-		require.Len(t, route.AcceptedContentTypes, 1)
-		require.Equal(t, "application/json", route.AcceptedContentTypes[0])
+		require.Len(t, route.RequestContentTypes, 1)
+		require.Equal(t, "application/json", route.RequestContentTypes[0])
 	})
 
 	t.Run("base", func(t *testing.T) {
@@ -376,7 +376,9 @@ func TestRequestContentType(t *testing.T) {
 	})
 
 	t.Run("override server", func(t *testing.T) {
-		s := fuego.NewServer(fuego.WithRequestContentType("application/json", "application/xml"))
+		s := fuego.NewServer(fuego.WithEngineOptions(
+			fuego.WithRequestContentType("application/json", "application/xml"),
+		))
 		route := fuego.Post(
 			s, "/test", dummyController,
 			fuego.OptionRequestContentType("my/content-type"),
@@ -788,7 +790,7 @@ func TestOptionDescription(t *testing.T) {
 			option.Description("test description"),
 		)
 
-		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n---\n\ntest description", route.Operation.Description)
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\ntest description", route.Operation.Description)
 	})
 
 	t.Run("Override Fuego's description for the route", func(t *testing.T) {
@@ -809,11 +811,11 @@ func TestOptionDescription(t *testing.T) {
 			option.Description("another description"),
 		)
 
-		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n\n---\n\nanother description", route.Operation.Description)
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n\n---\n\nanother description", route.Operation.Description)
 	})
 
 	t.Run("Add description to the route, route middleware is included", func(t *testing.T) {
-		s := fuego.NewServer()
+		s := fuego.NewServer() // Default logger middleware is added
 
 		fuego.Use(s, dummyMiddleware)
 
@@ -824,12 +826,11 @@ func TestOptionDescription(t *testing.T) {
 		route := fuego.Get(s, "/test", helloWorld,
 			option.Middleware(dummyMiddleware),
 			option.Description("another description"),
-			option.Middleware(dummyMiddleware), // After the description
-			option.Middleware(dummyMiddleware), // 6th middleware
+			option.Middleware(dummyMiddleware), // After the description (6th middleware)
 			option.Middleware(dummyMiddleware), // 7th middleware, should not be included
 		)
 
-		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- more middleware…\n\n---\n\nanother description", route.Operation.Description)
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- more middleware…\n\n---\n\nanother description", route.Operation.Description)
 	})
 }
 

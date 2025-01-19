@@ -2,12 +2,15 @@ package fuego
 
 import (
 	"errors"
+	"fmt"
 	"html/template"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/thejerf/slogassert"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-playground/validator/v10"
@@ -71,62 +74,79 @@ func TestWithXML(t *testing.T) {
 func TestWithOpenAPIConfig(t *testing.T) {
 	t.Run("with default values", func(t *testing.T) {
 		s := NewServer(
-			WithOpenAPIConfig(OpenAPIConfig{}),
+			WithOpenAPIServerConfig(OpenAPIServerConfig{}),
 		)
 
-		require.Equal(t, "/swagger", s.OpenAPIConfig.SwaggerUrl)
-		require.Equal(t, "/swagger/openapi.json", s.OpenAPIConfig.JsonUrl)
-		require.Equal(t, "doc/openapi.json", s.OpenAPIConfig.JsonFilePath)
-		require.False(t, s.OpenAPIConfig.PrettyFormatJson)
+		require.Equal(t, "/swagger", s.OpenAPIServerConfig.SwaggerURL)
+		require.Equal(t, "/swagger/openapi.json", s.OpenAPIServerConfig.SpecURL)
+		require.Equal(t, "doc/openapi.json", s.OpenAPIConfig.JSONFilePath)
+		require.False(t, s.OpenAPIConfig.PrettyFormatJSON)
 	})
 
 	t.Run("with custom values", func(t *testing.T) {
 		s := NewServer(
-			WithOpenAPIConfig(OpenAPIConfig{
-				SwaggerUrl:       "/api",
-				JsonUrl:          "/api/openapi.json",
-				JsonFilePath:     "openapi.json",
-				DisableSwagger:   true,
-				DisableLocalSave: true,
-				PrettyFormatJson: true,
+			WithOpenAPIServerConfig(OpenAPIServerConfig{
+				SwaggerURL: "/api",
+				SpecURL:    "/api/openapi.json",
 			}),
+			WithEngineOptions(
+				WithOpenAPIConfig(
+					OpenAPIConfig{
+						JSONFilePath:     "openapi.json",
+						DisableLocalSave: true,
+						PrettyFormatJSON: true,
+						Disabled:         true,
+					}),
+			),
 		)
 
-		require.Equal(t, "/api", s.OpenAPIConfig.SwaggerUrl)
-		require.Equal(t, "/api/openapi.json", s.OpenAPIConfig.JsonUrl)
-		require.Equal(t, "openapi.json", s.OpenAPIConfig.JsonFilePath)
-		require.True(t, s.OpenAPIConfig.DisableSwagger)
+		require.Equal(t, "/api", s.OpenAPIServerConfig.SwaggerURL)
+		require.Equal(t, "/api/openapi.json", s.OpenAPIServerConfig.SpecURL)
+		require.Equal(t, "openapi.json", s.OpenAPIConfig.JSONFilePath)
+		require.True(t, s.Engine.OpenAPIConfig.Disabled)
 		require.True(t, s.OpenAPIConfig.DisableLocalSave)
-		require.True(t, s.OpenAPIConfig.PrettyFormatJson)
+		require.True(t, s.OpenAPIConfig.PrettyFormatJSON)
 	})
 
 	t.Run("with invalid local path values", func(t *testing.T) {
 		t.Run("with invalid path", func(t *testing.T) {
 			NewServer(
-				WithOpenAPIConfig(OpenAPIConfig{
-					JsonFilePath: "path/to/jsonSpec",
-					SwaggerUrl:   "p   i",
-					JsonUrl:      "pi/op  enapi.json",
+				WithOpenAPIServerConfig(OpenAPIServerConfig{
+					SwaggerURL: "p   i",
+					SpecURL:    "pi/op  enapi.json",
 				}),
+				WithEngineOptions(
+					WithOpenAPIConfig(OpenAPIConfig{
+						JSONFilePath: "path/to/jsonSpec",
+					}),
+				),
 			)
 		})
 		t.Run("with invalid url", func(t *testing.T) {
 			NewServer(
-				WithOpenAPIConfig(OpenAPIConfig{
-					JsonFilePath: "path/to/jsonSpec.json",
-					JsonUrl:      "pi/op  enapi.json",
-					SwaggerUrl:   "p   i",
+				WithOpenAPIServerConfig(OpenAPIServerConfig{
+					SpecURL:    "pi/op  enapi.json",
+					SwaggerURL: "p   i",
 				}),
+				WithEngineOptions(
+					WithOpenAPIConfig(OpenAPIConfig{
+						JSONFilePath: "path/to/jsonSpec.json",
+					}),
+				),
 			)
 		})
 
 		t.Run("with invalid url", func(t *testing.T) {
 			NewServer(
-				WithOpenAPIConfig(OpenAPIConfig{
-					JsonFilePath: "path/to/jsonSpec.json",
-					JsonUrl:      "/api/openapi.json",
-					SwaggerUrl:   "invalid path",
+				WithOpenAPIServerConfig(OpenAPIServerConfig{
+					SpecURL:    "/api/openapi.json",
+					SwaggerURL: "invalid path",
 				}),
+				WithEngineOptions(
+					WithOpenAPIConfig(OpenAPIConfig{
+						JSONFilePath: "path/to/jsonSpec.json",
+					}),
+				),
 			)
 		})
 	})
@@ -269,6 +289,7 @@ func TestWithoutStartupMessages(t *testing.T) {
 	)
 
 	require.True(t, s.disableStartupMessages)
+	require.True(t, s.Engine.OpenAPIConfig.DisableMessages)
 }
 
 func TestWithoutAutoGroupTags(t *testing.T) {
@@ -297,32 +318,6 @@ type Resp struct {
 
 func dummyController(_ ContextWithBody[ReqBody]) (Resp, error) {
 	return Resp{Message: "hello world"}, nil
-}
-
-func TestWithRequestContentType(t *testing.T) {
-	t.Run("base", func(t *testing.T) {
-		s := NewServer()
-		require.Nil(t, s.acceptedContentTypes)
-	})
-
-	t.Run("input", func(t *testing.T) {
-		arr := []string{"application/json", "application/xml"}
-		s := NewServer(WithRequestContentType("application/json", "application/xml"))
-		require.ElementsMatch(t, arr, s.acceptedContentTypes)
-	})
-
-	t.Run("ensure applied to route", func(t *testing.T) {
-		s := NewServer(WithRequestContentType("application/json", "application/xml"))
-		route := Post(s, "/test", dummyController)
-
-		content := route.Operation.RequestBody.Value.Content
-		require.NotNil(t, content.Get("application/json"))
-		require.NotNil(t, content.Get("application/xml"))
-		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/json").Schema.Ref)
-		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/xml").Schema.Ref)
-		_, ok := s.OpenAPI.Description().Components.RequestBodies["ReqBody"]
-		require.False(t, ok)
-	})
 }
 
 func TestCustomSerialization(t *testing.T) {
@@ -599,5 +594,252 @@ func TestWithSecurity(t *testing.T) {
 
 		require.NotNil(t, s.OpenAPI.Description().Components.SecuritySchemes)
 		require.Contains(t, s.OpenAPI.Description().Components.SecuritySchemes, "bearerAuth")
+	})
+}
+
+func TestDefaultLoggingMiddleware(t *testing.T) {
+	// By default request logging is Debug level
+	handler := slogassert.New(t, slog.LevelDebug, nil)
+
+	type testCase struct {
+		name         string
+		config       LoggingConfig
+		handler      func(ContextNoBody) (string, error)
+		requestID    string
+		wantRequest  bool
+		wantResponse bool
+		wantStatus   int
+		wantBody     string
+	}
+
+	tests := []testCase{
+		{
+			name:         "default logging enabled",
+			config:       LoggingConfig{},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  true,
+			wantResponse: true,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+		{
+			name: "disable all logging",
+			config: LoggingConfig{
+				DisableRequest:  true,
+				DisableResponse: true,
+			},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  false,
+			wantResponse: false,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+		{
+			name: "disable only request logging",
+			config: LoggingConfig{
+				DisableRequest: true,
+			},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  false,
+			wantResponse: true,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+		{
+			name: "disable only response logging",
+			config: LoggingConfig{
+				DisableResponse: true,
+			},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  true,
+			wantResponse: false,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+		{
+			name:   "error status code capture",
+			config: LoggingConfig{},
+			handler: func(c ContextNoBody) (string, error) {
+				return "", fmt.Errorf("test error")
+			},
+			wantRequest:  true,
+			wantResponse: true,
+			wantStatus:   http.StatusInternalServerError,
+			wantBody:     "",
+		},
+		{
+			name:   "custom status code",
+			config: LoggingConfig{},
+			handler: func(c ContextNoBody) (string, error) {
+				c.SetStatus(http.StatusCreated)
+				return "created", nil
+			},
+			wantRequest:  true,
+			wantResponse: true,
+			wantStatus:   http.StatusCreated,
+			wantBody:     "created",
+		},
+		{
+			name: "custom request id generator",
+			config: LoggingConfig{
+				RequestIDFunc: func() string {
+					return "custom-func-id"
+				},
+			},
+			handler:      func(c ContextNoBody) (string, error) { return "ok", nil },
+			wantRequest:  true,
+			wantResponse: true,
+			wantStatus:   http.StatusOK,
+			wantBody:     "ok",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			s := NewServer(
+				WithLogHandler(handler),
+				WithLoggingMiddleware(tc.config),
+			)
+			Get(s, "/test", tc.handler)
+			handler.AssertMessage("registering controller GET /test")
+
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, "/test", nil)
+			if tc.requestID != "" {
+				req.Header.Set("X-Request-ID", tc.requestID)
+			}
+
+			s.Mux.ServeHTTP(rec, req)
+
+			if tc.wantRequest {
+				expectedReqAttrs := map[string]any{
+					"method": "GET",
+					"path":   "/test",
+				}
+
+				if tc.requestID != "" {
+					expectedReqAttrs["request_id"] = tc.requestID
+				}
+
+				handler.AssertPrecise(slogassert.LogMessageMatch{
+					Message: "incoming request",
+					Level:   slog.LevelDebug,
+					Attrs:   expectedReqAttrs,
+				})
+			}
+
+			if tc.wantResponse {
+				expectedResAttrs := map[string]any{
+					"method":      "GET",
+					"path":        "/test",
+					"status_code": tc.wantStatus,
+				}
+
+				if tc.requestID != "" {
+					expectedResAttrs["request_id"] = tc.requestID
+				}
+
+				handler.AssertPrecise(slogassert.LogMessageMatch{
+					Message: "outgoing response",
+					Level:   slog.LevelInfo,
+					Attrs:   expectedResAttrs,
+				})
+			}
+
+			require.Equal(t, tc.wantStatus, rec.Code)
+			require.Contains(t, rec.Body.String(), tc.wantBody)
+
+			// Check request id being propagated to response
+			if tc.requestID != "" {
+				require.Equal(t, tc.requestID, rec.Header().Get("X-Request-ID"))
+			}
+
+			// Check case of custom request id generator is propagated to response
+			if tc.config.RequestIDFunc != nil {
+				require.Equal(t, "custom-func-id", rec.Header().Get("X-Request-ID"))
+			}
+
+			// all logs should be handled here
+			handler.AssertEmpty()
+		})
+	}
+}
+
+func TestWithSeveralGlobalMiddelwares(t *testing.T) {
+	s := NewServer(
+		WithGlobalMiddlewares(
+			dummyMiddleware,
+			func(next http.Handler) http.Handler {
+				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("X-Global-Middleware", "1")
+					if r.FormValue("one") == "true" {
+						w.Write([]byte("one"))
+						return
+					}
+					next.ServeHTTP(w, r)
+				})
+			},
+			func(next http.Handler) http.Handler {
+				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("X-Global-Middleware", "2")
+					if r.FormValue("two") == "true" {
+						w.Write([]byte("two"))
+						return
+					}
+					next.ServeHTTP(w, r)
+				})
+			}),
+	)
+
+	Get(s, "/my-route", dummyController)
+
+	err := s.setup()
+	require.NoError(t, err)
+
+	t.Run("global middlewares work even on non-matching routes (returns 404)", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/non-existing-route", nil)
+		res := httptest.NewRecorder()
+
+		s.Handler.ServeHTTP(res, req)
+
+		t.Log(res.Body.String())
+		require.Equal(t, 404, res.Code)
+		require.Equal(t, "1", res.Header().Get("X-Global-Middleware"))
+		require.Equal(t, "response", res.Header().Get("X-Test-Response"))
+	})
+
+	t.Run("global middlewares work on matching routes", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/my-route", nil)
+		res := httptest.NewRecorder()
+
+		s.Handler.ServeHTTP(res, req)
+
+		t.Log(res.Body.String())
+		require.Equal(t, 200, res.Code)
+		require.Equal(t, "1", res.Header().Get("X-Global-Middleware"))
+	})
+
+	t.Run("stop the chain of middlewares and return 200 instead of expected 404 (non-matching route)", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/non-existing-route?one=true", nil)
+		res := httptest.NewRecorder()
+
+		s.Handler.ServeHTTP(res, req)
+
+		t.Log(res.Body.String())
+		require.Equal(t, 200, res.Code)
+		require.Equal(t, "1", res.Header().Get("X-Global-Middleware"))
+		require.Equal(t, "one", res.Body.String())
+	})
+
+	t.Run("pass the first global middleware, then stop the chain of middlewares returning 200 instead of returning 404 (non-matching route)", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/non-existing-route?two=true", nil)
+		res := httptest.NewRecorder()
+
+		s.Handler.ServeHTTP(res, req)
+
+		t.Log(res.Body.String())
+		require.Equal(t, 200, res.Code)
+		require.Equal(t, "2", res.Header().Get("X-Global-Middleware"))
+		require.Equal(t, "two", res.Body.String())
 	})
 }

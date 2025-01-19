@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -90,9 +91,14 @@ func (h *HelloRequest) InTransform(ctx context.Context) error {
 	// Transformation
 	h.Word = strings.ToLower(h.Word)
 
-	// Custom validation
+	// Custom validation, with fuego provided error
 	if h.Word == "apple" {
-		return fuego.BadRequestError{Title: "Please don't use the word 'apple'"}
+		return fuego.BadRequestError{Title: "Word not allowed", Err: errors.New("forbidden word"), Detail: "The word 'apple' is not allowed"}
+	}
+
+	// Custom validation, with basic error
+	if h.Word == "banana" {
+		return errors.New("banana is not allowed")
 	}
 
 	// Context-based transformation

@@ -17,7 +17,7 @@ func TestTags(t *testing.T) {
 	)
 
 	require.Equal(t, []string{"my-tag"}, route.Operation.Tags)
-	require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego.testController`\n\n---\n\nmy description", route.Operation.Description)
+	require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego.testController`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\nmy description", route.Operation.Description)
 	require.Equal(t, "my summary", route.Operation.Summary)
 	require.Equal(t, true, route.Operation.Deprecated)
 }

@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/fs"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -14,22 +15,21 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type OpenAPIConfig struct {
-	DisableSwagger   bool                              // If true, the server will not serve the Swagger UI nor the OpenAPI JSON spec
-	DisableSwaggerUI bool                              // If true, the server will not serve the Swagger UI
-	DisableLocalSave bool                              // If true, the server will not save the OpenAPI JSON spec locally
-	SwaggerUrl       string                            // URL to serve the swagger UI
-	UIHandler        func(specURL string) http.Handler // Handler to serve the OpenAPI UI from spec URL
-	JsonUrl          string                            // URL to serve the OpenAPI JSON spec
-	JsonFilePath     string                            // Local path to save the OpenAPI JSON spec
-	PrettyFormatJson bool                              // Pretty prints the OpenAPI spec with proper JSON indentation
+type OpenAPIServerConfig struct {
+	// Handler to serve the OpenAPI UI from spec URL
+	UIHandler func(specURL string) http.Handler
+	// URL to serve the swagger UI
+	SwaggerURL string
+	// URL to serve the OpenAPI JSON spec
+	SpecURL string
+	// If true, the server will not serve the Swagger UI
+	DisableSwaggerUI bool
 }
 
-var defaultOpenAPIConfig = OpenAPIConfig{
-	SwaggerUrl:   "/swagger",
-	JsonUrl:      "/swagger/openapi.json",
-	JsonFilePath: "doc/openapi.json",
-	UIHandler:    DefaultOpenAPIHandler,
+var defaultOpenAPIServerConfig = OpenAPIServerConfig{
+	SwaggerURL: "/swagger",
+	SpecURL:    "/swagger/openapi.json",
+	UIHandler:  DefaultOpenAPIHandler,
 }
 
 type Server struct {
@@ -41,32 +41,15 @@ type Server struct {
 	// [http.ServeMux.Handle] can also be used to register routes.
 	Mux *http.ServeMux
 
-	// Not stored with the other middlewares because it is a special case :
-	// it applies on routes that are not registered.
-	// For example, it allows OPTIONS /foo even if it is not declared (only GET /foo is declared).
-	corsMiddleware func(http.Handler) http.Handler
-
-	// routeOptions is used to store the options
-	// that will be applied of the route.
-	routeOptions []func(*BaseRoute)
-
-	middlewares []func(http.Handler) http.Handler
-
-	disableStartupMessages bool
-	disableAutoGroupTags   bool
-	basePath               string // Base path of the group
+	// globalMiddlewares is used to store the options
+	// that will be applied on ALL routes.
+	globalMiddlewares []func(http.Handler) http.Handler
 
 	*Engine
 
-	Security Security
+	listener net.Listener
 
-	autoAuth AutoAuthConfig
-	fs       fs.FS
 	template *template.Template // TODO: use preparsed templates
-
-	// If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
-	DisallowUnknownFields bool
-	maxBodySize           int64
 
 	// Custom serializer that overrides the default one.
 	Serialize Sender
@@ -75,12 +58,35 @@ type Server struct {
 
 	startTime time.Time
 
-	OpenAPIConfig OpenAPIConfig
+	Security Security
 
-	isTLS bool
+	autoAuth AutoAuthConfig
+	fs       fs.FS
+
+	// Base path of the group
+	basePath string
+
+	loggingConfig LoggingConfig
+
+	OpenAPIServerConfig OpenAPIServerConfig
+
+	// routeOptions is used to store the options
+	// that will be applied of the route.
+	routeOptions []func(*BaseRoute)
+
+	middlewares []func(http.Handler) http.Handler
+
+	maxBodySize int64
+	// If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
+	DisallowUnknownFields  bool
+	disableStartupMessages bool
+	disableAutoGroupTags   bool
+	isTLS                  bool
 }
 
 // NewServer creates a new server with the given options.
+// Fuego's [Server] is built on top of the standard library's [http.Server].
+// The OpenAPI and data flow is handled by the [Engine], a lightweight abstraction available for all kind of routers (net/http, Gin, Echo).
 // For example:
 //
 //	app := fuego.NewServer(
@@ -88,7 +94,8 @@ type Server struct {
 //		fuego.WithoutLogger(),
 //	)
 //
-// Option all begin with `With`.
+// Options all begin with `With`.
+// Some options are at engine level, and can be set with [WithEngineOptions].
 // Some default options are set in the function body.
 func NewServer(options ...func(*Server)) *Server {
 	s := &Server{
@@ -101,9 +108,11 @@ func NewServer(options ...func(*Server)) *Server {
 		Mux:    http.NewServeMux(),
 		Engine: NewEngine(),
 
-		OpenAPIConfig: defaultOpenAPIConfig,
+		OpenAPIServerConfig: defaultOpenAPIServerConfig,
 
 		Security: NewSecurity(),
+
+		loggingConfig: defaultLoggingConfig,
 	}
 
 	// Default options that can be overridden
@@ -144,6 +153,10 @@ func NewServer(options ...func(*Server)) *Server {
 		)
 	}
 
+	if !s.loggingConfig.Disabled() {
+		s.middlewares = append(s.middlewares, newDefaultLogger(s).middleware)
+	}
+
 	return s
 }
 
@@ -163,22 +176,34 @@ func WithTemplateFS(fs fs.FS) func(*Server) {
 	return func(c *Server) { c.fs = fs }
 }
 
-// WithCorsMiddleware registers a middleware to handle CORS.
-// It is not handled like other middlewares with [Use] because it applies routes that are not registered.
-// For example:
+// WithGlobalMiddlewares adds middleware(s) that will be executed on ALL requests,
+// even those that don't match any registered routes.
+// Global Middlewares are mounted on the [http.Server] Handler, when executing [Server.Run].
+// Route Middlewares are mounted directly on [http.ServeMux] added at route registration.
+//
+// For example, to add CORS middleware:
 //
 //	import "github.com/rs/cors"
 //
 //	s := fuego.NewServer(
-//		WithCorsMiddleware(cors.New(cors.Options{
+//		WithGlobalMiddlewares(cors.New(cors.Options{
 //			AllowedOrigins:   []string{"*"},
 //			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 //			AllowedHeaders:   []string{"*"},
 //			AllowCredentials: true,
-//		}).Handler)
+//		}).Handler),
 //	)
+func WithGlobalMiddlewares(middlewares ...func(http.Handler) http.Handler) func(*Server) {
+	return func(c *Server) {
+		c.globalMiddlewares = append(c.globalMiddlewares, middlewares...)
+	}
+}
+
+// WithCorsMiddleware adds CORS middleware to the server.
+//
+// Deprecated: Please use [WithGlobalMiddlewares] instead.
 func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Server) {
-	return func(c *Server) { c.corsMiddleware = corsMiddleware }
+	return WithGlobalMiddlewares(corsMiddleware)
 }
 
 // WithGlobalResponseTypes adds default response types to the server.
@@ -303,8 +328,11 @@ func WithDisallowUnknownFields(b bool) func(*Server) {
 
 // WithAddr optionally specifies the TCP address for the server to listen on, in the form "host:port".
 // If not specified addr ':9999' will be used.
+// If a listener is explicitly set using WithListener, the provided address will be ignored,
 func WithAddr(addr string) func(*Server) {
-	return func(c *Server) { c.Server.Addr = addr }
+	return func(c *Server) {
+		c.Server.Addr = addr
+	}
 }
 
 // WithXML sets the serializer to XML
@@ -326,12 +354,6 @@ func WithLogHandler(handler slog.Handler) func(*Server) {
 	}
 }
 
-// WithRequestContentType sets the accepted content types for the server.
-// By default, the accepted content types is */*.
-func WithRequestContentType(consumes ...string) func(*Server) {
-	return func(s *Server) { s.acceptedContentTypes = consumes }
-}
-
 // WithSerializer sets a custom serializer of type Sender that overrides the default one.
 // Please send a PR if you think the default serializer should be improved, instead of jumping to this option.
 func WithSerializer(serializer Sender) func(*Server) {
@@ -344,14 +366,12 @@ func WithErrorSerializer(serializer ErrorSender) func(*Server) {
 	return func(c *Server) { c.SerializeError = serializer }
 }
 
-// WithErrorHandler sets a customer error handler for the server
-func WithErrorHandler(errorHandler func(err error) error) func(*Server) {
-	return func(c *Server) { c.ErrorHandler = errorHandler }
-}
-
 // WithoutStartupMessages disables the startup message
 func WithoutStartupMessages() func(*Server) {
-	return func(c *Server) { c.disableStartupMessages = true }
+	return func(c *Server) {
+		c.disableStartupMessages = true
+		c.OpenAPIConfig.DisableMessages = true
+	}
 }
 
 // WithoutLogger disables the default logger.
@@ -361,37 +381,66 @@ func WithoutLogger() func(*Server) {
 	}
 }
 
-func WithOpenAPIConfig(openapiConfig OpenAPIConfig) func(*Server) {
+// WithListener configures the server to use a custom listener.
+// If a listener is provided using this option, any address specified with WithAddr will be ignored.
+//
+// Example:
+//
+//	listener, _ := net.Listen("tcp", ":8080")
+//	server := NewServer(
+//	    WithListener(listener),
+//	    WithAddr(":9999"), // This will be ignored because WithListener takes precedence.
+//	)
+func WithListener(listener net.Listener) func(*Server) {
 	return func(s *Server) {
-		if openapiConfig.JsonUrl != "" {
-			s.OpenAPIConfig.JsonUrl = openapiConfig.JsonUrl
+		s.listener = listener
+	}
+}
+
+func WithOpenAPIServerConfig(config OpenAPIServerConfig) func(*Server) {
+	return func(s *Server) {
+		if config.SpecURL != "" {
+			s.OpenAPIServerConfig.SpecURL = config.SpecURL
+		}
+		if config.SwaggerURL != "" {
+			s.OpenAPIServerConfig.SwaggerURL = config.SwaggerURL
+		}
+		if config.UIHandler != nil {
+			s.OpenAPIServerConfig.UIHandler = config.UIHandler
 		}
 
-		if openapiConfig.SwaggerUrl != "" {
-			s.OpenAPIConfig.SwaggerUrl = openapiConfig.SwaggerUrl
-		}
+		s.OpenAPIServerConfig.DisableSwaggerUI = config.DisableSwaggerUI
 
-		if openapiConfig.JsonFilePath != "" {
-			s.OpenAPIConfig.JsonFilePath = openapiConfig.JsonFilePath
-		}
-
-		if openapiConfig.UIHandler != nil {
-			s.OpenAPIConfig.UIHandler = openapiConfig.UIHandler
-		}
-
-		s.OpenAPIConfig.DisableSwagger = openapiConfig.DisableSwagger
-		s.OpenAPIConfig.DisableSwaggerUI = openapiConfig.DisableSwaggerUI
-		s.OpenAPIConfig.DisableLocalSave = openapiConfig.DisableLocalSave
-		s.OpenAPIConfig.PrettyFormatJson = openapiConfig.PrettyFormatJson
-
-		if !validateJsonSpecUrl(s.OpenAPIConfig.JsonUrl) {
-			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIConfig.JsonSpecUrl' option is not valid", "url", s.OpenAPIConfig.JsonUrl)
+		if !validateSpecURL(s.OpenAPIServerConfig.SpecURL) {
+			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIServerConfig.SpecURL' option is not valid", "url", s.OpenAPIServerConfig.SpecURL)
 			return
 		}
 
-		if !validateSwaggerUrl(s.OpenAPIConfig.SwaggerUrl) {
-			slog.Error("Error serving swagger ui. Value of 's.OpenAPIConfig.SwaggerUrl' option is not valid", "url", s.OpenAPIConfig.SwaggerUrl)
+		if !validateSwaggerURL(s.OpenAPIServerConfig.SwaggerURL) {
+			slog.Error("Error serving swagger ui. Value of 's.OpenAPIServerConfig.SwaggerURL' option is not valid", "url", s.OpenAPIServerConfig.SwaggerURL)
 			return
+		}
+	}
+}
+
+// WithEngineOptions allows for setting of Engine options
+//
+//	app := fuego.NewServer(
+//		fuego.WithAddr(":8080"),
+//		fuego.WithEngineOptions(
+//			WithOpenAPIConfig(
+//				OpenAPIConfig{
+//					PrettyFormatJSON: true,
+//				},
+//			),
+//		),
+//	)
+//
+// Engine Options all begin with `With`.
+func WithEngineOptions(options ...func(*Engine)) func(*Server) {
+	return func(s *Server) {
+		for _, option := range options {
+			option(s.Engine)
 		}
 	}
 }
@@ -421,5 +470,16 @@ func WithValidator(newValidator *validator.Validate) func(*Server) {
 func WithRouteOptions(options ...func(*BaseRoute)) func(*Server) {
 	return func(s *Server) {
 		s.routeOptions = append(s.routeOptions, options...)
+	}
+}
+
+// WithLoggingMiddleware configures the default logging middleware for the server.
+func WithLoggingMiddleware(loggingConfig LoggingConfig) func(*Server) {
+	return func(s *Server) {
+		s.loggingConfig.DisableRequest = loggingConfig.DisableRequest
+		s.loggingConfig.DisableResponse = loggingConfig.DisableResponse
+		if loggingConfig.RequestIDFunc != nil {
+			s.loggingConfig.RequestIDFunc = loggingConfig.RequestIDFunc
+		}
 	}
 }

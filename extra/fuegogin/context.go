@@ -2,6 +2,7 @@ package fuegogin
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -23,8 +24,11 @@ var (
 
 func (c ginContext[B]) Body() (B, error) {
 	var body B
-	err := c.ginCtx.BindJSON(&body)
-	return body, err
+	err := c.ginCtx.Bind(&body)
+	if err != nil {
+		return body, err
+	}
+	return fuego.TransformAndValidate(c, body)
 }
 
 func (c ginContext[B]) Context() context.Context {
@@ -99,12 +103,24 @@ func (c ginContext[B]) SetStatus(code int) {
 }
 
 func (c ginContext[B]) Serialize(data any) error {
-	c.ginCtx.JSON(http.StatusOK, data)
+	status := c.ginCtx.Writer.Status()
+	if status == 0 {
+		status = c.DefaultStatusCode
+	}
+	if status == 0 {
+		status = http.StatusOK
+	}
+	c.ginCtx.JSON(status, data)
 	return nil
 }
 
 func (c ginContext[B]) SerializeError(err error) {
-	c.ginCtx.JSON(http.StatusInternalServerError, err)
+	statusCode := http.StatusInternalServerError
+	var errorWithStatusCode fuego.ErrorWithStatus
+	if errors.As(err, &errorWithStatusCode) {
+		statusCode = errorWithStatusCode.StatusCode()
+	}
+	c.ginCtx.JSON(statusCode, err)
 }
 
 func (c ginContext[B]) SetDefaultStatusCode() {
