@@ -425,30 +425,30 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		}
 		for _, validateTag := range validateTags {
 			if strings.HasPrefix(validateTag, "min=") {
-				min, err := strconv.Atoi(strings.Split(validateTag, "=")[1])
+				minValue, err := strconv.Atoi(strings.Split(validateTag, "=")[1])
 				if err != nil {
 					slog.Warn("Min might be incorrect (should be integer)", "error", err)
 				}
 
 				if propertyValue.Type.Is(openapi3.TypeInteger) {
-					minPtr := float64(min)
+					minPtr := float64(minValue)
 					propertyValue.Min = &minPtr
 				} else if propertyValue.Type.Is(openapi3.TypeString) {
 					//nolint:gosec // disable G115
-					propertyValue.MinLength = uint64(min)
+					propertyValue.MinLength = uint64(minValue)
 				}
 			}
 			if strings.HasPrefix(validateTag, "max=") {
-				max, err := strconv.Atoi(strings.Split(validateTag, "=")[1])
+				maxValue, err := strconv.Atoi(strings.Split(validateTag, "=")[1])
 				if err != nil {
 					slog.Warn("Max might be incorrect (should be integer)", "error", err)
 				}
 				if propertyValue.Type.Is(openapi3.TypeInteger) {
-					maxPtr := float64(max)
+					maxPtr := float64(maxValue)
 					propertyValue.Max = &maxPtr
 				} else if propertyValue.Type.Is(openapi3.TypeString) {
 					//nolint:gosec // disable G115
-					maxPtr := uint64(max)
+					maxPtr := uint64(maxValue)
 					propertyValue.MaxLength = &maxPtr
 				}
 			}

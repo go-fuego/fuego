@@ -29,6 +29,7 @@ linters-settings:
      rules:
       - name: exported
         arguments: ["checkPrivateReceivers", "sayRepetitiveInsteadOfStutters"]
+      - name: redefines-builtin-id
 
   misspell:
     locale: "US"
