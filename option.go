@@ -8,13 +8,13 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
-// Group allows to group routes under a common path.
+// GroupOptions allows to group routes under a common path.
 // Useful to group often used middlewares or options and reuse them.
 // Example:
 //
-//	optionsPagination := option.Group(
-//		option.QueryInt("per_page", "Number of items per page", ParamRequired()),
-//		option.QueryInt("page", "Page number", ParamDefault(1)),
+//	optionsPagination := GroupOptions(
+//		OptionQueryInt("per_page", "Number of items per page", ParamRequired()),
+//		OptionQueryInt("page", "Page number", ParamDefault(1)),
 //	)
 func GroupOptions(options ...func(*BaseRoute)) func(*BaseRoute) {
 	return func(r *BaseRoute) {
@@ -24,18 +24,18 @@ func GroupOptions(options ...func(*BaseRoute)) func(*BaseRoute) {
 	}
 }
 
-// Middleware adds one or more route-scoped middleware.
+// OptionMiddleware adds one or more route-scoped middleware.
 func OptionMiddleware(middleware ...func(http.Handler) http.Handler) func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		r.Middlewares = append(r.Middlewares, middleware...)
 	}
 }
 
-// Declare a query parameter for the route.
+// OptionQuery declares a query parameter for the route.
 // This will be added to the OpenAPI spec.
 // Example:
 //
-//	Query("name", "Filter by name", ParamExample("cat name", "felix"), ParamNullable())
+//	OptionQuery("name", "Filter by name", ParamExample("cat name", "felix"), ParamNullable())
 //
 // The list of options is in the param package.
 func OptionQuery(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
@@ -45,12 +45,12 @@ func OptionQuery(name, description string, options ...func(*OpenAPIParam)) func(
 	}
 }
 
-// Declare an integer query parameter for the route.
+// OptionQueryInt declares an integer query parameter for the route.
 // This will be added to the OpenAPI spec.
 // The query parameter is transmitted as a string in the URL, but it is parsed as an integer.
 // Example:
 //
-//	QueryInt("age", "Filter by age (in years)", ParamExample("3 years old", 3), ParamNullable())
+//	OptionQueryInt("age", "Filter by age (in years)", ParamExample("3 years old", 3), ParamNullable())
 //
 // The list of options is in the param package.
 func OptionQueryInt(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
@@ -60,12 +60,12 @@ func OptionQueryInt(name, description string, options ...func(*OpenAPIParam)) fu
 	}
 }
 
-// Declare a boolean query parameter for the route.
+// OptionQueryBool declares a boolean query parameter for the route.
 // This will be added to the OpenAPI spec.
 // The query parameter is transmitted as a string in the URL, but it is parsed as a boolean.
 // Example:
 //
-//	QueryBool("is_active", "Filter by active status", ParamExample("true", true), ParamNullable())
+//	OptionQueryBool("is_active", "Filter by active status", ParamExample("true", true), ParamNullable())
 //
 // The list of options is in the param package.
 func OptionQueryBool(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
@@ -75,11 +75,11 @@ func OptionQueryBool(name, description string, options ...func(*OpenAPIParam)) f
 	}
 }
 
-// Declare a header parameter for the route.
+// OptionHeader declares a header parameter for the route.
 // This will be added to the OpenAPI spec.
 // Example:
 //
-//	Header("Authorization", "Bearer token", ParamRequired())
+//	OptionHeader("Authorization", "Bearer token", ParamRequired())
 //
 // The list of options is in the param package.
 func OptionHeader(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
@@ -89,11 +89,11 @@ func OptionHeader(name, description string, options ...func(*OpenAPIParam)) func
 	}
 }
 
-// Declare a cookie parameter for the route.
+// OptionCookie declares a cookie parameter for the route.
 // This will be added to the OpenAPI spec.
 // Example:
 //
-//	Cookie("session_id", "Session ID", ParamRequired())
+//	OptionCookie("session_id", "Session ID", ParamRequired())
 //
 // The list of options is in the param package.
 func OptionCookie(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
@@ -103,12 +103,12 @@ func OptionCookie(name, description string, options ...func(*OpenAPIParam)) func
 	}
 }
 
-// Declare a path parameter for the route.
+// OptionPath declares a path parameter for the route.
 // This will be added to the OpenAPI spec.
 // It will be marked as required by default by Fuego.
 // Example:
 //
-//	Path("id", "ID of the item")
+//	OptionPath("id", "ID of the item")
 //
 // The list of options is in the param package.
 func OptionPath(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
@@ -149,12 +149,12 @@ func panicsIfNotCorrectType(openapiParam *openapi3.Parameter, exampleValue any) 
 	return exampleValue
 }
 
-// Declare a response header for the route.
+// OptionResponseHeader declares a response header for the route.
 // This will be added to the OpenAPI spec, under the given default status code response.
 // Example:
 //
-//	ResponseHeader("Content-Range", "Pagination range", ParamExample("42 pets", "unit 0-9/42"), ParamDescription("https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Range"))
-//	ResponseHeader("Set-Cookie", "Session cookie", ParamExample("session abc123", "session=abc123; Expires=Wed, 09 Jun 2021 10:18:14 GMT"))
+//	OptionResponseHeader("Content-Range", "Pagination range", ParamExample("42 pets", "unit 0-9/42"), ParamDescription("https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Range"))
+//	OptionResponseHeader("Set-Cookie", "Session cookie", ParamExample("session abc123", "session=abc123; Expires=Wed, 09 Jun 2021 10:18:14 GMT"))
 //
 // The list of options is in the param package.
 func OptionResponseHeader(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
@@ -200,7 +200,7 @@ func buildParam(name string, options ...func(*OpenAPIParam)) (OpenAPIParam, *ope
 		option(&param)
 	}
 
-	// Applies OpenAPIParam to openapi3.Parameter
+	// Applies [OpenAPIParam] to [openapi3.Parameter]
 	// Why not use openapi3.NewHeaderParameter(name) directly?
 	// Because we might change the openapi3 library in the future,
 	// and we want to keep the flexibility to change the implementation without changing the API.
@@ -231,7 +231,7 @@ func buildParam(name string, options ...func(*OpenAPIParam)) (OpenAPIParam, *ope
 	return param, openapiParam
 }
 
-// Registers a parameter for the route. Prefer using the [Query], [QueryInt], [Header], [Cookie] shortcuts.
+// OptionParam registers a parameter for the route. Prefer using the [OptionQuery], [OptionQueryInt], [OptionHeader], [OptionCookie] shortcuts.
 func OptionParam(name string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
 	param, openapiParam := buildParam(name, options...)
 
@@ -244,21 +244,21 @@ func OptionParam(name string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
 	}
 }
 
-// Tags adds one or more tags to the route.
+// OptionTags adds one or more tags to the route.
 func OptionTags(tags ...string) func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		r.Operation.Tags = append(r.Operation.Tags, tags...)
 	}
 }
 
-// Summary adds a summary to the route.
+// OptionSummary adds a summary to the route.
 func OptionSummary(summary string) func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		r.Operation.Summary = summary
 	}
 }
 
-// OptionOverrideDescription overrides the default description set by Fuego.
+// OptionDescription overrides the default description set by Fuego.
 // By default, the description is set by Fuego with some info,
 // like the controller function name and the package name.
 func OptionDescription(description string) func(*BaseRoute) {
@@ -267,7 +267,7 @@ func OptionDescription(description string) func(*BaseRoute) {
 	}
 }
 
-// Description appends a description to the route.
+// OptionAddDescription appends a description to the route.
 // By default, the description is set by Fuego with some info,
 // like the controller function name and the package name.
 func OptionAddDescription(description string) func(*BaseRoute) {
@@ -286,7 +286,7 @@ func OptionOverrideDescription(description string) func(*BaseRoute) {
 	}
 }
 
-// OperationID adds an operation ID to the route.
+// OptionOperationID adds an operation ID to the route.
 func OptionOperationID(operationID string) func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		r.Operation.OperationID = operationID
@@ -300,7 +300,7 @@ func OptionDeprecated() func(*BaseRoute) {
 	}
 }
 
-// AddError adds an error to the route.
+// OptionAddError adds an error to the route.
 // It replaces any existing error previously set with the same code.
 // Required: should only supply one type to `errorType`
 // Deprecated: Use [OptionAddResponse] instead
@@ -338,7 +338,7 @@ type Response struct {
 	ContentTypes []string
 }
 
-// AddResponse adds a response to a route by status code
+// OptionAddResponse adds a response to a route by status code
 // It replaces any existing response set by any status code, this will override 200.
 // Required: Response.Type must be set
 // Optional: Response.ContentTypes will default to `application/json` and `application/xml` if not set
@@ -355,7 +355,7 @@ func OptionAddResponse(code int, description string, response Response) func(*Ba
 	}
 }
 
-// RequestContentType sets the accepted content types for the route.
+// OptionRequestContentType sets the accepted content types for the route.
 // By default, the accepted content types is */*.
 // This will override any options set at the server level.
 func OptionRequestContentType(consumes ...string) func(*BaseRoute) {
@@ -364,14 +364,14 @@ func OptionRequestContentType(consumes ...string) func(*BaseRoute) {
 	}
 }
 
-// Hide hides the route from the OpenAPI spec.
+// OptionHide hides the route from the OpenAPI spec.
 func OptionHide() func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		r.Hidden = true
 	}
 }
 
-// Show shows the route from the OpenAPI spec.
+// OptionShow shows the route from the OpenAPI spec.
 func OptionShow() func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		r.Hidden = false

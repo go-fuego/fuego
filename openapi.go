@@ -23,7 +23,7 @@ func NewOpenAPI() *OpenAPI {
 	}
 }
 
-// Holds the OpenAPI OpenAPIDescription (OAD) and OpenAPI capabilities.
+// OpenAPI holds the OpenAPI OpenAPIDescription (OAD) and OpenAPI capabilities.
 type OpenAPI struct {
 	description            *openapi3.T
 	generator              *openapi3gen.Generator

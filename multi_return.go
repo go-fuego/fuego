@@ -52,7 +52,7 @@ func (m DataOrTemplate[T]) Render(c context.Context, w io.Writer) error {
 	}
 }
 
-// Helper function to create a DataOrTemplate return item without specifying the type.
+// DataOrHTML is a helper function to create a [DataOrTemplate] return item without specifying the type.
 func DataOrHTML[T any](data T, template any) *DataOrTemplate[T] {
 	return &DataOrTemplate[T]{
 		Data:     data,

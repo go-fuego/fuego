@@ -3,6 +3,10 @@ run:
   timeout: 1m
   tests: false
 
+issues:
+  include:
+    - "EXC0014" # Enable revive export rule with "should start with"
+
 linters:
   disable-all: false
   enable:
@@ -18,8 +22,14 @@ linters:
     - unused
     - usestdlibvars
     - whitespace
+    - revive
 
 linters-settings:
+  revive:
+     rules:
+      - name: exported
+        arguments: ["checkPrivateReceivers", "sayRepetitiveInsteadOfStutters"]
+
   misspell:
     locale: "US"
     error: true
