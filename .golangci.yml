@@ -23,6 +23,7 @@ linters:
     - usestdlibvars
     - whitespace
     - revive
+    - gocritic
 
 linters-settings:
   revive:
@@ -54,9 +55,16 @@ linters-settings:
       # - name: unused-parameter
       # - name: var-naming
 
+  gocritic:
+    enable-all: true
+    disabled-checks:
+      - appendAssign    # this one is enabled by default usually, but it reports something that needs to be checked
+      - hugeParam       # this one could be considered later
+      - rangeValCopy    # this one should be considered later, but it requires some checks
+      - regexpSimplify  # this one should be considered later, but it requires some checks
+
   misspell:
     locale: "US"
-    error: true
 
   govet:
     enable-all: true

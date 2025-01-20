@@ -42,11 +42,11 @@ func (m DataOrTemplate[T]) String() string {
 }
 
 func (m DataOrTemplate[T]) Render(c context.Context, w io.Writer) error {
-	switch m.Template.(type) {
+	switch renderer := m.Template.(type) {
 	case CtxRenderer:
-		return m.Template.(CtxRenderer).Render(c, w)
+		return renderer.Render(c, w)
 	case Renderer:
-		return m.Template.(Renderer).Render(w)
+		return renderer.Render(w)
 	default:
 		panic("template must be either CtxRenderer or Renderer")
 	}

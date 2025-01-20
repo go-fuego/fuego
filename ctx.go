@@ -318,8 +318,6 @@ func body[B any](c netHttpContext[B]) (B, error) {
 			return body, fmt.Errorf("could not convert bytes to %T. To read binary data from the request, use []byte as the body type", body)
 		}
 		body = respBytes
-	case "application/json":
-		fallthrough
 	default:
 		body, err = readJSON[B](c.Req.Context(), c.Req.Body, c.readOptions)
 	}
