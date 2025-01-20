@@ -111,15 +111,13 @@ func main() {
 	s.Run()
 }
 
-func myController(c fuego.ContextWithBody[MyInput]) (MyOutput, error) {
+func myController(c fuego.ContextWithBody[MyInput]) (*MyOutput, error) {
 	body, err := c.Body()
 	if err != nil {
-		return MyOutput{}, err
+		return nil, err
 	}
 
-	return MyOutput{
-		Message: "Hello, " + body.Name,
-	}, nil
+	return &MyOutput{Message: "Hello, " + body.Name}, nil
 }
 
 ```
