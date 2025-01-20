@@ -27,13 +27,32 @@ linters:
 linters-settings:
   revive:
      rules:
+      - name: blank-imports
+      - name: context-as-argument
+        arguments: ["allowTypesBefore": "*testing.T"]
+      - name: context-keys-type
+      - name: dot-imports
+      - name: empty-block
+      - name: error-naming
+      - name: error-return
+      - name: error-strings
+      - name: errorf
       - name: exported
         arguments: ["checkPrivateReceivers", "sayRepetitiveInsteadOfStutters"]
+      - name: increment-decrement
+      - name: indent-error-flow
+      - name: range
       - name: receiver-naming
       - name: redefines-builtin-id
+      - name: superfluous-else
+      - name: time-naming
+      - name: unreachable-code
+      - name: var-declaration
       # These ones are usually enabled by default
       # but enabling them would require some work and further checks
-      # name: unused-parameter
+      # - name: unexported-return
+      # - name: unused-parameter
+      # - name: var-naming
 
   misspell:
     locale: "US"
