@@ -15,37 +15,43 @@ type echoIRouter interface {
 
 func AddEcho(engine *fuego.Engine, echoRouter *echo.Echo,
 	method, path string, handler echo.HandlerFunc,
-	options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	options ...func(*fuego.BaseRoute),
+) *fuego.Route[any, any] {
 	return handleEcho(engine, echoRouter, method, path, handler, options...)
 }
 
 func GetEcho(engine *fuego.Engine, echoRouter *echo.Echo,
 	path string, handler echo.HandlerFunc,
-	options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	options ...func(*fuego.BaseRoute),
+) *fuego.Route[any, any] {
 	return handleEcho(engine, echoRouter, http.MethodGet, path, handler, options...)
 }
 
 func PostEcho(engine *fuego.Engine, echoRouter *echo.Echo,
 	path string, handler echo.HandlerFunc,
-	options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	options ...func(*fuego.BaseRoute),
+) *fuego.Route[any, any] {
 	return handleEcho(engine, echoRouter, http.MethodPost, path, handler, options...)
 }
 
 func PutEcho(engine *fuego.Engine, echoRouter *echo.Echo,
 	path string, handler echo.HandlerFunc,
-	options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	options ...func(*fuego.BaseRoute),
+) *fuego.Route[any, any] {
 	return handleEcho(engine, echoRouter, http.MethodPut, path, handler, options...)
 }
 
 func PatchEcho(engine *fuego.Engine, echoRouter *echo.Echo,
 	path string, handler echo.HandlerFunc,
-	options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	options ...func(*fuego.BaseRoute),
+) *fuego.Route[any, any] {
 	return handleEcho(engine, echoRouter, http.MethodPatch, path, handler, options...)
 }
 
 func DeleteEcho(engine *fuego.Engine, echoRouter *echo.Echo,
 	path string, handler echo.HandlerFunc,
-	options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	options ...func(*fuego.BaseRoute),
+) *fuego.Route[any, any] {
 	return handleEcho(engine, echoRouter, http.MethodDelete, path, handler, options...)
 }
 
@@ -108,9 +114,10 @@ func EchoHandler[B, T any](engine *fuego.Engine, handler func(c fuego.ContextWit
 	return func(c echo.Context) error {
 		context := &echoContext[B]{
 			CommonContext: internal.CommonContext[B]{
-				CommonCtx:     c.Request().Context(),
-				UrlValues:     c.Request().URL.Query(),
-				OpenAPIParams: route.Params,
+				CommonCtx:         c.Request().Context(),
+				UrlValues:         c.Request().URL.Query(),
+				OpenAPIParams:     route.Params,
+				DefaultStatusCode: route.DefaultStatusCode,
 			},
 			echoCtx: c,
 		}
