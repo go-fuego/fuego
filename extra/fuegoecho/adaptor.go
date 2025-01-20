@@ -80,7 +80,7 @@ func Delete[T, B any](engine *fuego.Engine, echoRouter *echo.Echo, path string, 
 }
 
 func handleFuego[T, B any](engine *fuego.Engine, echoRouter *echo.Echo, method, path string, fuegoHandler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
-	baseRoute := fuego.NewBaseRoute(method, path, fuegoHandler, engine.OpenAPI, options...)
+	baseRoute := fuego.NewBaseRoute(method, path, fuegoHandler, engine, options...)
 	return fuego.Registers(engine, echoRouteRegisterer[T, B]{
 		echoRouter:  echoRouter,
 		route:       fuego.Route[T, B]{BaseRoute: baseRoute},
@@ -89,7 +89,7 @@ func handleFuego[T, B any](engine *fuego.Engine, echoRouter *echo.Echo, method, 
 }
 
 func handleEcho(engine *fuego.Engine, echoRouter *echo.Echo, method, path string, echoHandler echo.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
-	baseRoute := fuego.NewBaseRoute(method, path, echoHandler, engine.OpenAPI, options...)
+	baseRoute := fuego.NewBaseRoute(method, path, echoHandler, engine, options...)
 	return fuego.Registers(engine, echoRouteRegisterer[any, any]{
 		echoRouter:  echoRouter,
 		route:       fuego.Route[any, any]{BaseRoute: baseRoute},
