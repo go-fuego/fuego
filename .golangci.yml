@@ -30,6 +30,9 @@ linters-settings:
       - name: exported
         arguments: ["checkPrivateReceivers", "sayRepetitiveInsteadOfStutters"]
       - name: redefines-builtin-id
+      # These ones are usually enabled by default
+      # but enabling them would require some work and further checks
+      # name: unused-parameter
 
   misspell:
     locale: "US"
