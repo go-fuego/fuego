@@ -324,18 +324,18 @@ func dive(openapi *OpenAPI, t reflect.Type, tag SchemaTag, maxDepth int) SchemaT
 
 // getOrCreateSchema is used to get a schema from the OpenAPI spec.
 // If the schema does not exist, it will create a new schema and add it to the OpenAPI spec.
-func (openapi *OpenAPI) getOrCreateSchema(key string, v any) *openapi3.Schema {
-	schemaRef, ok := openapi.Description().Components.Schemas[key]
+func (openAPI *OpenAPI) getOrCreateSchema(key string, v any) *openapi3.Schema {
+	schemaRef, ok := openAPI.Description().Components.Schemas[key]
 	if !ok {
-		schemaRef = openapi.createSchema(key, v)
+		schemaRef = openAPI.createSchema(key, v)
 	}
 	return schemaRef.Value
 }
 
 // createSchema is used to create a new schema and add it to the OpenAPI spec.
 // Relies on the openapi3gen package to generate the schema, and adds custom struct tags.
-func (openapi *OpenAPI) createSchema(key string, v any) *openapi3.SchemaRef {
-	schemaRef, err := openapi.Generator().NewSchemaRefForValue(v, openapi.Description().Components.Schemas)
+func (openAPI *OpenAPI) createSchema(key string, v any) *openapi3.SchemaRef {
+	schemaRef, err := openAPI.Generator().NewSchemaRefForValue(v, openAPI.Description().Components.Schemas)
 	if err != nil {
 		slog.Error("Error generating schema", "key", key, "error", err)
 	}
@@ -348,7 +348,7 @@ func (openapi *OpenAPI) createSchema(key string, v any) *openapi3.SchemaRef {
 
 	parseStructTags(reflect.TypeOf(v), schemaRef)
 
-	openapi.Description().Components.Schemas[key] = schemaRef
+	openAPI.Description().Components.Schemas[key] = schemaRef
 
 	return schemaRef
 }

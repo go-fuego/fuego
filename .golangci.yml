@@ -29,6 +29,7 @@ linters-settings:
      rules:
       - name: exported
         arguments: ["checkPrivateReceivers", "sayRepetitiveInsteadOfStutters"]
+      - name: receiver-naming
       - name: redefines-builtin-id
       # These ones are usually enabled by default
       # but enabling them would require some work and further checks
