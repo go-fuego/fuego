@@ -143,11 +143,11 @@ func (e *Engine) saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) er
 	return nil
 }
 
-func (s *Engine) marshalSpec() ([]byte, error) {
-	if s.OpenAPIConfig.PrettyFormatJSON {
-		return json.MarshalIndent(s.OpenAPI.Description(), "", "\t")
+func (e *Engine) marshalSpec() ([]byte, error) {
+	if e.OpenAPIConfig.PrettyFormatJSON {
+		return json.MarshalIndent(e.OpenAPI.Description(), "", "\t")
 	}
-	return json.Marshal(s.OpenAPI.Description())
+	return json.Marshal(e.OpenAPI.Description())
 }
 
 func (e *Engine) printOpenAPIMessage(msg string) {

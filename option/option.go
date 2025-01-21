@@ -17,7 +17,7 @@ var Group = fuego.GroupOptions
 // Middleware adds one or more route-scoped middleware.
 var Middleware = fuego.OptionMiddleware
 
-// Declare a query parameter for the route.
+// Query declares a query parameter for the route.
 // This will be added to the OpenAPI spec.
 // Example:
 //
@@ -26,7 +26,7 @@ var Middleware = fuego.OptionMiddleware
 // The list of options is in the param package.
 var Query = fuego.OptionQuery
 
-// Declare an integer query parameter for the route.
+// QueryInt declares an integer query parameter for the route.
 // This will be added to the OpenAPI spec.
 // The query parameter is transmitted as a string in the URL, but it is parsed as an integer.
 // Example:
@@ -36,7 +36,7 @@ var Query = fuego.OptionQuery
 // The list of options is in the param package.
 var QueryInt = fuego.OptionQueryInt
 
-// Declare a boolean query parameter for the route.
+// QueryBool declares a boolean query parameter for the route.
 // This will be added to the OpenAPI spec.
 // The query parameter is transmitted as a string in the URL, but it is parsed as a boolean.
 // Example:
@@ -46,7 +46,7 @@ var QueryInt = fuego.OptionQueryInt
 // The list of options is in the param package.
 var QueryBool = fuego.OptionQueryBool
 
-// Declare a header parameter for the route.
+// Header declares a header parameter for the route.
 // This will be added to the OpenAPI spec.
 // Example:
 //
@@ -55,7 +55,7 @@ var QueryBool = fuego.OptionQueryBool
 // The list of options is in the param package.
 var Header = fuego.OptionHeader
 
-// Declare a cookie parameter for the route.
+// Cookie declares a cookie parameter for the route.
 // This will be added to the OpenAPI spec.
 // Example:
 //
@@ -64,7 +64,7 @@ var Header = fuego.OptionHeader
 // The list of options is in the param package.
 var Cookie = fuego.OptionCookie
 
-// Declare a path parameter for the route.
+// Path declares a path parameter for the route.
 // This will be added to the OpenAPI spec.
 // It will be marked as required by default by Fuego.
 // If not set explicitly, the parameter will still be declared on the spec.
@@ -75,7 +75,7 @@ var Cookie = fuego.OptionCookie
 // The list of options is in the param package.
 var Path = fuego.OptionPath
 
-// Declare a response header for the route.
+// ResponseHeader declares a response header for the route.
 // This will be added to the OpenAPI spec, under the given default status code response.
 // Example:
 //
@@ -85,7 +85,7 @@ var Path = fuego.OptionPath
 // The list of options is in the param package.
 var ResponseHeader = fuego.OptionResponseHeader
 
-// Registers a parameter for the route.
+// Param registers a parameter for the route.
 //
 // Deprecated: Use [Query], [QueryInt], [Header], [Cookie], [Path] instead.
 var Param = fuego.OptionParam

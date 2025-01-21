@@ -3,6 +3,10 @@ run:
   timeout: 1m
   tests: false
 
+issues:
+  include:
+    - "EXC0014" # Enable revive export rule with "should start with"
+
 linters:
   disable-all: false
   enable:
@@ -18,11 +22,49 @@ linters:
     - unused
     - usestdlibvars
     - whitespace
+    - revive
+    - gocritic
 
 linters-settings:
+  revive:
+     rules:
+      - name: blank-imports
+      - name: context-as-argument
+        arguments: ["allowTypesBefore": "*testing.T"]
+      - name: context-keys-type
+      - name: dot-imports
+      - name: empty-block
+      - name: error-naming
+      - name: error-return
+      - name: error-strings
+      - name: errorf
+      - name: exported
+        arguments: ["checkPrivateReceivers", "sayRepetitiveInsteadOfStutters"]
+      - name: increment-decrement
+      - name: indent-error-flow
+      - name: range
+      - name: receiver-naming
+      - name: redefines-builtin-id
+      - name: superfluous-else
+      - name: time-naming
+      - name: unreachable-code
+      - name: var-declaration
+      # These ones are usually enabled by default
+      # but enabling them would require some work and further checks
+      # - name: unexported-return
+      # - name: unused-parameter
+      # - name: var-naming
+
+  gocritic:
+    enable-all: true
+    disabled-checks:
+      - appendAssign    # this one is enabled by default usually, but it reports something that needs to be checked
+      - hugeParam       # this one could be considered later
+      - rangeValCopy    # this one should be considered later, but it requires some checks
+      - regexpSimplify  # this one should be considered later, but it requires some checks
+
   misspell:
     locale: "US"
-    error: true
 
   govet:
     enable-all: true

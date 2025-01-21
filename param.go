@@ -42,7 +42,7 @@ func ParamDefault(value any) func(param *OpenAPIParam) {
 	}
 }
 
-// Example adds an example to the parameter. As per the OpenAPI 3.0 standard, the example must be given a name.
+// ParamExample adds an example to the parameter. As per the OpenAPI 3.0 standard, the example must be given a name.
 func ParamExample(exampleName string, value any) func(param *OpenAPIParam) {
 	return func(param *OpenAPIParam) {
 		if param.Examples == nil {
@@ -52,7 +52,7 @@ func ParamExample(exampleName string, value any) func(param *OpenAPIParam) {
 	}
 }
 
-// StatusCodes sets the status codes for which this parameter is required.
+// ParamStatusCodes sets the status codes for which this parameter is required.
 // Only used for response parameters.
 // If empty, it is required for 200 status codes.
 func ParamStatusCodes(codes ...int) func(param *OpenAPIParam) {

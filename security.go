@@ -487,7 +487,7 @@ func (security Security) RefreshHandler(w http.ResponseWriter, r *http.Request) 
 	)
 }
 
-// RemoveTokenFromCookies generates a JWT token with the given claims and writes it to the cookies.
+// CookieLogoutHandler generates a JWT token with the given claims and writes it to the cookies.
 // Usage:
 //
 //	fuego.PostStd(s, "/auth/logout", security.CookieLogoutHandler)

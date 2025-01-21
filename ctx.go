@@ -120,7 +120,7 @@ func NewNetHTTPContext[B any](route BaseRoute, w http.ResponseWriter, r *http.Re
 	return c
 }
 
-// ContextWithBody is the same as fuego.ContextNoBody, but
+// netHttpContext is the same as fuego.ContextNoBody, but
 // has a Body. The Body type parameter represents the expected data type
 // from http.Request.Body. Please do not use a pointer as a type parameter.
 type netHttpContext[Body any] struct {
@@ -166,33 +166,33 @@ func (c netHttpContext[B]) Redirect(code int, url string) (any, error) {
 	return nil, nil
 }
 
-// Get request header
+// Header returns the value of the given header.
 func (c netHttpContext[B]) Header(key string) string {
 	return c.Request().Header.Get(key)
 }
 
-// Has request header
+// HasHeader checks if the request has the given header
 func (c netHttpContext[B]) HasHeader(key string) bool {
 	return c.Header(key) != ""
 }
 
-// Sets response header
+// SetHeader sets the value of the given header
 func (c netHttpContext[B]) SetHeader(key, value string) {
 	c.Response().Header().Set(key, value)
 }
 
-// Get request cookie
+// Cookie get request cookie
 func (c netHttpContext[B]) Cookie(name string) (*http.Cookie, error) {
 	return c.Request().Cookie(name)
 }
 
-// Has request cookie
+// HasCookie checks if the request has the given cookie
 func (c netHttpContext[B]) HasCookie(name string) bool {
 	_, err := c.Cookie(name)
 	return err == nil
 }
 
-// Sets response cookie
+// SetCookie response cookie
 func (c netHttpContext[B]) SetCookie(cookie http.Cookie) {
 	http.SetCookie(c.Response(), &cookie)
 }
@@ -215,7 +215,7 @@ func (c netHttpContext[B]) Render(templateToExecute string, data any, layoutsGlo
 	}, nil
 }
 
-// PathParams returns the path parameters of the request.
+// PathParam returns the path parameters of the request.
 func (c netHttpContext[B]) PathParam(name string) string {
 	return c.Req.PathValue(name)
 }
@@ -279,7 +279,7 @@ func (c netHttpContext[B]) SerializeError(err error) {
 	c.errorSerializer(c.Res, c.Req, err)
 }
 
-// setDefaultStatusCode sets the default status code of the response.
+// SetDefaultStatusCode sets the default status code of the response.
 func (c netHttpContext[B]) SetDefaultStatusCode() {
 	if c.DefaultStatusCode != 0 {
 		c.SetStatus(c.DefaultStatusCode)
@@ -318,8 +318,6 @@ func body[B any](c netHttpContext[B]) (B, error) {
 			return body, fmt.Errorf("could not convert bytes to %T. To read binary data from the request, use []byte as the body type", body)
 		}
 		body = respBytes
-	case "application/json":
-		fallthrough
 	default:
 		body, err = readJSON[B](c.Req.Context(), c.Req.Body, c.readOptions)
 	}

@@ -32,7 +32,7 @@ type OpenAPIParam struct {
 	Nullable bool
 }
 
-// Base context shared by all adaptors (net/http, gin, echo, etc...)
+// CommonContext is a base context shared by all adaptors (net/http, gin, echo, etc...)
 type CommonContext[B any] struct {
 	CommonCtx context.Context
 
@@ -54,22 +54,22 @@ func (c CommonContext[B]) Context() context.Context {
 	return c.CommonCtx
 }
 
-// ContextNoBody implements the context interface via [net/http.Request.Context]
+// Deadline implements the context interface via [net/http.Request.Context]
 func (c CommonContext[B]) Deadline() (deadline time.Time, ok bool) {
 	return c.Context().Deadline()
 }
 
-// ContextNoBody implements the context interface via [net/http.Request.Context]
+// Done implements the context interface via [net/http.Request.Context]
 func (c CommonContext[B]) Done() <-chan struct{} {
 	return c.Context().Done()
 }
 
-// ContextNoBody implements the context interface via [net/http.Request.Context]
+// Err implements the context interface via [net/http.Request.Context]
 func (c CommonContext[B]) Err() error {
 	return c.Context().Err()
 }
 
-// ContextNoBody implements the context interface via [net/http.Request.Context]
+// Value implements the context interface via [net/http.Request.Context]
 func (c CommonContext[B]) Value(key any) any {
 	return c.Context().Value(key)
 }
@@ -149,7 +149,7 @@ func (e QueryParamInvalidTypeError) Error() string {
 	return fmt.Errorf("param %s=%s is not of type %s: %w", e.ParamName, e.ParamValue, e.ExpectedType, e.Err).Error()
 }
 
-// QueryParamsArr returns an slice of string from the given query parameter.
+// QueryParamArr returns an slice of string from the given query parameter.
 func (c CommonContext[B]) QueryParamArr(name string) []string {
 	_, ok := c.OpenAPIParams[name]
 	if !ok {
@@ -177,7 +177,7 @@ func (c CommonContext[B]) QueryParamInt(name string) int {
 	return param
 }
 
-// QueryParamBool returns the query parameter with the given name as a bool.
+// QueryParamBoolErr returns the query parameter with the given name as a bool.
 // If the query parameter does not exist or is not a bool, it returns the default value declared in the OpenAPI spec.
 // For example, if the query parameter is declared as:
 //
