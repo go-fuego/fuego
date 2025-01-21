@@ -114,9 +114,10 @@ func EchoHandler[B, T any](engine *fuego.Engine, handler func(c fuego.ContextWit
 	return func(c echo.Context) error {
 		context := &echoContext[B]{
 			CommonContext: internal.CommonContext[B]{
-				CommonCtx:     c.Request().Context(),
-				UrlValues:     c.Request().URL.Query(),
-				OpenAPIParams: route.Params,
+				CommonCtx:         c.Request().Context(),
+				UrlValues:         c.Request().URL.Query(),
+				OpenAPIParams:     route.Params,
+				DefaultStatusCode: route.DefaultStatusCode,
 			},
 			echoCtx: c,
 		}
