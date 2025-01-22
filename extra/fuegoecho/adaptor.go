@@ -13,73 +13,73 @@ type echoIRouter interface {
 	Add(method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route
 }
 
-func AddEcho(engine *fuego.Engine, echoRouter *echo.Echo,
+func AddEcho(engine *fuego.Engine, echoRouter echoIRouter,
 	method, path string, handler echo.HandlerFunc,
 	options ...func(*fuego.BaseRoute),
 ) *fuego.Route[any, any] {
 	return handleEcho(engine, echoRouter, method, path, handler, options...)
 }
 
-func GetEcho(engine *fuego.Engine, echoRouter *echo.Echo,
+func GetEcho(engine *fuego.Engine, echoRouter echoIRouter,
 	path string, handler echo.HandlerFunc,
 	options ...func(*fuego.BaseRoute),
 ) *fuego.Route[any, any] {
 	return handleEcho(engine, echoRouter, http.MethodGet, path, handler, options...)
 }
 
-func PostEcho(engine *fuego.Engine, echoRouter *echo.Echo,
+func PostEcho(engine *fuego.Engine, echoRouter echoIRouter,
 	path string, handler echo.HandlerFunc,
 	options ...func(*fuego.BaseRoute),
 ) *fuego.Route[any, any] {
 	return handleEcho(engine, echoRouter, http.MethodPost, path, handler, options...)
 }
 
-func PutEcho(engine *fuego.Engine, echoRouter *echo.Echo,
+func PutEcho(engine *fuego.Engine, echoRouter echoIRouter,
 	path string, handler echo.HandlerFunc,
 	options ...func(*fuego.BaseRoute),
 ) *fuego.Route[any, any] {
 	return handleEcho(engine, echoRouter, http.MethodPut, path, handler, options...)
 }
 
-func PatchEcho(engine *fuego.Engine, echoRouter *echo.Echo,
+func PatchEcho(engine *fuego.Engine, echoRouter echoIRouter,
 	path string, handler echo.HandlerFunc,
 	options ...func(*fuego.BaseRoute),
 ) *fuego.Route[any, any] {
 	return handleEcho(engine, echoRouter, http.MethodPatch, path, handler, options...)
 }
 
-func DeleteEcho(engine *fuego.Engine, echoRouter *echo.Echo,
+func DeleteEcho(engine *fuego.Engine, echoRouter echoIRouter,
 	path string, handler echo.HandlerFunc,
 	options ...func(*fuego.BaseRoute),
 ) *fuego.Route[any, any] {
 	return handleEcho(engine, echoRouter, http.MethodDelete, path, handler, options...)
 }
 
-func Add[T, B any](engine *fuego.Engine, echoRouter *echo.Echo, method, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+func Add[T, B any](engine *fuego.Engine, echoRouter echoIRouter, method, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	return handleFuego(engine, echoRouter, method, path, handler, options...)
 }
 
-func Get[T, B any](engine *fuego.Engine, echoRouter *echo.Echo, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+func Get[T, B any](engine *fuego.Engine, echoRouter echoIRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	return handleFuego(engine, echoRouter, http.MethodGet, path, handler, options...)
 }
 
-func Post[T, B any](engine *fuego.Engine, echoRouter *echo.Echo, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+func Post[T, B any](engine *fuego.Engine, echoRouter echoIRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	return handleFuego(engine, echoRouter, http.MethodPost, path, handler, options...)
 }
 
-func Put[T, B any](engine *fuego.Engine, echoRouter *echo.Echo, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+func Put[T, B any](engine *fuego.Engine, echoRouter echoIRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	return handleFuego(engine, echoRouter, http.MethodPut, path, handler, options...)
 }
 
-func Patch[T, B any](engine *fuego.Engine, echoRouter *echo.Echo, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+func Patch[T, B any](engine *fuego.Engine, echoRouter echoIRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	return handleFuego(engine, echoRouter, http.MethodPatch, path, handler, options...)
 }
 
-func Delete[T, B any](engine *fuego.Engine, echoRouter *echo.Echo, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+func Delete[T, B any](engine *fuego.Engine, echoRouter echoIRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	return handleFuego(engine, echoRouter, http.MethodDelete, path, handler, options...)
 }
 
-func handleFuego[T, B any](engine *fuego.Engine, echoRouter *echo.Echo, method, path string, fuegoHandler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+func handleFuego[T, B any](engine *fuego.Engine, echoRouter echoIRouter, method, path string, fuegoHandler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	baseRoute := fuego.NewBaseRoute(method, path, fuegoHandler, engine, options...)
 	return fuego.Registers(engine, echoRouteRegisterer[T, B]{
 		echoRouter:  echoRouter,
@@ -88,7 +88,7 @@ func handleFuego[T, B any](engine *fuego.Engine, echoRouter *echo.Echo, method, 
 	})
 }
 
-func handleEcho(engine *fuego.Engine, echoRouter *echo.Echo, method, path string, echoHandler echo.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+func handleEcho(engine *fuego.Engine, echoRouter echoIRouter, method, path string, echoHandler echo.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
 	baseRoute := fuego.NewBaseRoute(method, path, echoHandler, engine, options...)
 	return fuego.Registers(engine, echoRouteRegisterer[any, any]{
 		echoRouter:  echoRouter,
