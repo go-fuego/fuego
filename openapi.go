@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -195,6 +196,11 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 
 	typeOfT := reflect.TypeOf(*new(T))
 	if typeOfT != nil {	
+
+		if typeOfT.Kind() == reflect.Ptr {
+			typeOfT = typeOfT.Elem()
+		}
+		if typeOfT.Kind() == reflect.Struct {
         for i := 0; i < typeOfT.NumField(); i++ {
         	field := typeOfT.Field(i)
     
@@ -204,9 +210,10 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
                 	In: "header",
                 	Schema: openapi3.NewStringSchema().NewRef(),
             	}
-            	if err := route.Operation.RegisterParameters(param); err != nil {
-                	return nil, fmt.Errorf("failed to register header parameter: %w", err)
-            	}
+            	if err := RegisterParameters(route.Operation, param); err != nil {
+					return nil, fmt.Errorf("failed to register parameter: %w", err)
+				}
+				
         	}
     
         	if queryKey, ok := field.Tag.Lookup("query"); ok {
@@ -215,9 +222,10 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
                 	In: "query",
                 	Schema: openapi3.NewStringSchema().NewRef(),
             	}
-            	if err := route.Operation.RegisterParameters(param); err != nil {
-                	return nil, fmt.Errorf("failed to register query parameter: %w", err)
-            	}
+            	if err := RegisterParameters(route.Operation, param); err != nil {
+					return nil, fmt.Errorf("failed to register parameter: %w", err)
+				}
+				
         	}
         
         	if cookieKey, ok := field.Tag.Lookup("cookie"); ok {
@@ -226,11 +234,13 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
                 	In: "cookie",
                 	Schema: openapi3.NewStringSchema().NewRef(),
             	}
-            	if err := route.Operation.RegisterParameters(param); err != nil {
-                	return nil, fmt.Errorf("failed to register cookie parameter: %w", err)
-            	}
+            	if err := RegisterParameters(route.Operation, param); err != nil {
+					return nil, fmt.Errorf("failed to register parameter: %w", err)
+				}
+				
         	}
     	}
+	}
 	}
 
 	for _, openAPIGlobalResponse := range openapi.globalOpenAPIResponses {
@@ -536,3 +546,32 @@ func transformTypeName(s string) string {
 
 	return prefix + "_" + inside
 }
+
+type MyOperation struct {
+    *openapi3.Operation
+}
+
+func RegisterParameters(operation *openapi3.Operation,parameters ...*openapi3.Parameter) error {
+    if operation.Parameters == nil {
+        operation.Parameters = openapi3.Parameters{}
+    }
+
+    for _, param := range parameters {
+        if param == nil {
+            return errors.New("parameter cannot be nil")
+        }
+
+        for _, existing := range operation.Parameters {
+            if existing.Value != nil &&
+                existing.Value.Name == param.Name &&
+                existing.Value.In == param.In {
+                return fmt.Errorf("duplicate parameter: %s in %s", param.Name, param.In)
+            }
+        }
+
+        operation.Parameters = append(operation.Parameters, &openapi3.ParameterRef{Value: param})
+    }
+
+    return nil
+}
+
