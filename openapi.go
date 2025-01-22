@@ -185,18 +185,54 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 	// Request Body
 	if route.Operation.RequestBody == nil {
 		bodyTag := SchemaTagFromType(openapi, *new(B))
-
 		if bodyTag.Name != "unknown-interface" {
 			requestBody := newRequestBody[B](bodyTag, route.RequestContentTypes)
-
-			// add request body to operation
 			route.Operation.RequestBody = &openapi3.RequestBodyRef{
 				Value: requestBody,
 			}
 		}
 	}
 
-	// Response - globals
+	typeOfT := reflect.TypeOf(*new(T))
+	if typeOfT != nil {	
+        for i := 0; i < typeOfT.NumField(); i++ {
+        	field := typeOfT.Field(i)
+    
+        	if headerKey, ok := field.Tag.Lookup("header"); ok {
+            	param := &openapi3.Parameter{
+                	Name: headerKey,
+                	In: "header",
+                	Schema: openapi3.NewStringSchema().NewRef(),
+            	}
+            	if err := route.Operation.RegisterParameters(param); err != nil {
+                	return nil, fmt.Errorf("failed to register header parameter: %w", err)
+            	}
+        	}
+    
+        	if queryKey, ok := field.Tag.Lookup("query"); ok {
+            	param := &openapi3.Parameter{
+                	Name: queryKey,
+                	In: "query",
+                	Schema: openapi3.NewStringSchema().NewRef(),
+            	}
+            	if err := route.Operation.RegisterParameters(param); err != nil {
+                	return nil, fmt.Errorf("failed to register query parameter: %w", err)
+            	}
+        	}
+        
+        	if cookieKey, ok := field.Tag.Lookup("cookie"); ok {
+            	param := &openapi3.Parameter{
+                	Name: cookieKey,
+                	In: "cookie",
+                	Schema: openapi3.NewStringSchema().NewRef(),
+            	}
+            	if err := route.Operation.RegisterParameters(param); err != nil {
+                	return nil, fmt.Errorf("failed to register cookie parameter: %w", err)
+            	}
+        	}
+    	}
+	}
+
 	for _, openAPIGlobalResponse := range openapi.globalOpenAPIResponses {
 		addResponseIfNotSet(
 			openapi,
