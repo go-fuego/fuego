@@ -8,8 +8,6 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
-	"reflect"
-	"strconv"
 	"strings"
 	"time"
 
@@ -329,54 +327,20 @@ func body[B any](c netHttpContext[B]) (B, error) {
 	return body, err
 }
 
-type netHttpContextWithParams[T any] struct {
-	netHttpContext[T]
+type ParamsIn struct {
+	Name          string       `query:"name"`
+	Authorization string       `header:"Authorization"`
+	Token         *http.Cookie `cookie:"Token"`
+	Limit         *int         `query:"limit"`
 }
 
-func (c netHttpContextWithParams[T]) Params() (T, error) {
-	var t T
-	typeOfT := reflect.TypeOf(t)
-	valueOfT := reflect.New(typeOfT).Elem()
-
-	for i := 0; i < typeOfT.NumField(); i++ {
-		field := typeOfT.Field(i)
-		fieldValue := valueOfT.Field(i)
-
-		if headerKey, ok := field.Tag.Lookup("header"); ok {
-			if headerValue := c.Request().Header.Get(headerKey); headerValue != "" {
-				fieldValue.SetString(headerValue)
-			}
-		}
-
-		if queryKey, ok := field.Tag.Lookup("query"); ok {
-			if queryValue := c.Request().URL.Query().Get(queryKey); queryValue != "" {
-				if fieldValue.Kind() == reflect.Ptr {
-					if fieldValue.Type().Elem().Kind() == reflect.Int {
-						intVal, err := strconv.Atoi(queryValue)
-						if err != nil {
-							return t, err
-						}
-						fieldValue.Set(reflect.ValueOf(&intVal))
-					} else {
-						fieldValue.Set(reflect.ValueOf(&queryValue))
-					}
-				} else {
-					fieldValue.SetString(queryValue)
-				}
-			}
-		}
-
-		if cookieKey, ok := field.Tag.Lookup("cookie"); ok {
-			if cookie, err := c.Request().Cookie(cookieKey); err == nil {
-				fieldValue.SetString(cookie.Value)
-			}
-		}
-	}
-
-	return valueOfT.Interface().(T), nil
+type ParamsOut struct {
+	CustomHeader string `header:"MyHeader"`
+	Token        string `cookie:"Token,httpOnly,secure"`
 }
 
-
-
-  
-  
+type ContextWithBodyAndParams[Body any, ParamsIn any, ParamsOut any] interface {
+	ContextWithBody[Body]
+	Params() (ParamsIn, error)
+	SetParams(ParamsOut) error
+}

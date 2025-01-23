@@ -19,6 +19,55 @@ func (c fuego.ContextWithBody[MyInput]) (MyResponse, error)
 Used when the request has a body.
 Fuego will automatically parse the body and validate it using the input struct.
 
+```go
+func(c fuego.ContextWithBodyAndParams[MyInput,ParamsIn,ParamsOut]) (MyResponse, error)
+```
+
+This controller is used for advanced scenarios where you need:
+Request body parsing and validation
+Input parameter extraction from query, headers, cookies
+Output parameter configuration
+
+```go
+type CreateUserRequest struct {
+    Name string `json:"name"`
+    Email string `json:"email"`
+}
+
+type UserParams struct {
+    Limit *int    `query:"limit"`
+    Group *string `header:"X-User-Group"`
+}
+
+type UserResponseParams struct {
+    CustomHeader string `header:"X-Rate-Limit"`
+    SessionToken string `cookie:"session_token"`
+}
+
+func CreateUserController(
+    c *fuego.ContextWithBodyAndParams[CreateUserRequest, UserParams, UserResponseParams]
+) (User, error) {
+    params, err := c.Params()
+    if err != nil {
+        return User{}, err
+    }
+    body, err := c.Body()
+    if err != nil {
+        return User{}, err
+    }
+    user, err := createUser(body, *params.Limit, *params.Group)
+    if err != nil {
+        return User{}, err
+    }
+    c.SetHeader("X-Rate-Limit", "100")
+    c.SetCookie(http.Cookie{
+        Name:  "session_token",
+        Value: generateSessionToken(),
+    })
+    return user, nil
+}
+```
+
 ### Returning HTML
 
 ```go
@@ -90,30 +139,8 @@ func MyController(c fuego.ContextNoBody) (MyResponse, error) {
 ### Set response cookie
 
 ```go
-func MyController(c *netHttpContextWithParams[ParamsOut]) (string, error) {
-	params, err := c.Params()
-	c.SetCookie(*params.Token)
-	if err != nil {
-	  return "", err
-	}
-	return params.Token.Value, nil
-}
-
-```
-
-### Strongly typed params
-
-```go
-type ParamsIn struct {
-  Name string `query:"name"`
-  Authorization string `header:"Authorization"`
-  Token string `cookie:"Token"`
-  Limit *int `query:"limit"`
-  BookID string `query:"bookID"`
-}
-
-type ParamOut struct {
-	CustomHeader string `header:"MyHeader"`
-	Token string `cookie:"Token,httpOnly,secure"`
+func MyController(c fuego.ContextNoBody) (MyResponse, error) {
+	c.SetCookie("my-cookie", "value")
+	return MyResponse{}, nil
 }
 ```

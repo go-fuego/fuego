@@ -174,7 +174,6 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 	}
 
 	route.GenerateDefaultDescription()
-
 	if route.Operation.Summary == "" {
 		route.Operation.Summary = route.NameFromNamespace(camelToHuman)
 	}
@@ -182,7 +181,6 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 	if route.Operation.OperationID == "" {
 		route.GenerateDefaultOperationID()
 	}
-
 	// Request Body
 	if route.Operation.RequestBody == nil {
 		bodyTag := SchemaTagFromType(openapi, *new(B))
@@ -195,52 +193,46 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 	}
 
 	typeOfT := reflect.TypeOf(*new(T))
-	if typeOfT != nil {	
-
+	if typeOfT != nil {
 		if typeOfT.Kind() == reflect.Ptr {
 			typeOfT = typeOfT.Elem()
 		}
 		if typeOfT.Kind() == reflect.Struct {
-        for i := 0; i < typeOfT.NumField(); i++ {
-        	field := typeOfT.Field(i)
-    
-        	if headerKey, ok := field.Tag.Lookup("header"); ok {
-            	param := &openapi3.Parameter{
-                	Name: headerKey,
-                	In: "header",
-                	Schema: openapi3.NewStringSchema().NewRef(),
-            	}
-            	if err := RegisterParameters(route.Operation, param); err != nil {
-					return nil, fmt.Errorf("failed to register parameter: %w", err)
+			for i := 0; i < typeOfT.NumField(); i++ {
+				field := typeOfT.Field(i)
+				if headerKey, ok := field.Tag.Lookup("header"); ok {
+					param := &openapi3.Parameter{
+						Name:   headerKey,
+						In:     "header",
+						Schema: openapi3.NewStringSchema().NewRef(),
+					}
+					if err := RegisterParameters(route.Operation, param); err != nil {
+						return nil, fmt.Errorf("failed to register parameter: %w", err)
+					}
 				}
-				
-        	}
-    
-        	if queryKey, ok := field.Tag.Lookup("query"); ok {
-            	param := &openapi3.Parameter{
-                	Name: queryKey,
-                	In: "query",
-                	Schema: openapi3.NewStringSchema().NewRef(),
-            	}
-            	if err := RegisterParameters(route.Operation, param); err != nil {
-					return nil, fmt.Errorf("failed to register parameter: %w", err)
+				if queryKey, ok := field.Tag.Lookup("query"); ok {
+					param := &openapi3.Parameter{
+						Name:   queryKey,
+						In:     "query",
+						Schema: openapi3.NewStringSchema().NewRef(),
+					}
+					if err := RegisterParameters(route.Operation, param); err != nil {
+						return nil, fmt.Errorf("failed to register parameter: %w", err)
+					}
 				}
-				
-        	}
-        
-        	if cookieKey, ok := field.Tag.Lookup("cookie"); ok {
-            	param := &openapi3.Parameter{
-                	Name: cookieKey,
-                	In: "cookie",
-                	Schema: openapi3.NewStringSchema().NewRef(),
-            	}
-            	if err := RegisterParameters(route.Operation, param); err != nil {
-					return nil, fmt.Errorf("failed to register parameter: %w", err)
+
+				if cookieKey, ok := field.Tag.Lookup("cookie"); ok {
+					param := &openapi3.Parameter{
+						Name:   cookieKey,
+						In:     "cookie",
+						Schema: openapi3.NewStringSchema().NewRef(),
+					}
+					if err := RegisterParameters(route.Operation, param); err != nil {
+						return nil, fmt.Errorf("failed to register parameter: %w", err)
+					}
 				}
-				
-        	}
-    	}
-	}
+			}
+		}
 	}
 
 	for _, openAPIGlobalResponse := range openapi.globalOpenAPIResponses {
@@ -282,9 +274,9 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 		if strings.HasSuffix(pathParam, "...") {
 			parameter.Description += " (might contain slashes)"
 		}
-
 		route.Operation.AddParameter(parameter)
 	}
+
 	for _, params := range route.Operation.Parameters {
 		if params.Value.In == "path" {
 			if !strings.Contains(route.Path, "{"+params.Value.Name) {
@@ -294,7 +286,6 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 	}
 
 	openapi.Description().AddOperation(route.Path, route.Method, route.Operation)
-
 	return route.Operation, nil
 }
 
@@ -548,30 +539,20 @@ func transformTypeName(s string) string {
 }
 
 type MyOperation struct {
-    *openapi3.Operation
+	*openapi3.Operation
 }
 
-func RegisterParameters(operation *openapi3.Operation,parameters ...*openapi3.Parameter) error {
-    if operation.Parameters == nil {
-        operation.Parameters = openapi3.Parameters{}
-    }
-
-    for _, param := range parameters {
-        if param == nil {
-            return errors.New("parameter cannot be nil")
-        }
-
-        for _, existing := range operation.Parameters {
-            if existing.Value != nil &&
-                existing.Value.Name == param.Name &&
-                existing.Value.In == param.In {
-                return fmt.Errorf("duplicate parameter: %s in %s", param.Name, param.In)
-            }
-        }
-
-        operation.Parameters = append(operation.Parameters, &openapi3.ParameterRef{Value: param})
-    }
-
-    return nil
+func RegisterParameters(operation *openapi3.Operation, parameters ...*openapi3.Parameter) error {
+	if operation.Parameters == nil {
+		operation.Parameters = openapi3.Parameters{}
+	}
+	for _, param := range parameters {
+		if param == nil {
+			return errors.New("parameter cannot be nil")
+		}
+	}
+	for _, param := range parameters {
+		operation.Parameters = append(operation.Parameters, &openapi3.ParameterRef{Value: param})
+	}
+	return nil
 }
-
