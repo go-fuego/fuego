@@ -3,11 +3,9 @@ package handlers
 import (
 	"strconv"
 
-	"github.com/sonkeydotcom/fuego/examples/crud-gorm/models"
-
-	"github.com/sonkeydotcom/fuego/examples/crud-gorm/queries"
-
 	"github.com/go-fuego/fuego"
+	"github.com/sonkeydotcom/fuego/examples/crud-gorm/models"
+	"github.com/sonkeydotcom/fuego/examples/crud-gorm/queries"
 )
 
 type Handlers struct {
