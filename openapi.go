@@ -151,6 +151,8 @@ func validateSwaggerURL(swaggerURL string) bool {
 
 // RegisterOpenAPIOperation registers the route to the OpenAPI description.
 // Modifies the route's Operation.
+// RegisterOpenAPIOperation registers the route to the OpenAPI description.
+// Modifies the route's Operation.
 func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(openapi *OpenAPI) error {
 	if route.Hidden || route.Method == "" {
 		return nil
@@ -238,6 +240,14 @@ func RegisterOpenAPIOperation[ResponseBody, RequestBody any](openapi *OpenAPI, r
             }
         }
     }
+
+	for _, params := range route.Operation.Parameters {
+		if params.Value.In == "path" {
+			if !strings.Contains(route.Path, "{"+params.Value.Name) {
+				panic(fmt.Errorf("path parameter '%s' is not declared in the path", params.Value.Name))
+			}
+		}
+	}
     
     openapi.Description().AddOperation(route.Path, route.Method, route.Operation)
     return route.Operation, nil
