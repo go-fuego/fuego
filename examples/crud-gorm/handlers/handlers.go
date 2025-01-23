@@ -3,9 +3,9 @@ package handlers
 import (
 	"strconv"
 
-	"../crud-gorm/models"
+	"github.com/sonkeydotcom/fuego/examples/crud-gorm/models"
 
-	"crud-gorm/queries"
+	"github.com/sonkeydotcom/fuego/examples/crud-gorm/queries"
 
 	"github.com/go-fuego/fuego"
 )

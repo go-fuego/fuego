@@ -1,9 +1,9 @@
 package main
 
 import (
-	"crud-gorm/handlers"
-	"crud-gorm/models"
-	"crud-gorm/queries"
+	"github.com/sonkeydotcom/fuego/examples/crud-gorm/handlers"
+	"github.com/sonkeydotcom/fuego/examples/crud-gorm/models"
+	"github.com/sonkeydotcom/fuego/examples/crud-gorm/queries"
 
 	"github.com/go-fuego/fuego"
 	"gorm.io/driver/sqlite"

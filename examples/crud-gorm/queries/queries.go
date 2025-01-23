@@ -1,7 +1,7 @@
 package queries
 
 import (
-	"crud-gorm/models"
+	"github.com/sonkeydotcom/fuego/examples/crud-gorm/models"
 
 	"gorm.io/gorm"
 )
