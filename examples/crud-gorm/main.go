@@ -5,6 +5,7 @@ import (
 	"github.com/sonkeydotcom/fuego/examples/crud-gorm/handlers"
 	"github.com/sonkeydotcom/fuego/examples/crud-gorm/models"
 	"github.com/sonkeydotcom/fuego/examples/crud-gorm/queries"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
