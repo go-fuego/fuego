@@ -1,6 +1,8 @@
 module github.com/sonkeydotcom/fuego/examples/crud-gorm
 
-go 1.23.5
+go 1.23.2
+
+replace github.com/sonkeydotcom/fuego => ../..
 
 require (
 	github.com/go-fuego/fuego v0.17.0
