@@ -1,7 +1,7 @@
 package queries
 
 import (
-	"github.com/sonkeydotcom/fuego/examples/crud-gorm/models"
+	"github.com/go-fuego/fuego/examples/crud-gorm/models"
 	"gorm.io/gorm"
 )
 
@@ -11,8 +11,11 @@ type UserQueries struct {
 
 func (q *UserQueries) GetUserByID(id uint) (*models.User, error) {
 	var user models.User
-	err := q.DB.Where("id = ?", id).First(&user).Error
-	return &user, err
+	err := q.DB.First(&user, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func (q *UserQueries) GetUsers() ([]models.User, error) {

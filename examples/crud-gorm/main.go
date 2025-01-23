@@ -2,17 +2,17 @@ package main
 
 import (
 	"github.com/go-fuego/fuego"
-	"github.com/sonkeydotcom/fuego/examples/crud-gorm/handlers"
-	"github.com/sonkeydotcom/fuego/examples/crud-gorm/models"
-	"github.com/sonkeydotcom/fuego/examples/crud-gorm/queries"
+	"github.com/go-fuego/fuego/examples/crud-gorm/handlers"
+	"github.com/go-fuego/fuego/examples/crud-gorm/models"
+	"github.com/go-fuego/fuego/examples/crud-gorm/queries"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func main() {
-	db, error := gorm.Open(sqlite.Open("users.db"), &gorm.Config{})
-	if error != nil {
+	db, err := gorm.Open(sqlite.Open("users.db"), &gorm.Config{})
+	if err != nil {
 		panic("error connecting to  database")
 	}
 
@@ -23,11 +23,14 @@ func main() {
 	userQueries := &queries.UserQueries{DB: db}
 	handlers := &handlers.Handlers{UserQueries: userQueries}
 
+	fuego.Get(server, "/", func(c fuego.ContextNoBody) (string, error) {
+		return "Hello, World!", nil
+	})
 	fuego.Get(server, "/users", handlers.GetUsers)
 	fuego.Post(server, "/users", handlers.CreateUser)
-	fuego.Get(server, "/users/:id", handlers.GetUserByID)
-	fuego.Put(server, "/users/:id", handlers.UpdateUser)
-	fuego.Delete(server, "/users/:id", handlers.DeleteUser)
+	fuego.Get(server, "/users/{id}", handlers.GetUserByID)
+	fuego.Put(server, "/users/{id}", handlers.UpdateUser)
+	fuego.Delete(server, "/users/{id}", handlers.DeleteUser)
 
 	server.Run()
 
