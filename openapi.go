@@ -156,7 +156,7 @@ func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(openapi 
 		return nil
 	}
 
-	operation, err := RegisterOpenAPIOperation(openapi, *route)
+	operation, err := RegisterOpenAPIOperation[ResponseBody, RequestBody](openapi, *route)
 	route.Operation = operation
 	return err
 }
@@ -164,129 +164,140 @@ func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(openapi 
 // RegisterOpenAPIOperation registers an OpenAPI operation.
 //
 // Deprecated: Use `(*Route[ResponseBody, RequestBody]).RegisterOpenAPIOperation` instead.
-func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*openapi3.Operation, error) {
-	if route.Operation == nil {
-		route.Operation = openapi3.NewOperation()
-	}
+func RegisterOpenAPIOperation[ResponseBody, RequestBody any](openapi *OpenAPI, route Route[ResponseBody, RequestBody]) (*openapi3.Operation, error) {
+    if route.Operation == nil {
+        route.Operation = openapi3.NewOperation()
+    }
+    
+    if route.FullName == "" {
+        route.FullName = route.Path
+    }
+    
+    route.GenerateDefaultDescription()
+    
+    if route.Operation.Summary == "" {
+        route.Operation.Summary = route.NameFromNamespace(camelToHuman)
+    }
+    
+    if route.Operation.OperationID == "" {
+        route.GenerateDefaultOperationID()
+    }
+    
+    // Request Body
+    if route.Operation.RequestBody == nil {
+        bodyTag := SchemaTagFromType(openapi, *new(RequestBody))
+        if bodyTag.Name != "unknown-interface" {
+            requestBody := newRequestBody[RequestBody](bodyTag, route.RequestContentTypes)
+            route.Operation.RequestBody = &openapi3.RequestBodyRef{
+                Value: requestBody,
+            }
+        }
+    }
+    
+    if err := RegisterParams(*new(ResponseBody), route.Operation); err != nil {
+        return nil, err
+    }
+    
+    for _, openAPIGlobalResponse := range openapi.globalOpenAPIResponses {
+        addResponseIfNotSet(
+            openapi,
+            route.Operation,
+            openAPIGlobalResponse.Code,
+            openAPIGlobalResponse.Description,
+            openAPIGlobalResponse.Response,
+        )
+    }
+    
+    if route.DefaultStatusCode == 0 {
+        route.DefaultStatusCode = 200
+    }
+    
+    defaultStatusCode := strconv.Itoa(route.DefaultStatusCode)
+    responseDefault := route.Operation.Responses.Value(defaultStatusCode)
+    
+    if responseDefault == nil {
+        response := openapi3.NewResponse().WithDescription(http.StatusText(route.DefaultStatusCode))
+        route.Operation.AddResponse(route.DefaultStatusCode, response)
+        responseDefault = route.Operation.Responses.Value(defaultStatusCode)
+    }
+    
+    // Automatically add non-declared Content for 200 (or other) Response
+    if responseDefault.Value.Content == nil {
+        responseSchema := SchemaTagFromType(openapi, *new(ResponseBody))
+        content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
+        responseDefault.Value.WithContent(content)
+    }
+    
+    // Automatically add non-declared Path parameters
+    for _, pathParam := range parsePathParams(route.Path) {
+        if exists := route.Operation.Parameters.GetByInAndName("path", pathParam); exists == nil {
+            if strings.Contains(route.Path, "{"+pathParam+"}") {
+                parameter := openapi3.NewPathParameter(pathParam)
+                parameter.Schema = openapi3.NewStringSchema().NewRef()
+                route.Operation.AddParameter(parameter)
+            }
+        }
+    }
+    
+    openapi.Description().AddOperation(route.Path, route.Method, route.Operation)
+    return route.Operation, nil
+}
 
-	if route.FullName == "" {
-		route.FullName = route.Path
-	}
-
-	route.GenerateDefaultDescription()
-	if route.Operation.Summary == "" {
-		route.Operation.Summary = route.NameFromNamespace(camelToHuman)
-	}
-
-	if route.Operation.OperationID == "" {
-		route.GenerateDefaultOperationID()
-	}
-	// Request Body
-	if route.Operation.RequestBody == nil {
-		bodyTag := SchemaTagFromType(openapi, *new(B))
-		if bodyTag.Name != "unknown-interface" {
-			requestBody := newRequestBody[B](bodyTag, route.RequestContentTypes)
-			route.Operation.RequestBody = &openapi3.RequestBodyRef{
-				Value: requestBody,
-			}
-		}
-	}
-
-	typeOfT := reflect.TypeOf(*new(T))
-	if typeOfT != nil {
-		if typeOfT.Kind() == reflect.Ptr {
-			typeOfT = typeOfT.Elem()
-		}
-		if typeOfT.Kind() == reflect.Struct {
-			for i := 0; i < typeOfT.NumField(); i++ {
-				field := typeOfT.Field(i)
-				if headerKey, ok := field.Tag.Lookup("header"); ok {
-					param := &openapi3.Parameter{
-						Name:   headerKey,
-						In:     "header",
-						Schema: openapi3.NewStringSchema().NewRef(),
-					}
-					if err := RegisterParameters(route.Operation, param); err != nil {
-						return nil, fmt.Errorf("failed to register parameter: %w", err)
-					}
-				}
-				if queryKey, ok := field.Tag.Lookup("query"); ok {
-					param := &openapi3.Parameter{
-						Name:   queryKey,
-						In:     "query",
-						Schema: openapi3.NewStringSchema().NewRef(),
-					}
-					if err := RegisterParameters(route.Operation, param); err != nil {
-						return nil, fmt.Errorf("failed to register parameter: %w", err)
-					}
-				}
-
-				if cookieKey, ok := field.Tag.Lookup("cookie"); ok {
-					param := &openapi3.Parameter{
-						Name:   cookieKey,
-						In:     "cookie",
-						Schema: openapi3.NewStringSchema().NewRef(),
-					}
-					if err := RegisterParameters(route.Operation, param); err != nil {
-						return nil, fmt.Errorf("failed to register parameter: %w", err)
-					}
-				}
-			}
-		}
-	}
-
-	for _, openAPIGlobalResponse := range openapi.globalOpenAPIResponses {
-		addResponseIfNotSet(
-			openapi,
-			route.Operation,
-			openAPIGlobalResponse.Code,
-			openAPIGlobalResponse.Description,
-			openAPIGlobalResponse.Response,
-		)
-	}
-
-	// Automatically add non-declared 200 (or other) Response
-	if route.DefaultStatusCode == 0 {
-		route.DefaultStatusCode = 200
-	}
-	defaultStatusCode := strconv.Itoa(route.DefaultStatusCode)
-	responseDefault := route.Operation.Responses.Value(defaultStatusCode)
-	if responseDefault == nil {
-		response := openapi3.NewResponse().WithDescription(http.StatusText(route.DefaultStatusCode))
-		route.Operation.AddResponse(route.DefaultStatusCode, response)
-		responseDefault = route.Operation.Responses.Value(defaultStatusCode)
-	}
-
-	// Automatically add non-declared Content for 200 (or other) Response
-	if responseDefault.Value.Content == nil {
-		responseSchema := SchemaTagFromType(openapi, *new(T))
-		content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
-		responseDefault.Value.WithContent(content)
-	}
-
-	// Automatically add non-declared Path parameters
-	for _, pathParam := range parsePathParams(route.Path) {
-		if exists := route.Operation.Parameters.GetByInAndName("path", pathParam); exists != nil {
-			continue
-		}
-		parameter := openapi3.NewPathParameter(pathParam)
-		parameter.Schema = openapi3.NewStringSchema().NewRef()
-		if strings.HasSuffix(pathParam, "...") {
-			parameter.Description += " (might contain slashes)"
-		}
-		route.Operation.AddParameter(parameter)
-	}
-
-	for _, params := range route.Operation.Parameters {
-		if params.Value.In == "path" {
-			if !strings.Contains(route.Path, "{"+params.Value.Name) {
-				panic(fmt.Errorf("path parameter '%s' is not declared in the path", params.Value.Name))
-			}
-		}
-	}
-
-	openapi.Description().AddOperation(route.Path, route.Method, route.Operation)
-	return route.Operation, nil
+func RegisterParams[Params any](params Params, operation *openapi3.Operation) error {
+    typeOfParams := reflect.TypeOf(params)
+    
+    if typeOfParams != nil {
+        if typeOfParams.Kind() == reflect.Ptr {
+            typeOfParams = typeOfParams.Elem()
+        }
+        
+        if typeOfParams.Kind() == reflect.Struct {
+            for i := 0; i < typeOfParams.NumField(); i++ {
+                field := typeOfParams.Field(i)
+                if headerKey, ok := field.Tag.Lookup("header"); ok {
+                    param := &openapi3.Parameter{
+                        Name:   headerKey,
+                        In:     "header",
+                        Schema: openapi3.NewStringSchema().NewRef(),
+                    }
+                    if err := RegisterParameters(operation, param); err != nil {
+                        return fmt.Errorf("failed to register header parameter: %w", err)
+                    }
+                }
+                if queryKey, ok := field.Tag.Lookup("query"); ok {
+                    param := &openapi3.Parameter{
+                        Name:   queryKey,
+                        In:     "query",
+                        Schema: openapi3.NewStringSchema().NewRef(),
+                    }
+                    if err := RegisterParameters(operation, param); err != nil {
+                        return fmt.Errorf("failed to register query parameter: %w", err)
+                    }
+                }
+                if cookieKey, ok := field.Tag.Lookup("cookie"); ok {
+                    param := &openapi3.Parameter{
+                        Name:   cookieKey,
+                        In:     "cookie",
+                        Schema: openapi3.NewStringSchema().NewRef(),
+                    }
+                    if err := RegisterParameters(operation, param); err != nil {
+                        return fmt.Errorf("failed to register cookie parameter: %w", err)
+                    }
+                }
+                if pathKey, ok := field.Tag.Lookup("path"); ok {
+                    param := &openapi3.Parameter{
+                        Name:   pathKey,
+                        In:     "path",
+                        Schema: openapi3.NewStringSchema().NewRef(),
+                    }
+                    if err := RegisterParameters(operation, param); err != nil {
+                        return fmt.Errorf("failed to register path parameter: %w", err)
+                    }
+                }
+            }
+        }
+    }
+    return nil
 }
 
 func newRequestBody[RequestBody any](tag SchemaTag, consumes []string) *openapi3.RequestBody {
@@ -538,10 +549,6 @@ func transformTypeName(s string) string {
 	return prefix + "_" + inside
 }
 
-type MyOperation struct {
-	*openapi3.Operation
-}
-
 func RegisterParameters(operation *openapi3.Operation, parameters ...*openapi3.Parameter) error {
 	if operation.Parameters == nil {
 		operation.Parameters = openapi3.Parameters{}
@@ -550,8 +557,6 @@ func RegisterParameters(operation *openapi3.Operation, parameters ...*openapi3.P
 		if param == nil {
 			return errors.New("parameter cannot be nil")
 		}
-	}
-	for _, param := range parameters {
 		operation.Parameters = append(operation.Parameters, &openapi3.ParameterRef{Value: param})
 	}
 	return nil
