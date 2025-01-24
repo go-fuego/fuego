@@ -100,11 +100,11 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 		e.OpenAPIConfig.DisableSwaggerUI = config.DisableSwaggerUI
 
 		if !validateSpecURL(e.OpenAPIConfig.SpecURL) {
-			slog.Error("Error serving openapi json spec. Value of 's.OpenAPIServerConfig.SpecURL' option is not valid", "url", e.OpenAPIConfig.SpecURL)
+			slog.Error("Error serving OpenAPI JSON spec. Value of 's.OpenAPIServerConfig.SpecURL' option is not valid", "url", e.OpenAPIConfig.SpecURL)
 			return
 		}
 		if !validateSwaggerURL(e.OpenAPIConfig.SwaggerURL) {
-			slog.Error("Error serving swagger ui. Value of 's.OpenAPIServerConfig.SwaggerURL' option is not valid", "url", e.OpenAPIConfig.SwaggerURL)
+			slog.Error("Error serving Swagger UI. Value of 's.OpenAPIServerConfig.SwaggerURL' option is not valid", "url", e.OpenAPIConfig.SwaggerURL)
 			return
 		}
 	}

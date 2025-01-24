@@ -10,17 +10,17 @@ import (
 )
 
 type OpenAPIHandler struct {
-	*gin.Engine
+	GinEngine *gin.Engine
 }
 
 func (o *OpenAPIHandler) SpecHandler(e *fuego.Engine) {
-	Get(e, o, e.OpenAPIConfig.SpecURL, e.SpecHandler(), fuego.OptionHide())
+	Get(e, o.GinEngine, e.OpenAPIConfig.SpecURL, e.SpecHandler(), fuego.OptionHide())
 }
 
 func (o *OpenAPIHandler) UIHandler(e *fuego.Engine) {
 	GetGin(
 		e,
-		o,
+		o.GinEngine,
 		e.OpenAPIConfig.SwaggerURL+"/",
 		gin.WrapH(e.OpenAPIConfig.UIHandler(e.OpenAPIConfig.SpecURL)),
 		fuego.OptionHide(),
