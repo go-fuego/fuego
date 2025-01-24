@@ -9,27 +9,20 @@ import (
 	"github.com/go-fuego/fuego/internal"
 )
 
-type Adaptor struct {
-	fuegoEngine *fuego.Engine
+type OpenAPIHandler struct {
 	*gin.Engine
 }
 
-func NewAdaptor(g *gin.Engine, e *fuego.Engine) *Adaptor {
-	a := &Adaptor{Engine: g, fuegoEngine: e}
-	fuego.RegisterOpenAPIRoutes(e, a)
-	return a
+func (o *OpenAPIHandler) SpecHandler(e *fuego.Engine) {
+	Get(e, o, e.OpenAPIConfig.SpecURL, e.SpecHandler(), fuego.OptionHide())
 }
 
-func (a *Adaptor) SpecHandler() {
-	Get(a.fuegoEngine, a, a.fuegoEngine.OpenAPIConfig.SpecURL, a.fuegoEngine.SpecHandler(), fuego.OptionHide())
-}
-
-func (a *Adaptor) UIHandler() {
+func (o *OpenAPIHandler) UIHandler(e *fuego.Engine) {
 	GetGin(
-		a.fuegoEngine,
-		a,
-		a.fuegoEngine.OpenAPIConfig.SwaggerURL+"/",
-		gin.WrapH(a.fuegoEngine.OpenAPIConfig.UIHandler(a.fuegoEngine.OpenAPIConfig.SpecURL)),
+		e,
+		o,
+		e.OpenAPIConfig.SwaggerURL+"/",
+		gin.WrapH(e.OpenAPIConfig.UIHandler(e.OpenAPIConfig.SpecURL)),
 		fuego.OptionHide(),
 	)
 }

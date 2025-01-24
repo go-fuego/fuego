@@ -81,20 +81,20 @@ func NewOpenApiSpec() openapi3.T {
 }
 
 type OpenAPIServable interface {
-	SpecHandler()
-	UIHandler()
+	SpecHandler(e *Engine)
+	UIHandler(e *Engine)
 }
 
-func RegisterOpenAPIRoutes(e *Engine, o OpenAPIServable) {
+func (e *Engine) RegisterOpenAPIRoutes(o OpenAPIServable) {
 	if e.OpenAPIConfig.Disabled {
 		return
 	}
-	o.SpecHandler()
+	o.SpecHandler(e)
 
 	if e.OpenAPIConfig.DisableSwaggerUI {
 		return
 	}
-	o.UIHandler()
+	o.UIHandler(e)
 }
 
 // Hide prevents the routes in this server or group from being included in the OpenAPI spec.
