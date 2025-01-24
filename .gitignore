@@ -12,4 +12,5 @@ go.work.sum
 # Ignore Go build binaries (typically named after the module)
 /examples/gorm/*
 !/examples/crud-gorm/**/*
-/examples/gorm/**.db
+/examples/gorm/*.db
+*.db
