@@ -167,7 +167,7 @@ func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(openapi 
 //
 // Deprecated: Use `(*Route[ResponseBody, RequestBody]).RegisterOpenAPIOperation` instead.
 func RegisterOpenAPIOperation[ResponseBody, RequestBody any](openapi *OpenAPI, route Route[ResponseBody, RequestBody]) (*openapi3.Operation, error) {
-	//blank line
+	// no operation
 	if route.Operation == nil {
 		route.Operation = openapi3.NewOperation()
 	}
@@ -239,7 +239,10 @@ func RegisterOpenAPIOperation[ResponseBody, RequestBody any](openapi *OpenAPI, r
 	openapi.Description().AddOperation(route.Path, route.Method, route.Operation)
 	return route.Operation, nil
 }
-//blank line
+
+// RegisterParams registers the parameters of a given type to an OpenAPI operation.
+// It inspects the fields of the provided struct, looking for "header" tags, and creates
+// OpenAPI parameters for each tagged field.
 func RegisterParams[Params any](params Params, operation *openapi3.Operation) error {
 	typeOfParams := reflect.TypeOf(params)
 	if typeOfParams != nil {
