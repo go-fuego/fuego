@@ -18,6 +18,15 @@ func (q *UserQueries) GetUserByID(id uint) (*models.User, error) {
 	return &user, nil
 }
 
+func (q *UserQueries) GetUserByEmail(email string) (*models.User, error) {
+	var user models.User
+	err := q.DB.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (q *UserQueries) GetUsers() ([]models.User, error) {
 	var users []models.User
 	if err := q.DB.Find(&users).Error; err != nil {
