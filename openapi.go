@@ -164,10 +164,8 @@ func (route *Route[T, B]) RegisterOpenAPIOperation(openapi *OpenAPI) error {
 }
 
 // RegisterOpenAPIOperation registers an OpenAPI operation.
-//
 // Deprecated: Use `(*Route[ResponseBody, RequestBody]).RegisterOpenAPIOperation` instead.
 func RegisterOpenAPIOperation[T,B any](openapi *OpenAPI, route Route[T,B]) (*openapi3.Operation, error) {
-	// no operation
 	if route.Operation == nil {
 		route.Operation = openapi3.NewOperation()
 	}
