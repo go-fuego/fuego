@@ -153,7 +153,7 @@ func validateSwaggerURL(swaggerURL string) bool {
 // Modifies the route's Operation.
 // RegisterOpenAPIOperation registers the route to the OpenAPI description.
 // Modifies the route's Operation.
-func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(openapi *OpenAPI) error {
+func (route *Route[T, B]) RegisterOpenAPIOperation(openapi *OpenAPI) error {
 	if route.Hidden || route.Method == "" {
 		return nil
 	}
@@ -171,20 +171,16 @@ func RegisterOpenAPIOperation[T,B any](openapi *OpenAPI, route Route[T,B]) (*ope
 	if route.Operation == nil {
 		route.Operation = openapi3.NewOperation()
 	}
-	
 	if route.FullName == "" {
 		route.FullName = route.Path
 	}
-	
 	route.GenerateDefaultDescription()
 	if route.Operation.Summary == "" {
 		route.Operation.Summary = route.NameFromNamespace(camelToHuman)
 	}
-
 	if route.Operation.OperationID == "" {
 		route.GenerateDefaultOperationID()
 	}
-
 	// Request Body
 	if route.Operation.RequestBody == nil {
 		bodyTag := SchemaTagFromType(openapi, *new(B))
@@ -275,7 +271,6 @@ func RegisterParams[Params any](params Params, operation *openapi3.Operation) er
 						return fmt.Errorf("failed to register header parameter: %w", err)
 					}
 				}
-
 				if queryKey, ok := field.Tag.Lookup("query"); ok {
 					param := &openapi3.Parameter{
 						Name:   queryKey,
@@ -286,7 +281,6 @@ func RegisterParams[Params any](params Params, operation *openapi3.Operation) er
 						return fmt.Errorf("failed to register query parameter: %w", err)
 					}
 				}
-
 				if cookieKey, ok := field.Tag.Lookup("cookie"); ok {
 					param := &openapi3.Parameter{
 						Name:   cookieKey,
@@ -297,7 +291,6 @@ func RegisterParams[Params any](params Params, operation *openapi3.Operation) er
 						return fmt.Errorf("failed to register cookie parameter: %w", err)
 					}
 				}
-
 				if pathKey, ok := field.Tag.Lookup("path"); ok {
 					param := &openapi3.Parameter{
 						Name:   pathKey,

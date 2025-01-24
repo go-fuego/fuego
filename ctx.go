@@ -327,18 +327,6 @@ func body[B any](c netHttpContext[B]) (B, error) {
 	return body, err
 }
 
-type ParamsIn struct {
-	Name          string       `query:"name"`
-	Authorization string       `header:"Authorization"`
-	Token         *http.Cookie `cookie:"Token"`
-	Limit         *int         `query:"limit"`
-}
-
-type ParamsOut struct {
-	CustomHeader string `header:"MyHeader"`
-	Token        string `cookie:"Token,httpOnly,secure"`
-}
-
 type ContextWithBodyAndParams[Body any, ParamsIn any, ParamsOut any] interface {
 	ContextWithBody[Body]
 	Params() (ParamsIn, error)
