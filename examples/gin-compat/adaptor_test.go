@@ -9,13 +9,13 @@ import (
 )
 
 func TestFuegoGin(t *testing.T) {
-	a := server()
+	e, _ := server()
 
 	t.Run("simply test gin", func(t *testing.T) {
 		r := httptest.NewRequest("GET", "/gin", nil)
 		w := httptest.NewRecorder()
 
-		a.ServeHTTP(w, r)
+		e.ServeHTTP(w, r)
 
 		require.Equal(t, 200, w.Code)
 	})
@@ -24,7 +24,7 @@ func TestFuegoGin(t *testing.T) {
 		r := httptest.NewRequest("GET", "/fuego", nil)
 		w := httptest.NewRecorder()
 
-		a.ServeHTTP(w, r)
+		e.ServeHTTP(w, r)
 
 		require.Equal(t, http.StatusOK, w.Code)
 		require.JSONEq(t, `{"message":"Hello"}`, w.Body.String())

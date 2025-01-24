@@ -142,13 +142,12 @@ func NewServer(options ...func(*Server)) *Server {
 	return s
 }
 
-// Registers the routes to serve the OpenAPI spec and Swagger UI.
-func (s *Server) SpecHandler() {
+func (s *Server) SpecHandler(_ *Engine) {
 	Get(s, s.OpenAPIConfig.SpecURL, s.Engine.SpecHandler(), OptionHide())
 	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s%s", s.url(), s.OpenAPIConfig.SpecURL))
 }
 
-func (s *Server) UIHandler() {
+func (s *Server) UIHandler(_ *Engine) {
 	GetStd(s, s.OpenAPIConfig.SwaggerURL+"/", s.OpenAPIConfig.UIHandler(s.OpenAPIConfig.SpecURL).ServeHTTP, OptionHide())
 	s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s%s/index.html", s.url(), s.OpenAPIConfig.SwaggerURL))
 }
