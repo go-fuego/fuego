@@ -29,5 +29,5 @@ func TestPetstoreOpenAPIGeneration(t *testing.T) {
 	generatedSpec, err := os.ReadFile("testdata/doc/openapi.json")
 	require.NoError(t, err)
 
-	golden.Assert(t, string(generatedSpec), "doc/openapi.json")
+	golden.Assert(t, string(generatedSpec), "doc/openapi.golden.json")
 }
