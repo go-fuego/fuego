@@ -151,8 +151,6 @@ func validateSwaggerURL(swaggerURL string) bool {
 
 // RegisterOpenAPIOperation registers the route to the OpenAPI description.
 // Modifies the route's Operation.
-// RegisterOpenAPIOperation registers the route to the OpenAPI description.
-// Modifies the route's Operation.
 func (route *Route[T, B]) RegisterOpenAPIOperation(openapi *OpenAPI) error {
 	if route.Hidden || route.Method == "" {
 		return nil
@@ -164,21 +162,27 @@ func (route *Route[T, B]) RegisterOpenAPIOperation(openapi *OpenAPI) error {
 }
 
 // RegisterOpenAPIOperation registers an OpenAPI operation.
-// Deprecated: Use `(*Route[ResponseBody, RequestBody]).RegisterOpenAPIOperation` instead.
-func RegisterOpenAPIOperation[T,B any](openapi *OpenAPI, route Route[T,B]) (*openapi3.Operation, error) {
+func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*openapi3.Operation, error) {
+	// route without an operation should use a new operation
 	if route.Operation == nil {
 		route.Operation = openapi3.NewOperation()
 	}
+	// route without a fullname	should use the path as the fullname
 	if route.FullName == "" {
 		route.FullName = route.Path
 	}
 	route.GenerateDefaultDescription()
+
+	// No summary so Use the name of the route
 	if route.Operation.Summary == "" {
 		route.Operation.Summary = route.NameFromNamespace(camelToHuman)
 	}
+
+	// Generate default operation ID
 	if route.Operation.OperationID == "" {
 		route.GenerateDefaultOperationID()
 	}
+
 	// Request Body
 	if route.Operation.RequestBody == nil {
 		bodyTag := SchemaTagFromType(openapi, *new(B))
@@ -194,6 +198,7 @@ func RegisterOpenAPIOperation[T,B any](openapi *OpenAPI, route Route[T,B]) (*ope
 		return nil, err
 	}
 
+	// Response - globals
 	for _, openAPIGlobalResponse := range openapi.globalOpenAPIResponses {
 		addResponseIfNotSet(
 			openapi,
@@ -204,13 +209,16 @@ func RegisterOpenAPIOperation[T,B any](openapi *OpenAPI, route Route[T,B]) (*ope
 		)
 	}
 
+	// Change the default status code if it is not set
 	if route.DefaultStatusCode == 0 {
 		route.DefaultStatusCode = 200
 	}
 
+	// Get the default response
 	defaultStatusCode := strconv.Itoa(route.DefaultStatusCode)
 	responseDefault := route.Operation.Responses.Value(defaultStatusCode)
 
+	// Response - route
 	if responseDefault == nil {
 		response := openapi3.NewResponse().WithDescription(http.StatusText(route.DefaultStatusCode))
 		route.Operation.AddResponse(route.DefaultStatusCode, response)
@@ -235,6 +243,7 @@ func RegisterOpenAPIOperation[T,B any](openapi *OpenAPI, route Route[T,B]) (*ope
 		}
 	}
 
+	// panic if a path parameter is not declared in the path
 	for _, params := range route.Operation.Parameters {
 		if params.Value.In == "path" {
 			if !strings.Contains(route.Path, "{"+params.Value.Name) {
@@ -242,7 +251,6 @@ func RegisterOpenAPIOperation[T,B any](openapi *OpenAPI, route Route[T,B]) (*ope
 			}
 		}
 	}
-
 	openapi.Description().AddOperation(route.Path, route.Method, route.Operation)
 	return route.Operation, nil
 }
