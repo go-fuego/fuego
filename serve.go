@@ -43,7 +43,7 @@ func (s *Server) setup() error {
 		Description: "local server",
 	})
 	go s.OutputOpenAPISpec()
-	RegisterOpenAPIRoutes(s.Engine, s)
+	s.Engine.RegisterOpenAPIRoutes(s)
 	s.printStartupMessage()
 
 	s.Server.Handler = s.Mux
