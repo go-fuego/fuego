@@ -36,6 +36,7 @@ func (h *UserHandlers) GetUserByID(c fuego.ContextNoBody) (models.User, error) {
 		return models.User{}, fuego.BadRequestError{
 			Title:  "Invalid ID",
 			Detail: "The provided ID is not a valid integer.",
+			Err:    err,
 		}
 	}
 	user, err := h.UserQueries.GetUserByID(uint(id))
@@ -44,10 +45,12 @@ func (h *UserHandlers) GetUserByID(c fuego.ContextNoBody) (models.User, error) {
 			return models.User{}, fuego.NotFoundError{
 				Title:  "User not found",
 				Detail: "No user with the provided ID was found.",
+				Err:    err,
 			}
 		}
 		return models.User{}, fuego.InternalServerError{
 			Detail: "An error occurred while retrieving the user.",
+			Err:    err,
 		}
 	}
 	return *user, nil
@@ -55,11 +58,26 @@ func (h *UserHandlers) GetUserByID(c fuego.ContextNoBody) (models.User, error) {
 
 func (h *UserHandlers) UpdateUser(c fuego.ContextWithBody[models.User]) (models.User, error) {
 	id, err := strconv.Atoi(c.PathParam("id"))
-
 	if err != nil {
 		return models.User{}, fuego.BadRequestError{
-			Title:  "Inavalid ID",
+			Title:  "Invalid ID",
 			Detail: "The provided ID is not a valid integer.",
+			Err:    err,
+		}
+	}
+
+	existingUser, err := h.UserQueries.GetUserByID(uint(id))
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return models.User{}, fuego.NotFoundError{
+				Title:  "User Not Found",
+				Detail: "No user found with the provided ID.",
+				Err:    err,
+			}
+		}
+		return models.User{}, fuego.InternalServerError{
+			Detail: "An error occurred while checking the user.",
+			Err:    err,
 		}
 	}
 
@@ -68,14 +86,18 @@ func (h *UserHandlers) UpdateUser(c fuego.ContextWithBody[models.User]) (models.
 		return models.User{}, fuego.BadRequestError{
 			Title:  "Invalid Input",
 			Detail: "The provided input is not a valid user object.",
+			Err:    err,
 		}
 	}
 
-	input.ID = uint(id)
-	err = h.UserQueries.UpdateUser(&input)
+	existingUser.Name = input.Name
+	existingUser.Email = input.Email
+
+	err = h.UserQueries.UpdateUser(existingUser)
 	if err != nil {
 		return models.User{}, fuego.InternalServerError{
 			Detail: "Failed to update the user.",
+			Err:    err,
 		}
 	}
 
@@ -83,6 +105,7 @@ func (h *UserHandlers) UpdateUser(c fuego.ContextWithBody[models.User]) (models.
 	if err != nil {
 		return models.User{}, fuego.InternalServerError{
 			Detail: "Failed to retrieve the updated user.",
+			Err:    err,
 		}
 	}
 
@@ -95,6 +118,7 @@ func (h *UserHandlers) CreateUser(c fuego.ContextWithBody[models.User]) (models.
 		return models.User{}, fuego.BadRequestError{
 			Title:  "Invalid Input",
 			Detail: "The provided input is not a valid user object.",
+			Err:    err,
 		}
 	}
 
@@ -102,6 +126,7 @@ func (h *UserHandlers) CreateUser(c fuego.ContextWithBody[models.User]) (models.
 		return models.User{}, fuego.BadRequestError{
 			Title:  "Missing Required Fields",
 			Detail: "The user name and email are required.",
+			Err:    err,
 		}
 	}
 
@@ -109,6 +134,7 @@ func (h *UserHandlers) CreateUser(c fuego.ContextWithBody[models.User]) (models.
 	if err == nil && existingUser != nil {
 		return models.User{}, fuego.ConflictError{
 			Detail: "A user with the provided email already exists.",
+			Err:    err,
 		}
 	}
 
@@ -120,6 +146,7 @@ func (h *UserHandlers) CreateUser(c fuego.ContextWithBody[models.User]) (models.
 	if err != nil {
 		return models.User{}, fuego.ConflictError{
 			Detail: "A user with the provided email already exists.",
+			Err:    err,
 		}
 	}
 	return user, nil
@@ -132,6 +159,7 @@ func (h *UserHandlers) DeleteUser(c fuego.ContextNoBody) (any, error) {
 		return err, fuego.BadRequestError{
 			Title:  "Invalid ID",
 			Detail: "The provided ID is not a valid integer.",
+			Err:    err,
 		}
 	}
 
@@ -141,10 +169,12 @@ func (h *UserHandlers) DeleteUser(c fuego.ContextNoBody) (any, error) {
 			return err, fuego.NotFoundError{
 				Title:  "User not found",
 				Detail: "No user with the provided ID was found.",
+				Err:    err,
 			}
 		}
 		return err, fuego.InternalServerError{
 			Detail: "An error occurred while retrieving the user.",
+			Err:    err,
 		}
 	}
 
@@ -152,6 +182,7 @@ func (h *UserHandlers) DeleteUser(c fuego.ContextNoBody) (any, error) {
 	if err != nil {
 		return err, fuego.InternalServerError{
 			Detail: "Failed to delete the user.",
+			Err:    err,
 		}
 	}
 	return nil, nil
