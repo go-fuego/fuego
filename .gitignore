@@ -9,8 +9,8 @@ recipe.db
 bin
 go.work.sum
 /cmd/fuego/fuego
-# Ignore Go build binaries (typically named after the module)
-/examples/gorm/*
+examples/crud-gorm/tmp
+examples/crud-gorm/doc
 !/examples/crud-gorm/**/*
 /examples/gorm/*.db
 *.db

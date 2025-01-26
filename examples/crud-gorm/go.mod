@@ -4,6 +4,7 @@ go 1.23.5
 
 require (
 	github.com/go-fuego/fuego v0.17.0
+	github.com/golang/mock v1.6.0
 	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.25.12
 )

@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Handlers struct {
+type UserHandlers struct {
 	UserQueries UserQueryInterface
 }
 
@@ -26,11 +26,11 @@ type UserQueryInterface interface {
 	DeleteUser(id uint) error
 }
 
-func (h *Handlers) GetUsers(c fuego.ContextNoBody) ([]models.User, error) {
+func (h *UserHandlers) GetUsers(c fuego.ContextNoBody) ([]models.User, error) {
 	return h.UserQueries.GetUsers()
 }
 
-func (h *Handlers) GetUserByID(c fuego.ContextNoBody) (models.User, error) {
+func (h *UserHandlers) GetUserByID(c fuego.ContextNoBody) (models.User, error) {
 	id, err := strconv.Atoi(c.PathParam("id"))
 	if err != nil {
 		return models.User{}, fuego.BadRequestError{
@@ -53,7 +53,7 @@ func (h *Handlers) GetUserByID(c fuego.ContextNoBody) (models.User, error) {
 	return *user, nil
 }
 
-func (h *Handlers) UpdateUser(c fuego.ContextWithBody[models.User]) (models.User, error) {
+func (h *UserHandlers) UpdateUser(c fuego.ContextWithBody[models.User]) (models.User, error) {
 	id, err := strconv.Atoi(c.PathParam("id"))
 
 	if err != nil {
@@ -89,7 +89,7 @@ func (h *Handlers) UpdateUser(c fuego.ContextWithBody[models.User]) (models.User
 	return *updatedUser, nil
 }
 
-func (h *Handlers) CreateUser(c fuego.ContextWithBody[models.User]) (models.User, error) {
+func (h *UserHandlers) CreateUser(c fuego.ContextWithBody[models.User]) (models.User, error) {
 	input, err := c.Body()
 	if err != nil {
 		return models.User{}, fuego.BadRequestError{
@@ -126,10 +126,10 @@ func (h *Handlers) CreateUser(c fuego.ContextWithBody[models.User]) (models.User
 
 }
 
-func (h *Handlers) DeleteUser(c fuego.ContextNoBody) (any, error) {
+func (h *UserHandlers) DeleteUser(c fuego.ContextNoBody) (any, error) {
 	id, err := strconv.Atoi(c.PathParam("id"))
 	if err != nil {
-		return nil, fuego.BadRequestError{
+		return err, fuego.BadRequestError{
 			Title:  "Invalid ID",
 			Detail: "The provided ID is not a valid integer.",
 		}
@@ -138,19 +138,19 @@ func (h *Handlers) DeleteUser(c fuego.ContextNoBody) (any, error) {
 	user, err := h.UserQueries.GetUserByID(uint(id))
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, fuego.NotFoundError{
+			return err, fuego.NotFoundError{
 				Title:  "User not found",
 				Detail: "No user with the provided ID was found.",
 			}
 		}
-		return nil, fuego.InternalServerError{
+		return err, fuego.InternalServerError{
 			Detail: "An error occurred while retrieving the user.",
 		}
 	}
 
 	err = h.UserQueries.DeleteUser(user.ID)
 	if err != nil {
-		return nil, fuego.InternalServerError{
+		return err, fuego.InternalServerError{
 			Detail: "Failed to delete the user.",
 		}
 	}
