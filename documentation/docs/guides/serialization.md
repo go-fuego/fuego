@@ -30,7 +30,6 @@ func helloWorld(c fuego.ContextNoBody) (MyReturnType, error) {
 
 // curl request: curl -X GET http://localhost:8080/ -H "Accept: application/xml"
 // response: <MyReturnType><Message>Hello, World!</Message></MyReturnType>
-
 ```
 
 ## Deserialize data
@@ -79,9 +78,9 @@ If you want to bypass the automatic serialization, you can directly write to the
 func helloWorld(c fuego.ContextNoBody) (any, error) {
 	w := c.Response()
 	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte("Hello, World!")) // Write directly to the response writer.
+	w.Write([]byte("Hello, World!"))                                      // Write directly to the response writer.
 	_ = json.NewEncoder(w).Encode(MyReturnType{Message: "Hello, World!"}) // You can also use json.NewEncoder(w).Encode to serialize data directly into JSON
-	fuego.SendJSON(w, MyReturnType{Message: "Hello, World!"}) // Or use fuego.SendJSON to serialize data directly into JSON
+	fuego.SendJSON(w, MyReturnType{Message: "Hello, World!"})             // Or use fuego.SendJSON to serialize data directly into JSON
 
 	return nil, nil // If you return nil, nil fuego will not try to serialize a response
 }
@@ -99,9 +98,8 @@ package main
 import (
 	"net/http"
 
-	jsoniter "github.com/json-iterator/go"
-
 	"github.com/go-fuego/fuego"
+	jsoniter "github.com/json-iterator/go"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

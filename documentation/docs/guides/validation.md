@@ -19,7 +19,7 @@ type User struct {
 	FirstName string `json:"first_name" validate:"required"`
 	LastName  string `json:"last_name" validate:"required"`
 	Age       int    `json:"age" validate:"gte=0,lte=130"`
-	Email	  string `json:"email" validate:"email"`
+	Email     string `json:"email" validate:"email"`
 }
 ```
 

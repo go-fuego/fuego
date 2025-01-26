@@ -119,7 +119,6 @@ func myController(c fuego.ContextWithBody[MyInput]) (*MyOutput, error) {
 
 	return &MyOutput{Message: "Hello, " + body.Name}, nil
 }
-
 ```
 
 ### With transformation & custom validation
@@ -139,7 +138,6 @@ func (r *MyInput) InTransform(context.Context) error {
 
 	return nil
 }
-
 ```
 
 ### More OpenAPI documentation
@@ -157,11 +155,11 @@ func main() {
 	s := fuego.NewServer()
 
 	// Custom OpenAPI options
-	fuego.Post(s, "/", myController
+	fuego.Post(s, "/", myController,
 		option.Description("This route does something..."),
 		option.Summary("This is my summary"),
 		option.Tags("MyTag"), // A tag is set by default according to the return type (can be deactivated)
-		option.Deprecated(), // Marks the route as deprecated in the OpenAPI spec
+		option.Deprecated(),  // Marks the route as deprecated in the OpenAPI spec
 
 		option.Query("name", "Declares a query parameter with default value", param.Default("Carmack")),
 		option.Header("Authorization", "Bearer token", param.Required()),
@@ -233,9 +231,8 @@ import (
 	"strings"
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
-	"github.com/rs/cors"
-
 	"github.com/go-fuego/fuego"
+	"github.com/rs/cors"
 )
 
 type Received struct {
@@ -296,7 +293,7 @@ func (r *MyResponse) OutTransform(context.Context) error {
 ```
 
 ```bash
-curl  http://localhost:8088/std
+curl http://localhost:8088/std
 # Hello, World!
 curl http://localhost:8088 -X POST -d '{"name": "Your Name"}' -H 'Content-Type: application/json'
 # {"message":"HELLO, YOUR NAME","best":"Fuego!"}

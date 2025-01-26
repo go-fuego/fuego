@@ -51,9 +51,8 @@ but it's a request that needs to be handled by the CORS middleware.
 
 ```go
 import (
-	"github.com/rs/cors"
-
 	"github.com/go-fuego/fuego"
+	"github.com/rs/cors"
 )
 
 func main() {
