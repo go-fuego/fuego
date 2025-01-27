@@ -22,6 +22,7 @@ func TestPetstoreOpenAPIGeneration(t *testing.T) {
 		),
 	)
 
+	server.Engine.RegisterOpenAPIRoutes(server)
 	server.OutputOpenAPISpec()
 	err := server.OpenAPI.Description().Validate(context.Background())
 	require.NoError(t, err)

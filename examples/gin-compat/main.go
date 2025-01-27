@@ -80,10 +80,9 @@ func server() (*gin.Engine, *fuego.OpenAPI) {
 		option.Tags("Fuego"),
 	)
 
-	// Serve the OpenAPI spec
-	ginRouter.GET("/openapi.json", serveOpenApiJSONDescription(engine.OpenAPI))
-	ginRouter.GET("/swagger", DefaultOpenAPIHandler("/openapi.json"))
+	engine.RegisterOpenAPIRoutes(&fuegogin.OpenAPIHandler{ginRouter})
 
+	// Serve the OpenAPI spec
 	return ginRouter, engine.OpenAPI
 }
 

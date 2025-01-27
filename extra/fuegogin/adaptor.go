@@ -9,6 +9,24 @@ import (
 	"github.com/go-fuego/fuego/internal"
 )
 
+type OpenAPIHandler struct {
+	*gin.Engine
+}
+
+func (o *OpenAPIHandler) SpecHandler(e *fuego.Engine) {
+	Get(e, o, e.OpenAPIConfig.SpecURL, e.SpecHandler(), fuego.OptionHide())
+}
+
+func (o *OpenAPIHandler) UIHandler(e *fuego.Engine) {
+	GetGin(
+		e,
+		o,
+		e.OpenAPIConfig.SwaggerURL+"/",
+		gin.WrapH(e.OpenAPIConfig.UIHandler(e.OpenAPIConfig.SpecURL)),
+		fuego.OptionHide(),
+	)
+}
+
 func GetGin(engine *fuego.Engine, ginRouter gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
 	return handleGin(engine, ginRouter, http.MethodGet, path, handler, options...)
 }
