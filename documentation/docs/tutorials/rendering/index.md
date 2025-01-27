@@ -24,7 +24,7 @@ func main() {
 
 	fuego.Get(s, "/", func(c fuego.ContextNoBody) (interface{}, error) {
 		return fuego.DataOrHTML(
-			data, // When asking for JSON/XML, this data will be returned
+			data,                             // When asking for JSON/XML, this data will be returned
 			MyTemplateInjectedWithData(data), // When asking for HTML, this template will be rendered
 		), nil
 	})
