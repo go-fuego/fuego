@@ -864,7 +864,6 @@
 						}
 					},
 					{
-						"description": " (might contain slashes)",
 						"in": "path",
 						"name": "name...",
 						"required": true,
