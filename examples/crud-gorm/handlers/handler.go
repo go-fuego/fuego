@@ -3,34 +3,36 @@ package handlers
 import (
 	"strconv"
 
+	"gorm.io/gorm"
+
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/crud-gorm/models"
-	"gorm.io/gorm"
 )
 
-type UserHandlers struct {
+// UserResources is used to inject rependencies into the handlers about the user queries.
+type UserResources struct {
 	UserQueries UserQueryInterface
 }
 
 type UserToCreate struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	Name  string `json:"name" validate:"required"`
+	Email string `json:"email" validate:"required"`
 }
 
 type UserQueryInterface interface {
 	GetUsers() ([]models.User, error)
 	GetUserByID(id uint) (*models.User, error)
 	GetUserByEmail(email string) (*models.User, error)
-	CreateUser(user *models.User) error
+	CreateUser(user *models.User) (*models.User, error)
 	UpdateUser(user *models.User) error
 	DeleteUser(id uint) error
 }
 
-func (h *UserHandlers) GetUsers(c fuego.ContextNoBody) ([]models.User, error) {
+func (h *UserResources) GetUsers(c fuego.ContextNoBody) ([]models.User, error) {
 	return h.UserQueries.GetUsers()
 }
 
-func (h *UserHandlers) GetUserByID(c fuego.ContextNoBody) (models.User, error) {
+func (h *UserResources) GetUserByID(c fuego.ContextNoBody) (models.User, error) {
 	id, err := strconv.Atoi(c.PathParam("id"))
 	if err != nil {
 		return models.User{}, fuego.BadRequestError{
@@ -56,7 +58,7 @@ func (h *UserHandlers) GetUserByID(c fuego.ContextNoBody) (models.User, error) {
 	return *user, nil
 }
 
-func (h *UserHandlers) UpdateUser(c fuego.ContextWithBody[models.User]) (models.User, error) {
+func (h *UserResources) UpdateUser(c fuego.ContextWithBody[models.User]) (models.User, error) {
 	id, err := strconv.Atoi(c.PathParam("id"))
 	if err != nil {
 		return models.User{}, fuego.BadRequestError{
@@ -112,7 +114,7 @@ func (h *UserHandlers) UpdateUser(c fuego.ContextWithBody[models.User]) (models.
 	return *updatedUser, nil
 }
 
-func (h *UserHandlers) CreateUser(c fuego.ContextWithBody[models.User]) (models.User, error) {
+func (h *UserResources) CreateUser(c fuego.ContextWithBody[UserToCreate]) (models.User, error) {
 	input, err := c.Body()
 	if err != nil {
 		return models.User{}, fuego.BadRequestError{
@@ -138,22 +140,21 @@ func (h *UserHandlers) CreateUser(c fuego.ContextWithBody[models.User]) (models.
 		}
 	}
 
-	user := models.User{
+	userToCreate := models.User{
 		Name:  input.Name,
 		Email: input.Email,
 	}
-	err = h.UserQueries.CreateUser(&user)
+	createdUser, err := h.UserQueries.CreateUser(&userToCreate)
 	if err != nil {
 		return models.User{}, fuego.ConflictError{
 			Detail: "A user with the provided email already exists.",
 			Err:    err,
 		}
 	}
-	return user, nil
-
+	return *createdUser, nil
 }
 
-func (h *UserHandlers) DeleteUser(c fuego.ContextNoBody) (any, error) {
+func (h *UserResources) DeleteUser(c fuego.ContextNoBody) (any, error) {
 	id, err := strconv.Atoi(c.PathParam("id"))
 	if err != nil {
 		return err, fuego.BadRequestError{

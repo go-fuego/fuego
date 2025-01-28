@@ -1,8 +1,9 @@
 package queries
 
 import (
-	"github.com/go-fuego/fuego/examples/crud-gorm/models"
 	"gorm.io/gorm"
+
+	"github.com/go-fuego/fuego/examples/crud-gorm/models"
 )
 
 type UserQueries struct {
@@ -35,8 +36,9 @@ func (q *UserQueries) GetUsers() ([]models.User, error) {
 	return users, nil
 }
 
-func (q *UserQueries) CreateUser(user *models.User) error {
-	return q.DB.Create(user).Error
+func (q *UserQueries) CreateUser(user *models.User) (*models.User, error) {
+	err := q.DB.Create(user).Error
+	return user, err
 }
 
 func (q *UserQueries) UpdateUser(user *models.User) error {

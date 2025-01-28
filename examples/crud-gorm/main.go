@@ -21,7 +21,7 @@ func main() {
 	server := fuego.NewServer()
 
 	userQueries := &queries.UserQueries{DB: db}
-	handlers := &handlers.UserHandlers{UserQueries: userQueries}
+	handlers := &handlers.UserResources{UserQueries: userQueries}
 
 	fuego.Get(server, "/", func(c fuego.ContextNoBody) (string, error) {
 		return "Hello, World!", nil
@@ -33,5 +33,4 @@ func main() {
 	fuego.Delete(server, "/users/{id}", handlers.DeleteUser)
 
 	server.Run()
-
 }

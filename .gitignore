@@ -9,8 +9,4 @@ recipe.db
 bin
 go.work.sum
 /cmd/fuego/fuego
-examples/crud-gorm/tmp
-examples/crud-gorm/doc
-!/examples/crud-gorm/**/*
-/examples/gorm/*.db
 *.db
