@@ -5,6 +5,7 @@ import (
 	"github.com/go-fuego/fuego/examples/crud-gorm/handlers"
 	"github.com/go-fuego/fuego/examples/crud-gorm/models"
 	"github.com/go-fuego/fuego/examples/crud-gorm/queries"
+	"github.com/go-fuego/fuego/option"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -27,10 +28,10 @@ func main() {
 		return "Hello, World!", nil
 	})
 	fuego.Get(server, "/users", handlers.GetUsers)
-	fuego.Post(server, "/users", handlers.CreateUser)
+	fuego.Post(server, "/users", handlers.CreateUser, option.DefaultStatusCode(201))
 	fuego.Get(server, "/users/{id}", handlers.GetUserByID)
 	fuego.Put(server, "/users/{id}", handlers.UpdateUser)
-	fuego.Delete(server, "/users/{id}", handlers.DeleteUser)
+	fuego.Delete(server, "/users/{id}", handlers.DeleteUser, option.DefaultStatusCode(204))
 
 	server.Run()
 }

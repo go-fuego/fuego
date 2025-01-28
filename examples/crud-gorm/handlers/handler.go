@@ -3,8 +3,6 @@ package handlers
 import (
 	"strconv"
 
-	"gorm.io/gorm"
-
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/crud-gorm/models"
 )
@@ -57,54 +55,24 @@ func (h *UserResources) UpdateUser(c fuego.ContextWithBody[models.User]) (*model
 
 	existingUser, err := h.UserQueries.GetUserByID(uint(id))
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, fuego.NotFoundError{
-				Title:  "User Not Found",
-				Detail: "No user found with the provided ID.",
-				Err:    err,
-			}
-		}
-		return nil, fuego.InternalServerError{
-			Detail: "An error occurred while checking the user.",
-			Err:    err,
-		}
+		return nil, err
 	}
 
 	input, err := c.Body()
 	if err != nil {
-		return nil, fuego.BadRequestError{
-			Title:  "Invalid Input",
-			Detail: "The provided input is not a valid user object.",
-			Err:    err,
-		}
+		return nil, err
 	}
 
 	existingUser.Name = input.Name
 	existingUser.Email = input.Email
 
-	updatedUser, err := h.UserQueries.UpdateUser(existingUser)
-	if err != nil {
-		return nil, fuego.InternalServerError{
-			Detail: "Failed to update the user.",
-			Err:    err,
-		}
-	}
-
-	return updatedUser, nil
+	return h.UserQueries.UpdateUser(existingUser)
 }
 
 func (h *UserResources) CreateUser(c fuego.ContextWithBody[UserToCreate]) (*models.User, error) {
 	input, err := c.Body()
 	if err != nil {
 		return nil, err
-	}
-
-	if input.Name == "" || input.Email == "" {
-		return nil, fuego.BadRequestError{
-			Title:  "Missing Required Fields",
-			Detail: "The user name and email are required.",
-			Err:    err,
-		}
 	}
 
 	existingUser, err := h.UserQueries.GetUserByEmail(input.Email)
@@ -119,14 +87,8 @@ func (h *UserResources) CreateUser(c fuego.ContextWithBody[UserToCreate]) (*mode
 		Name:  input.Name,
 		Email: input.Email,
 	}
-	createdUser, err := h.UserQueries.CreateUser(&userToCreate)
-	if err != nil {
-		return nil, fuego.ConflictError{
-			Detail: "A user with the provided email already exists.",
-			Err:    err,
-		}
-	}
-	return createdUser, nil
+
+	return h.UserQueries.CreateUser(&userToCreate)
 }
 
 func (h *UserResources) DeleteUser(c fuego.ContextNoBody) (any, error) {
@@ -141,25 +103,11 @@ func (h *UserResources) DeleteUser(c fuego.ContextNoBody) (any, error) {
 
 	user, err := h.UserQueries.GetUserByID(uint(id))
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return err, fuego.NotFoundError{
-				Title:  "User not found",
-				Detail: "No user with the provided ID was found.",
-				Err:    err,
-			}
-		}
-		return err, fuego.InternalServerError{
-			Detail: "An error occurred while retrieving the user.",
-			Err:    err,
-		}
+		return nil, err
 	}
 
 	err = h.UserQueries.DeleteUser(user.ID)
-	if err != nil {
-		return err, fuego.InternalServerError{
-			Detail: "Failed to delete the user.",
-			Err:    err,
-		}
-	}
-	return nil, nil
+
+	return nil, err
+
 }

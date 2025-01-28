@@ -49,12 +49,24 @@ func (q *UserQueries) GetUsers() ([]models.User, error) {
 
 func (q *UserQueries) CreateUser(user *models.User) (*models.User, error) {
 	err := q.DB.Create(user).Error
-	return user, err
+	if err != nil {
+		return nil, fuego.InternalServerError{
+			Detail: "Failed to create the user.",
+			Err:    err,
+		}
+	}
+	return user, nil
 }
 
 func (q *UserQueries) UpdateUser(user *models.User) (*models.User, error) {
 	err := q.DB.Save(user).Error
-	return user, err
+	if err != nil {
+		return nil, fuego.InternalServerError{
+			Detail: "Failed to update the user.",
+			Err:    err,
+		}
+	}
+	return user, nil
 }
 
 func (q *UserQueries) DeleteUser(id uint) error {
