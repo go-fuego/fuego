@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/hougesen/mdsf/main/schemas/v0.4.2/mdsf.schema.json",
+  "custom_file_extensions": {},
+  "format_finished_document": false,
+  "javascript_runtime": "node",
+  "language_aliases": {
+    "bash": "shell",
+    "sh": "shell"
+  },
+  "languages": {
+    "fish": "fish_indent",
+    "json": "prettier",
+    "shell": "shfmt",
+    "yaml": "prettier",
+    "go": [
+      [
+        "gci",
+        "goimports"
+      ],
+      [
+        "gofumpt",
+        "gofmt"
+      ]
+    ]
+  }
+}

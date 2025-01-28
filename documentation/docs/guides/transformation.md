@@ -74,14 +74,14 @@ type User struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	// highlight-next-line
-	Address   Address `json:"address"` // Nested struct
+	Address Address `json:"address"` // Nested struct
 }
 
 func (u *User) InTransform(ctx context.Context) error {
 	u.FirstName = strings.ToUpper(u.FirstName)
 	u.LastName = strings.TrimSpace(u.LastName)
 
-// highlight-next-line
+	// highlight-next-line
 	err := u.Address.InTransform(ctx) // Transform the nested struct
 	if err != nil {
 		return err

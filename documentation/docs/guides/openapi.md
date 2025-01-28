@@ -83,7 +83,7 @@ var optionPagination = option.Group(
 
 // Custom options for the group
 var customOption = func(r *fuego.BaseRoute) {
-	r.XXX  = YYY // Direct access to the route struct to inject custom behavior
+	r.XXX = YYY // Direct access to the route struct to inject custom behavior
 }
 
 func main() {
@@ -158,9 +158,8 @@ Example with `http-swagger`:
 import (
 	"net/http"
 
-	httpSwagger "github.com/swaggo/http-swagger"
-
 	"github.com/go-fuego/fuego"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func openApiHandler(specURL string) http.Handler {
