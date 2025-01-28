@@ -43,6 +43,10 @@ type CommonContext[B any] struct {
 	DefaultStatusCode int
 }
 
+func (c CommonContext[B]) GetDefaultStatusCode() int {
+	return c.DefaultStatusCode
+}
+
 type ParamType string // Query, Header, Cookie
 
 // GetOpenAPIParams returns the OpenAPI parameters declared in the OpenAPI spec.

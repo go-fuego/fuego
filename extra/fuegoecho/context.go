@@ -102,13 +102,10 @@ func (c echoContext[B]) SetStatus(code int) {
 	c.echoCtx.Response().WriteHeader(code)
 }
 
-func (c echoContext[B]) Serialize(data any) error {
+func (c echoContext[B]) Serialize(code int, data any) error {
 	status := c.echoCtx.Response().Status
 	if status == 0 {
-		status = c.DefaultStatusCode
-	}
-	if status == 0 {
-		status = http.StatusOK
+		status = code
 	}
 	c.echoCtx.JSON(status, data)
 	return nil

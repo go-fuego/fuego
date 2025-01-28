@@ -263,11 +263,11 @@ func (c *netHttpContext[B]) Body() (B, error) {
 }
 
 // Serialize serializes the given data to the response. It uses the Content-Type header to determine the serialization format.
-func (c netHttpContext[B]) Serialize(data any) error {
+func (c netHttpContext[B]) Serialize(code int, data any) error {
 	if c.serializer == nil {
-		return Send(c.Res, c.Req, data)
+		return Send(c.Res, c.Req, code, data)
 	}
-	return c.serializer(c.Res, c.Req, data)
+	return c.serializer(c.Res, c.Req, code, data)
 }
 
 // SerializeError serializes the given error to the response. It uses the Content-Type header to determine the serialization format.
@@ -277,13 +277,6 @@ func (c netHttpContext[B]) SerializeError(err error) {
 		return
 	}
 	c.errorSerializer(c.Res, c.Req, err)
-}
-
-// SetDefaultStatusCode sets the default status code of the response.
-func (c netHttpContext[B]) SetDefaultStatusCode() {
-	if c.DefaultStatusCode != 0 {
-		c.SetStatus(c.DefaultStatusCode)
-	}
 }
 
 func body[B any](c netHttpContext[B]) (B, error) {
