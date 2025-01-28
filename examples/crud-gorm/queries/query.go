@@ -41,8 +41,9 @@ func (q *UserQueries) CreateUser(user *models.User) (*models.User, error) {
 	return user, err
 }
 
-func (q *UserQueries) UpdateUser(user *models.User) error {
-	return q.DB.Save(user).Error
+func (q *UserQueries) UpdateUser(user *models.User) (*models.User, error) {
+	err := q.DB.Save(user).Error
+	return user, err
 }
 
 func (q *UserQueries) DeleteUser(id uint) error {

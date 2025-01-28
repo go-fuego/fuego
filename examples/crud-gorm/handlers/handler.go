@@ -24,7 +24,7 @@ type UserQueryInterface interface {
 	GetUserByID(id uint) (*models.User, error)
 	GetUserByEmail(email string) (*models.User, error)
 	CreateUser(user *models.User) (*models.User, error)
-	UpdateUser(user *models.User) error
+	UpdateUser(user *models.User) (*models.User, error)
 	DeleteUser(id uint) error
 }
 
@@ -95,18 +95,10 @@ func (h *UserResources) UpdateUser(c fuego.ContextWithBody[models.User]) (models
 	existingUser.Name = input.Name
 	existingUser.Email = input.Email
 
-	err = h.UserQueries.UpdateUser(existingUser)
+	updatedUser, err := h.UserQueries.UpdateUser(existingUser)
 	if err != nil {
 		return models.User{}, fuego.InternalServerError{
 			Detail: "Failed to update the user.",
-			Err:    err,
-		}
-	}
-
-	updatedUser, err := h.UserQueries.GetUserByID(uint(id))
-	if err != nil {
-		return models.User{}, fuego.InternalServerError{
-			Detail: "Failed to retrieve the updated user.",
 			Err:    err,
 		}
 	}
