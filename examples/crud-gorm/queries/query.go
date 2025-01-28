@@ -1,8 +1,11 @@
 package queries
 
 import (
+	"errors"
+
 	"gorm.io/gorm"
 
+	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/crud-gorm/models"
 )
 
@@ -14,7 +17,15 @@ func (q *UserQueries) GetUserByID(id uint) (*models.User, error) {
 	var user models.User
 	err := q.DB.First(&user, id).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fuego.NotFoundError{
+				Title:  "User not found",
+				Detail: "No user with the provided ID was found.",
+				Err:    err,
+			}
+		}
 		return nil, err
+
 	}
 	return &user, nil
 }

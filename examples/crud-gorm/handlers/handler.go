@@ -15,8 +15,8 @@ type UserResources struct {
 }
 
 type UserToCreate struct {
-	Name  string `json:"name" validate:"required"`
-	Email string `json:"email" validate:"required"`
+	Name  string `json:"name" validate:"required,min=3"`
+	Email string `json:"email" validate:"required,email"`
 }
 
 type UserQueryInterface interface {
@@ -32,36 +32,23 @@ func (h *UserResources) GetUsers(c fuego.ContextNoBody) ([]models.User, error) {
 	return h.UserQueries.GetUsers()
 }
 
-func (h *UserResources) GetUserByID(c fuego.ContextNoBody) (models.User, error) {
+func (h *UserResources) GetUserByID(c fuego.ContextNoBody) (*models.User, error) {
 	id, err := strconv.Atoi(c.PathParam("id"))
 	if err != nil {
-		return models.User{}, fuego.BadRequestError{
+		return nil, fuego.BadRequestError{
 			Title:  "Invalid ID",
 			Detail: "The provided ID is not a valid integer.",
 			Err:    err,
 		}
 	}
-	user, err := h.UserQueries.GetUserByID(uint(id))
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return models.User{}, fuego.NotFoundError{
-				Title:  "User not found",
-				Detail: "No user with the provided ID was found.",
-				Err:    err,
-			}
-		}
-		return models.User{}, fuego.InternalServerError{
-			Detail: "An error occurred while retrieving the user.",
-			Err:    err,
-		}
-	}
-	return *user, nil
+
+	return h.UserQueries.GetUserByID(uint(id))
 }
 
-func (h *UserResources) UpdateUser(c fuego.ContextWithBody[models.User]) (models.User, error) {
+func (h *UserResources) UpdateUser(c fuego.ContextWithBody[models.User]) (*models.User, error) {
 	id, err := strconv.Atoi(c.PathParam("id"))
 	if err != nil {
-		return models.User{}, fuego.BadRequestError{
+		return nil, fuego.BadRequestError{
 			Title:  "Invalid ID",
 			Detail: "The provided ID is not a valid integer.",
 			Err:    err,
@@ -71,13 +58,13 @@ func (h *UserResources) UpdateUser(c fuego.ContextWithBody[models.User]) (models
 	existingUser, err := h.UserQueries.GetUserByID(uint(id))
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return models.User{}, fuego.NotFoundError{
+			return nil, fuego.NotFoundError{
 				Title:  "User Not Found",
 				Detail: "No user found with the provided ID.",
 				Err:    err,
 			}
 		}
-		return models.User{}, fuego.InternalServerError{
+		return nil, fuego.InternalServerError{
 			Detail: "An error occurred while checking the user.",
 			Err:    err,
 		}
@@ -85,7 +72,7 @@ func (h *UserResources) UpdateUser(c fuego.ContextWithBody[models.User]) (models
 
 	input, err := c.Body()
 	if err != nil {
-		return models.User{}, fuego.BadRequestError{
+		return nil, fuego.BadRequestError{
 			Title:  "Invalid Input",
 			Detail: "The provided input is not a valid user object.",
 			Err:    err,
@@ -97,27 +84,23 @@ func (h *UserResources) UpdateUser(c fuego.ContextWithBody[models.User]) (models
 
 	updatedUser, err := h.UserQueries.UpdateUser(existingUser)
 	if err != nil {
-		return models.User{}, fuego.InternalServerError{
+		return nil, fuego.InternalServerError{
 			Detail: "Failed to update the user.",
 			Err:    err,
 		}
 	}
 
-	return *updatedUser, nil
+	return updatedUser, nil
 }
 
-func (h *UserResources) CreateUser(c fuego.ContextWithBody[UserToCreate]) (models.User, error) {
+func (h *UserResources) CreateUser(c fuego.ContextWithBody[UserToCreate]) (*models.User, error) {
 	input, err := c.Body()
 	if err != nil {
-		return models.User{}, fuego.BadRequestError{
-			Title:  "Invalid Input",
-			Detail: "The provided input is not a valid user object.",
-			Err:    err,
-		}
+		return nil, err
 	}
 
 	if input.Name == "" || input.Email == "" {
-		return models.User{}, fuego.BadRequestError{
+		return nil, fuego.BadRequestError{
 			Title:  "Missing Required Fields",
 			Detail: "The user name and email are required.",
 			Err:    err,
@@ -126,7 +109,7 @@ func (h *UserResources) CreateUser(c fuego.ContextWithBody[UserToCreate]) (model
 
 	existingUser, err := h.UserQueries.GetUserByEmail(input.Email)
 	if err == nil && existingUser != nil {
-		return models.User{}, fuego.ConflictError{
+		return nil, fuego.ConflictError{
 			Detail: "A user with the provided email already exists.",
 			Err:    err,
 		}
@@ -138,12 +121,12 @@ func (h *UserResources) CreateUser(c fuego.ContextWithBody[UserToCreate]) (model
 	}
 	createdUser, err := h.UserQueries.CreateUser(&userToCreate)
 	if err != nil {
-		return models.User{}, fuego.ConflictError{
+		return nil, fuego.ConflictError{
 			Detail: "A user with the provided email already exists.",
 			Err:    err,
 		}
 	}
-	return *createdUser, nil
+	return createdUser, nil
 }
 
 func (h *UserResources) DeleteUser(c fuego.ContextNoBody) (any, error) {
