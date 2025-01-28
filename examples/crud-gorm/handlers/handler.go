@@ -109,5 +109,4 @@ func (h *UserResources) DeleteUser(c fuego.ContextNoBody) (any, error) {
 	err = h.UserQueries.DeleteUser(user.ID)
 
 	return nil, err
-
 }
