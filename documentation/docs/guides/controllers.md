@@ -19,10 +19,10 @@ func (c fuego.ContextWithBody[MyInput]) (MyResponse, error)
 Used when the request has a body.
 Fuego will automatically parse the body and validate it using the input struct.
 
-_🚧 Below contains incoming syntax, not available currently_
+> 🚧 Below contains incoming syntax, not available currently
 
 ```go
-func(c fuego.ContextWithBodyAndParams[MyInput,ParamsIn,ParamsOut]) (MyResponse, error)
+func(c fuego.ContextWithBodyAndParams[MyInput, ParamsIn, ParamsOut]) (MyResponse, error)
 ```
 
 This controller is used to declare params with strong static typing.
