@@ -7,6 +7,16 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
+func NewRouteWithParams[RequestParams, ResponseBody, RequestBody any](method, path string, handler any, e *Engine, options ...func(*BaseRoute)) RouteWithParams[RequestParams, ResponseBody, RequestBody] {
+	return RouteWithParams[RequestParams, ResponseBody, RequestBody]{
+		Route: NewRoute[ResponseBody, RequestBody](method, path, handler, e, options...),
+	}
+}
+
+type RouteWithParams[RequestParams any, ResponseBody any, RequestBody any] struct {
+	Route[ResponseBody, RequestBody]
+}
+
 func NewRoute[T, B any](method, path string, handler any, e *Engine, options ...func(*BaseRoute)) Route[T, B] {
 	return Route[T, B]{
 		BaseRoute: NewBaseRoute(method, path, handler, e, options...),

@@ -253,16 +253,6 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 	return route.Operation, nil
 }
 
-type RouteWithParams[Params any, ResponseBody any, RequestBody any] struct {
-	Route[ResponseBody, RequestBody]
-}
-
-func NewRouteWithParams[Params, ResponseBody, RequestBody any](method, path string, handler any, e *Engine, options ...func(*BaseRoute)) RouteWithParams[Params, ResponseBody, RequestBody] {
-	return RouteWithParams[Params, ResponseBody, RequestBody]{
-		Route: NewRoute[ResponseBody, RequestBody](method, path, handler, e, options...),
-	}
-}
-
 // RegisterParams registers the parameters of a given type to an OpenAPI operation.
 // It inspects the fields of the provided struct, looking for "header" tags, and creates
 // OpenAPI parameters for each tagged field.
