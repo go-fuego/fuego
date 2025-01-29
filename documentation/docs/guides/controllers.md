@@ -19,14 +19,13 @@ func (c fuego.ContextWithBody[MyInput]) (MyResponse, error)
 Used when the request has a body.
 Fuego will automatically parse the body and validate it using the input struct.
 
+_🚧 Below contains incoming syntax, not available currently_
+
 ```go
 func(c fuego.ContextWithBodyAndParams[MyInput,ParamsIn,ParamsOut]) (MyResponse, error)
 ```
 
-This controller is used for advanced scenarios where you need:
-Request body parsing and validation
-Input parameter extraction from query, headers, cookies
-Output parameter configuration
+This controller is used to declare params with strong static typing.
 
 ```go
 type CreateUserRequest struct {
@@ -45,7 +44,7 @@ type UserResponseParams struct {
 }
 
 func CreateUserController(
-    c *fuego.ContextWithBodyAndParams[CreateUserRequest, UserParams, UserResponseParams]
+    c fuego.ContextWithBodyAndParams[CreateUserRequest, UserParams, UserResponseParams]
 ) (User, error) {
     params, err := c.Params()
     if err != nil {
