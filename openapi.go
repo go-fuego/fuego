@@ -545,16 +545,3 @@ func transformTypeName(s string) string {
 
 	return prefix + "_" + inside
 }
-
-func RegisterParameters(operation *openapi3.Operation, parameters ...*openapi3.Parameter) error {
-	if operation.Parameters == nil {
-		operation.Parameters = openapi3.Parameters{}
-	}
-	for _, param := range parameters {
-		if param == nil {
-			return errors.New("parameter cannot be nil")
-		}
-		operation.Parameters = append(operation.Parameters, &openapi3.ParameterRef{Value: param})
-	}
-	return nil
-}
