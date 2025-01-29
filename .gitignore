@@ -9,3 +9,4 @@ recipe.db
 bin
 go.work.sum
 /cmd/fuego/fuego
+*.db
