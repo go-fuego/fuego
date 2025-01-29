@@ -283,34 +283,13 @@ func (route *RouteWithParams[Params, ResponseBody, RequestBody]) RegisterParams(
 		for i := range typeOfParams.NumField() {
 			field := typeOfParams.Field(i)
 			if headerKey, ok := field.Tag.Lookup("header"); ok {
-				param := &openapi3.Parameter{
-					Name:   headerKey,
-					In:     "header",
-					Schema: openapi3.NewStringSchema().NewRef(),
-				}
-				if err := RegisterParameters(route.Operation, param); err != nil {
-					return fmt.Errorf("failed to register header parameter: %w", err)
-				}
+				OptionHeader(headerKey, "string")(&route.BaseRoute)
 			}
 			if queryKey, ok := field.Tag.Lookup("query"); ok {
-				param := &openapi3.Parameter{
-					Name:   queryKey,
-					In:     "query",
-					Schema: openapi3.NewStringSchema().NewRef(),
-				}
-				if err := RegisterParameters(route.Operation, param); err != nil {
-					return fmt.Errorf("failed to register query parameter: %w", err)
-				}
+				OptionQuery(queryKey, "string")(&route.BaseRoute)
 			}
 			if cookieKey, ok := field.Tag.Lookup("cookie"); ok {
-				param := &openapi3.Parameter{
-					Name:   cookieKey,
-					In:     "cookie",
-					Schema: openapi3.NewStringSchema().NewRef(),
-				}
-				if err := RegisterParameters(route.Operation, param); err != nil {
-					return fmt.Errorf("failed to register cookie parameter: %w", err)
-				}
+				OptionCookie(cookieKey, "string")(&route.BaseRoute)
 			}
 		}
 	}
