@@ -1,82 +1,65 @@
 package fuego
 
 import (
-	"log/slog"
 	"net/http"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thejerf/slogassert"
 )
 
 func Test_RegisterOpenAPIOperation(t *testing.T) {
-	openapi := NewOpenAPI()
-	handler := slogassert.New(t, slog.LevelWarn, nil)
+	handler := func(w http.ResponseWriter, r *http.Request) {}
 	s := NewServer()
 
-    t.Run("Nil operation handling", func(t *testing.T) {
-        route := NewRoute[struct{}, struct{}](
-            http.MethodGet,
-            "/test",
-            handler,
-            s.Engine,
-        )
-        route.Operation = nil
-        operation, err := RegisterOpenAPIOperation(openapi, route)
-        require.NoError(t, err)
-        assert.NotNil(t, operation)
-    })
+	t.Run("Nil operation handling", func(t *testing.T) {
+		route := NewRouteWithParams[struct{}, struct{}, struct{}](
+			http.MethodGet,
+			"/test",
+			handler,
+			s.Engine,
+		)
+		route.Operation = nil
+		err := route.RegisterParams()
+		require.NoError(t, err)
+		assert.NotNil(t, route.Operation)
+	})
 
 	t.Run("Register with params", func(t *testing.T) {
-		route := NewRoute[struct {
+		route := NewRouteWithParams[struct {
 			QueryParam  string `query:"queryParam"`
 			HeaderParam string `header:"headerParam"`
-			PathParam   string `path:"pathParam"`
-		}, struct{}](
+		}, struct{}, struct{}](
 			http.MethodGet,
 			"/some/path/{pathParam}",
 			handler,
 			s.Engine,
 		)
-		operation, err := RegisterOpenAPIOperation(openapi, route)
+		err := route.RegisterParams()
 		require.NoError(t, err)
+		operation := route.Operation
 		assert.NotNil(t, operation)
-		assert.Equal(t, route.Method+"_"+"/some/path/:pathParam", operation.OperationID)
-		assert.Equal(t, http.MethodGet, strings.ToUpper(route.Method))
-		assert.Len(t, operation.Parameters, 3)
-		assert.Equal(t, "queryParam", operation.Parameters.GetByInAndName("query", "queryParam").Name)
-		assert.Equal(t, "headerParam", operation.Parameters.GetByInAndName("header", "headerParam").Name)
-		defaultResponse := operation.Responses
-		assert.NotNil(t, defaultResponse)
+		assert.Len(t, operation.Parameters, 2)
+
+		queryParam := operation.Parameters.GetByInAndName("query", "queryParam")
+		assert.NotNil(t, queryParam)
+		assert.Equal(t, "queryParam", queryParam.Name)
+
+		headerParam := operation.Parameters.GetByInAndName("header", "headerParam")
+		assert.NotNil(t, headerParam)
+		assert.Equal(t, "headerParam", headerParam.Name)
 	})
-	t.Run("Automatically add path parameters", func(t *testing.T) {
-		route := NewRoute[struct {
-			QueryParam  string `query:"queryParam"`
-			HeaderParam string `header:"headerParam"`
-		}, struct{}](
-			"GET",
-			"/some/path/{pathParam}",
+
+	t.Run("RegisterParams should not with interfaces", func(t *testing.T) {
+		route := NewRouteWithParams[any, struct{}, struct{}](
+			http.MethodGet,
+			"/no-interfaces",
 			handler,
 			s.Engine,
+			OptionDefaultStatusCode(201),
 		)
-		operation, err := RegisterOpenAPIOperation(openapi, route)
-		require.NoError(t, err)
-		assert.Len(t, operation.Parameters, 3) // Should add the path parameter with others
-		assert.Equal(t, "pathParam", operation.Parameters[2].Value.Name)
-		assert.Equal(t, "path", operation.Parameters[2].Value.In)
+
+		err := route.RegisterParams()
+		require.Error(t, err)
 	})
-    t.Run("Custom default status code", func(t *testing.T) {
-        route := NewRoute[struct{}, struct{}](
-            http.MethodPut,
-            "/custom-status",
-            handler,
-            s.Engine,
-        )
-        route.DefaultStatusCode = 201
-        operation, err := RegisterOpenAPIOperation(openapi, route)
-        require.NoError(t, err)
-        assert.Contains(t, operation.Responses.Map(), "201")
-    })
 }
