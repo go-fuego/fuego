@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -250,6 +251,40 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 	openapi.Description().AddOperation(route.Path, route.Method, route.Operation)
 
 	return route.Operation, nil
+}
+
+// RegisterParams registers the parameters of a given type to an OpenAPI operation.
+// It inspects the fields of the provided struct, looking for "header" tags, and creates
+// OpenAPI parameters for each tagged field.
+func (route *RouteWithParams[Params, ResponseBody, RequestBody]) RegisterParams() error {
+	if route.Operation == nil {
+		route.Operation = openapi3.NewOperation()
+	}
+	params := *new(Params)
+	typeOfParams := reflect.TypeOf(params)
+	if typeOfParams == nil {
+		return errors.New("params cannot be nil")
+	}
+	if typeOfParams.Kind() == reflect.Ptr {
+		typeOfParams = typeOfParams.Elem()
+	}
+
+	if typeOfParams.Kind() == reflect.Struct {
+		for i := range typeOfParams.NumField() {
+			field := typeOfParams.Field(i)
+			if headerKey, ok := field.Tag.Lookup("header"); ok {
+				OptionHeader(headerKey, "string")(&route.BaseRoute)
+			}
+			if queryKey, ok := field.Tag.Lookup("query"); ok {
+				OptionQuery(queryKey, "string")(&route.BaseRoute)
+			}
+			if cookieKey, ok := field.Tag.Lookup("cookie"); ok {
+				OptionCookie(cookieKey, "string")(&route.BaseRoute)
+			}
+		}
+	}
+
+	return nil
 }
 
 func newRequestBody[RequestBody any](tag SchemaTag, consumes []string) *openapi3.RequestBody {

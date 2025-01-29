@@ -326,3 +326,9 @@ func body[B any](c netHttpContext[B]) (B, error) {
 
 	return body, err
 }
+
+type ContextWithBodyAndParams[Body any, ParamsIn any, ParamsOut any] interface {
+	ContextWithBody[Body]
+	Params() (ParamsIn, error)
+	SetParams(ParamsOut) error
+}
