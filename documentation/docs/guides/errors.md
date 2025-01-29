@@ -64,8 +64,10 @@ type MyCustomError struct {
 	Message string `json:"message"`
 }
 
-var _ fuego.ErrorWithStatus = MyCustomError{}
-var _ fuego.ErrorWithDetail = MyCustomError{}
+var (
+	_ fuego.ErrorWithStatus = MyCustomError{}
+	_ fuego.ErrorWithDetail = MyCustomError{}
+)
 
 func (e MyCustomError) Error() string { return e.Err.Error() }
 

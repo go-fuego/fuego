@@ -347,7 +347,7 @@ func WithXML() func(*Server) {
 
 // WithLogHandler sets the log handler of the server.
 func WithLogHandler(handler slog.Handler) func(*Server) {
-	return func(c *Server) {
+	return func(*Server) {
 		if handler != nil {
 			slog.SetDefault(slog.New(handler))
 		}
@@ -376,7 +376,7 @@ func WithoutStartupMessages() func(*Server) {
 
 // WithoutLogger disables the default logger.
 func WithoutLogger() func(*Server) {
-	return func(c *Server) {
+	return func(*Server) {
 		slog.SetDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
 	}
 }
@@ -462,7 +462,7 @@ func WithValidator(newValidator *validator.Validate) func(*Server) {
 		panic("new validator not provided")
 	}
 
-	return func(s *Server) {
+	return func(*Server) {
 		v = newValidator
 	}
 }

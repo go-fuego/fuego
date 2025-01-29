@@ -44,7 +44,7 @@ func Group(s *Server, path string, routeOptions ...func(*BaseRoute)) *Server {
 	return newServer
 }
 
-// Capture all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
+// All captures all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
 func All[T, B any](s *Server, path string, controller func(ContextWithBody[B]) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
 	return registerFuegoController(s, "", path, controller, options...)
 }

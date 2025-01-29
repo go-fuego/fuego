@@ -19,6 +19,54 @@ func (c fuego.ContextWithBody[MyInput]) (MyResponse, error)
 Used when the request has a body.
 Fuego will automatically parse the body and validate it using the input struct.
 
+> 🚧 Below contains incoming syntax, not available currently
+
+```go
+func(c fuego.ContextWithBodyAndParams[MyInput, ParamsIn, ParamsOut]) (MyResponse, error)
+```
+
+This controller is used to declare params with strong static typing.
+
+```go
+type CreateUserRequest struct {
+    Name string `json:"name"`
+    Email string `json:"email"`
+}
+
+type UserParams struct {
+    Limit *int    `query:"limit"`
+    Group *string `header:"X-User-Group"`
+}
+
+type UserResponseParams struct {
+    CustomHeader string `header:"X-Rate-Limit"`
+    SessionToken string `cookie:"session_token"`
+}
+
+func CreateUserController(
+    c fuego.ContextWithBodyAndParams[CreateUserRequest, UserParams, UserResponseParams]
+) (User, error) {
+    params, err := c.Params()
+    if err != nil {
+        return User{}, err
+    }
+    body, err := c.Body()
+    if err != nil {
+        return User{}, err
+    }
+    user, err := createUser(body, *params.Limit, *params.Group)
+    if err != nil {
+        return User{}, err
+    }
+    c.SetHeader("X-Rate-Limit", "100")
+    c.SetCookie(http.Cookie{
+        Name:  "session_token",
+        Value: generateSessionToken(),
+    })
+    return user, nil
+}
+```
+
 ### Returning HTML
 
 ```go

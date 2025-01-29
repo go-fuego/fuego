@@ -118,7 +118,7 @@ const config: Config = {
           items: [
             {
               label: "Discord",
-              href: "https://discord.gg/tdGPnnxf",
+              href: "https://discord.gg/9csuB6WNsq",
             },
             {
               label: "Youtube",

@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -23,7 +24,7 @@ func NewOpenAPI() *OpenAPI {
 	}
 }
 
-// Holds the OpenAPI OpenAPIDescription (OAD) and OpenAPI capabilities.
+// OpenAPI holds the OpenAPI OpenAPIDescription (OAD) and OpenAPI capabilities.
 type OpenAPI struct {
 	description            *openapi3.T
 	generator              *openapi3gen.Generator
@@ -252,6 +253,40 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 	return route.Operation, nil
 }
 
+// RegisterParams registers the parameters of a given type to an OpenAPI operation.
+// It inspects the fields of the provided struct, looking for "header" tags, and creates
+// OpenAPI parameters for each tagged field.
+func (route *RouteWithParams[Params, ResponseBody, RequestBody]) RegisterParams() error {
+	if route.Operation == nil {
+		route.Operation = openapi3.NewOperation()
+	}
+	params := *new(Params)
+	typeOfParams := reflect.TypeOf(params)
+	if typeOfParams == nil {
+		return errors.New("params cannot be nil")
+	}
+	if typeOfParams.Kind() == reflect.Ptr {
+		typeOfParams = typeOfParams.Elem()
+	}
+
+	if typeOfParams.Kind() == reflect.Struct {
+		for i := range typeOfParams.NumField() {
+			field := typeOfParams.Field(i)
+			if headerKey, ok := field.Tag.Lookup("header"); ok {
+				OptionHeader(headerKey, "string")(&route.BaseRoute)
+			}
+			if queryKey, ok := field.Tag.Lookup("query"); ok {
+				OptionQuery(queryKey, "string")(&route.BaseRoute)
+			}
+			if cookieKey, ok := field.Tag.Lookup("cookie"); ok {
+				OptionCookie(cookieKey, "string")(&route.BaseRoute)
+			}
+		}
+	}
+
+	return nil
+}
+
 func newRequestBody[RequestBody any](tag SchemaTag, consumes []string) *openapi3.RequestBody {
 	content := openapi3.NewContentWithSchemaRef(&tag.SchemaRef, consumes)
 	return openapi3.NewRequestBody().
@@ -324,18 +359,18 @@ func dive(openapi *OpenAPI, t reflect.Type, tag SchemaTag, maxDepth int) SchemaT
 
 // getOrCreateSchema is used to get a schema from the OpenAPI spec.
 // If the schema does not exist, it will create a new schema and add it to the OpenAPI spec.
-func (openapi *OpenAPI) getOrCreateSchema(key string, v any) *openapi3.Schema {
-	schemaRef, ok := openapi.Description().Components.Schemas[key]
+func (openAPI *OpenAPI) getOrCreateSchema(key string, v any) *openapi3.Schema {
+	schemaRef, ok := openAPI.Description().Components.Schemas[key]
 	if !ok {
-		schemaRef = openapi.createSchema(key, v)
+		schemaRef = openAPI.createSchema(key, v)
 	}
 	return schemaRef.Value
 }
 
 // createSchema is used to create a new schema and add it to the OpenAPI spec.
 // Relies on the openapi3gen package to generate the schema, and adds custom struct tags.
-func (openapi *OpenAPI) createSchema(key string, v any) *openapi3.SchemaRef {
-	schemaRef, err := openapi.Generator().NewSchemaRefForValue(v, openapi.Description().Components.Schemas)
+func (openAPI *OpenAPI) createSchema(key string, v any) *openapi3.SchemaRef {
+	schemaRef, err := openAPI.Generator().NewSchemaRefForValue(v, openAPI.Description().Components.Schemas)
 	if err != nil {
 		slog.Error("Error generating schema", "key", key, "error", err)
 	}
@@ -348,7 +383,7 @@ func (openapi *OpenAPI) createSchema(key string, v any) *openapi3.SchemaRef {
 
 	parseStructTags(reflect.TypeOf(v), schemaRef)
 
-	openapi.Description().Components.Schemas[key] = schemaRef
+	openAPI.Description().Components.Schemas[key] = schemaRef
 
 	return schemaRef
 }
@@ -425,30 +460,30 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		}
 		for _, validateTag := range validateTags {
 			if strings.HasPrefix(validateTag, "min=") {
-				min, err := strconv.Atoi(strings.Split(validateTag, "=")[1])
+				minValue, err := strconv.Atoi(strings.Split(validateTag, "=")[1])
 				if err != nil {
 					slog.Warn("Min might be incorrect (should be integer)", "error", err)
 				}
 
 				if propertyValue.Type.Is(openapi3.TypeInteger) {
-					minPtr := float64(min)
+					minPtr := float64(minValue)
 					propertyValue.Min = &minPtr
 				} else if propertyValue.Type.Is(openapi3.TypeString) {
 					//nolint:gosec // disable G115
-					propertyValue.MinLength = uint64(min)
+					propertyValue.MinLength = uint64(minValue)
 				}
 			}
 			if strings.HasPrefix(validateTag, "max=") {
-				max, err := strconv.Atoi(strings.Split(validateTag, "=")[1])
+				maxValue, err := strconv.Atoi(strings.Split(validateTag, "=")[1])
 				if err != nil {
 					slog.Warn("Max might be incorrect (should be integer)", "error", err)
 				}
 				if propertyValue.Type.Is(openapi3.TypeInteger) {
-					maxPtr := float64(max)
+					maxPtr := float64(maxValue)
 					propertyValue.Max = &maxPtr
 				} else if propertyValue.Type.Is(openapi3.TypeString) {
 					//nolint:gosec // disable G115
-					maxPtr := uint64(max)
+					maxPtr := uint64(maxValue)
 					propertyValue.MaxLength = &maxPtr
 				}
 			}

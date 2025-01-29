@@ -1,4 +1,4 @@
-go 1.23.3
+go 1.23.5
 
 use (
 	.
@@ -7,13 +7,15 @@ use (
 	./examples/basic
 	./examples/custom-errors
 	./examples/custom-serializer
+	./examples/echo-compat
 	./examples/full-app-gourmet
 	./examples/generate-opengraph-image
 	./examples/gin-compat
 	./examples/hello-world
+	./examples/crud-gorm
 	./examples/openapi
-	./examples/with-listener
 	./examples/petstore
+	./examples/with-listener
 	./extra/fuegogin
 	./extra/markdown
 	./middleware/basicauth

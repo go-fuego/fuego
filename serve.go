@@ -101,8 +101,8 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 	}
 }
 
-// Contains the logic for the flow of a Fuego controller.
-// Extends ContextWithBody with methods not exposed in the Controllers.
+// ContextFlowable contains the logic for the flow of a Fuego controller.
+// Extends [ContextWithBody] with methods not exposed in the Controllers.
 type ContextFlowable[B any] interface {
 	ContextWithBody[B]
 
@@ -114,7 +114,7 @@ type ContextFlowable[B any] interface {
 	SerializeError(err error)
 }
 
-// Generic handler for Fuego controllers.
+// Flow is generic handler for Fuego controllers.
 func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c ContextWithBody[B]) (T, error)) {
 	ctx.SetHeader("X-Powered-By", "Fuego")
 	ctx.SetHeader("Trailer", "Server-Timing")
