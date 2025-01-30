@@ -9,6 +9,24 @@ import (
 	"github.com/go-fuego/fuego/internal"
 )
 
+type OpenAPIHandler struct {
+	Echo *echo.Echo
+}
+
+func (o *OpenAPIHandler) SpecHandler(e *fuego.Engine) {
+	Get(e, o.Echo, e.OpenAPIConfig.SpecURL, e.SpecHandler(), fuego.OptionHide())
+}
+
+func (o *OpenAPIHandler) UIHandler(e *fuego.Engine) {
+	GetEcho(
+		e,
+		o.Echo,
+		e.OpenAPIConfig.SwaggerURL+"/",
+		echo.WrapHandler(e.OpenAPIConfig.UIHandler(e.OpenAPIConfig.SpecURL)),
+		fuego.OptionHide(),
+	)
+}
+
 type echoIRouter interface {
 	Add(method, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) *echo.Route
 }

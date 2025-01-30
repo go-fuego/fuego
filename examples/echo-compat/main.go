@@ -85,8 +85,8 @@ func server() (*echo.Echo, *fuego.OpenAPI) {
 	// )
 
 	// Serve the OpenAPI spec
-	echoRouter.GET("/openapi.json", serveOpenApiJSONDescription(engine.OpenAPI))
-	echoRouter.GET("/swagger", DefaultOpenAPIHandler("/openapi.json"))
+
+	engine.RegisterOpenAPIRoutes(&fuegoecho.OpenAPIHandler{Echo: echoRouter})
 
 	return echoRouter, engine.OpenAPI
 }
