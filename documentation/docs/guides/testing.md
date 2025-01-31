@@ -9,15 +9,13 @@ The `MockContext` type implements the `ContextWithBody` interface. Here's a simp
 ```go
 func TestMyController(t *testing.T) {
     // Create a new mock context with the request body
-    ctx := fuego.NewMockContext[MyRequestType](MyRequestType{
+    ctx := fuego.NewMockContext(MyRequestType{
         Name: "John",
         Age:  30,
     })
 
-    // Add query parameters with OpenAPI validation
-    ctx.WithQueryParamInt("page", 1,
-        fuego.ParamDescription("Page number"),
-        fuego.ParamDefault(1))
+    // Add query parameters
+    ctx.SetQueryParamInt("page", 1)
 
     // Call your controller
     response, err := MyController(ctx)

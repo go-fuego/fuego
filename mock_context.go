@@ -40,6 +40,11 @@ func NewMockContext[B any](body B) *MockContext[B] {
 	}
 }
 
+// NewMockContextNoBody creates a new MockContext suitable for a request & controller with no body
+func NewMockContextNoBody() *MockContext[any] {
+	return NewMockContext[any](nil)
+}
+
 var _ ContextWithBody[string] = &MockContext[string]{}
 
 // Body returns the previously set body value
@@ -137,46 +142,40 @@ func (m *MockContext[B]) Render(templateToExecute string, data any, templateGlob
 	panic("not implemented")
 }
 
-// WithQueryParam adds a query parameter to the mock context with OpenAPI validation
-func (m *MockContext[B]) WithQueryParam(name, value string, options ...func(*OpenAPIParam)) *MockContext[B] {
+// SetQueryParam adds a query parameter to the mock context with OpenAPI validation
+func (m *MockContext[B]) SetQueryParam(name, value string) *MockContext[B] {
 	param := OpenAPIParam{
 		Name:   name,
 		GoType: "string",
 		Type:   "query",
 	}
-	for _, option := range options {
-		option(&param)
-	}
+
 	m.CommonContext.OpenAPIParams[name] = param
 	m.CommonContext.UrlValues.Set(name, value)
 	return m
 }
 
-// WithQueryParamInt adds an integer query parameter to the mock context with OpenAPI validation
-func (m *MockContext[B]) WithQueryParamInt(name string, value int, options ...func(*OpenAPIParam)) *MockContext[B] {
+// SetQueryParamInt adds an integer query parameter to the mock context with OpenAPI validation
+func (m *MockContext[B]) SetQueryParamInt(name string, value int) *MockContext[B] {
 	param := OpenAPIParam{
 		Name:   name,
 		GoType: "integer",
 		Type:   "query",
 	}
-	for _, option := range options {
-		option(&param)
-	}
+
 	m.CommonContext.OpenAPIParams[name] = param
 	m.CommonContext.UrlValues.Set(name, fmt.Sprintf("%d", value))
 	return m
 }
 
-// WithQueryParamBool adds a boolean query parameter to the mock context with OpenAPI validation
-func (m *MockContext[B]) WithQueryParamBool(name string, value bool, options ...func(*OpenAPIParam)) *MockContext[B] {
+// SetQueryParamBool adds a boolean query parameter to the mock context with OpenAPI validation
+func (m *MockContext[B]) SetQueryParamBool(name string, value bool) *MockContext[B] {
 	param := OpenAPIParam{
 		Name:   name,
 		GoType: "boolean",
 		Type:   "query",
 	}
-	for _, option := range options {
-		option(&param)
-	}
+
 	m.CommonContext.OpenAPIParams[name] = param
 	m.CommonContext.UrlValues.Set(name, fmt.Sprintf("%t", value))
 	return m

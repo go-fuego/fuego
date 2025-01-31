@@ -5,8 +5,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
+	"github.com/go-fuego/fuego/param"
 )
 
 // UserSearchRequest represents the search criteria for users
@@ -92,8 +95,8 @@ func TestSearchUsersController(t *testing.T) {
 				NameQuery: "John",
 			},
 			setupContext: func(ctx *fuego.MockContext[UserSearchRequest]) {
-				ctx.WithQueryParamInt("page", 1, fuego.ParamDescription("Page number"), fuego.ParamDefault(1))
-				ctx.WithQueryParamInt("perPage", 20, fuego.ParamDescription("Items per page"), fuego.ParamDefault(20))
+				ctx.SetQueryParamInt("page", 1)
+				ctx.SetQueryParamInt("perPage", 20)
 			},
 			expected: UserSearchResponse{
 				Users: []UserProfile{
@@ -155,4 +158,40 @@ func TestSearchUsersController(t *testing.T) {
 			assert.Equal(t, tt.expected, response)
 		})
 	}
+}
+
+func TestMockContextNoBody(t *testing.T) {
+	myController := func(c fuego.ContextNoBody) (string, error) {
+		return "Hello, " + c.QueryParam("name"), nil
+	}
+
+	// Just check that `myController` is indeed an acceptable Fuego controller
+	s := fuego.NewServer()
+	fuego.Get(s, "/route", myController,
+		option.Query("name", "Name given to be greeted", param.Default("World")),
+	)
+
+	t.Run("TestMockContextNoBody", func(t *testing.T) {
+		ctx := fuego.NewMockContextNoBody()
+		assert.NotNil(t, ctx)
+
+		ctx.SetQueryParam("name", "You")
+
+		// Call the controller
+		response, err := myController(ctx)
+
+		require.NoError(t, err)
+		require.Equal(t, "Hello, You", response)
+	})
+
+	t.Run("Does not use the default params from the route declaration", func(t *testing.T) {
+		ctx := fuego.NewMockContextNoBody()
+		assert.NotNil(t, ctx)
+
+		// Call the controller
+		response, err := myController(ctx)
+
+		require.NoError(t, err)
+		require.Equal(t, "Hello, ", response)
+	})
 }
