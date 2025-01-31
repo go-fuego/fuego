@@ -138,7 +138,7 @@ func (m *MockContext[B]) Render(templateToExecute string, data any, templateGlob
 }
 
 // WithQueryParam adds a query parameter to the mock context with OpenAPI validation
-func (m *MockContext[B]) WithQueryParam(name string, value string, options ...func(*OpenAPIParam)) *MockContext[B] {
+func (m *MockContext[B]) WithQueryParam(name, value string, options ...func(*OpenAPIParam)) *MockContext[B] {
 	param := OpenAPIParam{
 		Name:   name,
 		GoType: "string",
