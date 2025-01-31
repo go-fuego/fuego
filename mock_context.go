@@ -16,7 +16,6 @@ import (
 type MockContext[B any] struct {
 	internal.CommonContext[B]
 
-	// Public fields for easier testing
 	RequestBody B
 	Headers     http.Header
 	PathParams  map[string]string
