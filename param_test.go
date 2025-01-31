@@ -28,7 +28,7 @@ func TestParams(t *testing.T) {
 
 		require.NotNil(t, route)
 		require.NotNil(t, route.Params)
-		require.Len(t, route.Params, 3)
+		require.Len(t, route.Params, 4)
 		require.Equal(t, "Name", route.Params["name"].Description)
 		require.True(t, route.Params["name"].Required)
 		require.Equal(t, "hey", route.Params["name"].Default)
@@ -39,5 +39,10 @@ func TestParams(t *testing.T) {
 		require.True(t, route.Params["age"].Nullable)
 		require.Equal(t, 18, route.Params["age"].Default)
 		require.Equal(t, "integer", route.Params["age"].GoType)
+
+		require.Equal(t, "Is OK?", route.Params["is_ok"].Description)
+		require.Equal(t, true, route.Params["is_ok"].Default)
+
+		require.Equal(t, "Accept", route.Params["Accept"].Name)
 	})
 }
