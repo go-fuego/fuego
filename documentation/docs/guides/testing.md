@@ -116,30 +116,6 @@ func TestSearchUsersController(t *testing.T) {
 }
 ```
 
-## Available Fields and Methods
-
-The `MockContext` type provides the following:
-
-Public Fields:
-
-- `RequestBody` - The request body of type B
-- `Headers` - HTTP headers
-- `PathParams` - URL path parameters
-- `Cookies` - HTTP cookies
-
-Helper Methods for Query Parameters:
-
-- `WithQueryParam(name, value string, options ...func(*OpenAPIParam))` - Add a string query parameter
-- `WithQueryParamInt(name string, value int, options ...func(*OpenAPIParam))` - Add an integer query parameter
-- `WithQueryParamBool(name string, value bool, options ...func(*OpenAPIParam))` - Add a boolean query parameter
-
-Each helper method accepts OpenAPI parameter options like:
-
-- `ParamDescription(description string)` - Add parameter description
-- `ParamDefault(value any)` - Set default value
-- `ParamRequired()` - Mark parameter as required
-- `ParamExample(name string, value any)` - Add example value
-
 ## Best Practices
 
 1. **Test Edge Cases**: Test both valid and invalid inputs, including validation errors.
