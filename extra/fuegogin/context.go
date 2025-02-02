@@ -56,11 +56,11 @@ func (c ginContext[B]) PathParam(name string) string {
 }
 
 func (c ginContext[B]) PathParamIntErr(name string) (int, error) {
-    return fuego.PathParamIntErr(c, name)
+	return fuego.PathParamIntErr(c, name)
 }
 
 func (c ginContext[B]) PathParamInt(name string) int {
-    return fuego.PathParamInt(c, name)
+	return fuego.PathParamInt(c, name)
 }
 
 func (c ginContext[B]) MainLang() string {
