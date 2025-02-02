@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -57,31 +56,11 @@ func (c ginContext[B]) PathParam(name string) string {
 }
 
 func (c ginContext[B]) PathParamIntErr(name string) (int, error) {
-	param := c.PathParam(name)
-	if param == "" {
-		return 0, fuego.PathParamNotFoundError{ParamName: name}
-	}
-
-	i, err := strconv.Atoi(param)
-	if err != nil {
-		return 0, fuego.PathParamInvalidTypeError{
-			ParamName:    name,
-			ParamValue:   param,
-			ExpectedType: "int",
-			Err:          err,
-		}
-	}
-
-	return i, nil
+    return fuego.PathParamIntErr(c, name)
 }
 
 func (c ginContext[B]) PathParamInt(name string) int {
-	param, err := c.PathParamIntErr(name)
-	if err != nil {
-		return 0
-	}
-
-	return param
+    return fuego.PathParamInt(c, name)
 }
 
 func (c ginContext[B]) MainLang() string {

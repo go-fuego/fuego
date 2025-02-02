@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/go-fuego/fuego"
@@ -57,31 +56,11 @@ func (c echoContext[B]) PathParam(name string) string {
 }
 
 func (c echoContext[B]) PathParamIntErr(name string) (int, error) {
-	param := c.PathParam(name)
-	if param == "" {
-		return 0, fuego.PathParamNotFoundError{ParamName: name}
-	}
-
-	i, err := strconv.Atoi(param)
-	if err != nil {
-		return 0, fuego.PathParamInvalidTypeError{
-			ParamName:    name,
-			ParamValue:   param,
-			ExpectedType: "int",
-			Err:          err,
-		}
-	}
-
-	return i, nil
+    return fuego.PathParamIntErr(c, name)
 }
 
 func (c echoContext[B]) PathParamInt(name string) int {
-	param, err := c.PathParamIntErr(name)
-	if err != nil {
-		return 0
-	}
-
-	return param
+    return fuego.PathParamInt(c, name)
 }
 
 func (c echoContext[B]) MainLang() string {

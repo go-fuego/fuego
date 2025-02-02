@@ -223,25 +223,6 @@ func (c netHttpContext[B]) PathParam(name string) string {
 	return c.Req.PathValue(name)
 }
 
-func (c netHttpContext[B]) PathParamIntErr(name string) (int, error) {
-	param := c.PathParam(name)
-	if param == "" {
-		return 0, PathParamNotFoundError{ParamName: name}
-	}
-
-	i, err := strconv.Atoi(param)
-	if err != nil {
-		return 0, PathParamInvalidTypeError{
-			ParamName:    name,
-			ParamValue:   param,
-			ExpectedType: "int",
-			Err:          err,
-		}
-	}
-
-	return i, nil
-}
-
 type PathParamNotFoundError struct {
 	ParamName string
 }
@@ -261,15 +242,46 @@ func (e PathParamInvalidTypeError) Error() string {
 	return fmt.Errorf("param %s=%s is not of type %s: %w", e.ParamName, e.ParamValue, e.ExpectedType, e.Err).Error()
 }
 
-// PathParamInt returns the path parameter with the given name as an int.
-// If the query parameter does not exist, or if it is not an int, it returns 0.
-func (c netHttpContext[B]) PathParamInt(name string) int {
-	param, err := c.PathParamIntErr(name)
+type ContextWithPathParam interface {
+	PathParam(name string) string
+}
+
+func PathParamIntErr(c ContextWithPathParam, name string) (int, error) {
+	param := c.PathParam(name)
+	if param == "" {
+		return 0, PathParamNotFoundError{ParamName: name}
+	}
+
+	i, err := strconv.Atoi(param)
+	if err != nil {
+		return 0, PathParamInvalidTypeError{
+			ParamName:    name,
+			ParamValue:   param,
+			ExpectedType: "int",
+			Err:          err,
+		}
+	}
+
+	return i, nil
+}
+
+func (c netHttpContext[B]) PathParamIntErr(name string) (int, error) {
+    return PathParamIntErr(c, name)
+}
+
+func PathParamInt(c ContextWithPathParam, name string) (int) {
+	param, err := PathParamIntErr(c, name)
 	if err != nil {
 		return 0
 	}
 
 	return param
+}
+
+// PathParamInt returns the path parameter with the given name as an int.
+// If the query parameter does not exist, or if it is not an int, it returns 0.
+func (c netHttpContext[B]) PathParamInt(name string) int {
+    return PathParamInt(c, name)
 }
 
 func (c netHttpContext[B]) MainLang() string {
