@@ -17,6 +17,7 @@ use (
 	./examples/petstore
 	./examples/with-listener
 	./extra/fuegogin
+	./extra/fuegoecho
 	./extra/markdown
 	./middleware/basicauth
 	./middleware/cache
