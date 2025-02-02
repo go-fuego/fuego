@@ -47,6 +47,19 @@ func TestWithErrorHandler(t *testing.T) {
 		errResponse := e.ErrorHandler(err)
 		require.Equal(t, "Not Found", errResponse.Error())
 	})
+	
+	t.Run("nil returning handler", func(t *testing.T) {
+		e := NewEngine(
+			WithErrorHandler(func(err error) error {
+				return nil
+			}),
+		)
+		err := NotFoundError{
+			Err: errors.New("Not Found"),
+		}
+		errResponse := e.ErrorHandler(err)
+		require.Nil(t, errResponse, "error handler can return nil, which might lead to unexpected behavior")
+	})
 }
 
 func TestWithRequestContentType(t *testing.T) {
