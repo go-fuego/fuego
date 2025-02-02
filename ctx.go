@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -220,6 +221,55 @@ func (c netHttpContext[B]) Render(templateToExecute string, data any, layoutsGlo
 // PathParam returns the path parameters of the request.
 func (c netHttpContext[B]) PathParam(name string) string {
 	return c.Req.PathValue(name)
+}
+
+func (c netHttpContext[B]) PathParamIntErr(name string) (int, error) {
+	param := c.PathParam(name)
+	if param == "" {
+		return 0, PathParamNotFoundError{ParamName: name}
+	}
+
+	i, err := strconv.Atoi(param)
+	if err != nil {
+		return 0, PathParamInvalidTypeError{
+			ParamName:    name,
+			ParamValue:   param,
+			ExpectedType: "int",
+			Err:          err,
+		}
+	}
+
+	return i, nil
+}
+
+type PathParamNotFoundError struct {
+	ParamName string
+}
+
+func (e PathParamNotFoundError) Error() string {
+	return fmt.Errorf("param %s not found", e.ParamName).Error()
+}
+
+type PathParamInvalidTypeError struct {
+	Err          error
+	ParamName    string
+	ParamValue   string
+	ExpectedType string
+}
+
+func (e PathParamInvalidTypeError) Error() string {
+	return fmt.Errorf("param %s=%s is not of type %s: %w", e.ParamName, e.ParamValue, e.ExpectedType, e.Err).Error()
+}
+
+// PathParamInt returns the path parameter with the given name as an int.
+// If the query parameter does not exist, or if it is not an int, it returns 0.
+func (c netHttpContext[B]) PathParamInt(name string) int {
+	param, err := c.PathParamIntErr(name)
+	if err != nil {
+		return 0
+	}
+
+	return param
 }
 
 func (c netHttpContext[B]) MainLang() string {
