@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -25,6 +26,48 @@ func TestContext_PathParam(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, crlf(`{"ans":"123"}`), w.Body.String())
+	})
+
+	t.Run("can read one path param to int", func(t *testing.T) {
+		s := NewServer()
+		Get(s, "/foo/{id}", func(c ContextNoBody) (ans, error) {
+			return ans{Ans: fmt.Sprintf("%d", c.PathParamInt("id"))}, nil
+		})
+
+		r := httptest.NewRequest("GET", "/foo/123", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, crlf(`{"ans":"123"}`), w.Body.String())
+	})
+
+	t.Run("reading non-int path param to int defaults to 0", func(t *testing.T) {
+		s := NewServer()
+		Get(s, "/foo/{id}", func(c ContextNoBody) (ans, error) {
+			return ans{Ans: fmt.Sprintf("%d", c.PathParamInt("id"))}, nil
+		})
+
+		r := httptest.NewRequest("GET", "/foo/abc", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, crlf(`{"ans":"0"}`), w.Body.String())
+	})
+
+	t.Run("reading missing path param to int defaults to 0", func(t *testing.T) {
+		s := NewServer()
+		Get(s, "/foo/", func(c ContextNoBody) (ans, error) {
+			return ans{Ans: fmt.Sprintf("%d", c.PathParamInt("id"))}, nil
+		})
+
+		r := httptest.NewRequest("GET", "/foo/", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, crlf(`{"ans":"0"}`), w.Body.String())
 	})
 
 	t.Run("path param invalid", func(t *testing.T) {
