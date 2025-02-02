@@ -3,7 +3,9 @@ package fuegoecho
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/go-fuego/fuego"
@@ -53,6 +55,53 @@ func (c echoContext[B]) MustBody() B {
 
 func (c echoContext[B]) PathParam(name string) string {
 	return c.echoCtx.Param(name)
+}
+
+func (c echoContext[B]) PathParamIntErr(name string) (int, error) {
+	param := c.PathParam(name)
+	if param == "" {
+		return 0, PathParamNotFoundError{ParamName: name}
+	}
+
+	i, err := strconv.Atoi(param)
+	if err != nil {
+		return 0, PathParamInvalidTypeError{
+			ParamName:    name,
+			ParamValue:   param,
+			ExpectedType: "int",
+			Err:          err,
+		}
+	}
+
+	return i, nil
+}
+
+type PathParamNotFoundError struct {
+	ParamName string
+}
+
+func (e PathParamNotFoundError) Error() string {
+	return fmt.Errorf("param %s not found", e.ParamName).Error()
+}
+
+type PathParamInvalidTypeError struct {
+	Err          error
+	ParamName    string
+	ParamValue   string
+	ExpectedType string
+}
+
+func (e PathParamInvalidTypeError) Error() string {
+	return fmt.Errorf("param %s=%s is not of type %s: %w", e.ParamName, e.ParamValue, e.ExpectedType, e.Err).Error()
+}
+
+func (c echoContext[B]) PathParamInt(name string) int {
+	param, err := c.PathParamIntErr(name)
+	if err != nil {
+		return 0
+	}
+
+	return param
 }
 
 func (c echoContext[B]) MainLang() string {
