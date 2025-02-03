@@ -45,7 +45,8 @@ type ContextWithBody[B any] interface {
 	//   	...
 	//   })
 	PathParam(name string) string
-	PathParamInt(name string) int // If the path parameter is not provided or is not an int, it returns 0. Use [Ctx.PathParamIntErr] if you want to know if the path parameter is erroneous.
+	// If the path parameter is not provided or is not an int, it returns 0. Use [Ctx.PathParamIntErr] if you want to know if the path parameter is erroneous.
+	PathParamInt(name string) int
 	PathParamIntErr(name string) (int, error)
 
 	QueryParam(name string) string
