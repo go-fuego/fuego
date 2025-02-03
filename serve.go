@@ -113,10 +113,9 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 type ContextFlowable[B any] interface {
 	ContextWithBody[B]
 
-	// SetDefaultStatusCode sets the status code of the response defined in the options.
-	SetDefaultStatusCode()
+	GetDefaultStatusCode() int
 	// Serialize serializes the given data to the response.
-	Serialize(data any) error
+	Serialize(code int, data any) error
 	// SerializeError serializes the given error to the response.
 	SerializeError(err error)
 }
@@ -148,8 +147,6 @@ func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c Context
 	}
 	ctx.SetHeader("Server-Timing", Timing{"controller", "", time.Since(timeController)}.String())
 
-	ctx.SetDefaultStatusCode()
-
 	if reflect.TypeOf(ans) == nil {
 		return
 	}
@@ -165,8 +162,12 @@ func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c Context
 	timeAfterTransformOut := time.Now()
 	ctx.SetHeader("Server-Timing", Timing{"transformOut", "transformOut", timeAfterTransformOut.Sub(timeTransformOut)}.String())
 
+	code := ctx.GetDefaultStatusCode()
+	if code == 0 {
+		code = http.StatusOK
+	}
 	// SERIALIZATION
-	err = ctx.Serialize(ans)
+	err = ctx.Serialize(code, ans)
 	if err != nil {
 		err = s.ErrorHandler(err)
 		ctx.SerializeError(err)

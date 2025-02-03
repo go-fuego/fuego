@@ -30,7 +30,7 @@ func TestSend(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	r.Header.Set("Accept", "application/json")
-	Send(w, r, &StdRenderer{
+	Send(w, r, 200, &StdRenderer{
 		templates:         template,
 		templateToExecute: templateName,
 	})
@@ -44,7 +44,7 @@ func TestSendWhenError(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	r.Header.Set("Accept", "text/junk,application/json,text/html")
 	errorWriter := &errorWriter{}
-	err := Send(errorWriter, r, response{})
+	err := Send(errorWriter, r, 0, response{})
 	require.Error(t, err)
 	SendError(w, r, err)
 	require.Equal(t, "application/json", w.Header().Get("Content-Type"))

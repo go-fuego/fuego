@@ -316,7 +316,7 @@ func dummyController(_ ContextWithBody[ReqBody]) (Resp, error) {
 
 func TestCustomSerialization(t *testing.T) {
 	s := NewServer(
-		WithSerializer(func(w http.ResponseWriter, r *http.Request, a any) error {
+		WithSerializer(func(w http.ResponseWriter, r *http.Request, _ int, a any) error {
 			w.WriteHeader(202)
 			_, err := w.Write([]byte("custom serialization"))
 			return err

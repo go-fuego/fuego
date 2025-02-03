@@ -79,25 +79,31 @@ func transformOut[T any](ctx context.Context, ans T) (T, error) {
 	return ans, nil
 }
 
-type Sender func(http.ResponseWriter, *http.Request, any) error
+type Sender func(http.ResponseWriter, *http.Request, int, any) error
+type internalSender func(http.ResponseWriter, *http.Request, any) error
 
 // Send sends a response.
 // The format is determined by the Accept header.
 // If Accept header `*/*` is found Send will Attempt to send
 // HTML, and then JSON.
-func Send(w http.ResponseWriter, r *http.Request, ans any) (err error) {
+func Send(w http.ResponseWriter, r *http.Request, code int, ans any) (err error) {
+	send := func(mimeType string, code int, ans any, sender internalSender) error {
+		w.Header().Set("Content-Type", mimeType)
+		w.WriteHeader(code)
+		return sender(w, r, ans)
+	}
 	for _, header := range parseAcceptHeader(r.Header) {
-		switch inferAcceptHeader(header, ans) {
+		switch header := inferAcceptHeader(header, ans); header {
 		case "application/xml":
-			err = SendXML(w, nil, ans)
+			err = send("application/xml", code, ans, SendXML)
 		case "text/html":
-			err = SendHTML(w, r, ans)
+			err = send("text/html; charset=utf-8", code, ans, SendHTML)
 		case "text/plain":
-			err = SendText(w, nil, ans)
+			err = send("text/plain; charset=utf-8", code, ans, SendText)
 		case "application/json":
-			err = SendJSON(w, nil, ans)
+			err = send("application/json", code, ans, SendJSON)
 		case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
-			err = SendYAML(w, nil, ans)
+			err = send("application/x-yaml", code, ans, SendYAML)
 		default:
 			// if we don't support the header, try the next one
 			continue
@@ -128,7 +134,6 @@ var SendYAML = func(w http.ResponseWriter, _ *http.Request, ans any) (err error)
 		}
 	}()
 
-	w.Header().Set("Content-Type", "application/x-yaml")
 	err = yaml.NewEncoder(w).Encode(ans)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -155,7 +160,6 @@ func SendYAMLError(w http.ResponseWriter, _ *http.Request, err error) {
 // Declared as a variable to be able to override it for clients that need to customize serialization.
 // If serialization fails, it does NOT write to the response writer. It has to be passed to SendJSONError.
 var SendJSON = func(w http.ResponseWriter, _ *http.Request, ans any) error {
-	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(ans)
 	if err != nil {
 		slog.Error("Cannot serialize returned response to JSON", "error", err, "errtype", fmt.Sprintf("%T", err))
@@ -219,7 +223,6 @@ func SendJSONError(w http.ResponseWriter, _ *http.Request, err error) {
 // Declared as a variable to be able to override it for clients that need to customize serialization.
 // If serialization fails, it does NOT write to the response writer. It has to be passed to SendJSONError.
 var SendXML = func(w http.ResponseWriter, _ *http.Request, ans any) error {
-	w.Header().Set("Content-Type", "application/xml")
 	err := xml.NewEncoder(w).Encode(ans)
 	if err != nil {
 		slog.Error("Cannot serialize returned response to XML", "error", err, "errtype", fmt.Sprintf("%T", err))
@@ -255,8 +258,6 @@ func SendXMLError(w http.ResponseWriter, _ *http.Request, err error) {
 // SendHTML sends a HTML response.
 // Declared as a variable to be able to override it for clients that need to customize serialization.
 var SendHTML = func(w http.ResponseWriter, r *http.Request, ans any) error {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
 	ctxRenderer, ok := any(ans).(CtxRenderer)
 	if ok {
 		return ctxRenderer.Render(r.Context(), w)
@@ -299,8 +300,6 @@ func SendHTMLError(w http.ResponseWriter, _ *http.Request, err error) {
 // SendText sends a HTML response.
 // Declared as a variable to be able to override it for clients that need to customize serialization.
 func SendText(w http.ResponseWriter, _ *http.Request, ans any) error {
-	var err error
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	stringToWrite, ok := any(ans).(string)
 	if !ok {
 		stringToWritePtr, okPtr := any(ans).(*string)
@@ -310,8 +309,7 @@ func SendText(w http.ResponseWriter, _ *http.Request, ans any) error {
 			stringToWrite = fmt.Sprintf("%v", ans)
 		}
 	}
-	_, err = w.Write([]byte(stringToWrite))
-
+	_, err := w.Write([]byte(stringToWrite))
 	return err
 }
 

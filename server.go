@@ -327,16 +327,6 @@ func WithAddr(addr string) func(*Server) {
 	}
 }
 
-// WithXML sets the serializer to XML
-//
-// Deprecated: fuego supports automatic XML serialization when using the header "Accept: application/xml".
-func WithXML() func(*Server) {
-	return func(c *Server) {
-		c.Serialize = SendXML
-		c.SerializeError = SendXMLError
-	}
-}
-
 // WithLogHandler sets the log handler of the server.
 func WithLogHandler(handler slog.Handler) func(*Server) {
 	return func(*Server) {

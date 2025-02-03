@@ -110,13 +110,10 @@ func (c ginContext[B]) SetStatus(code int) {
 	c.ginCtx.Status(code)
 }
 
-func (c ginContext[B]) Serialize(data any) error {
+func (c ginContext[B]) Serialize(code int, data any) error {
 	status := c.ginCtx.Writer.Status()
 	if status == 0 {
-		status = c.DefaultStatusCode
-	}
-	if status == 0 {
-		status = http.StatusOK
+		status = code
 	}
 	c.ginCtx.JSON(status, data)
 	return nil
@@ -129,11 +126,4 @@ func (c ginContext[B]) SerializeError(err error) {
 		statusCode = errorWithStatusCode.StatusCode()
 	}
 	c.ginCtx.JSON(statusCode, err)
-}
-
-func (c ginContext[B]) SetDefaultStatusCode() {
-	if c.DefaultStatusCode == 0 {
-		c.DefaultStatusCode = http.StatusOK
-	}
-	c.SetStatus(c.DefaultStatusCode)
 }
