@@ -55,6 +55,14 @@ func (c echoContext[B]) PathParam(name string) string {
 	return c.echoCtx.Param(name)
 }
 
+func (c echoContext[B]) PathParamIntErr(name string) (int, error) {
+	return fuego.PathParamIntErr(c, name)
+}
+
+func (c echoContext[B]) PathParamInt(name string) int {
+	return fuego.PathParamInt(c, name)
+}
+
 func (c echoContext[B]) MainLang() string {
 	return strings.Split(c.MainLocale(), "-")[0]
 }

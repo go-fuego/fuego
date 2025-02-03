@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/go-fuego/fuego/internal"
@@ -82,6 +83,17 @@ func (m *MockContext[B]) SetHeader(key, value string) {
 // PathParam returns a mock path parameter
 func (m *MockContext[B]) PathParam(name string) string {
 	return m.PathParams[name]
+}
+
+func (m *MockContext[B]) PathParamIntErr(name string) (int, error) {
+	return strconv.Atoi(m.PathParams[name])
+}
+
+func (m *MockContext[B]) PathParamInt(name string) int {
+	if i, err := m.PathParamIntErr(name); err == nil {
+		return i
+	}
+	return 0
 }
 
 // Request returns the mock request

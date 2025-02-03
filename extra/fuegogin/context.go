@@ -55,6 +55,14 @@ func (c ginContext[B]) PathParam(name string) string {
 	return c.ginCtx.Param(name)
 }
 
+func (c ginContext[B]) PathParamIntErr(name string) (int, error) {
+	return fuego.PathParamIntErr(c, name)
+}
+
+func (c ginContext[B]) PathParamInt(name string) int {
+	return fuego.PathParamInt(c, name)
+}
+
 func (c ginContext[B]) MainLang() string {
 	return strings.Split(c.MainLocale(), "-")[0]
 }
