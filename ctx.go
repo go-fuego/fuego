@@ -231,6 +231,8 @@ func (e PathParamNotFoundError) Error() string {
 	return fmt.Errorf("param %s not found", e.ParamName).Error()
 }
 
+func (e PathParamNotFoundError) StatusCode() int { return 404 }
+
 type PathParamInvalidTypeError struct {
 	Err          error
 	ParamName    string
@@ -241,6 +243,8 @@ type PathParamInvalidTypeError struct {
 func (e PathParamInvalidTypeError) Error() string {
 	return fmt.Errorf("param %s=%s is not of type %s: %w", e.ParamName, e.ParamValue, e.ExpectedType, e.Err).Error()
 }
+
+func (e PathParamInvalidTypeError) StatusCode() int { return 422 }
 
 type ContextWithPathParam interface {
 	PathParam(name string) string
@@ -266,10 +270,10 @@ func PathParamIntErr(c ContextWithPathParam, name string) (int, error) {
 }
 
 func (c netHttpContext[B]) PathParamIntErr(name string) (int, error) {
-    return PathParamIntErr(c, name)
+	return PathParamIntErr(c, name)
 }
 
-func PathParamInt(c ContextWithPathParam, name string) (int) {
+func PathParamInt(c ContextWithPathParam, name string) int {
 	param, err := PathParamIntErr(c, name)
 	if err != nil {
 		return 0
@@ -281,7 +285,7 @@ func PathParamInt(c ContextWithPathParam, name string) (int) {
 // PathParamInt returns the path parameter with the given name as an int.
 // If the query parameter does not exist, or if it is not an int, it returns 0.
 func (c netHttpContext[B]) PathParamInt(name string) int {
-    return PathParamInt(c, name)
+	return PathParamInt(c, name)
 }
 
 func (c netHttpContext[B]) MainLang() string {

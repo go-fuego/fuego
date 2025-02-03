@@ -70,6 +70,24 @@ func TestContext_PathParam(t *testing.T) {
 		require.Equal(t, crlf(`{"ans":"0"}`), w.Body.String())
 	})
 
+	t.Run("reading non-int path param to int sends an error", func(t *testing.T) {
+		s := NewServer()
+		Get(s, "/foo/{id}", func(c ContextNoBody) (ans, error) {
+			id, err := c.PathParamIntErr("id")
+			if err != nil {
+				return ans{}, err
+			}
+			return ans{Ans: fmt.Sprintf("%d", id)}, nil
+		})
+
+		r := httptest.NewRequest("GET", "/foo/abc", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 422, w.Code)
+	})
+
 	t.Run("path param invalid", func(t *testing.T) {
 		s := NewServer()
 		Get(s, "/foo/", func(c ContextNoBody) (ans, error) {
