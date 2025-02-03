@@ -18,17 +18,17 @@ var optionPagination = option.Group(
 
 func (rs Resource) Routes(s *fuego.Server) {
 	// Public Pages
-	fuego.GetStd(s, "/recipes-std", rs.showRecipesStd)
+	fuego.GetStd(s, "/recipes-std", rs.showRecipesStd, option.Tags("recipes"))
 	fuego.All(s, "/", rs.showIndex, option.Middleware(cache.New()))
 	fuego.GetStd(s, "/robots.txt", rs.robots, option.Middleware(cache.New()))
-	fuego.Get(s, "/recipes", rs.showRecipes)
+	fuego.Get(s, "/recipes", rs.showRecipes, option.Tags("recipes"))
 	fuego.Get(s, "/planner", rs.planner)
-	fuego.Get(s, "/recipes/{id}", rs.showSingleRecipes2)
-	fuego.Get(s, "/recipes/{id}/related", rs.relatedRecipes)
-	fuego.Post(s, "/recipes-new", rs.addRecipe)
-	fuego.Get(s, "/ingredients", rs.showIngredients)
-	fuego.Get(s, "/fast", rs.fastRecipes)
-	fuego.Get(s, "/healthy", rs.healthyRecipes)
+	fuego.Get(s, "/recipes/{id}", rs.showSingleRecipes2, option.Tags("recipes"))
+	fuego.Get(s, "/recipes/{id}/related", rs.relatedRecipes, option.Tags("recipes"))
+	fuego.Post(s, "/recipes-new", rs.addRecipe, option.Tags("recipes"))
+	fuego.Get(s, "/ingredients", rs.showIngredients, option.Tags("ingredients"))
+	fuego.Get(s, "/fast", rs.fastRecipes, option.Tags("recipes"))
+	fuego.Get(s, "/healthy", rs.healthyRecipes, option.Tags("recipes"))
 
 	// Public Chunks
 	fuego.Get(s, "/recipes-list", rs.showRecipesList,

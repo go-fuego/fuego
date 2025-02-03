@@ -47,7 +47,7 @@ func TestWithErrorHandler(t *testing.T) {
 		errResponse := e.ErrorHandler(err)
 		require.Equal(t, "Not Found", errResponse.Error())
 	})
-	
+
 	t.Run("nil returning handler", func(t *testing.T) {
 		e := NewEngine(
 			WithErrorHandler(func(err error) error {

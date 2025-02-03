@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
 
@@ -72,6 +73,11 @@ func main() {
 	}
 
 	app := rs.Setup(fuego.WithAddr(fmt.Sprintf("localhost:%d", *port)))
+
+	app.OpenAPI.Description().Servers = append(app.OpenAPI.Description().Servers, &openapi3.Server{
+		URL:         "https://gourmet.quimerch.com",
+		Description: "Production server",
+	})
 
 	// Run the server!
 	err = app.Run()

@@ -33,7 +33,9 @@ func (rs Resources) Setup(
 		fuego.WithAutoAuth(controller.LoginFunc),
 		fuego.WithTemplateFS(templates.FS),
 		fuego.WithTemplateGlobs("**/*.html", "**/**/*.html"),
-		fuego.WithGlobalResponseTypes(http.StatusForbidden, "Forbidden", fuego.Response{Type: fuego.HTTPError{}}),
+		fuego.WithRouteOptions(
+			fuego.OptionAddResponse(http.StatusForbidden, "Forbidden", fuego.Response{Type: fuego.HTTPError{}}),
+		),
 	}
 
 	options = append(serverOptions, options...)
@@ -49,13 +51,7 @@ func (rs Resources) Setup(
 	// With fuego, you can use any existing middleware that relies on `net/http`, or create your own
 	fuego.Use(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
-	fuego.Register(app, fuego.Route[any, any]{
-		BaseRoute: fuego.BaseRoute{
-			Path:     "/static/",
-			Method:   http.MethodGet,
-			FullName: "static handler",
-		},
-	}, http.StripPrefix("/static", static.Handler()), option.Middleware(cache))
+	fuego.Handle(app, "/static/", http.StripPrefix("/static", static.Handler()), option.Middleware(cache))
 
 	// Register views (controllers that return HTML pages)
 	rs.Views.Routes(fuego.Group(app, "/"))

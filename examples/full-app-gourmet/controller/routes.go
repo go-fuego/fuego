@@ -59,20 +59,9 @@ func (rs Resource) MountRoutes(s *fuego.Server) {
 	fuego.Use(adminRoutes, fuego.AuthWall("admin", "superadmin"))  // Only admin and superadmin can access the routes in this group
 	fuego.Use(adminRoutes, fuego.AuthWallRegex(`^(super)?admin$`)) // Same as above, but with a regex
 
-	fuego.Get(adminRoutes, "/users", placeholderController,
-		option.Description("Get all users"),
-		option.Summary("Get all users"),
-		option.Tags("Admin"),
-	)
-
 	testRoutes := fuego.Group(s, "/tests")
 	fuego.Get(testRoutes, "/slow", slow,
 		option.Description("This is a slow route"),
 		option.Summary("Slow route"),
 	)
-	fuego.Get(testRoutes, "/mounted-route", placeholderController)
-	fuego.Post(testRoutes, "/mounted-route-post", placeholderController)
-
-	mountedGroup := fuego.Group(testRoutes, "/mounted-group")
-	fuego.Get(mountedGroup, "/mounted-route", placeholderController)
 }

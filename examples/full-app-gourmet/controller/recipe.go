@@ -16,7 +16,7 @@ type recipeResource struct {
 
 func (rs recipeResource) MountRoutes(s *fuego.Server) {
 	fuego.GetStd(s, "/recipes-standard-with-helpers", rs.getAllRecipesStandardWithHelpers,
-		option.Tags("Recipe"),
+		option.Tags("recipes"),
 	)
 	recipeGroup := fuego.Group(s, "/recipes")
 
@@ -24,7 +24,7 @@ func (rs recipeResource) MountRoutes(s *fuego.Server) {
 		option.Summary("Get all recipes"),
 		option.Description("Get all recipes"),
 		option.Query("limit", "number of recipes to return"),
-		option.Tags("customer"),
+		option.Tags("recipes"),
 	)
 	fuego.Post(recipeGroup, "/new", rs.newRecipe)
 	fuego.Get(recipeGroup, "/{id}", rs.getRecipeWithIngredients)
