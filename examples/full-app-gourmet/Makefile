@@ -24,6 +24,14 @@ build: css
 	go generate ./...
 	go build -v -ldflags="-s -w" -o gourmet-app
 
+# Build for Prod
+docker-build:
+	go generate ./...
+	docker build --platform linux/amd64 -t ewenquim/gourmet .
+
+docker-push:
+	docker push ewenquim/gourmet
+
 deploy:
 	make backup & GOARCH=amd64 GOOS=linux make build
 	operations/deploy.sh

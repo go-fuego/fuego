@@ -4,6 +4,7 @@ go 1.23.3
 
 require (
 	github.com/a-h/templ v0.3.819
+	github.com/getkin/kin-openapi v0.128.0
 	github.com/go-chi/chi/v5 v5.2.0
 	github.com/go-fuego/fuego v0.17.0
 	github.com/go-fuego/fuego/extra/markdown v0.0.0-20250107151251-f857cfde3dd9
@@ -24,7 +25,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
-	github.com/getkin/kin-openapi v0.128.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
@@ -58,9 +58,3 @@ require (
 	modernc.org/strutil v1.2.1 // indirect
 	modernc.org/token v1.1.0 // indirect
 )
-
-replace github.com/go-fuego/fuego => ../..
-
-replace github.com/go-fuego/fuego/extra/markdown => ../../extra/markdown
-
-replace github.com/go-fuego/fuego/middleware/cache => ../../middleware/cache

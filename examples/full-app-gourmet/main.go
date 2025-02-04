@@ -25,7 +25,6 @@ func main() {
 	if err != nil {
 		wd, _ := os.Getwd()
 		slog.Error(fmt.Sprintf("Error loading .env files: %s in dir %s", err, wd))
-		return
 	}
 
 	// Flags
@@ -72,10 +71,10 @@ func main() {
 		Views: viewsResources,
 	}
 
-	app := rs.Setup(fuego.WithAddr(fmt.Sprintf("localhost:%d", *port)))
+	app := rs.Setup(fuego.WithAddr(fmt.Sprintf(":%d", *port)))
 
 	app.OpenAPI.Description().Servers = append(app.OpenAPI.Description().Servers, &openapi3.Server{
-		URL:         "https://gourmet.quimerch.com",
+		URL:         os.Getenv("PUBLIC_URL"),
 		Description: "Production server",
 	})
 
