@@ -3,7 +3,7 @@ module github.com/go-fuego/fuego/examples/crud-gorm
 go 1.23.5
 
 require (
-	github.com/go-fuego/fuego v0.17.0
+	github.com/go-fuego/fuego v0.18.0
 	github.com/golang/mock v1.6.0
 	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.25.12
@@ -18,6 +18,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.24.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/schema v1.4.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect

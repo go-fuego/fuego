@@ -2,10 +2,8 @@ module github.com/go-fuego/fuego/extra/fuegoecho
 
 go 1.23.3
 
-replace github.com/go-fuego/fuego => ../..
-
 require (
-	github.com/go-fuego/fuego v0.18.0-rc3
+	github.com/go-fuego/fuego v0.18.0
 	github.com/labstack/echo/v4 v4.13.3
 )
 

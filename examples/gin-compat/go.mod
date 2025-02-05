@@ -2,9 +2,13 @@ module github.com/go-fuego/fuego/examples/gin-compat
 
 go 1.23.3
 
+replace github.com/go-fuego/fuego => ../..
+
+replace github.com/go-fuego/fuego/extra/fuegogin => ../../extra/fuegogin
+
 require (
 	github.com/gin-gonic/gin v1.10.0
-	github.com/go-fuego/fuego v0.17.0
+	github.com/go-fuego/fuego v0.18.0
 	github.com/go-fuego/fuego/extra/fuegogin v0.1.0
 	github.com/stretchr/testify v1.10.0
 )
@@ -50,5 +54,3 @@ require (
 	google.golang.org/protobuf v1.36.4 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/go-fuego/fuego => ../..

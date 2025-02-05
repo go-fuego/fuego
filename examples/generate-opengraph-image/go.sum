@@ -4,10 +4,10 @@ github.com/gabriel-vasile/mimetype v1.4.8 h1:FfZ3gj38NjllZIeJAmMhr+qKL8Wu+nOoI3G
 github.com/gabriel-vasile/mimetype v1.4.8/go.mod h1:ByKUIKGjh1ODkGM1asKUbQZOLGrPjydw3hYPU2YU9t8=
 github.com/getkin/kin-openapi v0.129.0 h1:QGYTNcmyP5X0AtFQ2Dkou9DGBJsUETeLH9rFrJXZh30=
 github.com/getkin/kin-openapi v0.129.0/go.mod h1:gmWI+b/J45xqpyK5wJmRRZse5wefA5H0RDMK46kLUtI=
-github.com/go-fuego/fuego v0.17.0 h1:UBR0ib0Qq0XkGX8J3OTIwrlvHDGmysBVG3NHowA6UCQ=
-github.com/go-fuego/fuego v0.17.0/go.mod h1:glaJIBAO3AaZx+c4jGYW4pHyhQkeMGuHx8qLchGAH8M=
-github.com/go-fuego/fuego/middleware/cache v0.0.0-20250205090000-43e7ff9af336 h1:Awc+2JhLcijmstphmKHe7W6ByPnCeov40+nnq4EAEEQ=
-github.com/go-fuego/fuego/middleware/cache v0.0.0-20250205090000-43e7ff9af336/go.mod h1:k5Ngj1EvvOwQiDO+4dcVWuX9ozIv9TCDODVukJMeskE=
+github.com/go-fuego/fuego v0.18.0 h1:h4JM9Ji6kNuPsU0ej13CeTKWq60W/ZqbSYUOHQ034gs=
+github.com/go-fuego/fuego v0.18.0/go.mod h1:/KrRYEx0x3cgBsfwrxJpQ03b9bdfVxPtN19Uv7kJTag=
+github.com/go-fuego/fuego/middleware/cache v0.0.0-20250205094027-802052722609 h1:vFFF0r694WBNkamro4JCSf9o9HTVseZm9XuhJ0vWQTQ=
+github.com/go-fuego/fuego/middleware/cache v0.0.0-20250205094027-802052722609/go.mod h1:k5Ngj1EvvOwQiDO+4dcVWuX9ozIv9TCDODVukJMeskE=
 github.com/go-openapi/jsonpointer v0.21.0 h1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=
 github.com/go-openapi/jsonpointer v0.21.0/go.mod h1:IUyH9l/+uyhIYQ/PXVA41Rexl+kOkAPDdXEYns6fzUY=
 github.com/go-openapi/swag v0.23.0 h1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=
@@ -26,6 +26,8 @@ github.com/golang-jwt/jwt/v5 v5.2.1 h1:OuVbFODueb089Lh128TAcimifWaLhJwVflnrgM17w
 github.com/golang-jwt/jwt/v5 v5.2.1/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 h1:DACJavvAHhabrF08vX0COfcOBJRhZ8lUbR+ZWIs0Y5g=
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0/go.mod h1:E/TSTwGwJL78qG/PmXZO1EjYhfJinVAhrmmHX6Z8B9k=
+github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/gorilla/schema v1.4.1 h1:jUg5hUjCSDZpNGLuXQOgIWGdlgrIdYvgQ0wZtdK1M3E=
 github.com/gorilla/schema v1.4.1/go.mod h1:Dg5SSm5PV60mhF2NFaTV1xuYYj8tV8NOPRo4FggUMnM=
 github.com/hashicorp/golang-lru/v2 v2.0.7 h1:a+bsQ5rvGLjzHuww6tVxozPZFVghXaHOwFs4luLUK2k=

@@ -4,8 +4,8 @@ go 1.23.3
 
 require (
 	github.com/getkin/kin-openapi v0.129.0
-	github.com/go-fuego/fuego v0.17.0
-	github.com/go-fuego/fuego/middleware/cache v0.0.0-20250205090000-43e7ff9af336
+	github.com/go-fuego/fuego v0.18.0
+	github.com/go-fuego/fuego/middleware/cache v0.0.0-20250205094027-802052722609
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	golang.org/x/image v0.24.0
 )
@@ -18,6 +18,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.24.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/schema v1.4.1 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/josharian/intern v1.0.0 // indirect

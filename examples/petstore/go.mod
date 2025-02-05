@@ -2,10 +2,8 @@ module github.com/go-fuego/fuego/examples/petstore
 
 go 1.23.3
 
-replace github.com/go-fuego/fuego => ../..
-
 require (
-	github.com/go-fuego/fuego v0.17.0
+	github.com/go-fuego/fuego v0.18.0
 	github.com/stretchr/testify v1.10.0
 	gotest.tools/v3 v3.5.1
 )

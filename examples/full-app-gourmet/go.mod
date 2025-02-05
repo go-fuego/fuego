@@ -6,10 +6,10 @@ require (
 	github.com/a-h/templ v0.3.833
 	github.com/getkin/kin-openapi v0.129.0
 	github.com/go-chi/chi/v5 v5.2.1
-	github.com/go-fuego/fuego v0.18.0-rc3
-	github.com/go-fuego/fuego/extra/markdown v0.0.0-20250204180537-d8c19f7e66a4
+	github.com/go-fuego/fuego v0.18.0
+	github.com/go-fuego/fuego/extra/markdown v0.0.0-20250205094027-802052722609
 	github.com/go-fuego/fuego/middleware/basicauth v0.15.1
-	github.com/go-fuego/fuego/middleware/cache v0.0.0-20250205090000-43e7ff9af336
+	github.com/go-fuego/fuego/middleware/cache v0.0.0-20250205094027-802052722609
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/google/uuid v1.6.0

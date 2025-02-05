@@ -7,7 +7,7 @@ replace github.com/go-fuego/fuego => ../..
 replace github.com/go-fuego/fuego/extra/fuegoecho => ../../extra/fuegoecho
 
 require (
-	github.com/go-fuego/fuego v0.18.0-rc3
+	github.com/go-fuego/fuego v0.18.0
 	github.com/go-fuego/fuego/extra/fuegoecho v0.1.0
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/stretchr/testify v1.10.0
