@@ -65,9 +65,9 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		option.OperationID("getPet"),
 		option.Path("id", "Pet ID", param.Example("example", "123")),
 	)
-	fuego.Get(petsGroup, "/by-name/{name...}", rs.getPetByName)
+	fuego.Get(petsGroup, "/by-name/{name}", rs.getPetByName)
 	fuego.Put(petsGroup, "/{id}", rs.putPets)
-	fuego.Put(petsGroup, "/{id}/json", rs.putPets,
+	fuego.Put(petsGroup, "/json/{id}", rs.putPets,
 		option.Summary("Update a pet with JSON-only body"),
 		option.RequestContentType("application/json"),
 	)
