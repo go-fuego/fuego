@@ -6,7 +6,7 @@ require (
 	github.com/a-h/templ v0.3.819
 	github.com/getkin/kin-openapi v0.128.0
 	github.com/go-chi/chi/v5 v5.2.0
-	github.com/go-fuego/fuego v0.17.0
+	github.com/go-fuego/fuego v0.18.0-rc3
 	github.com/go-fuego/fuego/extra/markdown v0.0.0-20250107151251-f857cfde3dd9
 	github.com/go-fuego/fuego/middleware/basicauth v0.15.1
 	github.com/go-fuego/fuego/middleware/cache v0.0.0-20250107151251-f857cfde3dd9

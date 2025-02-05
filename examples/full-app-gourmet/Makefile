@@ -32,6 +32,11 @@ docker-build:
 docker-push:
 	docker push ewenquim/gourmet
 
+docker-build-and-push: docker-build docker-push
+
+docker-preview:
+	docker run --env-file .env --rm -p 8083:8083 ewenquim/gourmet
+
 deploy:
 	make backup & GOARCH=amd64 GOOS=linux make build
 	operations/deploy.sh
