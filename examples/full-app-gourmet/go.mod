@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/full-app-gourmet
 
-go 1.23.3
+go 1.23.6
 
 require (
 	github.com/a-h/templ v0.3.833
@@ -49,6 +49,7 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/crypto v0.32.0 // indirect
 	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c // indirect
+	golang.org/x/mod v0.23.0 // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

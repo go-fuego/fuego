@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/acme-tls
 
-go 1.23.3
+go 1.23.6
 
 require (
 	github.com/caddyserver/certmagic v0.21.7

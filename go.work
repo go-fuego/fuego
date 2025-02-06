@@ -1,10 +1,11 @@
-go 1.23.5
+go 1.23.6
 
 use (
 	.
 	./cmd/fuego
 	./examples/acme-tls
 	./examples/basic
+	./examples/crud-gorm
 	./examples/custom-errors
 	./examples/custom-serializer
 	./examples/echo-compat
@@ -12,12 +13,11 @@ use (
 	./examples/generate-opengraph-image
 	./examples/gin-compat
 	./examples/hello-world
-	./examples/crud-gorm
 	./examples/openapi
 	./examples/petstore
 	./examples/with-listener
-	./extra/fuegogin
 	./extra/fuegoecho
+	./extra/fuegogin
 	./extra/markdown
 	./middleware/basicauth
 	./middleware/cache

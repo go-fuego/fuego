@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/middleware/basicauth
 
-go 1.23.3
+go 1.23.6
 
 require (
 	github.com/go-fuego/fuego v0.18.0
