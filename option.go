@@ -3,6 +3,7 @@ package fuego
 import (
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -247,7 +248,12 @@ func OptionParam(name string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
 // OptionTags adds one or more tags to the route.
 func OptionTags(tags ...string) func(*BaseRoute) {
 	return func(r *BaseRoute) {
-		r.Operation.Tags = append(r.Operation.Tags, tags...)
+		for _, tag := range tags {
+			if slices.Contains(r.Operation.Tags, tag) {
+				return
+			}
+			r.Operation.Tags = append(r.Operation.Tags, tag)
+		}
 	}
 }
 

@@ -743,7 +743,7 @@ func TestGroupTags(t *testing.T) {
 		)
 		route := Get(childGroup, "/test", dummyController)
 
-		require.Equal(t, []string{"my-server-tag", "slash", "my-group-tag", "slash", "my-childGroup-tag"}, route.Operation.Tags)
+		require.Equal(t, []string{"my-server-tag", "slash", "my-group-tag", "my-childGroup-tag"}, route.Operation.Tags)
 	})
 }
 

@@ -23,13 +23,43 @@ func TestTags(t *testing.T) {
 }
 
 func TestAddTags(t *testing.T) {
-	s := NewServer()
-	route := Get(s, "/test", dummyController,
-		OptionTags("my-tag"),
-		OptionTags("my-other-tag"),
-	)
+	t.Run("add tags to a route", func(t *testing.T) {
+		s := NewServer()
+		route := Get(s, "/test", dummyController,
+			OptionTags("my-tag"),
+			OptionTags("my-other-tag"),
+		)
 
-	require.Equal(t, route.Operation.Tags, []string{"my-tag", "my-other-tag"})
+		require.Equal(t, route.Operation.Tags, []string{"my-tag", "my-other-tag"})
+	})
+
+	t.Run("with auto group tags", func(t *testing.T) {
+		t.Run("enabled", func(t *testing.T) {
+			s := NewServer()
+			group := Group(s, "/entity")
+			route := Get(group, "/test", dummyController)
+
+			require.Equal(t, []string{"entity"}, route.Operation.Tags)
+		})
+
+		t.Run("disabled", func(t *testing.T) {
+			s := NewServer(WithoutAutoGroupTags())
+			group := Group(s, "/entity")
+			route := Get(group, "/test", dummyController)
+
+			require.Equal(t, []string(nil), route.Operation.Tags)
+		})
+
+		t.Run("enabled, shouldn't create a duplicate tag", func(t *testing.T) {
+			s := NewServer()
+			group := Group(s, "/entity")
+			route := Get(group, "/test", dummyController,
+				OptionTags("entity"),
+			)
+
+			require.Equal(t, []string{"entity"}, route.Operation.Tags)
+		})
+	})
 }
 
 func TestQuery(t *testing.T) {
