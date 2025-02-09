@@ -79,10 +79,9 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 
 func logRequest(requestID string, r *http.Request) {
 	slog.Debug("incoming request",
-		"request_id", requestID,
 		"method", r.Method,
 		"path", r.URL.Path,
-		"timestamp", time.Now().Format(time.RFC3339),
+		"request_id", requestID,
 		"remote_addr", r.RemoteAddr,
 		"user_agent", r.UserAgent(),
 	)
@@ -90,13 +89,12 @@ func logRequest(requestID string, r *http.Request) {
 
 func logResponse(r *http.Request, rw *responseWriter, requestID string, duration time.Duration) {
 	slog.Info("outgoing response",
-		"request_id", requestID,
+		"status_code", rw.status,
 		"method", r.Method,
 		"path", r.URL.Path,
-		"timestamp", time.Now().Format(time.RFC3339),
-		"remote_addr", r.RemoteAddr,
 		"duration_ms", duration.Milliseconds(),
-		"status_code", rw.status,
+		"request_id", requestID,
+		"remote_addr", r.RemoteAddr,
 	)
 }
 
