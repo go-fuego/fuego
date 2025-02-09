@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"fmt"
 	"log/slog"
 )
 
@@ -13,7 +12,6 @@ type Registerer[T, B any] interface {
 
 func Registers[B, T any](engine *Engine, a Registerer[B, T]) *Route[B, T] {
 	route := a.Register()
-	fmt.Print("\n\ngeneric_mux log route \n", route)
 	err := route.RegisterOpenAPIOperation(engine)
 	if err != nil {
 		slog.Warn("error documenting openapi operation", "error", err)

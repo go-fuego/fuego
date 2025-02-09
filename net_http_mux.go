@@ -198,7 +198,6 @@ func camelToHuman(s string) string {
 
 // DefaultDescription returns a default .md description for a controller
 func DefaultDescription[T any](handler string, middlewares []T, middlewareConfig *MiddlewareConfig) string {
-
 	// Start with the controller info
 	description := "#### Controller: \n\n`" + handler + "`"
 
