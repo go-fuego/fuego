@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"crypto/rsa"
 	"database/sql"
 	"fmt"
 	"html/template"
@@ -28,6 +29,7 @@ type Resource struct {
 	FavoritesQueries   FavoriteRepository
 	MetaQueries        MetaRepository
 	Security           fuego.Security
+	RsaPrivateKey      *rsa.PrivateKey
 	HotReload          bool
 }
 

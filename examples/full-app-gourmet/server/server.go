@@ -41,6 +41,9 @@ func (rs Resources) Setup(
 		fuego.WithRouteOptions(
 			fuego.OptionAddResponse(http.StatusForbidden, "Forbidden", fuego.Response{Type: fuego.HTTPError{}}),
 		),
+		fuego.WithEngineOptions(
+			fuego.WithErrorHandler(customErrorHandler),
+		),
 	}
 
 	options = append(serverOptions, options...)
@@ -56,6 +59,9 @@ func (rs Resources) Setup(
 
 	fuego.Handle(app, "/static/", http.StripPrefix("/static", static.Handler()), option.Middleware(cache))
 
+	fuego.Use(app,
+		rs.HandlersResources.Security.TokenToContext(fuego.TokenFromCookie, fuego.TokenFromHeader),
+	)
 	// Register views (controllers that return HTML pages)
 	rs.HandlersResources.Routes(app)
 
