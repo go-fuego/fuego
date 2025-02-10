@@ -3,3 +3,6 @@ INSERT INTO users (username, full_name, email, encrypted_password) VALUES (?, ?,
 
 -- name: GetUserByUsername :one
 SELECT * FROM users WHERE username = ?;
+
+-- name: GetUsers :many
+SELECT * FROM users;

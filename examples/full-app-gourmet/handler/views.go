@@ -54,7 +54,6 @@ func (rs Resource) Routes(s *fuego.Server) {
 	)
 
 	// Users
-	fuego.Get(s, "/users", rs.adminRecipes, option.Tags("users"))
 	fuego.Get(s, "/users/{username}", rs.getUserByUsername, option.Tags("users"))
 
 	// Favorites
@@ -111,5 +110,6 @@ func (rs Resource) Routes(s *fuego.Server) {
 	)
 
 	// Users
-	fuego.Post(s, "/users", rs.createUser)
+	fuego.Get(adminRoutes, "/users", rs.getUsers, option.Tags("users"))
+	fuego.Post(adminRoutes, "/users", rs.createUser, option.Tags("users"))
 }

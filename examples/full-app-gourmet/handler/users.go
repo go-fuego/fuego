@@ -121,7 +121,12 @@ func (rs Resource) getUserByUsername(c fuego.ContextNoBody) (store.User, error) 
 	return rs.UsersQueries.GetUserByUsername(c.Context(), username)
 }
 
+func (rs Resource) getUsers(c fuego.ContextNoBody) ([]store.User, error) {
+	return rs.UsersQueries.GetUsers(c.Context())
+}
+
 type UserRepository interface {
 	CreateUser(ctx context.Context, arg store.CreateUserParams) (store.User, error)
 	GetUserByUsername(ctx context.Context, username string) (store.User, error)
+	GetUsers(ctx context.Context) ([]store.User, error)
 }
