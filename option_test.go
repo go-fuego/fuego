@@ -838,7 +838,10 @@ func TestOptionDescription(t *testing.T) {
 			fuego.WithEngineOptions(
 				fuego.WithMiddlewareConfig(
 					fuego.MiddlewareConfig{
+						IsInititalized:           true,
 						DisableMiddlewareSection: true,
+						ShortMiddlewaresPaths:    false,
+						MaxNumberOfMiddlewares:   6,
 					},
 				),
 			),
@@ -855,8 +858,10 @@ func TestOptionDescription(t *testing.T) {
 			fuego.WithEngineOptions(
 				fuego.WithMiddlewareConfig(
 					fuego.MiddlewareConfig{
+						IsInititalized:           true,
 						DisableMiddlewareSection: true,
 						ShortMiddlewaresPaths:    true,
+						MaxNumberOfMiddlewares:   6,
 					},
 				),
 			),
@@ -873,7 +878,10 @@ func TestOptionDescription(t *testing.T) {
 			fuego.WithEngineOptions(
 				fuego.WithMiddlewareConfig(
 					fuego.MiddlewareConfig{
-						ShortMiddlewaresPaths: true,
+						IsInititalized:           true,
+						ShortMiddlewaresPaths:    true,
+						DisableMiddlewareSection: false,
+						MaxNumberOfMiddlewares:   6,
 					},
 				),
 			),
@@ -883,6 +891,10 @@ func TestOptionDescription(t *testing.T) {
 			option.Description("test description"),
 		)
 
+		t.Log("route.operation **********")
+		t.Log(route.Middlewares)
+		t.Log(route.MiddlewareConfig)
+		t.Log("*********")
 		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n\n---\n\ntest description", route.Operation.Description)
 	})
 	t.Run("Limit the number of middlewares", func(t *testing.T) {
@@ -890,7 +902,10 @@ func TestOptionDescription(t *testing.T) {
 			fuego.WithEngineOptions(
 				fuego.WithMiddlewareConfig(
 					fuego.MiddlewareConfig{
-						MaxNumberOfMiddlewares: 2,
+						IsInititalized:           true,
+						MaxNumberOfMiddlewares:   2,
+						DisableMiddlewareSection: false,
+						ShortMiddlewaresPaths:    false,
 					},
 				),
 			),
@@ -910,6 +925,7 @@ func TestOptionDescription(t *testing.T) {
 			fuego.WithEngineOptions(
 				fuego.WithMiddlewareConfig(
 					fuego.MiddlewareConfig{
+						IsInititalized:         true,
 						MaxNumberOfMiddlewares: 3,
 						ShortMiddlewaresPaths:  true,
 					},

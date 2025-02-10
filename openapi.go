@@ -132,7 +132,7 @@ func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(engine *
 	if route.Hidden || route.Method == "" {
 		return nil
 	}
-	route.middlewareConfig = &engine.OpenAPIConfig.middlewareConfig
+	route.MiddlewareConfig = &engine.OpenAPIConfig.MiddlewareConfig
 	operation, err := RegisterOpenAPIOperation(engine.OpenAPI, *route)
 	route.Operation = operation
 	return err
