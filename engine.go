@@ -74,7 +74,6 @@ var defaultOpenAPIConfig = OpenAPIConfig{
 	SwaggerURL:   "/swagger",
 	UIHandler:    DefaultOpenAPIHandler,
 	MiddlewareConfig: MiddlewareConfig{
-		IsInititalized:           false,
 		DisableMiddlewareSection: false,
 		MaxNumberOfMiddlewares:   6,
 		ShortMiddlewaresPaths:    false,
@@ -88,7 +87,6 @@ func WithRequestContentType(consumes ...string) func(*Engine) {
 }
 
 type MiddlewareConfig struct {
-	IsInititalized           bool
 	DisableMiddlewareSection bool
 	MaxNumberOfMiddlewares   int
 	ShortMiddlewaresPaths    bool
@@ -96,6 +94,9 @@ type MiddlewareConfig struct {
 
 func WithMiddlewareConfig(cfg MiddlewareConfig) func(*Engine) {
 	return func(e *Engine) {
+		if cfg.MaxNumberOfMiddlewares == 0 {
+			cfg.MaxNumberOfMiddlewares = defaultOpenAPIConfig.MiddlewareConfig.MaxNumberOfMiddlewares
+		}
 		e.OpenAPIConfig.MiddlewareConfig = cfg
 	}
 }
@@ -128,11 +129,11 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 			slog.Error("Error serving Swagger UI. Value of 's.OpenAPIServerConfig.SwaggerURL' option is not valid", "url", e.OpenAPIConfig.SwaggerURL)
 			return
 		}
-		if config.MiddlewareConfig.IsInititalized {
-			e.OpenAPIConfig.MiddlewareConfig = config.MiddlewareConfig
-		} else {
-			e.OpenAPIConfig.MiddlewareConfig = defaultOpenAPIConfig.MiddlewareConfig
+
+		if config.MiddlewareConfig.MaxNumberOfMiddlewares == 0 {
+			config.MiddlewareConfig.MaxNumberOfMiddlewares = defaultOpenAPIConfig.MiddlewareConfig.MaxNumberOfMiddlewares
 		}
+		e.OpenAPIConfig.MiddlewareConfig = config.MiddlewareConfig
 	}
 }
 
