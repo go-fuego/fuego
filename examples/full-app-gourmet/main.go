@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -53,6 +55,11 @@ func main() {
 
 	store := store.New(db)
 
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		panic(err)
+	}
+
 	// Create resources that will be available in handlers
 	viewsResources := handler.Resource{
 		RecipesQueries:     store,
@@ -62,6 +69,7 @@ func main() {
 		FavoritesQueries:   store,
 		Security:           fuego.NewSecurity(),
 		HotReload:          *debug,
+		RsaPrivateKey:      key,
 	}
 
 	rs := server.Resources{
