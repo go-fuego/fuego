@@ -57,7 +57,7 @@ func (rs Resource) Routes(s *fuego.Server) {
 	fuego.Get(s, "/users/{username}", rs.getUserByUsername, option.Tags("users"))
 	fuego.Post(s, "/login", rs.login, option.Tags("auth"), option.AddResponse(401, "Unauthorized", fuego.Response{Type: fuego.HTTPError{}}))
 	fuego.Post(s, "/logout", rs.logout, option.Tags("auth"))
-	fuego.Post(s, "/me", rs.me, option.Tags("auth"))
+	fuego.Get(s, "/me", rs.me, option.Tags("auth"))
 
 	// Favorites
 	optionFavorites := option.Group(
@@ -73,6 +73,7 @@ func (rs Resource) Routes(s *fuego.Server) {
 		optionFavorites,
 		optionQueryRecipeID,
 	)
+	fuego.Get(s, "/favorites", rs.getMyFavorites, option.Tags("favorites"))
 	fuego.Get(s, "/users/{username}/favorites", rs.getFavoritesByUser, optionFavorites)
 	fuego.Get(s, "/users/{username}/favorites/sqlinjection", rs.getFavoritesByUserUnsecureSql, optionFavorites)
 
