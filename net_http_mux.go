@@ -197,17 +197,17 @@ func camelToHuman(s string) string {
 }
 
 // DefaultDescription returns a default .md description for a controller
-func DefaultDescription[T any](handler string, middlewares []T) string {
+func DefaultDescription[T any](handler string, middlewares []T, middlewareDisplayLimit int) string {
 	description := "#### Controller: \n\n`" +
 		handler + "`"
 
-	if len(middlewares) > 0 {
+	if len(middlewares) > 0 && middlewareDisplayLimit > 0 {
 		description += "\n\n#### Middlewares:\n"
 
 		for i, fn := range middlewares {
 			description += "\n- `" + FuncName(fn) + "`"
 
-			if i == 4 {
+			if i == middlewareDisplayLimit-1 {
 				description += "\n- more middleware…"
 				break
 			}
