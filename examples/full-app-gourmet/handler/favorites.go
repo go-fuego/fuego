@@ -39,3 +39,33 @@ func (rs Resource) removeFavorite(c fuego.ContextNoBody) (any, error) {
 func (rs Resource) getFavoritesByUser(c fuego.ContextNoBody) ([]store.GetFavoritesByUserRow, error) {
 	return rs.FavoritesQueries.GetFavoritesByUser(c, c.PathParam("username"))
 }
+
+type UserFavorite struct {
+	Username string `json:"username"`
+	RecipeID string `json:"recipe_id"`
+}
+
+func (rs Resource) getFavoritesByUserUnsecureSql(c fuego.ContextNoBody) ([]UserFavorite, error) {
+	dbConn := store.InitDB("recipe.bad.db")
+	defer dbConn.Close()
+
+	badDBRequest := "SELECT username, recipe_id FROM users_recipes_favorites JOIN recipe ON users_recipes_favorites.recipe_id = recipe.id WHERE username = '" + c.PathParam("username") + "'" // nolint:gosec
+
+	rows, err := dbConn.Query(badDBRequest)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	recipeFavorites := make([]UserFavorite, 0)
+	for rows.Next() {
+		var userFavorite UserFavorite
+		if err := rows.Scan(&userFavorite.Username, &userFavorite.RecipeID); err != nil {
+			return nil, err
+		}
+
+		recipeFavorites = append(recipeFavorites, userFavorite)
+	}
+
+	return recipeFavorites, nil
+}
