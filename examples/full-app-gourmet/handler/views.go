@@ -74,6 +74,7 @@ func (rs Resource) Routes(s *fuego.Server) {
 		optionQueryRecipeID,
 	)
 	fuego.Get(s, "/users/{username}/favorites", rs.getFavoritesByUser, optionFavorites)
+	fuego.Get(s, "/users/{username}/favorites/sqlinjection", rs.getFavoritesByUserUnsecureSql, optionFavorites)
 
 	if rs.HotReload {
 		hotReload(s)

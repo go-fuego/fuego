@@ -78,7 +78,7 @@ func main() {
 	}
 
 	app := rs.Setup(
-		fuego.WithAddr(fmt.Sprintf(":%d", *port)),
+		fuego.WithAddr(fmt.Sprintf("%s:%d", os.Getenv("HOST"), *port)),
 		fuego.WithLoggingMiddleware(fuego.LoggingConfig{
 			RequestIDFunc: func() string { return shortuuid.New() },
 		}),
