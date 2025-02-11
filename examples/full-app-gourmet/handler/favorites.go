@@ -36,6 +36,11 @@ func (rs Resource) removeFavorite(c fuego.ContextNoBody) (any, error) {
 	return nil, err
 }
 
+func (rs Resource) getMyFavorites(c fuego.ContextNoBody) ([]store.GetFavoritesByUserRow, error) {
+	username := "string"
+	return rs.FavoritesQueries.GetFavoritesByUser(c, username)
+}
+
 func (rs Resource) getFavoritesByUser(c fuego.ContextNoBody) ([]store.GetFavoritesByUserRow, error) {
 	return rs.FavoritesQueries.GetFavoritesByUser(c, c.PathParam("username"))
 }
