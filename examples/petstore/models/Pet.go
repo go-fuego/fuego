@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/go-fuego/fuego"
 )
@@ -20,6 +21,7 @@ type Pets struct {
 	Age        int        `json:"age" example:"2" description:"Age of the pet, in years"`
 	IsAdopted  bool       `json:"is_adopted" description:"Is the pet adopted"`
 	References References `json:"references"`
+	BirthDate  time.Time  `json:"birth_date"`
 }
 
 type PetsCreate struct {
