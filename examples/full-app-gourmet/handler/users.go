@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"log/slog"
 	"net/http"
 	"time"
 
@@ -85,20 +84,12 @@ func (rs Resource) logout(c fuego.ContextNoBody) (any, error) {
 }
 
 func (rs Resource) me(c fuego.ContextNoBody) (any, error) {
-	t, err := fuego.TokenFromContext(c.Context())
+	caller, err := usernameFromContext(c.Context())
 	if err != nil {
 		return nil, err
 	}
 
-	slog.Info("me", "token", t)
-
-	issuer, err := t.GetIssuer()
-	if err != nil {
-		return nil, err
-	}
-	slog.Info("me", "issuer", issuer)
-
-	return rs.UsersQueries.GetUserByUsername(c.Context(), issuer)
+	return rs.UsersQueries.GetUserByUsername(c.Context(), caller)
 }
 
 type CreateUserPayload struct {
