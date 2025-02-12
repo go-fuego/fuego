@@ -2,6 +2,7 @@ package fuego
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -54,7 +55,8 @@ func TestSecurity(t *testing.T) {
 		security.Now = func() time.Time { return now.Add(15 * time.Minute) }
 		decoded, err := security.ValidateToken(s)
 		require.Error(t, err)
-		require.ErrorIs(t, err, ErrExpired)
+		fmt.Printf("error: %v\n", err)
+		require.ErrorAs(t, err, &UnauthorizedError{})
 		require.Empty(t, decoded)
 	})
 }
@@ -184,7 +186,7 @@ func TestAuthWall(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			authWall(h).ServeHTTP(w, r)
-			require.Equal(t, http.StatusInternalServerError, w.Code)
+			require.Equal(t, http.StatusForbidden, w.Code)
 		})
 
 		t.Run("with token", func(t *testing.T) {
@@ -214,7 +216,7 @@ func TestAuthWall(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			authWall(h).ServeHTTP(w, r)
-			require.Equal(t, http.StatusInternalServerError, w.Code)
+			require.Equal(t, http.StatusForbidden, w.Code)
 		})
 
 		t.Run("with token", func(t *testing.T) {
@@ -373,7 +375,7 @@ func TestSecurity_StdLoginHandler(t *testing.T) {
 	security := NewSecurity()
 	v := func(r *http.Request) (jwt.Claims, error) {
 		if r.FormValue("user") != "test" || r.FormValue("password") != "test" {
-			return nil, ErrUnauthorized
+			return nil, UnauthorizedError{}
 		}
 		return jwt.MapClaims{"sub": "123"}, nil
 	}
@@ -405,7 +407,7 @@ func TestSecurity_LoginHandler(t *testing.T) {
 	security := NewSecurity()
 	v := func(user, password string) (jwt.Claims, error) {
 		if user != "test" || password != "test" {
-			return nil, ErrUnauthorized
+			return nil, UnauthorizedError{}
 		}
 		return jwt.MapClaims{"sub": "123"}, nil
 	}
