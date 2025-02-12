@@ -21,6 +21,7 @@ func NewOpenAPI() *OpenAPI {
 		description:            &desc,
 		generator:              openapi3gen.NewGenerator(),
 		globalOpenAPIResponses: []openAPIResponse{},
+		Config:                 defaultOpenAPIConfig,
 	}
 }
 
@@ -29,6 +30,7 @@ type OpenAPI struct {
 	description            *openapi3.T
 	generator              *openapi3gen.Generator
 	globalOpenAPIResponses []openAPIResponse
+	Config                 OpenAPIConfig
 }
 
 func (openAPI *OpenAPI) Description() *openapi3.T {
@@ -86,12 +88,12 @@ type OpenAPIServable interface {
 }
 
 func (e *Engine) RegisterOpenAPIRoutes(o OpenAPIServable) {
-	if e.OpenAPIConfig.Disabled {
+	if e.OpenAPI.Config.Disabled {
 		return
 	}
 	o.SpecHandler(e)
 
-	if e.OpenAPIConfig.DisableSwaggerUI {
+	if e.OpenAPI.Config.DisableSwaggerUI {
 		return
 	}
 	o.UIHandler(e)
@@ -132,7 +134,7 @@ func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(openapi 
 	if route.Hidden || route.Method == "" {
 		return nil
 	}
-
+	route.MiddlewareConfig = &openapi.Config.MiddlewareConfig
 	operation, err := RegisterOpenAPIOperation(openapi, *route)
 	route.Operation = operation
 	return err

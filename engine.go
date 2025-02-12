@@ -15,7 +15,7 @@ import (
 // NewEngine creates a new Engine with the given options.
 // For example:
 //
-//	engine := fuego.NewEngin(
+//	engine := fuego.NewEngine(
 //		WithOpenAPIConfig(
 //			OpenAPIConfig{
 //				PrettyFormatJSON: true,
@@ -26,9 +26,8 @@ import (
 // Options all begin with `With`.
 func NewEngine(options ...func(*Engine)) *Engine {
 	e := &Engine{
-		OpenAPI:       NewOpenAPI(),
-		OpenAPIConfig: defaultOpenAPIConfig,
-		ErrorHandler:  ErrorHandler,
+		OpenAPI:      NewOpenAPI(),
+		ErrorHandler: ErrorHandler,
 	}
 	for _, option := range options {
 		option(e)
@@ -38,9 +37,8 @@ func NewEngine(options ...func(*Engine)) *Engine {
 
 // The Engine is the main struct of the framework.
 type Engine struct {
-	OpenAPI       *OpenAPI
-	ErrorHandler  func(error) error
-	OpenAPIConfig OpenAPIConfig
+	OpenAPI      *OpenAPI
+	ErrorHandler func(error) error
 
 	requestContentTypes []string
 }
@@ -64,6 +62,8 @@ type OpenAPIConfig struct {
 	SwaggerURL string
 	// If true, the server will not serve the Swagger UI
 	DisableSwaggerUI bool
+	// Middleware configuration for the engine
+	MiddlewareConfig MiddlewareConfig
 }
 
 var defaultOpenAPIConfig = OpenAPIConfig{
@@ -71,6 +71,11 @@ var defaultOpenAPIConfig = OpenAPIConfig{
 	SpecURL:      "/swagger/openapi.json",
 	SwaggerURL:   "/swagger",
 	UIHandler:    DefaultOpenAPIHandler,
+	MiddlewareConfig: MiddlewareConfig{
+		DisableMiddlewareSection: false,
+		MaxNumberOfMiddlewares:   6,
+		ShortMiddlewaresPaths:    false,
+	},
 }
 
 // WithRequestContentType sets the accepted content types for the engine.
@@ -79,34 +84,52 @@ func WithRequestContentType(consumes ...string) func(*Engine) {
 	return func(e *Engine) { e.requestContentTypes = consumes }
 }
 
+type MiddlewareConfig struct {
+	DisableMiddlewareSection bool
+	MaxNumberOfMiddlewares   int
+	ShortMiddlewaresPaths    bool
+}
+
+func WithMiddlewareConfig(cfg MiddlewareConfig) func(*Engine) {
+	return func(e *Engine) {
+		e.OpenAPI.Config.MiddlewareConfig.DisableMiddlewareSection = cfg.DisableMiddlewareSection
+		e.OpenAPI.Config.MiddlewareConfig.ShortMiddlewaresPaths = cfg.ShortMiddlewaresPaths
+		if cfg.MaxNumberOfMiddlewares != 0 {
+			e.OpenAPI.Config.MiddlewareConfig.MaxNumberOfMiddlewares = cfg.MaxNumberOfMiddlewares
+		}
+	}
+}
+
 func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 	return func(e *Engine) {
 		if config.JSONFilePath != "" {
-			e.OpenAPIConfig.JSONFilePath = config.JSONFilePath
+			e.OpenAPI.Config.JSONFilePath = config.JSONFilePath
 		}
 		if config.SpecURL != "" {
-			e.OpenAPIConfig.SpecURL = config.SpecURL
+			e.OpenAPI.Config.SpecURL = config.SpecURL
 		}
 		if config.SwaggerURL != "" {
-			e.OpenAPIConfig.SwaggerURL = config.SwaggerURL
+			e.OpenAPI.Config.SwaggerURL = config.SwaggerURL
 		}
 		if config.UIHandler != nil {
-			e.OpenAPIConfig.UIHandler = config.UIHandler
+			e.OpenAPI.Config.UIHandler = config.UIHandler
 		}
 
-		e.OpenAPIConfig.Disabled = config.Disabled
-		e.OpenAPIConfig.DisableLocalSave = config.DisableLocalSave
-		e.OpenAPIConfig.PrettyFormatJSON = config.PrettyFormatJSON
-		e.OpenAPIConfig.DisableSwaggerUI = config.DisableSwaggerUI
+		e.OpenAPI.Config.Disabled = config.Disabled
+		e.OpenAPI.Config.DisableLocalSave = config.DisableLocalSave
+		e.OpenAPI.Config.PrettyFormatJSON = config.PrettyFormatJSON
+		e.OpenAPI.Config.DisableSwaggerUI = config.DisableSwaggerUI
 
-		if !validateSpecURL(e.OpenAPIConfig.SpecURL) {
-			slog.Error("Error serving OpenAPI JSON spec. Value of 's.OpenAPIServerConfig.SpecURL' option is not valid", "url", e.OpenAPIConfig.SpecURL)
+		if !validateSpecURL(e.OpenAPI.Config.SpecURL) {
+			slog.Error("Error serving OpenAPI JSON spec. Value of 's.OpenAPIServerConfig.SpecURL' option is not valid", "url", e.OpenAPI.Config.SpecURL)
 			return
 		}
-		if !validateSwaggerURL(e.OpenAPIConfig.SwaggerURL) {
-			slog.Error("Error serving Swagger UI. Value of 's.OpenAPIServerConfig.SwaggerURL' option is not valid", "url", e.OpenAPIConfig.SwaggerURL)
+		if !validateSwaggerURL(e.OpenAPI.Config.SwaggerURL) {
+			slog.Error("Error serving Swagger UI. Value of 's.OpenAPIServerConfig.SwaggerURL' option is not valid", "url", e.OpenAPI.Config.SwaggerURL)
 			return
 		}
+
+		WithMiddlewareConfig(config.MiddlewareConfig)(e)
 	}
 }
 
@@ -150,10 +173,10 @@ func (e *Engine) OutputOpenAPISpec() *openapi3.T {
 		slog.Error("Error marshaling spec to JSON", "error", err)
 	}
 
-	if !e.OpenAPIConfig.DisableLocalSave {
-		err := e.saveOpenAPIToFile(e.OpenAPIConfig.JSONFilePath, jsonSpec)
+	if !e.OpenAPI.Config.DisableLocalSave {
+		err := e.saveOpenAPIToFile(e.OpenAPI.Config.JSONFilePath, jsonSpec)
 		if err != nil {
-			slog.Error("Error saving spec to local path", "error", err, "path", e.OpenAPIConfig.JSONFilePath)
+			slog.Error("Error saving spec to local path", "error", err, "path", e.OpenAPI.Config.JSONFilePath)
 		}
 	}
 	return e.OpenAPI.Description()
@@ -183,14 +206,14 @@ func (e *Engine) saveOpenAPIToFile(jsonSpecLocalPath string, jsonSpec []byte) er
 }
 
 func (e *Engine) marshalSpec() ([]byte, error) {
-	if e.OpenAPIConfig.PrettyFormatJSON {
+	if e.OpenAPI.Config.PrettyFormatJSON {
 		return json.MarshalIndent(e.OpenAPI.Description(), "", "\t")
 	}
 	return json.Marshal(e.OpenAPI.Description())
 }
 
 func (e *Engine) printOpenAPIMessage(msg string) {
-	if !e.OpenAPIConfig.DisableMessages {
+	if !e.OpenAPI.Config.DisableMessages {
 		slog.Info(msg)
 	}
 }

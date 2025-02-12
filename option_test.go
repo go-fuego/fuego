@@ -830,8 +830,115 @@ func TestOptionDescription(t *testing.T) {
 			option.Middleware(dummyMiddleware), // After the description (6th middleware)
 			option.Middleware(dummyMiddleware), // 7th middleware, should not be included
 		)
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n\n---\n\nanother description", route.Operation.Description)
+	})
 
-		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- more middleware…\n\n---\n\nanother description", route.Operation.Description)
+	t.Run("Disable middleware section", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithEngineOptions(
+				fuego.WithMiddlewareConfig(
+					fuego.MiddlewareConfig{
+						DisableMiddlewareSection: true,
+					},
+				),
+			),
+		)
+
+		route := fuego.Get(s, "/test", helloWorld,
+			option.Description("test description"),
+		)
+
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n---\n\ntest description", route.Operation.Description)
+	})
+	t.Run("Disable middleware section and shorten paths", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithEngineOptions(
+				fuego.WithMiddlewareConfig(
+					fuego.MiddlewareConfig{
+						DisableMiddlewareSection: true,
+						ShortMiddlewaresPaths:    true,
+					},
+				),
+			),
+		)
+
+		route := fuego.Get(s, "/test", helloWorld,
+			option.Description("test description"),
+		)
+
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n---\n\ntest description", route.Operation.Description)
+	})
+	t.Run("Shorten middleware paths", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithEngineOptions(
+				fuego.WithMiddlewareConfig(
+					fuego.MiddlewareConfig{
+						ShortMiddlewaresPaths: true,
+					},
+				),
+			),
+		)
+
+		route := fuego.Get(s, "/test", helloWorld,
+			option.Description("test description"),
+		)
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n\n---\n\ntest description", route.Operation.Description)
+	})
+	t.Run("Limit the number of middlewares", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithEngineOptions(
+				fuego.WithMiddlewareConfig(
+					fuego.MiddlewareConfig{
+						MaxNumberOfMiddlewares: 2,
+					},
+				),
+			),
+		)
+
+		route := fuego.Get(s, "/test", helloWorld,
+			option.Description("test description"),
+			option.Middleware(dummyMiddleware),
+			option.Middleware(dummyMiddleware),
+			option.Middleware(dummyMiddleware),
+		)
+
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-fuego/fuego_test.dummyMiddleware`\n- more middleware…\n\n---\n\ntest description", route.Operation.Description)
+	})
+	t.Run("Default Values", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithEngineOptions(
+				fuego.WithMiddlewareConfig(
+					fuego.MiddlewareConfig{},
+				),
+			),
+		)
+
+		route := fuego.Get(s, "/test", helloWorld,
+			option.Description("test description"),
+		)
+		require.Equal(t, 6, route.MiddlewareConfig.MaxNumberOfMiddlewares)
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\ntest description", route.Operation.Description)
+	})
+	t.Run("Limit the number of middlewares and shorten paths", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithEngineOptions(
+				fuego.WithMiddlewareConfig(
+					fuego.MiddlewareConfig{
+						MaxNumberOfMiddlewares: 3,
+						ShortMiddlewaresPaths:  true,
+					},
+				),
+			),
+		)
+
+		route := fuego.Get(s, "/test", helloWorld,
+			option.Description("test description"),
+			option.Middleware(dummyMiddleware),
+			option.Middleware(dummyMiddleware),
+			option.Middleware(dummyMiddleware),
+		)
+
+		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `fuego_test.dummyMiddleware`\n- `fuego_test.dummyMiddleware`\n- more middleware…\n\n---\n\ntest description", route.Operation.Description)
 	})
 }
 

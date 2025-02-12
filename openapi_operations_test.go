@@ -9,7 +9,10 @@ import (
 
 func TestTags(t *testing.T) {
 	s := NewServer()
-	route := Get(s, "/test", testController,
+
+	route := Get(s,
+		"/test",
+		testController,
 		OptionTags("my-tag"),
 		OptionDescription("my description"),
 		OptionSummary("my summary"),
