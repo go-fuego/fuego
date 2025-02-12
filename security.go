@@ -17,11 +17,26 @@ import (
 )
 
 var (
-	ErrUnauthorized     = errors.New("unauthorized")
-	ErrTokenNotFound    = errors.New("token not found")
+	// ErrUnauthorized is used for authorization errors
+	//
+	// Deprecated: Use [UnauthorizedError] instead.
+	ErrUnauthorized = errors.New("unauthorized")
+	// ErrTokenNotFound is used when the token is not found
+	//
+	// Deprecated: Use [UnauthorizedError] instead.
+	ErrTokenNotFound = errors.New("token not found")
+	// ErrInvalidTokenType is used when the token type is invalid
+	//
+	// Deprecated: Use [UnauthorizedError] instead.
 	ErrInvalidTokenType = errors.New("invalid token type")
+	// ErrInvalidRolesType is used when the roles type is invalid
+	//
+	// Deprecated: Use [UnauthorizedError] instead.
 	ErrInvalidRolesType = errors.New("invalid role type. Must be []string")
-	ErrExpired          = errors.New("token is expired")
+	// ErrExpired is used when the token is expired
+	//
+	// Deprecated: Use [ForbiddenError] instead.
+	ErrExpired = errors.New("token is expired")
 )
 
 // Security holds the key to sign the JWT tokens, and configuration information.
@@ -92,8 +107,11 @@ func (security Security) ValidateToken(token string) (*jwt.Token, error) {
 	}
 
 	iat, err := t.Claims.GetIssuedAt()
-	if err != nil || iat == nil || float64(iat.Unix())+security.ExpiresInterval.Seconds() < float64(security.Now().Unix()) {
-		return nil, ErrExpired
+	if err != nil {
+		return nil, UnauthorizedError{Title: "No Issued date found", Err: err}
+	}
+	if iat == nil || float64(iat.Unix())+security.ExpiresInterval.Seconds() < float64(security.Now().Unix()) {
+		return nil, UnauthorizedError{Title: "Token expired"}
 	}
 
 	return t, nil
@@ -123,11 +141,11 @@ func WithValue(ctx context.Context, val any) context.Context {
 func TokenFromContext(ctx context.Context) (jwt.Claims, error) {
 	value := ctx.Value(contextKeyJWT)
 	if value == nil {
-		return nil, ErrTokenNotFound
+		return nil, UnauthorizedError{Title: "Could not find token in context"}
 	}
 	claims, ok := value.(jwt.MapClaims)
 	if !ok {
-		return nil, ErrInvalidTokenType
+		return nil, UnauthorizedError{Title: "Invalid token type"}
 	}
 
 	return claims, nil
@@ -147,7 +165,7 @@ func GetToken[T any](ctx context.Context) (T, error) {
 
 	myClaims, ok := claims.(T)
 	if !ok {
-		return myClaims, ErrInvalidTokenType
+		return myClaims, UnauthorizedError{Title: "Invalid token type"}
 	}
 
 	return myClaims, nil
@@ -306,20 +324,20 @@ func authWall(authorizeFunc func(userRoles ...string) bool) func(next http.Handl
 			// Get the authorizationHeader from the context (set by TokenToContext)
 			claims, err := TokenFromContext(r.Context())
 			if err != nil {
-				SendJSONError(w, nil, ErrUnauthorized)
+				SendJSONError(w, nil, UnauthorizedError{Title: "Unauthorized"})
 				return
 			}
 
 			// Get the subject and userRoles from the claims
 			userRoles, ok := claims.(jwt.MapClaims)["roles"].([]string)
 			if !ok {
-				SendJSONError(w, nil, ErrInvalidTokenType)
+				SendJSONError(w, nil, UnauthorizedError{Title: "Could not find roles in token"})
 				return
 			}
 
 			// Check if the user is authorized
 			if !authorizeFunc(userRoles...) {
-				SendJSONError(w, nil, ErrUnauthorized)
+				SendJSONError(w, nil, ForbiddenError{Title: "Access denied"})
 				return
 			}
 
@@ -464,7 +482,7 @@ func (security Security) LoginHandler(verifyUserInfo func(user, password string)
 func (security Security) RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	claims, err := TokenFromContext(r.Context())
 	if err != nil {
-		SendJSONError(w, nil, ErrUnauthorized)
+		SendJSONError(w, nil, UnauthorizedError{Title: "Could not find token in context"})
 		return
 	}
 
