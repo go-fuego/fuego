@@ -392,6 +392,9 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 
 	for i := range t.NumField() {
 		field := t.Field(i)
+		if !field.IsExported() {
+			continue
+		}
 		if field.Anonymous {
 			fieldType := field.Type
 			parseStructTags(fieldType, schemaRef)
