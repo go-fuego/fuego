@@ -14,31 +14,57 @@ type FavoriteRepository interface {
 	GetFavoritesByUser(ctx context.Context, username string) ([]store.GetFavoritesByUserRow, error)
 }
 
-func (rs Resource) addFavorite(c fuego.ContextNoBody) (store.UsersRecipesFavorite, error) {
+func (rs Resource) addFavorite(c fuego.ContextNoBody) (*store.UsersRecipesFavorite, error) {
+	username := c.PathParam("username")
+
+	caller, err := usernameFromContext(c.Context())
+	if err != nil {
+		return nil, err
+	}
+
+	if caller != username {
+		return nil, fuego.ForbiddenError{Title: "you can only add your own favorites"}
+	}
+
 	payload := store.AddFavoriteParams{
-		Username: c.PathParam("username"),
+		Username: username,
 		RecipeID: c.QueryParam("recipeID"),
 	}
 	slog.Info("adding favorite", "payload", payload)
 	fav, err := rs.FavoritesQueries.AddFavorite(c, payload)
 	if err != nil {
-		slog.Error("error adding favorite", "err", err)
-		return store.UsersRecipesFavorite{}, err
+		return nil, err
 	}
-	return fav, nil
+
+	return &fav, nil
 }
 
 func (rs Resource) removeFavorite(c fuego.ContextNoBody) (any, error) {
-	err := rs.FavoritesQueries.RemoveFavorite(c, store.RemoveFavoriteParams{
-		Username: c.PathParam("username"),
+	username := c.PathParam("username")
+
+	caller, err := usernameFromContext(c.Context())
+	if err != nil {
+		return nil, err
+	}
+
+	if caller != username {
+		return nil, fuego.ForbiddenError{Title: "you can only remove your own favorites"}
+	}
+
+	err = rs.FavoritesQueries.RemoveFavorite(c, store.RemoveFavoriteParams{
+		Username: username,
 		RecipeID: c.QueryParam("recipeID"),
 	})
 	return nil, err
 }
 
 func (rs Resource) getMyFavorites(c fuego.ContextNoBody) ([]store.GetFavoritesByUserRow, error) {
-	username := "string"
-	return rs.FavoritesQueries.GetFavoritesByUser(c, username)
+	caller, err := usernameFromContext(c.Context())
+	if err != nil {
+		return nil, err
+	}
+
+	return rs.FavoritesQueries.GetFavoritesByUser(c, caller)
 }
 
 func (rs Resource) getFavoritesByUser(c fuego.ContextNoBody) ([]store.GetFavoritesByUserRow, error) {
