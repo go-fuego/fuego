@@ -94,10 +94,11 @@ type MiddlewareConfig struct {
 
 func WithMiddlewareConfig(cfg MiddlewareConfig) func(*Engine) {
 	return func(e *Engine) {
-		if cfg.MaxNumberOfMiddlewares == 0 {
-			cfg.MaxNumberOfMiddlewares = defaultOpenAPIConfig.MiddlewareConfig.MaxNumberOfMiddlewares
+		e.OpenAPIConfig.MiddlewareConfig.DisableMiddlewareSection = cfg.DisableMiddlewareSection
+		e.OpenAPIConfig.MiddlewareConfig.ShortMiddlewaresPaths = cfg.ShortMiddlewaresPaths
+		if cfg.MaxNumberOfMiddlewares != 0 {
+			e.OpenAPIConfig.MiddlewareConfig.MaxNumberOfMiddlewares = cfg.MaxNumberOfMiddlewares
 		}
-		e.OpenAPIConfig.MiddlewareConfig = cfg
 	}
 }
 
@@ -130,10 +131,7 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 			return
 		}
 
-		if config.MiddlewareConfig.MaxNumberOfMiddlewares == 0 {
-			config.MiddlewareConfig.MaxNumberOfMiddlewares = defaultOpenAPIConfig.MiddlewareConfig.MaxNumberOfMiddlewares
-		}
-		e.OpenAPIConfig.MiddlewareConfig = config.MiddlewareConfig
+		WithMiddlewareConfig(config.MiddlewareConfig)(e)
 	}
 }
 
