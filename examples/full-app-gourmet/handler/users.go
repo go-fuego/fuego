@@ -56,11 +56,8 @@ func (rs Resource) login(c fuego.ContextWithBody[LoginPayload]) (*TokenResponse,
 		Roles: []string{"admin", "cook"},
 	}
 
-	tok := jwt.NewWithClaims(jwt.SigningMethodRS256, myToken)
-
-	s, err := tok.SignedString(rs.RsaPrivateKey)
+	s, err := rs.Security.GenerateToken(myToken)
 	if err != nil {
-		slog.Error("Error signing token", "error", err)
 		return nil, err
 	}
 
@@ -90,15 +87,16 @@ func (rs Resource) logout(c fuego.ContextNoBody) (any, error) {
 func (rs Resource) me(c fuego.ContextNoBody) (any, error) {
 	t, err := fuego.TokenFromContext(c.Context())
 	if err != nil {
-		slog.Error("Error getting token from context", "error", err)
 		return nil, err
 	}
-	slog.Info("slog", "token", t)
+
+	slog.Info("me", "token", t)
 
 	issuer, err := t.GetIssuer()
 	if err != nil {
 		return nil, err
 	}
+	slog.Info("me", "issuer", issuer)
 
 	return rs.UsersQueries.GetUserByUsername(c.Context(), issuer)
 }
