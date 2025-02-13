@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -65,6 +66,7 @@ func (rs Resource) login(c fuego.ContextWithBody[LoginPayload]) (*TokenResponse,
 		Value:    s,
 		HttpOnly: true,
 		MaxAge:   300,
+		Domain:   os.Getenv("COOKIE_DOMAIN"),
 		// SameSite: http.SameSiteStrictMode,
 		// Secure:   true,
 	})
