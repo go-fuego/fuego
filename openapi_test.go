@@ -626,3 +626,18 @@ func TestDeclareCustom200Response(t *testing.T) {
 	require.NotNil(t, openAPIResponse.Value.Content.Get("image/png"))
 	require.Equal(t, "Generated image", *openAPIResponse.Value.Description)
 }
+
+func TestPrivateFieldInStruct(t *testing.T) {
+	type User struct {
+		ID       int    `json:"id"`
+		Name     string `json:"name" validate:"required,min=1,max=100" example:"Napoleon"`
+		password string // example of private field
+	}
+
+	handler := slogassert.New(t, slog.LevelWarn, nil)
+
+	s := NewServer(WithLogHandler(handler))
+	Post(s, "/user", func(c ContextWithBody[User]) (User, error) { return c.Body() })
+
+	handler.AssertEmpty() // No warning "Property not found in schema" for the 'password' field
+}
