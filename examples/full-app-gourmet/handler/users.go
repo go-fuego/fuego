@@ -85,13 +85,18 @@ func (rs Resource) logout(c fuego.ContextNoBody) (any, error) {
 	return nil, nil
 }
 
-func (rs Resource) me(c fuego.ContextNoBody) (any, error) {
+func (rs Resource) me(c fuego.ContextNoBody) (*store.User, error) {
 	caller, err := usernameFromContext(c.Context())
 	if err != nil {
 		return nil, err
 	}
 
-	return rs.UsersQueries.GetUserByUsername(c.Context(), caller)
+	user, err := rs.UsersQueries.GetUserByUsername(c.Context(), caller)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 type CreateUserPayload struct {
