@@ -10,8 +10,8 @@ github.com/getkin/kin-openapi v0.129.0 h1:QGYTNcmyP5X0AtFQ2Dkou9DGBJsUETeLH9rFrJ
 github.com/getkin/kin-openapi v0.129.0/go.mod h1:gmWI+b/J45xqpyK5wJmRRZse5wefA5H0RDMK46kLUtI=
 github.com/go-chi/chi/v5 v5.2.1 h1:KOIHODQj58PmL80G2Eak4WdvUzjSJSm0vG72crDCqb8=
 github.com/go-chi/chi/v5 v5.2.1/go.mod h1:L2yAIGWB3H+phAw1NxKwWM+7eUH/lU8pOMm5hHcoops=
-github.com/go-fuego/fuego v0.18.1 h1:k4hnSS8OVfA6+iTZ7Z8zQqTBtWZNA/AFmxffL9AJb88=
-github.com/go-fuego/fuego v0.18.1/go.mod h1:fHTZUosYw4F+BV8E2bwIY++NnAnGgb4W5BAlN9WLaCI=
+github.com/go-fuego/fuego v0.18.2 h1:ZtbbuTjxbjwlTDhNuXEcwKxH1yobdxFlrwrHwfwmOxE=
+github.com/go-fuego/fuego v0.18.2/go.mod h1:fHTZUosYw4F+BV8E2bwIY++NnAnGgb4W5BAlN9WLaCI=
 github.com/go-fuego/fuego/extra/markdown v0.0.0-20250212171205-716df496262e h1:ASyOmsZbA0iHuvXSv8dd+XLkth1mowxd9jBYymxyNoM=
 github.com/go-fuego/fuego/extra/markdown v0.0.0-20250212171205-716df496262e/go.mod h1:j3yFxD3B56XETRYFP3tiYy2/ROTdtJTG2x2DqPq95CI=
 github.com/go-fuego/fuego/middleware/basicauth v0.15.1 h1:8VelgvZjvm0pg6X29qCFDPVzSqCFdv5ppRDy7hWAykc=
