@@ -116,6 +116,28 @@ func TestErrorHandler(t *testing.T) {
 	})
 }
 
+func TestHandleHTTPError(t *testing.T) {
+	t.Run("should always be HTTPError", func(t *testing.T) {
+		err := errors.New("test error")
+
+		errResponse := HandleHTTPError(err)
+		require.ErrorAs(t, errResponse, &HTTPError{})
+		require.ErrorContains(t, errResponse, "500 Internal Server Error")
+	})
+
+	t.Run("not found error", func(t *testing.T) {
+		err := NotFoundError{
+			Err: errors.New("Not Found :c"),
+		}
+		errResponse := HandleHTTPError(err)
+		require.ErrorAs(t, errResponse, &HTTPError{})
+		require.ErrorContains(t, err, "Not Found :c")
+		require.ErrorContains(t, errResponse, "Not Found")
+		require.ErrorContains(t, errResponse, "404")
+		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).StatusCode())
+	})
+}
+
 func TestHTTPError_Error(t *testing.T) {
 	t.Run("title", func(t *testing.T) {
 		t.Run("custom title", func(t *testing.T) {
