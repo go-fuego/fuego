@@ -95,7 +95,7 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 		}
 
 		// CONTEXT INITIALIZATION
-		ctx := NewNetHTTPContext[Body](route, w, r, readOptions{
+		ctx := NewNetHTTPContext[Body, any](route, w, r, readOptions{
 			DisallowUnknownFields: s.DisallowUnknownFields,
 			MaxBodySize:           s.maxBodySize,
 		})
