@@ -171,6 +171,14 @@ func ErrorHandler(err error) error {
 //	engine := fuego.NewEngine(
 //		WithErrorHandler(HandleHTTPError),
 //	)
+//
+// or
+//
+//	server := fuego.NewServer(
+//		fuego.WithEngineOptions(
+//			fuego.WithErrorHandler(HandleHTTPError),
+//		),
+//	)
 func HandleHTTPError(err error) error {
 	errResponse := HTTPError{
 		Err: err,
