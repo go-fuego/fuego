@@ -107,7 +107,7 @@ func TestContext_QueryParam(t *testing.T) {
 	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello&boo=true&name=jhon&name=doe", nil)
 	w := httptest.NewRecorder()
 
-	c := NewNetHTTPContext[any](BaseRoute{}, w, r, readOptions{})
+	c := NewNetHTTPContext[any, any](BaseRoute{}, w, r, readOptions{})
 
 	t.Run("string", func(t *testing.T) {
 		param := c.QueryParam("other")
@@ -185,7 +185,7 @@ func TestContext_QueryParams(t *testing.T) {
 	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello", nil)
 	w := httptest.NewRecorder()
 
-	c := NewNetHTTPContext[any](BaseRoute{}, w, r, readOptions{})
+	c := NewNetHTTPContext[any, any](BaseRoute{}, w, r, readOptions{})
 
 	params := c.QueryParams()
 	require.NotEmpty(t, params)
@@ -229,7 +229,7 @@ func TestContext_Body(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 
-		c := NewNetHTTPContext[testStruct](BaseRoute{}, w, r, readOptions{})
+		c := NewNetHTTPContext[testStruct, any](BaseRoute{}, w, r, readOptions{})
 
 		body, err := c.Body()
 		require.NoError(t, err)
@@ -246,7 +246,7 @@ func TestContext_Body(t *testing.T) {
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 		r.Header.Add("Content-Type", "application/json")
 
-		c := NewNetHTTPContext[testStruct](BaseRoute{}, w, r, readOptions{})
+		c := NewNetHTTPContext[testStruct, any](BaseRoute{}, w, r, readOptions{})
 
 		body, err := c.Body()
 		require.NoError(t, err)
@@ -260,7 +260,7 @@ func TestContext_Body(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 
-		c := NewNetHTTPContext[testStruct](BaseRoute{}, w, r, readOptions{})
+		c := NewNetHTTPContext[testStruct, any](BaseRoute{}, w, r, readOptions{})
 
 		body, err := c.Body()
 		require.NoError(t, err)
@@ -280,7 +280,7 @@ func TestContext_Body(t *testing.T) {
 		}
 
 		reqBody := strings.NewReader(`{"name":"John","age":30}`)
-		c := NewNetHTTPContext[testStruct](
+		c := NewNetHTTPContext[testStruct, any](
 			BaseRoute{},
 			httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
@@ -299,7 +299,7 @@ func TestContext_Body(t *testing.T) {
 		}
 
 		reqBody := strings.NewReader(`{"name":"VeryLongName","age":12}`)
-		c := NewNetHTTPContext[testStruct](
+		c := NewNetHTTPContext[testStruct, any](
 			BaseRoute{},
 			httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
@@ -313,7 +313,7 @@ func TestContext_Body(t *testing.T) {
 
 	t.Run("can transform JSON body with custom method", func(t *testing.T) {
 		reqBody := strings.NewReader(`{"name":"John","age":30}`)
-		c := NewNetHTTPContext[testStructInTransformer](
+		c := NewNetHTTPContext[testStructInTransformer, any](
 			BaseRoute{},
 			httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
@@ -327,7 +327,7 @@ func TestContext_Body(t *testing.T) {
 
 	t.Run("can transform JSON body with custom method returning error", func(t *testing.T) {
 		reqBody := strings.NewReader(`{"name":"John","age":30}`)
-		c := NewNetHTTPContext[testStructInTransformerWithError](
+		c := NewNetHTTPContext[testStructInTransformerWithError, any](
 			BaseRoute{}, httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 			readOptions{})
@@ -347,7 +347,7 @@ func TestContext_Body(t *testing.T) {
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 		r.Header.Add("Content-Type", "application/octet-stream")
 
-		c := NewNetHTTPContext[[]byte](BaseRoute{}, w, r, readOptions{})
+		c := NewNetHTTPContext[[]byte, any](BaseRoute{}, w, r, readOptions{})
 		body, err := c.Body()
 		require.NoError(t, err)
 		require.Equal(t, []byte(`image`), body)
@@ -362,7 +362,7 @@ func TestContext_Body(t *testing.T) {
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 		r.Header.Add("Content-Type", "application/octet-stream")
 
-		c := NewNetHTTPContext[*struct{}](BaseRoute{}, w, r, readOptions{})
+		c := NewNetHTTPContext[*struct{}, any](BaseRoute{}, w, r, readOptions{})
 		body, err := c.Body()
 		require.Error(t, err)
 		require.ErrorContains(t, err, "use []byte as the body type")
@@ -381,7 +381,7 @@ func TestContext_Body(t *testing.T) {
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 		r.Header.Add("Content-Type", "application/xml")
 
-		c := NewNetHTTPContext[testStruct](BaseRoute{}, w, r, readOptions{})
+		c := NewNetHTTPContext[testStruct, any](BaseRoute{}, w, r, readOptions{})
 
 		body, err := c.Body()
 		require.NoError(t, err)
@@ -399,7 +399,7 @@ age: 30
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 		r.Header.Add("Content-Type", "application/x-yaml")
 
-		c := NewNetHTTPContext[testStruct](BaseRoute{}, w, r, readOptions{})
+		c := NewNetHTTPContext[testStruct, any](BaseRoute{}, w, r, readOptions{})
 
 		body, err := c.Body()
 		require.NoError(t, err)
@@ -409,7 +409,7 @@ age: 30
 
 	t.Run("unparsable because restricted to 1 byte", func(t *testing.T) {
 		reqBody := strings.NewReader(`{"name":"John","age":30}`)
-		c := NewNetHTTPContext[testStructInTransformerWithError](
+		c := NewNetHTTPContext[testStructInTransformerWithError, any](
 			BaseRoute{}, httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 			readOptions{
@@ -431,7 +431,7 @@ age: 30
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 		r.Header.Set("Content-Type", "text/plain")
 
-		c := NewNetHTTPContext[string](BaseRoute{}, w, r, readOptions{})
+		c := NewNetHTTPContext[string, any](BaseRoute{}, w, r, readOptions{})
 
 		_, err := c.Body()
 		require.NoError(t, err)
@@ -450,7 +450,7 @@ func FuzzContext_Body(f *testing.F) {
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-		c := NewNetHTTPContext[testStruct](BaseRoute{}, w, r, readOptions{})
+		c := NewNetHTTPContext[testStruct, any](BaseRoute{}, w, r, readOptions{})
 
 		_, err := c.Body()
 		require.NoError(t, err)
@@ -461,7 +461,7 @@ func BenchmarkContext_Body(b *testing.B) {
 	b.Run("valid JSON body", func(b *testing.B) {
 		for i := range b.N {
 			reqBody := strings.NewReader(`{"name":"John","age":30}`)
-			c := NewNetHTTPContext[testStruct](
+			c := NewNetHTTPContext[testStruct, any](
 				BaseRoute{}, httptest.NewRecorder(),
 				httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 				readOptions{})
@@ -477,7 +477,7 @@ func BenchmarkContext_Body(b *testing.B) {
 	// See [Body] for more information.
 	b.Run("valid JSON body cache", func(b *testing.B) {
 		reqBody := strings.NewReader(`{"name":"John","age":30}`)
-		c := NewNetHTTPContext[testStruct](
+		c := NewNetHTTPContext[testStruct, any](
 			BaseRoute{}, httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 			readOptions{})
@@ -492,7 +492,7 @@ func BenchmarkContext_Body(b *testing.B) {
 	b.Run("invalid JSON body", func(b *testing.B) {
 		for range b.N {
 			reqBody := strings.NewReader(`{"name":"John","age":30}`)
-			c := NewNetHTTPContext[testStruct](
+			c := NewNetHTTPContext[testStruct, any](
 				BaseRoute{}, httptest.NewRecorder(),
 				httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 				readOptions{})
@@ -506,7 +506,7 @@ func BenchmarkContext_Body(b *testing.B) {
 	b.Run("string body", func(b *testing.B) {
 		for range b.N {
 			reqBody := strings.NewReader(`{"name":"John","age":30}`)
-			c := NewNetHTTPContext[testStruct](
+			c := NewNetHTTPContext[testStruct, any](
 				BaseRoute{}, httptest.NewRecorder(),
 				httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 				readOptions{})
@@ -527,7 +527,7 @@ func TestContext_MustBody(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "http://example.com/foo", a)
 
-		c := NewNetHTTPContext[testStruct](BaseRoute{}, w, r, readOptions{})
+		c := NewNetHTTPContext[testStruct, any](BaseRoute{}, w, r, readOptions{})
 
 		body := c.MustBody()
 		require.Equal(t, "John", body.Name)
@@ -541,7 +541,7 @@ func TestContext_MustBody(t *testing.T) {
 		}
 
 		reqBody := strings.NewReader(`{"name":"VeryLongName","age":12}`)
-		c := NewNetHTTPContext[testStruct](
+		c := NewNetHTTPContext[testStruct, any](
 			BaseRoute{}, httptest.NewRecorder(),
 			httptest.NewRequest("GET", "http://example.com/foo", reqBody),
 			readOptions{})
@@ -556,7 +556,7 @@ func TestMainLang(t *testing.T) {
 	r := httptest.NewRequest("GET", "/", nil)
 	r.Header.Set("Accept-Language", "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5")
 
-	c := NewNetHTTPContext[any](BaseRoute{}, httptest.NewRecorder(), r, readOptions{})
+	c := NewNetHTTPContext[any, any](BaseRoute{}, httptest.NewRecorder(), r, readOptions{})
 	require.Equal(t, c.MainLang(), "fr")
 	require.Equal(t, c.MainLocale(), "fr-CH")
 }
@@ -564,7 +564,7 @@ func TestMainLang(t *testing.T) {
 func TestContextNoBody_Body(t *testing.T) {
 	body := `{"name":"John","age":30}`
 	r := httptest.NewRequest("GET", "/", strings.NewReader(body))
-	ctx := netHttpContext[any]{
+	ctx := netHttpContext[any, any]{
 		Req: r,
 		Res: httptest.NewRecorder(),
 	}
@@ -580,7 +580,7 @@ func TestContextNoBody_MustBody(t *testing.T) {
 	t.Run("can read JSON body", func(t *testing.T) {
 		body := `{"name":"John","age":30}`
 		r := httptest.NewRequest("GET", "/", strings.NewReader(body))
-		ctx := netHttpContext[any]{
+		ctx := netHttpContext[any, any]{
 			Req: r,
 			Res: httptest.NewRecorder(),
 		}
@@ -594,7 +594,7 @@ func TestContextNoBody_MustBody(t *testing.T) {
 	t.Run("cannot read invalid JSON body", func(t *testing.T) {
 		body := `{"name":"John","age":30`
 		r := httptest.NewRequest("GET", "/", strings.NewReader(body))
-		ctx := netHttpContext[any]{
+		ctx := netHttpContext[any, any]{
 			Req: r,
 			Res: httptest.NewRecorder(),
 		}
