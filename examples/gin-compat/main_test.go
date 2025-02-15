@@ -10,7 +10,7 @@ import (
 
 func TestFuegoControllerPost(t *testing.T) {
 	testCtx := fuego.NewMockContext(HelloRequest{Word: "World"}, any(nil))
-	testCtx.SetQueryParam("name", "Ewen")
+	testCtx.QueryParams().Set("name", "Ewen")
 
 	response, err := fuegoControllerPost(testCtx)
 	require.NoError(t, err)
