@@ -146,7 +146,7 @@ func (e NotAcceptableError) Unwrap() error { return HTTPError(e) }
 
 // ErrorHandler is the default error handler used by the framework.
 // If the error is an [HTTPError] that error is returned.
-// If the error adheres to the [ErrorWithStatus] and/or [ErrorWithDetail] interface
+// If the error adheres to the [ErrorWithStatus] interface
 // the error is transformed to a [HTTPError] using [HandleHTTPError].
 // If the error is not an [HTTPError] nor does it adhere to an
 // interface the error is returned as is.
@@ -158,6 +158,8 @@ func ErrorHandler(err error) error {
 		return HandleHTTPError(err)
 	}
 
+	slog.Error("Error in controller", "error", err.Error())
+
 	return err
 }
 
@@ -168,6 +170,14 @@ func ErrorHandler(err error) error {
 //
 //	engine := fuego.NewEngine(
 //		WithErrorHandler(HandleHTTPError),
+//	)
+//
+// or
+//
+//	server := fuego.NewServer(
+//		fuego.WithEngineOptions(
+//			fuego.WithErrorHandler(HandleHTTPError),
+//		),
 //	)
 func HandleHTTPError(err error) error {
 	errResponse := HTTPError{

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/thejerf/slogassert"
 )
 
 type myError struct {
@@ -28,8 +29,14 @@ func TestErrorHandler(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		err := errors.New("test error")
 
+		handler := slogassert.NewDefault(t)
+
 		errResponse := ErrorHandler(err)
 		require.ErrorContains(t, errResponse, "test error")
+
+		handler.AssertMessage("Error in controller")
+
+		handler.AssertEmpty()
 	})
 
 	t.Run("not found error", func(t *testing.T) {
