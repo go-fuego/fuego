@@ -753,6 +753,10 @@ func TestDefaultLoggingMiddleware(t *testing.T) {
 				require.Equal(t, "custom-func-id", rec.Header().Get("X-Request-ID"))
 			}
 
+			if tc.wantStatus == http.StatusInternalServerError {
+				handler.AssertMessage("Error in controller")
+			}
+
 			// all logs should be handled here
 			handler.AssertEmpty()
 		})
