@@ -130,7 +130,7 @@ func (a echoRouteRegisterer[T, B]) Register() fuego.Route[T, B] {
 // Convert a Fuego handler to a Gin handler.
 func EchoHandler[B, T any](engine *fuego.Engine, handler func(c fuego.ContextWithBody[B]) (T, error), route fuego.BaseRoute) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		context := &echoContext[B]{
+		context := &echoContext[B, any]{
 			CommonContext: internal.CommonContext[B]{
 				CommonCtx:         c.Request().Context(),
 				UrlValues:         c.Request().URL.Query(),
