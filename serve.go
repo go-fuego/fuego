@@ -38,10 +38,12 @@ func (s *Server) setup() error {
 	if err := s.setupDefaultListener(); err != nil {
 		return err
 	}
-	s.OpenAPI.Description().Servers = append(s.OpenAPI.Description().Servers, &openapi3.Server{
-		URL:         s.url(),
-		Description: "local server",
-	})
+	if !s.OpenAPI.Config.DisableDefaultServer {
+		s.OpenAPI.Description().Servers = append(s.OpenAPI.Description().Servers, &openapi3.Server{
+			URL:         s.url(),
+			Description: "local server",
+		})
+	}
 	go s.OutputOpenAPISpec()
 	s.Engine.RegisterOpenAPIRoutes(s)
 	s.printStartupMessage()
