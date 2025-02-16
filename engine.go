@@ -52,6 +52,8 @@ type OpenAPIConfig struct {
 	DisableMessages bool
 	// If true, the engine will not save the OpenAPI JSON spec locally
 	DisableLocalSave bool
+	// If true, no default server will be added
+	DisableDefaultServer bool
 	// Pretty prints the OpenAPI spec with proper JSON indentation
 	PrettyFormatJSON bool
 	// URL to serve the OpenAPI JSON spec
@@ -117,6 +119,7 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 
 		e.OpenAPI.Config.Disabled = config.Disabled
 		e.OpenAPI.Config.DisableLocalSave = config.DisableLocalSave
+		e.OpenAPI.Config.DisableDefaultServer = config.DisableDefaultServer
 		e.OpenAPI.Config.PrettyFormatJSON = config.PrettyFormatJSON
 		e.OpenAPI.Config.DisableSwaggerUI = config.DisableSwaggerUI
 
