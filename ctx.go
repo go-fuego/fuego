@@ -20,8 +20,18 @@ const (
 )
 
 type (
-	ContextNoBody            = Context[any, any]
-	ContextWithBody[B any]   = Context[B, any]
+	// ContextNoBody is the context of the request with no body and no typed parameters.
+	// It contains the path parameters, and the HTTP request.
+	ContextNoBody = Context[any, any]
+
+	// ContextWithBody is the context of the request with typed body and no typed parameters.
+	// It contains the request body, the path parameters, the query parameters, and the HTTP request.
+	// Please do not use a pointer type as parameters.
+	ContextWithBody[B any] = Context[B, any]
+
+	// ContextWithParams is the context of the request with no body and typed parameters.
+	// It contains the path parameters, the query parameters, and the HTTP request.
+	// Please do not use a pointer type as parameters.
 	ContextWithParams[P any] = Context[any, P]
 )
 
