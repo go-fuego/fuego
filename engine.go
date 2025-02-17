@@ -52,7 +52,8 @@ type OpenAPIConfig struct {
 	DisableMessages bool
 	// If true, the engine will not save the OpenAPI JSON spec locally
 	DisableLocalSave bool
-	// If true, no default server will be added
+	// If true, no default server will be added.
+	// Note: this option only applies to the fuego [Server]. Adaptors are not affected by this option.
 	DisableDefaultServer bool
 	// Pretty prints the OpenAPI spec with proper JSON indentation
 	PrettyFormatJSON bool
