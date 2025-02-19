@@ -1,26 +1,18 @@
 package main
 
 import (
-	"encoding/json"
 	"github.com/go-fuego/fuego/examples/openapi-generate/server"
-	"os"
 )
 
 func main() {
-	spec := server.GetServer().OutputOpenAPISpec()
+	// Get the server instance, configured earlier
+	newServer := server.GetServer()
 
-	b, err := json.MarshalIndent(spec, "", "  ")
-	if err != nil {
-		panic(err)
-	}
+	// Simple configuration for OpenAPI spec generation
+	newServer.OpenAPI.Config.DisableLocalSave = false
+	newServer.OpenAPI.Config.PrettyFormatJSON = true
+	newServer.OpenAPI.Config.JSONFilePath = "api/openapi.json"
 
-	err = os.MkdirAll("api", 0750)
-	if err != nil {
-		panic(err)
-	}
-
-	err = os.WriteFile("api/openapi.json", b, 0644)
-	if err != nil {
-		panic(err)
-	}
+	// Generate the OpenAPI spec
+	newServer.OutputOpenAPISpec()
 }

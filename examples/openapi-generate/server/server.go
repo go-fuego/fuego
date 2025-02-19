@@ -9,6 +9,8 @@ func helloWorld(c fuego.ContextNoBody) (string, error) {
 	return "Hello, World!", nil
 }
 
+// GetServer is a representation of "central" server configuration
+// that can be used in multiple places, e.g. in the main function and in the OpenAPI spec generation script.
 func GetServer() *fuego.Server {
 
 	s := fuego.NewServer()
