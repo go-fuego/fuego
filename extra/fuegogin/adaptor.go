@@ -80,7 +80,7 @@ func (a ginRouteRegisterer[T, B]) Register() fuego.Route[T, B] {
 // Convert a Fuego handler to a Gin handler.
 func GinHandler[B, T any](engine *fuego.Engine, handler func(c fuego.ContextWithBody[B]) (T, error), route fuego.BaseRoute) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		context := &ginContext[B]{
+		context := &ginContext[B, any]{
 			CommonContext: internal.CommonContext[B]{
 				CommonCtx:         c,
 				UrlValues:         c.Request.URL.Query(),
