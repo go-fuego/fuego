@@ -22,4 +22,5 @@ use (
 	./middleware/basicauth
 	./middleware/cache
 	./testing-from-outside
+	examples/openapi-generate
 )
