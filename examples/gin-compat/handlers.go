@@ -28,7 +28,7 @@ func fuegoControllerPost(c fuego.ContextWithBody[HelloRequest]) (*HelloResponse,
 		return nil, fuego.BadRequestError{Title: "Forbidden word"}
 	}
 
-	_ = c.Context().(*gin.Context) // Access to the Gin context
+	_, _ = c.Context().(*gin.Context) // Access to the Gin context
 
 	name := c.QueryParam("name")
 	_ = c.QueryParam("not-existing-param-raises-warning")
