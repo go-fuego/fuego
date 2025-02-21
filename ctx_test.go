@@ -649,15 +649,16 @@ func TestContextNoBody_Redirect(t *testing.T) {
 
 func TestNetHttpContext_Params(t *testing.T) {
 	type MyParams struct {
-		ID          int     `json:"id" query:"id"`
-		Other       *string `json:"other,omitempty" query:"other"`
-		ContentType string  `json:"content_type" header:"Content-Type"`
+		ID          int    `query:"id"`
+		Other       string `query:"other"`
+		ContentType string `header:"Content-Type"`
 	}
-	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello", nil)
-	w := httptest.NewRecorder()
-	r.Header.Set("Content-Type", "application/json")
+	t.Run("can write and read params", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello", nil)
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
 
-	c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
 
 	_, err := c.Params()
 	require.NoError(t, err)
