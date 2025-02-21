@@ -648,18 +648,18 @@ func TestNetHttpContext_Params(t *testing.T) {
 		require.Equal(t, "application/json", params.ContentType)
 	})
 
-	// t.Run("E2E test for params", func(t *testing.T) {
-	// 	s := NewServer()
-	// 	Get(s, "/foo/{id}", func(c Context[any, MyParams]) (ans, error) {
-	// 		return ans{Ans: c.PathParam("id")}, nil
-	// 	})
+	t.Run("E2E test for params", func(t *testing.T) {
+		s := NewServer()
+		Get(s, "/foo/{id}", func(c Context[any, MyParams]) (ans, error) {
+			return ans{Ans: c.PathParam("id")}, nil
+		})
 
-	// 	r := httptest.NewRequest("GET", "/foo/123?id=456&other=hello", nil)
-	// 	r.Header.Set("Content-Type", "application/json")
-	// 	w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/foo/123?id=456&other=hello", nil)
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
 
-	// 	s.Mux.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 
-	// 	require.Equal(t, crlf(`{"ans":"123"}`), w.Body.String())
-	// })
+		require.Equal(t, crlf(`{"ans":"123"}`), w.Body.String())
+	})
 }

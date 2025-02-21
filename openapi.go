@@ -130,7 +130,7 @@ func validateSwaggerURL(swaggerURL string) bool {
 
 // RegisterOpenAPIOperation registers the route to the OpenAPI description.
 // Modifies the route's Operation.
-func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(openapi *OpenAPI) error {
+func (route *Route[ResponseBody, RequestBody, Params]) RegisterOpenAPIOperation(openapi *OpenAPI) error {
 	if route.Hidden || route.Method == "" {
 		return nil
 	}
@@ -143,7 +143,7 @@ func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(openapi 
 // RegisterOpenAPIOperation registers an OpenAPI operation.
 //
 // Deprecated: Use `(*Route[ResponseBody, RequestBody]).RegisterOpenAPIOperation` instead.
-func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*openapi3.Operation, error) {
+func RegisterOpenAPIOperation[T, B, P any](openapi *OpenAPI, route Route[T, B, P]) (*openapi3.Operation, error) {
 	if route.Operation == nil {
 		route.Operation = openapi3.NewOperation()
 	}
@@ -235,7 +235,7 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 // RegisterParams registers the parameters of a given type to an OpenAPI operation.
 // It inspects the fields of the provided struct, looking for "header" tags, and creates
 // OpenAPI parameters for each tagged field.
-func (route *RouteWithParams[Params, ResponseBody, RequestBody]) RegisterParams() error {
+func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 	if route.Operation == nil {
 		route.Operation = openapi3.NewOperation()
 	}
