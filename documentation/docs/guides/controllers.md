@@ -1,104 +1,156 @@
-# Controllers
+# Controllers & Deserialization
 
 Controllers are the main way to interact with the application. They are responsible for handling the requests and responses.
 
 ## Controller types
 
-### Returning JSON
+The standard controller type is a function that receives a `fuego.ContextWithBody` and returns a response and an error.
 
 ```go
-func (c fuego.ContextNoBody) (MyResponse, error)
+// Standard fuego controller
+func MyController(c fuego.ContextWithBody[Body]) (MyResponse, error)
 ```
 
-Used when the request does not have a body. The response will be automatically serialized to JSON.
+Fuego handles [Content Negotiation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation), so you can serve different content types based on the `Accept` header of the request. One controller, multiple responses formats.
+
+> Just care about data types! Fuego will handle the rest.
+
+Please note that Fuego relies on the underlying libraries (`net/http`, `encoding/json`, `gin` if using `fuegogin`) to handle deserialization. We avoid at all cost the use of reflection to keep the performance high.
+
+### Registering a controller
+
+See [Routing](./routing.md) for more information.
 
 ```go
-func (c fuego.ContextWithBody[MyInput]) (MyResponse, error)
+fuego.Get(s, "/", MyController)
 ```
 
-Used when the request has a body.
-Fuego will automatically parse the body and validate it using the input struct.
+## Request body
 
-> 🚧 Below contains incoming syntax, not available currently
-
-```go
-func(c fuego.ContextWithBodyAndParams[MyInput, ParamsIn, ParamsOut]) (MyResponse, error)
-```
-
-This controller is used to declare params with strong static typing.
-
-```go
-type CreateUserRequest struct {
-    Name string `json:"name"`
-    Email string `json:"email"`
-}
-
-type UserParams struct {
-    Limit *int    `query:"limit"`
-    Group *string `header:"X-User-Group"`
-}
-
-type UserResponseParams struct {
-    CustomHeader string `header:"X-Rate-Limit"`
-    SessionToken string `cookie:"session_token"`
-}
-
-func CreateUserController(
-    c fuego.ContextWithBodyAndParams[CreateUserRequest, UserParams, UserResponseParams]
-) (User, error) {
-    params, err := c.Params()
-    if err != nil {
-        return User{}, err
-    }
-    body, err := c.Body()
-    if err != nil {
-        return User{}, err
-    }
-    user, err := createUser(body, *params.Limit, *params.Group)
-    if err != nil {
-        return User{}, err
-    }
-    c.SetHeader("X-Rate-Limit", "100")
-    c.SetCookie(http.Cookie{
-        Name:  "session_token",
-        Value: generateSessionToken(),
-    })
-    return user, nil
-}
-```
-
-### Returning HTML
-
-```go
-func (c fuego.ContextNoBody) (fuego.HTML, error)
-```
-
-Some special interface return types are used by Fuego to return special responses.
-
-- `fuego.HTML` is used to return HTML responses from `html/template`.
-- `fuego.Templ` is used to return HTML responses from `a-h/templ`.
-- `fuego.Gomponent` is used to return HTML responses from `maragudk/gomponent`.
-
-### Example of a JSON controller
+Use the `fuego.ContextWithBody` interface. Useful for `POST`, `PUT`, `PATCH` requests for example.
 
 ```go
 type MyInput struct {
-	Name string `json:"name"`
+    Name string `json:"name"`
 }
 
-type MyResponse struct {
-	Message string `json:"message"`
-}
+func MyController(c fuego.ContextWithBody[MyInput]) (*MyResponse, error) {
+    body, err := c.Body()
+    if err != nil {
+        return nil, err
+    }
 
-func MyController(c fuego.ContextWithBody[MyInput]) (MyResponse, error) {
+    return &MyResponse{
+        Name: body.Name,
+    }, nil
+}
+```
+
+Fuego will automatically parse the request body (`JSON`, `XML`, `YAML`, `application/x-www-form-urlencoded` and `multipart/form-data`) [according to the `Content-Type` header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) of the request.
+
+```curl
+curl -X POST http://localhost:9999/ -d '{"name": "My name"}' -H "Content-Type: application/json"
+# Response: {"name": "My name"}
+
+curl -X POST http://localhost:9999/ -d '<MyInput><Name>My name</Name></MyInput>' -H "Content-Type: application/xml"
+# Response: {"name": "My name"}
+```
+
+It will then validate it using the input struct, see [Validation](./validation.md).
+
+### I don't need request body
+
+Use the `fuego.ContextNoBody` interface. Useful for `GET`, `DELETE`, `HEAD`, `OPTIONS` requests for example.
+
+```go
+func MyController(c fuego.ContextNoBody) (MyResponse, error) {
+    return MyResponse{Name: "My name"}, nil
+}
+```
+
+### Binary body
+
+If you just want to read the body of the request as a byte slice, you can use the `[]byte` receiver type.
+
+Don't forget to set the request `Content-Type` header to `application/octet-stream`.
+
+```go
+fuego.Put(s, "/blob", func(c fuego.ContextWithBody[[]byte]) (any, error) {
 	body, err := c.Body()
 	if err != nil {
-		return MyResponse{}, err
+		return nil, err
 	}
 
-	return MyResponse{
-		Message: "Hello " + body.Name,
-	}, nil
+	return body, nil
+})
+```
+
+## Query parameters (dynamic)
+
+They are declared (for OpenAPI and validation) at the route registration level. It is not type-safe (it relies on the same string on the route registration and the controller) BUT it raises warning if you make a typo and use a non-declared query parameter.
+
+See [Route Options](./options.md) for more information.
+
+```go
+package main
+
+import (
+    "github.com/go-fuego/fuego"
+)
+
+type MyInput struct {
+    Name string `json:"name"`
+}
+
+func myController(c fuego.ContextWithBody[MyInput]) (*MyResponse, error) {
+    name := c.QueryParam("name")
+    return &MyResponse{
+        Name: name,
+    }, nil
+}
+
+var myReusableOption = option.Group(
+    option.QueryInt("per_page", "Number of items per page", param.Default(100), param.Example("100 per page", 100)),
+    option.QueryInt("page", "Page number", param.Default(1), param.Example("page 9", 9)),
+)
+
+func main() {
+    s := fuego.NewServer()
+
+    fuego.Get(s, "/", myController,
+        option.Query("name", "Name of the user", param.Required(), param.Example("example 1", "Napoleon")),
+        myReusableOption,
+    )
+
+    s.Run()
+}
+```
+
+```curl
+curl -X GET http://localhost:9999/?name=MyName
+# Response: {"name": "MyName"}
+```
+
+## Query parameters (type-safe)
+
+> 🚧 Below contains incoming syntax, not available currently
+
+This syntax allows users to have strong static typing between the input and the query parameters.
+
+```go
+type Params struct {
+    Limit int    `query:"limit"`
+    Group string `header:"X-User-Group"`
+}
+func myController(c fuego.Context[MyInput, Params]) (*MyResponse, error) {
+    params, err := c.Params()
+    if err != nil {
+        return nil, err
+    }
+
+    return &MyResponse{
+        Name: params.Group,
+    }, nil
 }
 ```
 

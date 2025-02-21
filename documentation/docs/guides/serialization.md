@@ -1,4 +1,4 @@
-# Serialization / Deserialization
+# Serialization
 
 Serialization is the process of converting Go data into a format that can be stored or transmitted. Deserialization is the process of converting serialized data back into its original Go form.
 
@@ -30,44 +30,6 @@ func helloWorld(c fuego.ContextNoBody) (MyReturnType, error) {
 
 // curl request: curl -X GET http://localhost:8080/ -H "Accept: application/xml"
 // response: <MyReturnType><Message>Hello, World!</Message></MyReturnType>
-```
-
-## Deserialize data
-
-To deserialize data, use the `fuego.ContextWithBody` type in your controller.
-
-```go
-type ReceivedType struct {
-	Message string `json:"message"`
-}
-
-func echo(c fuego.ContextWithBody[ReceivedType]) (string, error) {
-	// Deserialize the HTTP Request body into ReceivedType,
-	// whether it's application/json, application/xml, application/x-www-form-urlencoded, etc.
-	received, err := c.Body()
-	if err != nil {
-		return "", err
-	}
-
-	return received.Message, nil
-}
-```
-
-## Deserialize binary data
-
-If you just want to read the body of the request as a byte slice, you can use the `[]byte` receiver type.
-
-Don't forget to set the request `Content-Type` header to `application/octet-stream`.
-
-```go
-fuego.Put(s, "/blob", func(c fuego.ContextWithBody[[]byte]) (any, error) {
-	body, err := c.Body()
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
-})
 ```
 
 ## Custom response - Bypass return type
