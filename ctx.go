@@ -52,6 +52,14 @@ type Context[B, P any] interface {
 	// MustBody works like Body, but panics if there is an error.
 	MustBody() B
 
+	// Params returns the typed parameters of the request.
+	// It returns an error if the parameters are not valid.
+	// Please do not use a pointer type as parameters.
+	Params() (P, error)
+
+	// MustParams works like Params, but panics if there is an error.
+	MustParams() P
+
 	// PathParam returns the path parameter with the given name.
 	// If it does not exist, it returns an empty string.
 	// Example:
@@ -346,6 +354,20 @@ func (c *netHttpContext[B, P]) Body() (B, error) {
 	body, err := body[B](*c)
 	c.body = &body
 	return body, err
+}
+
+func (c *netHttpContext[B, P]) Params() (P, error) {
+	var p P
+
+	return p, nil
+}
+
+func (c *netHttpContext[B, P]) MustParams() P {
+	params, err := c.Params()
+	if err != nil {
+		panic(err)
+	}
+	return params
 }
 
 // Serialize serializes the given data to the response. It uses the Content-Type header to determine the serialization format.

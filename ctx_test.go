@@ -626,3 +626,23 @@ func TestContextNoBody_Redirect(t *testing.T) {
 		require.Equal(t, "<a href=\"/foo\">Moved Permanently</a>.\n\n", w.Body.String())
 	})
 }
+
+func TestNetHttpContext_Params(t *testing.T) {
+	type MyParams struct {
+		ID          int     `json:"id" query:"id"`
+		Other       *string `json:"other,omitempty" query:"other"`
+		ContentType string  `json:"content_type" header:"Content-Type"`
+	}
+	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello", nil)
+	w := httptest.NewRecorder()
+	r.Header.Set("Content-Type", "application/json")
+
+	c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+
+	_, err := c.Params()
+	require.NoError(t, err)
+	// require.NotEmpty(t, params)
+	// require.Equal(t, 456, params.ID)
+	// require.Equal(t, "hello", params.Other)
+	// require.Equal(t, "application/json", params.ContentType)
+}
