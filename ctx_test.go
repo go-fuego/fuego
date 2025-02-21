@@ -630,7 +630,7 @@ func TestContextNoBody_Redirect(t *testing.T) {
 func TestNetHttpContext_Params(t *testing.T) {
 	type MyParams struct {
 		ID          int    `query:"id"`
-		Other       string `query:"other"`
+		Other       string `query:"other" description:"my description"`
 		ContentType string `header:"Content-Type"`
 	}
 	t.Run("can write and read params", func(t *testing.T) {
@@ -678,6 +678,7 @@ func TestNetHttpContext_Params(t *testing.T) {
 			require.Len(t, route.Get.Parameters, 5) // header Accept, path id, query id, query other, header Content-Type
 			require.Equal(t, "id", route.Get.Parameters.GetByInAndName("query", "id").Name)
 			require.Equal(t, "other", route.Get.Parameters.GetByInAndName("query", "other").Name)
+			require.Equal(t, "my description", route.Get.Parameters.GetByInAndName("query", "other").Description)
 			require.Equal(t, "Content-Type", route.Get.Parameters.GetByInAndName("header", "Content-Type").Name)
 		})
 	})
