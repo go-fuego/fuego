@@ -359,7 +359,7 @@ func TestRegister(t *testing.T) {
 	t.Run("register route", func(t *testing.T) {
 		s := NewServer()
 
-		route := Register(s, Route[any, any]{
+		route := Register(s, Route[any, any, any]{
 			BaseRoute: BaseRoute{
 				Path:   "/test",
 				Method: http.MethodGet,
@@ -372,7 +372,7 @@ func TestRegister(t *testing.T) {
 	t.Run("register route with operation pre-created", func(t *testing.T) {
 		s := NewServer()
 
-		route := Register(s, Route[any, any]{
+		route := Register(s, Route[any, any, any]{
 			BaseRoute: BaseRoute{
 				Path:   "/test",
 				Method: http.MethodGet,
@@ -395,7 +395,7 @@ func TestRegister(t *testing.T) {
 	t.Run("register route with operation pre-created but with overrides", func(t *testing.T) {
 		s := NewServer()
 
-		route := Register(s, Route[any, any]{
+		route := Register(s, Route[any, any, any]{
 			BaseRoute: BaseRoute{
 				Path:   "/test",
 				Method: http.MethodGet,
@@ -799,13 +799,13 @@ func TestNameFromNamespace(t *testing.T) {
 		name string
 
 		opts           []func(string) string
-		route          Route[any, any]
+		route          Route[any, any, any]
 		expectedOutput string
 	}{
 		{
 			name: "base",
 
-			route: Route[any, any]{
+			route: Route[any, any, any]{
 				BaseRoute: BaseRoute{
 					FullName: "pkg.test.MyFunc1",
 				},
@@ -815,7 +815,7 @@ func TestNameFromNamespace(t *testing.T) {
 		{
 			name: "with camelToHuman",
 
-			route: Route[any, any]{
+			route: Route[any, any, any]{
 				BaseRoute: BaseRoute{
 					FullName: "pkg.test.MyFunc1",
 				},
@@ -828,7 +828,7 @@ func TestNameFromNamespace(t *testing.T) {
 		{
 			name: "with inline opt",
 
-			route: Route[any, any]{
+			route: Route[any, any, any]{
 				BaseRoute: BaseRoute{
 					FullName: "pkg.test.MyFunc1",
 				},
@@ -844,7 +844,7 @@ func TestNameFromNamespace(t *testing.T) {
 		{
 			name: "with wrapped func",
 
-			route: Route[any, any]{
+			route: Route[any, any, any]{
 				BaseRoute: BaseRoute{
 					FullName: "pkg.test.MyFunc1",
 				},

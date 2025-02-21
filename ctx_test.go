@@ -629,20 +629,57 @@ func TestContextNoBody_Redirect(t *testing.T) {
 
 func TestNetHttpContext_Params(t *testing.T) {
 	type MyParams struct {
-		ID          int     `json:"id" query:"id"`
-		Other       *string `json:"other,omitempty" query:"other"`
-		ContentType string  `json:"content_type" header:"Content-Type"`
+		ID          int    `query:"id"`
+		Other       string `query:"other" description:"my description"`
+		ContentType string `header:"Content-Type"`
 	}
-	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello", nil)
-	w := httptest.NewRecorder()
-	r.Header.Set("Content-Type", "application/json")
+	t.Run("can write and read params", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello", nil)
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
 
-	c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
 
-	_, err := c.Params()
-	require.NoError(t, err)
-	// require.NotEmpty(t, params)
-	// require.Equal(t, 456, params.ID)
-	// require.Equal(t, "hello", params.Other)
-	// require.Equal(t, "application/json", params.ContentType)
+		params, err := c.Params()
+		require.NoError(t, err)
+		require.NotEmpty(t, params)
+		require.Equal(t, "hello", params.Other)
+		require.Equal(t, 456, params.ID)
+		require.Equal(t, "application/json", params.ContentType)
+	})
+
+	t.Run("E2E test for params", func(t *testing.T) {
+		s := NewServer()
+		Get(s, "/foo/{id}", func(c Context[any, MyParams]) (*ans, error) {
+			params, err := c.Params()
+			if err != nil {
+				return nil, err
+			}
+
+			return &ans{Ans: fmt.Sprintf("%d", params.ID)}, nil
+		})
+
+		t.Run("can read params", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "/foo/123?id=456&other=hello", nil)
+			r.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+
+			s.Mux.ServeHTTP(w, r)
+
+			require.Equal(t, crlf(`{"ans":"456"}`), w.Body.String())
+		})
+
+		t.Run("params are declared in the OpenAPI spec", func(t *testing.T) {
+			desc := s.OpenAPI.Description()
+			require.NotNil(t, desc)
+			route := desc.Paths.Find("/foo/{id}")
+			t.Log(route.Parameters)
+			require.NotNil(t, route)
+			require.Len(t, route.Get.Parameters, 5) // header Accept, path id, query id, query other, header Content-Type
+			require.Equal(t, "id", route.Get.Parameters.GetByInAndName("query", "id").Name)
+			require.Equal(t, "other", route.Get.Parameters.GetByInAndName("query", "other").Name)
+			require.Equal(t, "my description", route.Get.Parameters.GetByInAndName("query", "other").Description)
+			require.Equal(t, "Content-Type", route.Get.Parameters.GetByInAndName("header", "Content-Type").Name)
+		})
+	})
 }

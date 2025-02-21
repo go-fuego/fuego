@@ -89,7 +89,7 @@ func (s *Server) url() string {
 // HTTPHandler converts a Fuego controller into a http.HandlerFunc.
 // Uses Server for configuration.
 // Uses Route for route configuration. Optional.
-func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithBody[Body]) (ReturnType, error), route BaseRoute) http.HandlerFunc {
+func HTTPHandler[ReturnType, Body, Params any](s *Server, controller func(c Context[Body, Params]) (ReturnType, error), route BaseRoute) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var templates *template.Template
 		if s.template != nil {
@@ -97,7 +97,7 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 		}
 
 		// CONTEXT INITIALIZATION
-		ctx := NewNetHTTPContext[Body, any](route, w, r, readOptions{
+		ctx := NewNetHTTPContext[Body, Params](route, w, r, readOptions{
 			DisallowUnknownFields: s.DisallowUnknownFields,
 			MaxBodySize:           s.maxBodySize,
 		})
@@ -112,8 +112,8 @@ func HTTPHandler[ReturnType, Body any](s *Server, controller func(c ContextWithB
 
 // ContextFlowable contains the logic for the flow of a Fuego controller.
 // Extends [ContextWithBody] with methods not exposed in the Controllers.
-type ContextFlowable[B any] interface {
-	ContextWithBody[B]
+type ContextFlowable[B, P any] interface {
+	Context[B, P]
 
 	// SetDefaultStatusCode sets the status code of the response defined in the options.
 	SetDefaultStatusCode()
@@ -124,7 +124,7 @@ type ContextFlowable[B any] interface {
 }
 
 // Flow is generic handler for Fuego controllers.
-func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c ContextWithBody[B]) (T, error)) {
+func Flow[B, T, P any](s *Engine, ctx ContextFlowable[B, P], controller func(c Context[B, P]) (T, error)) {
 	ctx.SetHeader("X-Powered-By", "Fuego")
 	ctx.SetHeader("Trailer", "Server-Timing")
 
