@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -227,6 +226,11 @@ func RegisterOpenAPIOperation[T, B, P any](openapi *OpenAPI, route Route[T, B, P
 		}
 	}
 
+	err := route.RegisterParams()
+	if err != nil {
+		return nil, err
+	}
+
 	openapi.Description().AddOperation(route.Path, route.Method, route.Operation)
 
 	return route.Operation, nil
@@ -242,7 +246,7 @@ func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 	params := *new(Params)
 	typeOfParams := reflect.TypeOf(params)
 	if typeOfParams == nil {
-		return errors.New("params cannot be nil")
+		return nil
 	}
 	if typeOfParams.Kind() == reflect.Ptr {
 		typeOfParams = typeOfParams.Elem()

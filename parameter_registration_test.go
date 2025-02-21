@@ -50,7 +50,7 @@ func Test_RegisterOpenAPIOperation(t *testing.T) {
 		assert.Equal(t, "headerParam", headerParam.Name)
 	})
 
-	t.Run("RegisterParams should not with interfaces", func(t *testing.T) {
+	t.Run("RegisterParams do not raise error with interface types", func(t *testing.T) {
 		route := NewRoute[struct{}, struct{}, any](
 			http.MethodGet,
 			"/no-interfaces",
@@ -60,6 +60,6 @@ func Test_RegisterOpenAPIOperation(t *testing.T) {
 		)
 
 		err := route.RegisterParams()
-		require.Error(t, err)
+		require.NoError(t, err)
 	})
 }
