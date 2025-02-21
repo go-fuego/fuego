@@ -7,18 +7,8 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
-func NewRouteWithParams[RequestParams, ResponseBody, RequestBody any](method, path string, handler any, e *Engine, options ...func(*BaseRoute)) RouteWithParams[RequestParams, ResponseBody, RequestBody] {
-	return RouteWithParams[RequestParams, ResponseBody, RequestBody]{
-		Route: NewRoute[ResponseBody, RequestBody](method, path, handler, e, options...),
-	}
-}
-
-type RouteWithParams[RequestParams any, ResponseBody any, RequestBody any] struct {
-	Route[ResponseBody, RequestBody]
-}
-
-func NewRoute[T, B any](method, path string, handler any, e *Engine, options ...func(*BaseRoute)) Route[T, B] {
-	return Route[T, B]{
+func NewRoute[T, B, P any](method, path string, handler any, e *Engine, options ...func(*BaseRoute)) Route[T, B, P] {
+	return Route[T, B, P]{
 		BaseRoute: NewBaseRoute(method, path, handler, e, options...),
 	}
 }
@@ -26,7 +16,7 @@ func NewRoute[T, B any](method, path string, handler any, e *Engine, options ...
 // Route is the main struct for a route in Fuego.
 // It contains the OpenAPI operation and other metadata.
 // It is a wrapper around BaseRoute, with the addition of the response and request body types.
-type Route[ResponseBody any, RequestBody any] struct {
+type Route[ResponseBody any, RequestBody any, Params any] struct {
 	BaseRoute
 }
 
