@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -365,9 +366,56 @@ func (c *netHttpContext[B, P]) Body() (B, error) {
 }
 
 func (c *netHttpContext[B, P]) Params() (P, error) {
-	var p P
+	p := new(P)
 
-	return p, nil
+	paramsType := reflect.TypeOf(p).Elem()
+	if paramsType.Kind() != reflect.Struct {
+		return *p, fmt.Errorf("params must be a struct, got %T", p)
+	}
+	paramsValue := reflect.ValueOf(p).Elem()
+
+	for i := range paramsType.NumField() {
+		field := paramsType.Field(i)
+
+		var paramValue string
+		tag := field.Tag.Get("query")
+		if tag != "" {
+			paramValue = c.QueryParam(tag)
+			if paramValue == "" {
+				continue
+			}
+		} else {
+			tag = field.Tag.Get("header")
+			if tag != "" {
+				paramValue = c.Header(tag)
+				if paramValue == "" {
+					continue
+				}
+			}
+		}
+		fieldValue := paramsValue.Field(i)
+
+		switch field.Type.Kind() {
+		case reflect.String:
+			fieldValue.SetString(paramValue)
+		case reflect.Int:
+			intValue, err := strconv.Atoi(paramValue)
+			if err != nil {
+				return *p, fmt.Errorf("cannot convert %s to int: %w", paramValue, err)
+			}
+			fieldValue.SetInt(int64(intValue))
+		case reflect.Bool:
+			boolValue, err := strconv.ParseBool(paramValue)
+			if err != nil {
+				return *p, fmt.Errorf("cannot convert %s to bool: %w", paramValue, err)
+			}
+			fieldValue.SetBool(boolValue)
+		default:
+			return *p, fmt.Errorf("unsupported type %s", field.Type.Kind())
+		}
+	}
+
+	return *p, nil
 }
 
 func (c *netHttpContext[B, P]) MustParams() P {
