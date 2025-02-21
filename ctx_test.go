@@ -650,16 +650,35 @@ func TestNetHttpContext_Params(t *testing.T) {
 
 	t.Run("E2E test for params", func(t *testing.T) {
 		s := NewServer()
-		Get(s, "/foo/{id}", func(c Context[any, MyParams]) (ans, error) {
-			return ans{Ans: c.PathParam("id")}, nil
+		Get(s, "/foo/{id}", func(c Context[any, MyParams]) (*ans, error) {
+			params, err := c.Params()
+			if err != nil {
+				return nil, err
+			}
+
+			return &ans{Ans: fmt.Sprintf("%d", params.ID)}, nil
 		})
 
-		r := httptest.NewRequest("GET", "/foo/123?id=456&other=hello", nil)
-		r.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
+		t.Run("can read params", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "/foo/123?id=456&other=hello", nil)
+			r.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
 
-		s.Mux.ServeHTTP(w, r)
+			s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, crlf(`{"ans":"123"}`), w.Body.String())
+			require.Equal(t, crlf(`{"ans":"456"}`), w.Body.String())
+		})
+
+		t.Run("params are declared in the OpenAPI spec", func(t *testing.T) {
+			desc := s.OpenAPI.Description()
+			require.NotNil(t, desc)
+			route := desc.Paths.Find("/foo/{id}")
+			t.Log(route.Parameters)
+			require.NotNil(t, route)
+			require.Len(t, route.Get.Parameters, 5) // header Accept, path id, query id, query other, header Content-Type
+			require.Equal(t, "id", route.Get.Parameters.GetByInAndName("query", "id").Name)
+			require.Equal(t, "other", route.Get.Parameters.GetByInAndName("query", "other").Name)
+			require.Equal(t, "Content-Type", route.Get.Parameters.GetByInAndName("header", "Content-Type").Name)
+		})
 	})
 }
