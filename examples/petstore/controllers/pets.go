@@ -41,6 +41,12 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		option.Description("Filter pets"),
 	)
 
+	fuego.Get(petsGroup, "/strongly-typed", rs.filterPetsStronglyTyped,
+		optionPagination,
+
+		option.Description("Filter pets"),
+	)
+
 	fuego.Get(petsGroup, "/all", rs.getAllPets,
 		optionPagination,
 		option.Tags("my-tag"),
@@ -123,6 +129,23 @@ func (rs PetsResources) filterPets(c fuego.ContextNoBody) ([]models.Pets, error)
 	return rs.PetsService.FilterPets(PetsFilter{
 		Name:        c.QueryParam("name"),
 		YoungerThan: c.QueryParamInt("younger_than"),
+	})
+}
+
+type FilterParams struct {
+	Name        string `query:"name"`
+	YoungerThan int    `query:"younger_than"`
+}
+
+func (rs PetsResources) filterPetsStronglyTyped(c fuego.ContextWithParams[FilterParams]) ([]models.Pets, error) {
+	params, err := c.Params()
+	if err != nil {
+		return nil, err
+	}
+
+	return rs.PetsService.FilterPets(PetsFilter{
+		Name:        params.Name,
+		YoungerThan: params.YoungerThan,
 	})
 }
 

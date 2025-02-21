@@ -1257,6 +1257,174 @@
 				]
 			}
 		},
+		"/pets/strongly-typed": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.filterPetsStronglyTyped`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\nFilter pets",
+				"operationId": "GET_/pets/strongly-typed",
+				"parameters": [
+					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Number of items per page",
+						"in": "query",
+						"name": "per_page",
+						"required": true,
+						"schema": {
+							"type": "integer"
+						}
+					},
+					{
+						"description": "Page number",
+						"examples": {
+							"100th page": {
+								"value": 100
+							},
+							"1st page": {
+								"value": 1
+							},
+							"42nd page": {
+								"value": 42
+							}
+						},
+						"in": "query",
+						"name": "page",
+						"schema": {
+							"default": 1,
+							"type": "integer"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "name",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "younger_than",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Pets"
+									},
+									"type": "array"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Pets"
+									},
+									"type": "array"
+								}
+							}
+						},
+						"description": "OK",
+						"headers": {
+							"Content-Range": {
+								"examples": {
+									"42 pets": {
+										"value": "0-10/42"
+									}
+								},
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					},
+					"204": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NoContent"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/NoContent"
+								}
+							}
+						},
+						"description": "No Content"
+					},
+					"206": {
+						"description": "OK",
+						"headers": {
+							"Content-Range": {
+								"examples": {
+									"42 pets": {
+										"value": "0-10/42"
+									}
+								},
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"description": ""
+					}
+				},
+				"summary": "filter pets strongly typed",
+				"tags": [
+					"pets"
+				]
+			}
+		},
 		"/pets/{id}": {
 			"delete": {
 				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.deletePets`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\n",
