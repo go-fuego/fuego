@@ -1313,7 +1313,7 @@
 						"in": "query",
 						"name": "younger_than",
 						"schema": {
-							"type": "string"
+							"type": "integer"
 						}
 					}
 				],
