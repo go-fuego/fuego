@@ -650,7 +650,7 @@ func TestContextNoBody_Redirect(t *testing.T) {
 func TestNetHttpContext_Params(t *testing.T) {
 	type MyParams struct {
 		ID          int    `query:"id"`
-		Other       string `query:"other"`
+		Other       string `query:"other" description:"my description"`
 		ContentType string `header:"Content-Type"`
 	}
 	t.Run("can write and read params", func(t *testing.T) {

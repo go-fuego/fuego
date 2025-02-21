@@ -255,14 +255,15 @@ func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 	if typeOfParams.Kind() == reflect.Struct {
 		for i := range typeOfParams.NumField() {
 			field := typeOfParams.Field(i)
+			description, _ := field.Tag.Lookup("description")
 			if headerKey, ok := field.Tag.Lookup("header"); ok {
-				OptionHeader(headerKey, "string")(&route.BaseRoute)
+				OptionHeader(headerKey, description)(&route.BaseRoute)
 			}
 			if queryKey, ok := field.Tag.Lookup("query"); ok {
-				OptionQuery(queryKey, "string")(&route.BaseRoute)
+				OptionQuery(queryKey, description)(&route.BaseRoute)
 			}
 			if cookieKey, ok := field.Tag.Lookup("cookie"); ok {
-				OptionCookie(cookieKey, "string")(&route.BaseRoute)
+				OptionCookie(cookieKey, description)(&route.BaseRoute)
 			}
 		}
 	}
