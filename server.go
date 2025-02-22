@@ -265,7 +265,11 @@ func WithTemplates(templates *template.Template) func(*Server) {
 			s.fs = os.DirFS("./templates")
 			slog.Warn("No template filesystem set. Using os filesystem at './templates'.")
 		}
-		s.template = templates
+		err := s.loadTemplates()
+		if err != nil {
+			slog.Error("Error loading templates", "error", err)
+			panic(err)
+		}
 
 		slog.Debug("Loaded templates", "templates", s.template.DefinedTemplates())
 	}
