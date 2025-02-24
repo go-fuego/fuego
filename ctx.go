@@ -274,19 +274,11 @@ func (c netHttpContext[B]) PathParamIntErr(name string) (int, error) {
 	return PathParamIntErr(c, name)
 }
 
-func PathParamInt(c ContextWithPathParam, name string) int {
-	param, err := PathParamIntErr(c, name)
-	if err != nil {
-		return 0
-	}
-
-	return param
-}
-
 // PathParamInt returns the path parameter with the given name as an int.
 // If the query parameter does not exist, or if it is not an int, it returns 0.
 func (c netHttpContext[B]) PathParamInt(name string) int {
-	return PathParamInt(c, name)
+	param, _ := PathParamIntErr(c, name)
+	return param
 }
 
 func (c netHttpContext[B]) MainLang() string {
