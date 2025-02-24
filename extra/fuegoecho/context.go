@@ -60,7 +60,8 @@ func (c echoContext[B]) PathParamIntErr(name string) (int, error) {
 }
 
 func (c echoContext[B]) PathParamInt(name string) int {
-	return fuego.PathParamInt(c, name)
+	param, _ := fuego.PathParamIntErr(c, name)
+	return param
 }
 
 func (c echoContext[B]) MainLang() string {
