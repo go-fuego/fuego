@@ -3,9 +3,11 @@ package fuego
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -85,7 +87,14 @@ func TestContext_PathParam(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, 422, w.Code)
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var errorResponse HTTPError
+		err := json.NewDecoder(w.Body).Decode(&errorResponse)
+		require.NoError(t, err)
+
+		require.Equal(t, "Invalid path parameter", errorResponse.Title)
+		require.Equal(t, "path parameter id=abc is not of type int", errorResponse.Detail)
 	})
 
 	t.Run("path param invalid", func(t *testing.T) {
