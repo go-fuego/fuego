@@ -143,7 +143,10 @@ func TestContext_QueryParam(t *testing.T) {
 
 		paramInt, err = c.QueryParamIntErr("other")
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "param other=hello is not of type int")
+		var badReqErr BadRequestError
+		require.ErrorAs(t, err, &badReqErr)
+		require.Equal(t, "Invalid query parameter", badReqErr.Title)
+		require.Equal(t, "query parameter other=hello is not of type int", badReqErr.Detail)
 		require.Equal(t, 0, paramInt)
 	})
 
@@ -168,7 +171,12 @@ func TestContext_QueryParam(t *testing.T) {
 
 		paramBool, err = c.QueryParamBoolErr("other")
 		require.Error(t, err)
+		var badReqErr BadRequestError
+		require.ErrorAs(t, err, &badReqErr)
+		require.Equal(t, "Invalid query parameter", badReqErr.Title)
+		require.Equal(t, "query parameter other=hello is not of type bool", badReqErr.Detail)
 		require.Equal(t, false, paramBool)
+		require.Error(t, err)
 	})
 
 	t.Run("slice", func(t *testing.T) {
