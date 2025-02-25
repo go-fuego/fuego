@@ -342,7 +342,7 @@ func TestSecurity_RefreshHandler(t *testing.T) {
 		security.RefreshHandler(w, r)
 
 		cookies := w.Result().Cookies()
-		require.Len(t, cookies, 0)
+		require.Empty(t, cookies)
 	})
 
 	t.Run("with token", func(t *testing.T) {
@@ -387,7 +387,7 @@ func TestSecurity_StdLoginHandler(t *testing.T) {
 		loginHandler(w, r)
 
 		cookies := w.Result().Cookies()
-		require.Len(t, cookies, 0)
+		require.Empty(t, cookies)
 	})
 
 	t.Run("with correct ids", func(t *testing.T) {
@@ -422,7 +422,7 @@ func TestSecurity_LoginHandler(t *testing.T) {
 		truc.ServeHTTP(w, r)
 
 		cookies := w.Result().Cookies()
-		require.Len(t, cookies, 0)
+		require.Empty(t, cookies)
 	})
 
 	t.Run("with incorrect ids", func(t *testing.T) {
@@ -435,7 +435,7 @@ func TestSecurity_LoginHandler(t *testing.T) {
 		truc.ServeHTTP(w, r)
 
 		cookies := w.Result().Cookies()
-		require.Len(t, cookies, 0)
+		require.Empty(t, cookies)
 	})
 
 	t.Run("with correct ids", func(t *testing.T) {

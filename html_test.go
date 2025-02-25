@@ -29,7 +29,7 @@ func TestRender(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, http.StatusOK, w.Code)
-		require.Equal(t, w.Body.String(), "<main>\n  <h1>Test</h1>\n  <p>Your name is: test</p>\n</main>\n")
+		require.Equal(t, "<main>\n  <h1>Test</h1>\n  <p>Your name is: test</p>\n</main>\n", w.Body.String())
 	})
 
 	t.Run("Render twice", func(t *testing.T) {
@@ -39,7 +39,7 @@ func TestRender(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, http.StatusOK, w.Code)
-		require.Equal(t, w.Body.String(), "<main>\n  <h1>Test</h1>\n  <p>Your name is: test</p>\n</main>\n")
+		require.Equal(t, "<main>\n  <h1>Test</h1>\n  <p>Your name is: test</p>\n</main>\n", w.Body.String())
 	})
 
 	t.Run("cannot parse unexisting file", func(t *testing.T) {

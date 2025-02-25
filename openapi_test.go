@@ -238,8 +238,8 @@ func Test_tagFromType(t *testing.T) {
 		require.NotNil(t, c.Value)
 		assert.Equal(t, "my description", c.Value.Description)
 		assert.Equal(t, 8, c.Value.Example)
-		assert.Equal(t, float64(3), *c.Value.Min)
-		assert.Equal(t, float64(10), *c.Value.Max)
+		assert.InDelta(t, float64(3), *c.Value.Min, 0)
+		assert.InDelta(t, float64(10), *c.Value.Max, 0)
 	})
 
 	t.Run("struct with nested tags", func(t *testing.T) {
@@ -253,8 +253,8 @@ func Test_tagFromType(t *testing.T) {
 		require.NotNil(t, c.Value)
 		assert.Equal(t, "my description", c.Value.Description)
 		assert.Equal(t, 8, c.Value.Example)
-		assert.Equal(t, float64(3), *c.Value.Min)
-		assert.Equal(t, float64(10), *c.Value.Max)
+		assert.InDelta(t, float64(3), *c.Value.Min, 0)
+		assert.InDelta(t, float64(10), *c.Value.Max, 0)
 	})
 
 	t.Run("ensure warnings", func(t *testing.T) {
@@ -290,15 +290,15 @@ func TestServer_generateOpenAPI(t *testing.T) {
 	require.NotNil(t, document.Paths.Find("/"))
 	require.Nil(t, document.Paths.Find("/unknown"))
 	require.NotNil(t, document.Paths.Find("/post"))
-	require.Equal(t, document.Paths.Find("/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Type, &openapi3.Types{"array"})
-	require.Equal(t, document.Paths.Find("/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Ref, "#/components/schemas/MyStruct")
-	require.Equal(t, document.Paths.Find("/multidimensional/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Type, &openapi3.Types{"array"})
-	require.Equal(t, document.Paths.Find("/multidimensional/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Value.Type, &openapi3.Types{"array"})
-	require.Equal(t, document.Paths.Find("/multidimensional/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Value.Items.Ref, "#/components/schemas/MyStruct")
+	require.Equal(t, &openapi3.Types{"array"}, document.Paths.Find("/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Type)
+	require.Equal(t, "#/components/schemas/MyStruct", document.Paths.Find("/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Ref)
+	require.Equal(t, &openapi3.Types{"array"}, document.Paths.Find("/multidimensional/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Type)
+	require.Equal(t, &openapi3.Types{"array"}, document.Paths.Find("/multidimensional/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Value.Type)
+	require.Equal(t, "#/components/schemas/MyStruct", document.Paths.Find("/multidimensional/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Value.Items.Ref)
 	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200"))
 	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"])
 	require.Nil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["unknown"])
-	require.Equal(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["quantity"].Value.Type, &openapi3.Types{"integer"})
+	require.Equal(t, &openapi3.Types{"integer"}, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["quantity"].Value.Type)
 
 	t.Run("openapi doc is available through a route", func(t *testing.T) {
 		w := httptest.NewRecorder()
@@ -460,25 +460,25 @@ func BenchmarkServer_generateOpenAPI(b *testing.B) {
 }
 
 func TestValidateJsonSpecURL(t *testing.T) {
-	require.Equal(t, true, validateSpecURL("/path/to/jsonSpec.json"))
-	require.Equal(t, true, validateSpecURL("/spec.json"))
-	require.Equal(t, true, validateSpecURL("/path_/jsonSpec.json"))
-	require.Equal(t, false, validateSpecURL("path/to/jsonSpec.json"))
-	require.Equal(t, false, validateSpecURL("/path/to/jsonSpec"))
-	require.Equal(t, false, validateSpecURL("/path/to/jsonSpec.jsn"))
+	require.True(t, validateSpecURL("/path/to/jsonSpec.json"))
+	require.True(t, validateSpecURL("/spec.json"))
+	require.True(t, validateSpecURL("/path_/jsonSpec.json"))
+	require.False(t, validateSpecURL("path/to/jsonSpec.json"))
+	require.False(t, validateSpecURL("/path/to/jsonSpec"))
+	require.False(t, validateSpecURL("/path/to/jsonSpec.jsn"))
 }
 
 func TestValidateSwaggerUrl(t *testing.T) {
-	require.Equal(t, true, validateSwaggerURL("/path/to/jsonSpec"))
-	require.Equal(t, true, validateSwaggerURL("/swagger"))
-	require.Equal(t, true, validateSwaggerURL("/Super-useful_swagger-2000"))
-	require.Equal(t, true, validateSwaggerURL("/Super-useful_swagger-"))
-	require.Equal(t, true, validateSwaggerURL("/Super-useful_swagger__"))
-	require.Equal(t, true, validateSwaggerURL("/Super-useful_swaggeR"))
-	require.Equal(t, false, validateSwaggerURL("/spec.json"))
-	require.Equal(t, false, validateSwaggerURL("/path_/swagger.json"))
-	require.Equal(t, false, validateSwaggerURL("path/to/jsonSpec."))
-	require.Equal(t, false, validateSwaggerURL("path/to/jsonSpec%"))
+	require.True(t, validateSwaggerURL("/path/to/jsonSpec"))
+	require.True(t, validateSwaggerURL("/swagger"))
+	require.True(t, validateSwaggerURL("/Super-useful_swagger-2000"))
+	require.True(t, validateSwaggerURL("/Super-useful_swagger-"))
+	require.True(t, validateSwaggerURL("/Super-useful_swagger__"))
+	require.True(t, validateSwaggerURL("/Super-useful_swaggeR"))
+	require.False(t, validateSwaggerURL("/spec.json"))
+	require.False(t, validateSwaggerURL("/path_/swagger.json"))
+	require.False(t, validateSwaggerURL("path/to/jsonSpec."))
+	require.False(t, validateSwaggerURL("path/to/jsonSpec%"))
 }
 
 func TestLocalSave(t *testing.T) {
@@ -561,8 +561,8 @@ func TestValidationTags(t *testing.T) {
 	require.Equal(t, expected, myTypeValue.Properties["name"].Value.Min)
 	require.Equal(t, uint64(3), myTypeValue.Properties["name"].Value.MinLength)
 	require.Equal(t, uint64(10), *myTypeValue.Properties["name"].Value.MaxLength)
-	require.Equal(t, float64(18.0), *myTypeValue.Properties["age"].Value.Min)
-	require.Equal(t, float64(100), *myTypeValue.Properties["age"].Value.Max)
+	require.InDelta(t, float64(18.0), *myTypeValue.Properties["age"].Value.Min, 0)
+	require.InDelta(t, float64(100), *myTypeValue.Properties["age"].Value.Max, 0)
 }
 
 func TestEmbeddedStructHandling(t *testing.T) {
