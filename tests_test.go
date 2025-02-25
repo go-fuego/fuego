@@ -41,6 +41,6 @@ func TestContentType(t *testing.T) {
 
 		require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 		require.Equal(t, 500, w.Code)
-		require.Equal(t, "{}\n", w.Body.String())
+		require.JSONEq(t, "{}\n", w.Body.String())
 	})
 }

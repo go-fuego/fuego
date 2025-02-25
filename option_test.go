@@ -315,7 +315,7 @@ func TestPath(t *testing.T) {
 
 		require.Equal(t, "id", s.OpenAPI.Description().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Name)
 		require.Equal(t, "some id", s.OpenAPI.Description().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Description)
-		require.Equal(t, true, s.OpenAPI.Description().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Required, "path parameter is forced to be required")
+		require.True(t, s.OpenAPI.Description().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Required, "path parameter is forced to be required")
 	})
 
 	t.Run("Declare explicitly a non-existing path parameter for the route panics", func(t *testing.T) {
@@ -340,7 +340,7 @@ func TestRequestContentType(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, "{\"message\":\"hello world\"}\n", w.Body.String())
+		require.JSONEq(t, "{\"message\":\"hello world\"}\n", w.Body.String())
 		require.Len(t, route.RequestContentTypes, 1)
 		require.Equal(t, "application/json", route.RequestContentTypes[0])
 	})

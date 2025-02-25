@@ -12,7 +12,6 @@ func helloWorld(c fuego.ContextNoBody) (string, error) {
 // GetServer is a representation of "central" server configuration
 // that can be used in multiple places, e.g. in the main function and in the OpenAPI spec generation script.
 func GetServer() *fuego.Server {
-
 	s := fuego.NewServer()
 	// Disable local save of the OpenAPI spec after runtime
 	s.Engine.OpenAPI.Config.DisableLocalSave = true

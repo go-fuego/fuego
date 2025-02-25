@@ -35,7 +35,7 @@ func TestSend(t *testing.T) {
 		templateToExecute: templateName,
 	})
 	body := w.Body.String()
-	require.Equal(t, "{}\n", body)
+	require.JSONEq(t, "{}\n", body)
 	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 }
 
@@ -49,7 +49,7 @@ func TestSendWhenError(t *testing.T) {
 	SendError(w, r, err)
 	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 	body := w.Body.String()
-	require.Equal(t, "{}\n", body)
+	require.JSONEq(t, "{}\n", body)
 }
 
 func TestRecursiveJSON(t *testing.T) {
@@ -393,7 +393,7 @@ func TestSendJSON(t *testing.T) {
 		err := SendJSON(errorWriter, nil, response{Message: "Hello World", Code: http.StatusOK})
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "cannot write on an errorWriter")
-		require.Equal(t, "{\"message\":\"Hello World\",\"code\":200}\n", errorWriter.Arg)
+		require.JSONEq(t, "{\"message\":\"Hello World\",\"code\":200}\n", errorWriter.Arg)
 	})
 }
 

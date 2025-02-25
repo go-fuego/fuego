@@ -67,7 +67,7 @@ func TestWithErrorHandler(t *testing.T) {
 			Err: errors.New("Not Found"),
 		}
 		errResponse := e.ErrorHandler(err)
-		require.Nil(t, errResponse, "error handler can return nil, which might lead to unexpected behavior")
+		require.NoError(t, errResponse, "error handler can return nil, which might lead to unexpected behavior")
 	})
 }
 
