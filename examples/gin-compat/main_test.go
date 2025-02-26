@@ -1,19 +1,16 @@
 package main
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/go-fuego/fuego/extra/fuegogin"
+	"github.com/go-fuego/fuego"
 )
 
 func TestFuegoControllerPost(t *testing.T) {
-	testCtx := &fuegogin.ContextTest[HelloRequest]{
-		BodyInjected: HelloRequest{Word: "World"},
-		Params:       url.Values{"name": []string{"Ewen"}},
-	}
+	testCtx := fuego.NewMockContext(HelloRequest{Word: "World"}, struct{}{})
+	testCtx.SetQueryParam("name", "Ewen")
 
 	response, err := fuegoControllerPost(testCtx)
 	require.NoError(t, err)
