@@ -349,17 +349,7 @@ func InferAcceptHeaderFromType(ans any) string {
 		return "text/html"
 	}
 
-	_, ok = any(&ans).(*CtxRenderer)
-	if ok {
-		return "text/html"
-	}
-
 	_, ok = ans.(Renderer)
-	if ok {
-		return "text/html"
-	}
-
-	_, ok = any(&ans).(*Renderer)
 	if ok {
 		return "text/html"
 	}
