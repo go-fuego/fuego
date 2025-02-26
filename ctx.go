@@ -234,19 +234,6 @@ func (e PathParamNotFoundError) Error() string {
 
 func (e PathParamNotFoundError) StatusCode() int { return 404 }
 
-type PathParamInvalidTypeError struct {
-	Err          error
-	ParamName    string
-	ParamValue   string
-	ExpectedType string
-}
-
-func (e PathParamInvalidTypeError) Error() string {
-	return fmt.Errorf("param %s=%s is not of type %s: %w", e.ParamName, e.ParamValue, e.ExpectedType, e.Err).Error()
-}
-
-func (e PathParamInvalidTypeError) StatusCode() int { return 422 }
-
 type ContextWithPathParam interface {
 	PathParam(name string) string
 }
@@ -259,11 +246,10 @@ func PathParamIntErr(c ContextWithPathParam, name string) (int, error) {
 
 	i, err := strconv.Atoi(param)
 	if err != nil {
-		return 0, PathParamInvalidTypeError{
-			ParamName:    name,
-			ParamValue:   param,
-			ExpectedType: "int",
-			Err:          err,
+		return 0, BadRequestError{
+			Title:  "Invalid path parameter",
+			Detail: fmt.Sprintf("path parameter %s=%s is not of type int", name, param),
+			Err:    err,
 		}
 	}
 

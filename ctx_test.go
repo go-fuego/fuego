@@ -3,9 +3,11 @@ package fuego
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -85,7 +87,14 @@ func TestContext_PathParam(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, 422, w.Code)
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var errorResponse HTTPError
+		err := json.NewDecoder(w.Body).Decode(&errorResponse)
+		require.NoError(t, err)
+
+		require.Equal(t, "Invalid path parameter", errorResponse.Title)
+		require.Equal(t, "path parameter id=abc is not of type int", errorResponse.Detail)
 	})
 
 	t.Run("path param invalid", func(t *testing.T) {
@@ -143,7 +152,10 @@ func TestContext_QueryParam(t *testing.T) {
 
 		paramInt, err = c.QueryParamIntErr("other")
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "param other=hello is not of type int")
+		var badReqErr BadRequestError
+		require.ErrorAs(t, err, &badReqErr)
+		require.Equal(t, "Invalid query parameter", badReqErr.Title)
+		require.Equal(t, "query parameter other=hello is not of type int", badReqErr.Detail)
 		require.Equal(t, 0, paramInt)
 	})
 
@@ -168,7 +180,12 @@ func TestContext_QueryParam(t *testing.T) {
 
 		paramBool, err = c.QueryParamBoolErr("other")
 		require.Error(t, err)
+		var badReqErr BadRequestError
+		require.ErrorAs(t, err, &badReqErr)
+		require.Equal(t, "Invalid query parameter", badReqErr.Title)
+		require.Equal(t, "query parameter other=hello is not of type bool", badReqErr.Detail)
 		require.Equal(t, false, paramBool)
+		require.Error(t, err)
 	})
 
 	t.Run("slice", func(t *testing.T) {
@@ -178,6 +195,62 @@ func TestContext_QueryParam(t *testing.T) {
 
 		notFound := c.QueryParamArr("notfound")
 		require.Empty(t, notFound)
+	})
+}
+
+func TestContext_QueryParamHttp(t *testing.T) {
+	t.Run("reading non-int query param to int sends an error", func(t *testing.T) {
+		s := NewServer()
+		Get(s, "/foo", func(c ContextNoBody) (ans, error) {
+			id, err := c.QueryParamIntErr("age")
+			if err != nil {
+				return ans{}, err
+			}
+			return ans{Ans: fmt.Sprintf("%d", id)}, nil
+		},
+			OptionQueryInt("age", "Filter by age (in years)", ParamExample("3 years old", 3), ParamInteger()),
+		)
+
+		r := httptest.NewRequest("GET", "/foo?age=invalid", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var errorResponse HTTPError
+		err := json.NewDecoder(w.Body).Decode(&errorResponse)
+		require.NoError(t, err)
+
+		require.Equal(t, "Invalid query parameter", errorResponse.Title)
+		require.Equal(t, "query parameter age=invalid is not of type int", errorResponse.Detail)
+	})
+
+	t.Run("reading non-bool query param to bool sends an error", func(t *testing.T) {
+		s := NewServer()
+		Get(s, "/foo", func(c ContextNoBody) (ans, error) {
+			boo, err := c.QueryParamBoolErr("boo")
+			if err != nil {
+				return ans{}, err
+			}
+			return ans{Ans: fmt.Sprintf("%v", boo)}, nil
+		},
+			OptionQueryBool("boo", "Set boo boolean", ParamExample("true", true), ParamBool()),
+		)
+
+		r := httptest.NewRequest("GET", "/foo?boo=invalid", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var errorResponse HTTPError
+		err := json.NewDecoder(w.Body).Decode(&errorResponse)
+		require.NoError(t, err)
+
+		require.Equal(t, "Invalid query parameter", errorResponse.Title)
+		require.Equal(t, "query parameter boo=invalid is not of type bool", errorResponse.Detail)
 	})
 }
 

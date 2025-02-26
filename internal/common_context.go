@@ -119,11 +119,10 @@ func (c CommonContext[B]) QueryParamIntErr(name string) (int, error) {
 
 	i, err := strconv.Atoi(param)
 	if err != nil {
-		return 0, QueryParamInvalidTypeError{
-			ParamName:    name,
-			ParamValue:   param,
-			ExpectedType: "int",
-			Err:          err,
+		return 0, BadRequestError{
+			Title:  "Invalid query parameter",
+			Detail: fmt.Sprintf("query parameter %s=%s is not of type int", name, param),
+			Err:    err,
 		}
 	}
 
@@ -136,17 +135,6 @@ type QueryParamNotFoundError struct {
 
 func (e QueryParamNotFoundError) Error() string {
 	return fmt.Errorf("param %s not found", e.ParamName).Error()
-}
-
-type QueryParamInvalidTypeError struct {
-	Err          error
-	ParamName    string
-	ParamValue   string
-	ExpectedType string
-}
-
-func (e QueryParamInvalidTypeError) Error() string {
-	return fmt.Errorf("param %s=%s is not of type %s: %w", e.ParamName, e.ParamValue, e.ExpectedType, e.Err).Error()
 }
 
 // QueryParamArr returns an slice of string from the given query parameter.
@@ -196,11 +184,10 @@ func (c CommonContext[B]) QueryParamBoolErr(name string) (bool, error) {
 
 	b, err := strconv.ParseBool(param)
 	if err != nil {
-		return false, QueryParamInvalidTypeError{
-			ParamName:    name,
-			ParamValue:   param,
-			ExpectedType: "bool",
-			Err:          err,
+		return false, BadRequestError{
+			Title:  "Invalid query parameter",
+			Detail: fmt.Sprintf("query parameter %s=%s is not of type bool", name, param),
+			Err:    err,
 		}
 	}
 	return b, nil
