@@ -169,11 +169,7 @@ func (c CommonContext[B]) QueryParamArr(name string) []string {
 // and the query parameter does not exist, it will return 1.
 // If the query parameter does not exist and there is no default value, or if it is not an int, it returns 0.
 func (c CommonContext[B]) QueryParamInt(name string) int {
-	param, err := c.QueryParamIntErr(name)
-	if err != nil {
-		return 0
-	}
-
+	param, _ := c.QueryParamIntErr(name)
 	return param
 }
 
@@ -221,10 +217,6 @@ func (c CommonContext[B]) QueryParamBoolErr(name string) (bool, error) {
 //
 // and the query parameter does not exist in the HTTP request, it will return true.
 func (c CommonContext[B]) QueryParamBool(name string) bool {
-	param, err := c.QueryParamBoolErr(name)
-	if err != nil {
-		return false
-	}
-
+	param, _ := c.QueryParamBoolErr(name)
 	return param
 }
