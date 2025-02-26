@@ -16,7 +16,7 @@ func DefaultOpenAPIHTML(specURL string) string {
 	<meta charset="utf-8" />
 	<meta name="referrer" content="same-origin" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link rel="icon" type="image/svg+xml" href="https://go-fuego.github.io/fuego/img/logo.svg">
+	<link rel="icon" type="image/svg+xml" href="https://go-fuego.dev/img/logo.svg">
 	<title>OpenAPI specification</title>
 	<script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
 	<link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css" />
@@ -26,7 +26,7 @@ func DefaultOpenAPIHTML(specURL string) string {
 		apiDescriptionUrl="` + specURL + `"
 		layout="responsive"
 		router="hash"
-		logo="https://go-fuego.github.io/fuego/img/logo.svg"
+		logo="https://go-fuego.dev/img/logo.svg"
 		tryItCredentialsPolicy="same-origin"
 	/>
 </body>
