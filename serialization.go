@@ -279,6 +279,12 @@ var SendHTML = func(w http.ResponseWriter, r *http.Request, ans any) error {
 		return err
 	}
 
+	htmlStringRef, ok := ans.(*string)
+	if ok {
+		_, err := w.Write([]byte(*htmlStringRef))
+		return err
+	}
+
 	// The type cannot be converted to HTML
 	return fmt.Errorf("cannot serialize HTML from type %T (not string, fuego.HTML and does not implement fuego.CtxRenderer or fuego.Renderer)", ans)
 }

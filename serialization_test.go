@@ -406,6 +406,15 @@ func TestSendHTML(t *testing.T) {
 		require.Equal(t, "Hello World", w.Body.String())
 	})
 
+	t.Run("string reference", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		s := "Hello World"
+		err := SendHTML(w, nil, &s)
+		require.NoError(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
+	})
+
 	t.Run("CtxRenderer", func(t *testing.T) {
 		const templateName = "template"
 		template, err := template.New(templateName).Parse("Hello World")
