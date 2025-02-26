@@ -12,22 +12,23 @@ linters:
   enable:
     - errcheck
     - gci
+    - gocritic
     - gofumpt
     - gosec
     - gosimple
     - govet
     - ineffassign
     - misspell
+    - revive
     - staticcheck
+    - unconvert
     - unused
     - usestdlibvars
     - whitespace
-    - revive
-    - gocritic
 
 linters-settings:
   revive:
-     rules:
+    rules:
       - name: blank-imports
       - name: context-as-argument
         arguments: ["allowTypesBefore": "*testing.T"]

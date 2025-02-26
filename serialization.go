@@ -257,25 +257,31 @@ func SendXMLError(w http.ResponseWriter, _ *http.Request, err error) {
 var SendHTML = func(w http.ResponseWriter, r *http.Request, ans any) error {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	ctxRenderer, ok := any(ans).(CtxRenderer)
+	ctxRenderer, ok := ans.(CtxRenderer)
 	if ok {
 		return ctxRenderer.Render(r.Context(), w)
 	}
 
-	renderer, ok := any(ans).(Renderer)
+	renderer, ok := ans.(Renderer)
 	if ok {
 		return renderer.Render(w)
 	}
 
-	html, ok := any(ans).(HTML)
+	html, ok := ans.(HTML)
 	if ok {
 		_, err := w.Write([]byte(html))
 		return err
 	}
 
-	htmlString, ok := any(ans).(string)
+	htmlString, ok := ans.(string)
 	if ok {
 		_, err := w.Write([]byte(htmlString))
+		return err
+	}
+
+	htmlStringRef, ok := ans.(*string)
+	if ok {
+		_, err := w.Write([]byte(*htmlStringRef))
 		return err
 	}
 
@@ -301,9 +307,9 @@ func SendHTMLError(w http.ResponseWriter, _ *http.Request, err error) {
 func SendText(w http.ResponseWriter, _ *http.Request, ans any) error {
 	var err error
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	stringToWrite, ok := any(ans).(string)
+	stringToWrite, ok := ans.(string)
 	if !ok {
-		stringToWritePtr, okPtr := any(ans).(*string)
+		stringToWritePtr, okPtr := ans.(*string)
 		if okPtr {
 			stringToWrite = *stringToWritePtr
 		} else {
@@ -329,37 +335,27 @@ func SendTextError(w http.ResponseWriter, _ *http.Request, err error) {
 }
 
 func InferAcceptHeaderFromType(ans any) string {
-	_, ok := any(ans).(string)
+	_, ok := ans.(string)
 	if ok {
 		return "text/plain"
 	}
 
-	_, ok = any(ans).(*string)
+	_, ok = ans.(*string)
 	if ok {
 		return "text/plain"
 	}
 
-	_, ok = any(ans).(HTML)
+	_, ok = ans.(HTML)
 	if ok {
 		return "text/html"
 	}
 
-	_, ok = any(ans).(CtxRenderer)
+	_, ok = ans.(CtxRenderer)
 	if ok {
 		return "text/html"
 	}
 
-	_, ok = any(&ans).(*CtxRenderer)
-	if ok {
-		return "text/html"
-	}
-
-	_, ok = any(ans).(Renderer)
-	if ok {
-		return "text/html"
-	}
-
-	_, ok = any(&ans).(*Renderer)
+	_, ok = ans.(Renderer)
 	if ok {
 		return "text/html"
 	}

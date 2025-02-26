@@ -406,6 +406,15 @@ func TestSendHTML(t *testing.T) {
 		require.Equal(t, "Hello World", w.Body.String())
 	})
 
+	t.Run("string reference", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		s := "Hello World"
+		err := SendHTML(w, nil, &s)
+		require.NoError(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
+	})
+
 	t.Run("CtxRenderer", func(t *testing.T) {
 		const templateName = "template"
 		template, err := template.New(templateName).Parse("Hello World")
@@ -493,9 +502,25 @@ func TestInferAcceptHeaderFromType(t *testing.T) {
 		require.Equal(t, "text/html", accept)
 	})
 
+	t.Run("can infer that reference type is a template (implements Renderer)", func(t *testing.T) {
+		accept := InferAcceptHeaderFromType(&templateMock{})
+		require.Equal(t, "text/html", accept)
+	})
+
 	t.Run("can infer that type is a template (implements CtxRenderer)", func(t *testing.T) {
 		accept := InferAcceptHeaderFromType(MockCtxRenderer{})
 		require.Equal(t, "text/html", accept)
+	})
+
+	t.Run("can infer that reference type is a template (implements CtxRenderer)", func(t *testing.T) {
+		accept := InferAcceptHeaderFromType(&MockCtxRenderer{})
+		require.Equal(t, "text/html", accept)
+	})
+
+	t.Run("can infer string reference", func(t *testing.T) {
+		s := "hello"
+		accept := InferAcceptHeaderFromType(&s)
+		require.Equal(t, "text/plain", accept)
 	})
 }
 
