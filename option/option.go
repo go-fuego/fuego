@@ -190,6 +190,7 @@ var AddResponse = fuego.OptionAddResponse
 var RequestBody = fuego.OptionRequestBody
 
 // DefaultResponse adds a default response to a route
+// This will override any existing default response set.
 // Required: Response.Type must be set
 // Optional: Response.ContentTypes will default to `application/json` and `application/xml` if not set
 var DefaultResponse = fuego.OptionDefaultResponse
