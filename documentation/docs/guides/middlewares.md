@@ -40,7 +40,7 @@ func main() {
 }
 ```
 
-### Apply on group or server
+### Inherit from server
 
 To mimic the well-known `Use` method from [`chi`](https://pkg.go.dev/github.com/go-chi/chi/v5#Mux.Use) and [`Gin`](https://pkg.go.dev/github.com/gin-gonic/gin#Engine.Use), Fuego provides a `Use` method to add middlewares to a Group or Server. They are treated as an option to the server or group handler and will be applied to all routes.
 
@@ -59,14 +59,6 @@ func main() {
 	s := fuego.NewServer()
 
 	// Add a middleware to the whole server
-	fuego.Use(s, func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Do something before the request
-			next.ServeHTTP(w, r)
-			// Do something after the request
-		})
-	})
-
 	fuego.Use(s, myMiddleware)
 
 	fuego.Get(s, "/", myController)
@@ -74,6 +66,8 @@ func main() {
 	s.Run()
 }
 ```
+
+### Inherit from group
 
 ```go title="main.go" showLineNumbers
 package main
@@ -90,14 +84,36 @@ func main() {
 	// Add a middleware to a group of routes
 	api := fuego.Group(s, "/api")
 
-	fuego.Use(api, func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Do something before the request
-			// Only affects routes in the group
-			next.ServeHTTP(w, r)
-			// Do something after the request
-		})
-	})
+	fuego.Use(api, myMiddleware)
+
+	// Requests to /api will go through the middleware
+	fuego.Get(api, "/", myController)
+
+	// Requests to / will NOT! go through the middleware
+	fuego.Get(s, "/", myController)
+
+	s.Run()
+}
+```
+
+### By using route options
+
+```go title="main.go" showLineNumbers
+package main
+
+import (
+	"net/http"
+
+	"github.com/go-fuego/fuego"
+)
+
+func main() {
+	s := fuego.NewServer()
+
+	// Add a middleware to a group of routes
+	api := fuego.Group(s, "/api",
+		option.Middleware(myMiddleware),
+	)
 
 	// Requests to /api will go through the middleware
 	fuego.Get(api, "/", myController)
