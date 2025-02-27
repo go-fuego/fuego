@@ -361,10 +361,10 @@ func OptionAddResponse(code int, description string, response Response) func(*Ba
 	}
 }
 
-// OptionAddDefaultResponse adds a default response to a route
+// OptionDefaultResponse adds a default response to a route
 // Required: Response.Type must be set
 // Optional: Response.ContentTypes will default to `application/json` and `application/xml` if not set
-func OptionAddDefaultResponse(description string, response Response) func(*BaseRoute) {
+func OptionDefaultResponse(description string, response Response) func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		if r.Operation.Responses == nil {
 			r.Operation.Responses = openapi3.NewResponses()

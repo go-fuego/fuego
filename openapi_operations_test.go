@@ -193,7 +193,7 @@ func TestWithGlobalResponseType(t *testing.T) {
 
 		t.Run("global 'default' response", func(t *testing.T) {
 			route := Get(s, "/test", testController,
-				OptionAddDefaultResponse("Default response", Response{Type: HTTPError{}}),
+				OptionDefaultResponse("Default response", Response{Type: HTTPError{}}),
 			)
 			assert.Equal(t, "Default response", *route.Operation.Responses.Value("default").Value.Description)
 			assert.Equal(t, "#/components/schemas/HTTPError", route.Operation.Responses.Value("default").Value.Content.Get("application/json").Schema.Ref)
