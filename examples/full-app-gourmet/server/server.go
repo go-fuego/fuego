@@ -39,7 +39,8 @@ func (rs Resources) Setup(
 			MaxAge:         300,
 		}).Handler),
 		fuego.WithRouteOptions(
-			fuego.OptionAddResponse(http.StatusForbidden, "Forbidden", fuego.Response{Type: fuego.HTTPError{}}),
+			option.AddResponse(http.StatusForbidden, "Forbidden", fuego.Response{Type: fuego.HTTPError{}}),
+			option.DefaultResponse("Forbidden", fuego.Response{Type: fuego.HTTPError{}}),
 		),
 		fuego.WithEngineOptions(
 			fuego.WithErrorHandler(customErrorHandler),
