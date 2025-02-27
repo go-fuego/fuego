@@ -6,10 +6,10 @@ require (
 	github.com/a-h/templ v0.3.833
 	github.com/getkin/kin-openapi v0.129.0
 	github.com/go-chi/chi/v5 v5.2.1
-	github.com/go-fuego/fuego v0.18.2
-	github.com/go-fuego/fuego/extra/markdown v0.0.0-20250212171205-716df496262e
+	github.com/go-fuego/fuego v0.18.3
+	github.com/go-fuego/fuego/extra/markdown v0.0.0-20250227194201-93f50ab60b6f
 	github.com/go-fuego/fuego/middleware/basicauth v0.15.1
-	github.com/go-fuego/fuego/middleware/cache v0.0.0-20250212171205-716df496262e
+	github.com/go-fuego/fuego/middleware/cache v0.0.0-20250227195359-58fcd2673432
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/google/uuid v1.6.0
@@ -19,7 +19,7 @@ require (
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/text v0.22.0
-	modernc.org/sqlite v1.34.5
+	modernc.org/sqlite v1.36.0
 )
 
 require (
@@ -30,7 +30,7 @@ require (
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.24.0 // indirect
+	github.com/go-playground/validator/v10 v10.25.0 // indirect
 	github.com/gomarkdown/markdown v0.0.0-20250207164621-7a1f277a159e // indirect
 	github.com/gorilla/schema v1.4.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
@@ -48,8 +48,8 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	go.uber.org/atomic v1.11.0 // indirect
-	golang.org/x/crypto v0.33.0 // indirect
-	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac // indirect
+	golang.org/x/crypto v0.35.0 // indirect
+	golang.org/x/exp v0.0.0-20250218142911-aa4b98e5adaa // indirect
 	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
