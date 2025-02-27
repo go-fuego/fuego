@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -188,6 +189,14 @@ func TestWithGlobalResponseType(t *testing.T) {
 				"#/components/schemas/MyGlobalResponse",
 				routeCustom.Operation.Responses.Value("202").Value.Content.Get("application/x-yaml").Schema.Ref,
 			)
+		})
+
+		t.Run("global 'default' response", func(t *testing.T) {
+			route := Get(s, "/test", testController,
+				OptionAddDefaultResponse("Default response", Response{Type: HTTPError{}}),
+			)
+			assert.Equal(t, "Default response", *route.Operation.Responses.Value("default").Value.Description)
+			assert.Equal(t, "#/components/schemas/HTTPError", route.Operation.Responses.Value("default").Value.Content.Get("application/json").Schema.Ref)
 		})
 	})
 
