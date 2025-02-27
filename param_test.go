@@ -41,7 +41,7 @@ func TestParams(t *testing.T) {
 		require.Equal(t, "integer", route.Params["age"].GoType)
 
 		require.Equal(t, "Is OK?", route.Params["is_ok"].Description)
-		require.Equal(t, true, route.Params["is_ok"].Default)
+		require.True(t, route.Params["is_ok"].Default.(bool))
 
 		require.Equal(t, "Accept", route.Params["Accept"].Name)
 	})

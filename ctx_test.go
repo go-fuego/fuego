@@ -127,10 +127,10 @@ func TestContext_QueryParam(t *testing.T) {
 		require.Equal(t, 456, paramInt)
 
 		paramInt = c.QueryParamInt("notfound")
-		require.Equal(t, 0, paramInt)
+		require.Zero(t, paramInt)
 
 		paramInt = c.QueryParamInt("other")
-		require.Equal(t, 0, paramInt)
+		require.Zero(t, paramInt)
 
 		paramInt, err := c.QueryParamIntErr("id")
 		require.NoError(t, err)
@@ -139,12 +139,12 @@ func TestContext_QueryParam(t *testing.T) {
 		paramInt, err = c.QueryParamIntErr("notfound")
 		require.Error(t, err)
 		require.Equal(t, "param notfound not found", err.Error())
-		require.Equal(t, 0, paramInt)
+		require.Zero(t, paramInt)
 
 		paramInt, err = c.QueryParamIntErr("other")
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "param other=hello is not of type int")
-		require.Equal(t, 0, paramInt)
+		require.Zero(t, paramInt)
 	})
 
 	t.Run("bool", func(t *testing.T) {
@@ -153,22 +153,22 @@ func TestContext_QueryParam(t *testing.T) {
 		require.Equal(t, "true", param)
 
 		paramBool := c.QueryParamBool("boo")
-		require.Equal(t, true, paramBool)
+		require.True(t, paramBool)
 
 		paramBool = c.QueryParamBool("notfound")
-		require.Equal(t, false, paramBool)
+		require.False(t, paramBool)
 
 		paramBool, err := c.QueryParamBoolErr("boo")
 		require.NoError(t, err)
-		require.Equal(t, true, paramBool)
+		require.True(t, paramBool)
 
 		paramBool, err = c.QueryParamBoolErr("notfound")
 		require.Error(t, err)
-		require.Equal(t, false, paramBool)
+		require.False(t, paramBool)
 
 		paramBool, err = c.QueryParamBoolErr("other")
 		require.Error(t, err)
-		require.Equal(t, false, paramBool)
+		require.False(t, paramBool)
 	})
 
 	t.Run("slice", func(t *testing.T) {
@@ -189,8 +189,8 @@ func TestContext_QueryParams(t *testing.T) {
 
 	params := c.QueryParams()
 	require.NotEmpty(t, params)
-	require.Equal(t, params["id"], []string{"456"})
-	require.Equal(t, params["other"], []string{"hello"})
+	require.Equal(t, []string{"456"}, params["id"])
+	require.Equal(t, []string{"hello"}, params["other"])
 	require.Empty(t, params["notfound"])
 }
 
@@ -419,7 +419,7 @@ age: 30
 		body, err := c.Body()
 		require.Error(t, err)
 		require.Equal(t, "", body.Name)
-		require.Equal(t, 0, body.Age)
+		require.Zero(t, body.Age)
 	})
 
 	t.Run("can read string body", func(t *testing.T) {
@@ -557,8 +557,8 @@ func TestMainLang(t *testing.T) {
 	r.Header.Set("Accept-Language", "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5")
 
 	c := NewNetHTTPContext[any](BaseRoute{}, httptest.NewRecorder(), r, readOptions{})
-	require.Equal(t, c.MainLang(), "fr")
-	require.Equal(t, c.MainLocale(), "fr-CH")
+	require.Equal(t, "fr", c.MainLang())
+	require.Equal(t, "fr-CH", c.MainLocale())
 }
 
 func TestContextNoBody_Body(t *testing.T) {

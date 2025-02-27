@@ -279,11 +279,11 @@ func TestConvertSQLNullString(t *testing.T) {
 func TestConvertSQLNullBool(t *testing.T) {
 	t.Run("convert sql.NullBool", func(t *testing.T) {
 		v := convertSQLNullBool("false")
-		require.Equal(t, false, v.Interface().(sql.NullBool).Bool)
+		require.False(t, v.Interface().(sql.NullBool).Bool)
 	})
 
 	t.Run("cannot convert sql.NullBool", func(t *testing.T) {
 		v := convertSQLNullBool("hello")
-		require.Equal(t, v, reflect.Value{})
+		require.Equal(t, reflect.Value{}, v)
 	})
 }

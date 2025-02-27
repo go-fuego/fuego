@@ -117,8 +117,8 @@ func TestUseStd(t *testing.T) {
 
 	s.Mux.ServeHTTP(w, r)
 
-	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, w.Body.String(), "test successful")
+	require.Equal(t, http.StatusOK, w.Code)
+	require.Equal(t, "test successful", w.Body.String())
 }
 
 func TestAll(t *testing.T) {
@@ -133,7 +133,7 @@ func TestAll(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, w.Code, http.StatusOK)
+		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, "test", w.Body.String())
 	})
 
@@ -143,7 +143,7 @@ func TestAll(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, w.Code, http.StatusOK)
+		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, "test", w.Body.String())
 	})
 }
@@ -159,7 +159,7 @@ func TestGet(t *testing.T) {
 
 	s.Mux.ServeHTTP(w, r)
 
-	require.Equal(t, w.Code, http.StatusOK)
+	require.Equal(t, http.StatusOK, w.Code)
 	require.Equal(t, "test", w.Body.String())
 }
 
@@ -174,7 +174,7 @@ func TestPost(t *testing.T) {
 
 	s.Mux.ServeHTTP(w, r)
 
-	require.Equal(t, w.Code, http.StatusOK)
+	require.Equal(t, http.StatusOK, w.Code)
 	require.Equal(t, "test", w.Body.String())
 }
 
@@ -189,7 +189,7 @@ func TestPut(t *testing.T) {
 
 	s.Mux.ServeHTTP(w, r)
 
-	require.Equal(t, w.Code, http.StatusOK)
+	require.Equal(t, http.StatusOK, w.Code)
 	require.Equal(t, "test", w.Body.String())
 }
 
@@ -204,7 +204,7 @@ func TestPatch(t *testing.T) {
 
 	s.Mux.ServeHTTP(w, r)
 
-	require.Equal(t, w.Code, http.StatusOK)
+	require.Equal(t, http.StatusOK, w.Code)
 	require.Equal(t, "test", w.Body.String())
 }
 
@@ -219,8 +219,8 @@ func TestDelete(t *testing.T) {
 
 	s.Mux.ServeHTTP(w, r)
 
-	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, "test", "test", w.Body.String())
+	require.Equal(t, http.StatusOK, w.Code)
+	require.Equal(t, "test", w.Body.String())
 }
 
 func TestHandle(t *testing.T) {
@@ -236,8 +236,8 @@ func TestHandle(t *testing.T) {
 
 	s.Mux.ServeHTTP(w, r)
 
-	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, w.Body.String(), "test successful")
+	require.Equal(t, http.StatusOK, w.Code)
+	require.Equal(t, "test successful", w.Body.String())
 }
 
 func TestAllStd(t *testing.T) {
@@ -254,8 +254,8 @@ func TestAllStd(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, w.Code, http.StatusOK)
-		require.Equal(t, w.Body.String(), "test successful")
+		require.Equal(t, http.StatusOK, w.Code)
+		require.Equal(t, "test successful", w.Body.String())
 	})
 
 	t.Run("post", func(t *testing.T) {
@@ -265,8 +265,8 @@ func TestAllStd(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, w.Code, http.StatusOK)
-		require.Equal(t, w.Body.String(), "test successful")
+		require.Equal(t, http.StatusOK, w.Code)
+		require.Equal(t, "test successful", w.Body.String())
 	})
 }
 
@@ -283,8 +283,8 @@ func TestGetStd(t *testing.T) {
 
 	s.Mux.ServeHTTP(w, r)
 
-	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, w.Body.String(), "test successful")
+	require.Equal(t, http.StatusOK, w.Code)
+	require.Equal(t, "test successful", w.Body.String())
 }
 
 func TestPostStd(t *testing.T) {
@@ -300,8 +300,8 @@ func TestPostStd(t *testing.T) {
 
 	s.Mux.ServeHTTP(w, r)
 
-	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, w.Body.String(), "test successful")
+	require.Equal(t, http.StatusOK, w.Code)
+	require.Equal(t, "test successful", w.Body.String())
 }
 
 func TestPutStd(t *testing.T) {
@@ -317,8 +317,8 @@ func TestPutStd(t *testing.T) {
 
 	s.Mux.ServeHTTP(w, r)
 
-	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, w.Body.String(), "test successful")
+	require.Equal(t, http.StatusOK, w.Code)
+	require.Equal(t, "test successful", w.Body.String())
 }
 
 func TestPatchStd(t *testing.T) {
@@ -334,8 +334,8 @@ func TestPatchStd(t *testing.T) {
 
 	s.Mux.ServeHTTP(w, r)
 
-	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, w.Body.String(), "test successful")
+	require.Equal(t, http.StatusOK, w.Code)
+	require.Equal(t, "test successful", w.Body.String())
 }
 
 func TestDeleteStd(t *testing.T) {
@@ -351,8 +351,8 @@ func TestDeleteStd(t *testing.T) {
 
 	s.Mux.ServeHTTP(w, r)
 
-	require.Equal(t, w.Code, http.StatusOK)
-	require.Equal(t, w.Body.String(), "test successful")
+	require.Equal(t, http.StatusOK, w.Code)
+	require.Equal(t, "test successful", w.Body.String())
 }
 
 func TestRegister(t *testing.T) {
@@ -435,7 +435,7 @@ func TestGroupInheritance(t *testing.T) {
 			return "test", nil
 		})
 
-		require.Equal(t, 3, len(route.Operation.Parameters))
+		require.Len(t, route.Operation.Parameters, 3)
 		require.NotNil(t, route.Operation.Parameters.GetByInAndName("header", "Header-1"))
 		require.NotNil(t, route.Operation.Parameters.GetByInAndName("header", "Header-2"))
 		require.NotNil(t, route.Operation.Parameters.GetByInAndName("header", "Accept"))
@@ -487,8 +487,8 @@ func TestHideOpenapiRoutes(t *testing.T) {
 		s.Hide()
 		Get(s, "/test", func(ctx ContextNoBody) (string, error) { return "", nil })
 
-		require.True(t, s.OpenAPI.Description().Paths.Find("/not-hidden") != nil)
-		require.True(t, s.OpenAPI.Description().Paths.Find("/test") == nil)
+		require.NotNil(t, s.OpenAPI.Description().Paths.Find("/not-hidden"))
+		require.Nil(t, s.OpenAPI.Description().Paths.Find("/test"))
 	})
 
 	t.Run("hide group", func(t *testing.T) {
@@ -498,8 +498,8 @@ func TestHideOpenapiRoutes(t *testing.T) {
 		g := Group(s, "/group").Hide()
 		Get(g, "/test", func(ctx ContextNoBody) (string, error) { return "", nil })
 
-		require.True(t, s.OpenAPI.Description().Paths.Find("/not-hidden") != nil)
-		require.True(t, s.OpenAPI.Description().Paths.Find("/group/test") == nil)
+		require.NotNil(t, s.OpenAPI.Description().Paths.Find("/not-hidden"))
+		require.Nil(t, s.OpenAPI.Description().Paths.Find("/group/test"))
 	})
 
 	t.Run("hide group but not other group", func(t *testing.T) {
@@ -510,8 +510,8 @@ func TestHideOpenapiRoutes(t *testing.T) {
 		g2 := Group(s, "/group2")
 		Get(g2, "/test", func(ctx ContextNoBody) (string, error) { return "test", nil })
 
-		require.True(t, s.OpenAPI.Description().Paths.Find("/group/test") == nil)
-		require.True(t, s.OpenAPI.Description().Paths.Find("/group2/test") != nil)
+		require.Nil(t, s.OpenAPI.Description().Paths.Find("/group/test"))
+		require.NotNil(t, s.OpenAPI.Description().Paths.Find("/group2/test"))
 	})
 
 	t.Run("hide group but show sub group", func(t *testing.T) {
@@ -522,8 +522,8 @@ func TestHideOpenapiRoutes(t *testing.T) {
 		g2 := Group(g, "/sub").Show()
 		Get(g2, "/test", func(ctx ContextNoBody) (string, error) { return "test", nil })
 
-		require.True(t, s.OpenAPI.Description().Paths.Find("/group/test") == nil)
-		require.True(t, s.OpenAPI.Description().Paths.Find("/group/sub/test") != nil)
+		require.Nil(t, s.OpenAPI.Description().Paths.Find("/group/test"))
+		require.NotNil(t, s.OpenAPI.Description().Paths.Find("/group/sub/test"))
 	})
 }
 

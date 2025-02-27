@@ -1,11 +1,30 @@
 run:
   go: "1.23"
   timeout: 1m
-  tests: false
+  tests: true
 
 issues:
   include:
     - "EXC0014" # Enable revive export rule with "should start with"
+  exclude-rules:
+    # Exclude other linters by default on tests files
+    # we only run testifylint https://github.com/Antonboom/testifylint on test files
+    - path: _test\.go$
+      linters:
+        - errcheck
+        - gci
+        - gofumpt
+        - gosec
+        - gosimple
+        - govet
+        - ineffassign
+        - misspell
+        - staticcheck
+        - unused
+        - usestdlibvars
+        - whitespace
+        - revive
+        - gocritic
 
 linters:
   disable-all: false
@@ -21,6 +40,7 @@ linters:
     - misspell
     - revive
     - staticcheck
+    - testifylint
     - unconvert
     - unused
     - usestdlibvars
@@ -85,3 +105,6 @@ linters-settings:
       - default
       # linters that related to fuego, so they should be separated
       - localmodule
+
+  testifylint:
+    enable-all: true

@@ -154,8 +154,8 @@ func TestSearchUsersController(t *testing.T) {
 			}
 
 			// Check success cases
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expected, response)
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, response)
 		})
 	}
 }

@@ -23,7 +23,7 @@ var (
 func (e myError) Error() string     { return "test error" }
 func (e myError) StatusCode() int   { return e.status }
 func (e myError) DetailMsg() string { return e.detail }
-func (e myError) Unwrap() error     { return HTTPError(e.err) }
+func (e myError) Unwrap() error     { return e.err }
 
 func TestErrorHandler(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
