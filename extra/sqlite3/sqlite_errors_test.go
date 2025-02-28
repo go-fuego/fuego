@@ -1,4 +1,4 @@
-package sqlite
+package sqlite3
 
 import (
 	"errors"
@@ -6,6 +6,8 @@ import (
 
 	"github.com/go-fuego/fuego"
 	"github.com/mattn/go-sqlite3"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestConflictErrors(t *testing.T) {
@@ -32,17 +34,13 @@ func TestConflictErrors(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc // capturar variable para ejecución paralela
+		tc := tc 
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			result := ErrorHandler(tc.inputErr)
-			var err fuego.ConflictError
-			if !errors.As(result, &err) {
-				t.Fatalf("expected ConflictError, got %T", result)
-			}
-			if err.Title != tc.expectedTitle {
-				t.Errorf("expected title %q, got %q", tc.expectedTitle, err.Title)
-			}
+			var conflictErr fuego.ConflictError
+			require.ErrorAs(t, result, &conflictErr, "expected ConflictError")
+			assert.Equal(t, tc.expectedTitle, conflictErr.Title, "expected title to match")
 		})
 	}
 }
@@ -65,13 +63,9 @@ func TestBadRequestErrors(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			result := ErrorHandler(tc.inputErr)
-			var err fuego.BadRequestError
-			if !errors.As(result, &err) {
-				t.Fatalf("expected BadRequestError, got %T", result)
-			}
-			if err.Title != tc.expectedTitle {
-				t.Errorf("expected title %q, got %q", tc.expectedTitle, err.Title)
-			}
+			var badRequestErr fuego.BadRequestError
+			require.ErrorAs(t, result, &badRequestErr, "expected BadRequestError")
+			assert.Equal(t, tc.expectedTitle, badRequestErr.Title, "expected title to match")
 		})
 	}
 }
@@ -79,25 +73,17 @@ func TestBadRequestErrors(t *testing.T) {
 func TestNotFoundError(t *testing.T) {
 	inputErr := &sqlite3.Error{ExtendedCode: sqlite3.ErrNoExtended(sqlite3.ErrNotFound)}
 	result := ErrorHandler(inputErr)
-	var err fuego.NotFoundError
-	if !errors.As(result, &err) {
-		t.Fatalf("expected NotFoundError, got %T", result)
-	}
-	if err.Title != "Record Not Found" {
-		t.Errorf("expected title %q, got %q", "Record Not Found", err.Title)
-	}
+	var notFoundErr fuego.NotFoundError
+	require.ErrorAs(t, result, &notFoundErr, "expected NotFoundError")
+	assert.Equal(t, "Record Not Found", notFoundErr.Title, "expected title to match")
 }
 
 func TestUnauthorizedError(t *testing.T) {
 	inputErr := &sqlite3.Error{ExtendedCode: sqlite3.ErrNoExtended(sqlite3.ErrAuth)}
 	result := ErrorHandler(inputErr)
-	var err fuego.UnauthorizedError
-	if !errors.As(result, &err) {
-		t.Fatalf("expected UnauthorizedError, got %T", result)
-	}
-	if err.Title != "Authentication Required" {
-		t.Errorf("expected title %q, got %q", "Authentication Required", err.Title)
-	}
+	var unauthorizedErr fuego.UnauthorizedError
+	require.ErrorAs(t, result, &unauthorizedErr, "expected UnauthorizedError")
+	assert.Equal(t, "Authentication Required", unauthorizedErr.Title, "expected title to match")
 }
 
 func TestInternalServerErrors(t *testing.T) {
@@ -123,7 +109,7 @@ func TestInternalServerErrors(t *testing.T) {
 		},
 		{
 			name:          "Default Internal Server Error",
-			inputErr:      &sqlite3.Error{ExtendedCode: 9999}, // código desconocido
+			inputErr:      &sqlite3.Error{ExtendedCode: 9999}, // unknown code
 			expectedTitle: "Internal Server Error",
 		},
 	}
@@ -133,13 +119,9 @@ func TestInternalServerErrors(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			result := ErrorHandler(tc.inputErr)
-			var err fuego.InternalServerError
-			if !errors.As(result, &err) {
-				t.Fatalf("expected InternalServerError, got %T", result)
-			}
-			if err.Title != tc.expectedTitle {
-				t.Errorf("expected title %q, got %q", tc.expectedTitle, err.Title)
-			}
+			var internalErr fuego.InternalServerError
+			require.ErrorAs(t, result, &internalErr, "expected InternalServerError")
+			assert.Equal(t, tc.expectedTitle, internalErr.Title, "expected title to match")
 		})
 	}
 }
@@ -147,19 +129,13 @@ func TestInternalServerErrors(t *testing.T) {
 func TestNonSqliteError(t *testing.T) {
 	inputErr := errors.New("generic error")
 	result := ErrorHandler(inputErr)
-	if result != inputErr {
-		t.Errorf("expected original error, got %v", result)
-	}
+	assert.Equal(t, inputErr, result, "expected original error to be returned")
 }
 
 func TestForbiddenError(t *testing.T) {
 	inputErr := &sqlite3.Error{ExtendedCode: sqlite3.ErrNoExtended(sqlite3.ErrPerm)}
 	result := ErrorHandler(inputErr)
-	var err fuego.ForbiddenError
-	if !errors.As(result, &err) {
-		t.Fatalf("expected ForbiddenError, got %T", result)
-	}
-	if err.Title != "Permission Denied" {
-		t.Errorf("expected title %q, got %q", "Permission Denied", err.Title)
-	}
+	var forbiddenErr fuego.ForbiddenError
+	require.ErrorAs(t, result, &forbiddenErr, "expected ForbiddenError")
+	assert.Equal(t, "Permission Denied", forbiddenErr.Title, "expected title to match")
 }
