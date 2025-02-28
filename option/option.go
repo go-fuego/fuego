@@ -162,6 +162,11 @@ var AddError = fuego.OptionAddError
 // Optional: fuego.Response.ContentTypes will default to `application/json` and `application/xml` if not set
 var AddResponse = fuego.OptionAddResponse
 
+// DefaultResponse adds a default response to a route
+// Required: Response.Type must be set
+// Optional: Response.ContentTypes will default to `application/json` and `application/xml` if not set
+var DefaultResponse = fuego.OptionDefaultResponse
+
 // RequestContentType sets the accepted content types for the route.
 // By default, the accepted content types is */*.
 // This will override any options set at the server level.
