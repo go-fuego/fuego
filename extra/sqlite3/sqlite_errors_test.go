@@ -34,7 +34,7 @@ func TestConflictErrors(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc 
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			result := ErrorHandler(tc.inputErr)
