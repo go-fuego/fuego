@@ -12,7 +12,7 @@ import (
 // to a fuego.NotFoundError with the expected title and HTTP status.
 func TestSQLErrorHandler_NotFound(t *testing.T) {
 	err := sql.ErrNoRows
-	result := SQLErrorHandler(err)
+	result := ErrorHandler(err)
 	var notFoundErr fuego.NotFoundError
 	if !errors.As(result, &notFoundErr) {
 		t.Fatalf("expected NotFoundError, got %T", result)
@@ -26,7 +26,7 @@ func TestSQLErrorHandler_NotFound(t *testing.T) {
 // to a fuego.InternalServerError with the expected title and HTTP status.
 func TestSQLErrorHandler_ConnDone(t *testing.T) {
 	err := sql.ErrConnDone
-	result := SQLErrorHandler(err)
+	result := ErrorHandler(err)
 	var internalErr fuego.InternalServerError
 	if !errors.As(result, &internalErr) {
 		t.Fatalf("expected InternalServerError, got %T", result)
@@ -40,7 +40,7 @@ func TestSQLErrorHandler_ConnDone(t *testing.T) {
 // to a fuego.ConflictError with the expected title and HTTP status.
 func TestSQLErrorHandler_TxDone(t *testing.T) {
 	err := sql.ErrTxDone
-	result := SQLErrorHandler(err)
+	result := ErrorHandler(err)
 	var conflictErr fuego.ConflictError
 	if !errors.As(result, &conflictErr) {
 		t.Fatalf("expected ConflictError, got %T", result)
@@ -54,7 +54,7 @@ func TestSQLErrorHandler_TxDone(t *testing.T) {
 // are returned unchanged.
 func TestSQLErrorHandler_Generic(t *testing.T) {
 	genericErr := errors.New("generic error")
-	result := SQLErrorHandler(genericErr)
+	result := ErrorHandler(genericErr)
 	if result != genericErr {
 		t.Errorf("expected original error, got %v", result)
 	}

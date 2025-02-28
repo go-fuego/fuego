@@ -8,8 +8,8 @@ import (
 	"github.com/go-fuego/fuego"
 )
 
-// SQLErrorHandler maps standard SQL errors to the corresponding fuego errors.
-func SQLErrorHandler(err error) error {
+// ErrorHandler maps standard SQL errors to the corresponding fuego errors.
+func ErrorHandler(err error) error {
 	if err == nil {
 		return nil
 	}
@@ -18,7 +18,7 @@ func SQLErrorHandler(err error) error {
 		return fuego.NotFoundError{
 			Err:    err,
 			Title:  "Record Not Found",
-			Detail: "The requested record was not found in the database",
+			Detail: err.Error(),
 			Status: http.StatusNotFound,
 		}
 	}
@@ -27,7 +27,7 @@ func SQLErrorHandler(err error) error {
 		return fuego.InternalServerError{
 			Err:    err,
 			Title:  "Connection Closed",
-			Detail: "The database connection is already closed",
+			Detail: err.Error(),
 			Status: http.StatusInternalServerError,
 		}
 	}
@@ -36,7 +36,7 @@ func SQLErrorHandler(err error) error {
 		return fuego.ConflictError{
 			Err:    err,
 			Title:  "Transaction Completed",
-			Detail: "The transaction has already been committed or rolled back",
+			Detail: err.Error(),
 			Status: http.StatusConflict,
 		}
 	}

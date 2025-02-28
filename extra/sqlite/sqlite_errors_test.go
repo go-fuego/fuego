@@ -21,13 +21,13 @@ func TestConflictErrors(t *testing.T) {
 		},
 		{
 			name:          "Duplicate Entry - Unique Constraint",
-			inputErr:      &sqlite3.Error{ExtendedCode: sqlite3.ErrNoExtended(sqlite3.ErrConstraintUnique)},
-			expectedTitle: "Duplicate Entry",
+			inputErr:      &sqlite3.Error{ExtendedCode: sqlite3.ErrConstraintUnique},
+			expectedTitle: "Duplicate",
 		},
 		{
 			name:          "Duplicate Entry - Primary Key Constraint",
-			inputErr:      &sqlite3.Error{ExtendedCode: sqlite3.ErrNoExtended(sqlite3.ErrConstraintPrimaryKey)},
-			expectedTitle: "Duplicate Entry",
+			inputErr:      &sqlite3.Error{ExtendedCode: sqlite3.ErrConstraintPrimaryKey},
+			expectedTitle: "Duplicate",
 		},
 	}
 
@@ -35,7 +35,7 @@ func TestConflictErrors(t *testing.T) {
 		tc := tc // capturar variable para ejecución paralela
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			result := SQLiteErrorHandler(tc.inputErr)
+			result := ErrorHandler(tc.inputErr)
 			var err fuego.ConflictError
 			if !errors.As(result, &err) {
 				t.Fatalf("expected ConflictError, got %T", result)
@@ -55,7 +55,7 @@ func TestBadRequestErrors(t *testing.T) {
 	}{
 		{
 			name:          "Foreign Key Constraint Failed",
-			inputErr:      &sqlite3.Error{ExtendedCode: sqlite3.ErrNoExtended(sqlite3.ErrConstraintForeignKey)},
+			inputErr:      &sqlite3.Error{ExtendedCode: sqlite3.ErrConstraintForeignKey},
 			expectedTitle: "Foreign Key Constraint Failed",
 		},
 	}
@@ -64,7 +64,7 @@ func TestBadRequestErrors(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			result := SQLiteErrorHandler(tc.inputErr)
+			result := ErrorHandler(tc.inputErr)
 			var err fuego.BadRequestError
 			if !errors.As(result, &err) {
 				t.Fatalf("expected BadRequestError, got %T", result)
@@ -78,7 +78,7 @@ func TestBadRequestErrors(t *testing.T) {
 
 func TestNotFoundError(t *testing.T) {
 	inputErr := &sqlite3.Error{ExtendedCode: sqlite3.ErrNoExtended(sqlite3.ErrNotFound)}
-	result := SQLiteErrorHandler(inputErr)
+	result := ErrorHandler(inputErr)
 	var err fuego.NotFoundError
 	if !errors.As(result, &err) {
 		t.Fatalf("expected NotFoundError, got %T", result)
@@ -90,7 +90,7 @@ func TestNotFoundError(t *testing.T) {
 
 func TestUnauthorizedError(t *testing.T) {
 	inputErr := &sqlite3.Error{ExtendedCode: sqlite3.ErrNoExtended(sqlite3.ErrAuth)}
-	result := SQLiteErrorHandler(inputErr)
+	result := ErrorHandler(inputErr)
 	var err fuego.UnauthorizedError
 	if !errors.As(result, &err) {
 		t.Fatalf("expected UnauthorizedError, got %T", result)
@@ -132,7 +132,7 @@ func TestInternalServerErrors(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			result := SQLiteErrorHandler(tc.inputErr)
+			result := ErrorHandler(tc.inputErr)
 			var err fuego.InternalServerError
 			if !errors.As(result, &err) {
 				t.Fatalf("expected InternalServerError, got %T", result)
@@ -146,7 +146,7 @@ func TestInternalServerErrors(t *testing.T) {
 
 func TestNonSqliteError(t *testing.T) {
 	inputErr := errors.New("generic error")
-	result := SQLiteErrorHandler(inputErr)
+	result := ErrorHandler(inputErr)
 	if result != inputErr {
 		t.Errorf("expected original error, got %v", result)
 	}
@@ -154,7 +154,7 @@ func TestNonSqliteError(t *testing.T) {
 
 func TestForbiddenError(t *testing.T) {
 	inputErr := &sqlite3.Error{ExtendedCode: sqlite3.ErrNoExtended(sqlite3.ErrPerm)}
-	result := SQLiteErrorHandler(inputErr)
+	result := ErrorHandler(inputErr)
 	var err fuego.ForbiddenError
 	if !errors.As(result, &err) {
 		t.Fatalf("expected ForbiddenError, got %T", result)
