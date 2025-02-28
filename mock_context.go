@@ -17,12 +17,13 @@ import (
 type MockContext[B, P any] struct {
 	internal.CommonContext[B]
 
-	RequestBody B
-	Headers     http.Header
-	PathParams  map[string]string
-	response    http.ResponseWriter
-	request     *http.Request
-	Cookies     map[string]*http.Cookie
+	RequestBody   B
+	RequestParams P
+	Headers       http.Header
+	PathParams    map[string]string
+	response      http.ResponseWriter
+	request       *http.Request
+	Cookies       map[string]*http.Cookie
 }
 
 // NewMockContext creates a new MockContext instance with the provided body
@@ -56,6 +57,16 @@ func (m *MockContext[B, P]) Body() (B, error) {
 // MustBody returns the body or panics if there's an error
 func (m *MockContext[B, P]) MustBody() B {
 	return m.RequestBody
+}
+
+// Params returns the previously set params value
+func (m *MockContext[B, P]) Params() (P, error) {
+	return m.RequestParams, nil
+}
+
+// MustParams returns the params or panics if there's an error
+func (m *MockContext[B, P]) MustParams() P {
+	return m.RequestParams
 }
 
 // HasHeader checks if a header exists
