@@ -60,7 +60,7 @@ func (rs Resource) Routes(s *fuego.Server) {
 		option.Tags("auth"),
 		option.Query("redirect", "Redirect URL", param.Example("example", "/favorites")),
 		option.AddResponse(401, "Unauthorized", fuego.Response{Type: fuego.HTTPError{}}))
-	fuego.Post(s, "/logout", rs.logout, option.Tags("auth"))
+	fuego.GetStd(s, "/logout", rs.logout, option.Tags("auth"))
 	fuego.Get(s, "/me", rs.me, option.Tags("auth"))
 
 	// Favorites

@@ -25,7 +25,7 @@ templ NavBar(props NavBarProps) {
 			</a>
 			<div class="relative m-1 md:m-3">
 				<input
-					class="h-full rounded-full border border-stone-200 dark:border-stone-800 p-2 px-4 text-stone-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-stone-700 dark:bg-zinc-600 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+					class="h-full w-64 max-w-[90vh] rounded-full border border-stone-200 dark:border-stone-800 p-2 px-4 text-stone-500 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-stone-700 dark:bg-zinc-600 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-blue-500"
 					type="text"
 					id="searchInput"
 					name="q"
@@ -43,7 +43,9 @@ templ NavBar(props NavBarProps) {
       transform pl-2 text-xs text-stone-500 dark:text-stone-300 md:inline"
 				>⌘K</span>
 			</div>
-			<div>
+			<div
+				class="mb-2 md:mb-0"
+			>
 				if props.Username == "" {
 					<a
 						class="text-stone-500 hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-200 hover:underline active:text-blue-800"
@@ -52,8 +54,13 @@ templ NavBar(props NavBarProps) {
 						Login
 					</a>
 				} else {
-					<span>
-						Hello { props.Username }
+					<span class="space-x-2">
+						<a
+							class="hover:text-stone-800 dark:hover:text-stone-200 hover:underline active:text-blue-800"
+							href="/favorites"
+						>
+							{ props.Username }
+						</a>
 						<a
 							class="text-stone-500 hover:text-stone-800 dark:text-stone-300 dark:hover:text-stone-200 hover:underline active:text-blue-800"
 							href="/logout"
