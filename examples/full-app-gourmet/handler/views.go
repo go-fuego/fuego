@@ -80,6 +80,7 @@ func (rs Resource) Routes(s *fuego.Server) {
 	fuego.Get(s, "/favorites", rs.getMyFavorites, option.Tags("favorites"))
 	fuego.Get(s, "/users/{username}/favorites", rs.getFavoritesByUser, optionFavorites)
 	fuego.Get(s, "/users/{username}/favorites/sqlinjection", rs.getFavoritesByUserUnsecureSql, optionFavorites)
+	s.Mux.Handle("GET /recipes/{id}/stars", http.HandlerFunc(rs.favoritesCount))
 
 	if rs.HotReload {
 		hotReload(s)

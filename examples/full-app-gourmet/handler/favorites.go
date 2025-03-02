@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"log/slog"
+	"net/http"
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
@@ -13,6 +14,7 @@ type FavoriteRepository interface {
 	AddFavorite(ctx context.Context, arg store.AddFavoriteParams) (store.UsersRecipesFavorite, error)
 	RemoveFavorite(ctx context.Context, arg store.RemoveFavoriteParams) error
 	GetFavoritesByUser(ctx context.Context, username string) ([]store.GetFavoritesByUserRow, error)
+	GetNumberOfFavorite(ctx context.Context, recipeID string) (int64, error)
 }
 
 func (rs Resource) addFavorite(c fuego.ContextNoBody) (*store.UsersRecipesFavorite, error) {
@@ -35,6 +37,12 @@ func (rs Resource) addFavorite(c fuego.ContextNoBody) (*store.UsersRecipesFavori
 	fav, err := rs.FavoritesQueries.AddFavorite(c, payload)
 	if err != nil {
 		return nil, err
+	}
+
+	// if from htmx, return the recipe page
+	if c.Header("HX-Request") == "true" {
+		http.Redirect(c.Response(), c.Request(), "/recipes/"+payload.RecipeID, http.StatusSeeOther)
+		return nil, nil
 	}
 
 	return &fav, nil
