@@ -154,7 +154,6 @@ func (rs Resource) relatedRecipes(c fuego.ContextNoBody) (*fuego.DataOrTemplate[
 func (rs Resource) favoritesCount(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
 
 	oldCount := int64(-1)
 
@@ -203,12 +202,24 @@ func (rs Resource) singleRecipe(c fuego.ContextNoBody) (*fuego.DataOrTemplate[st
 
 	adminCookie, _ := c.Request().Cookie("admin")
 
+	var isFavoriteOfCurrentUser bool
 	username, _ := usernameFromContext(c)
+	if username != "" {
+		found, _ := rs.FavoritesQueries.IsFavorite(c.Context(), store.IsFavoriteParams{
+			Username: username,
+			RecipeID: id,
+		})
+		isFavoriteOfCurrentUser = found > 0
+	}
+
+	numberOfStars, _ := rs.FavoritesQueries.GetNumberOfFavorite(c.Context(), id)
 
 	return fuego.DataOrHTML(
 		recipe,
 		templa.RecipePage(templa.RecipePageProps{
 			Username:       username,
+			IsFavorite:     isFavoriteOfCurrentUser,
+			NumberOfStars:  int(numberOfStars),
 			Recipe:         recipe,
 			Ingredients:    ingredients,
 			RelatedRecipes: []store.Recipe{{}, {}, {}, {}, {}},

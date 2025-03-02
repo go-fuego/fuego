@@ -9,5 +9,8 @@ INSERT INTO users_recipes_favorites (username, recipe_id) VALUES (?, ?) RETURNIN
 -- name: RemoveFavorite :exec
 DELETE FROM users_recipes_favorites WHERE username = ? AND recipe_id = ?;
 
+-- name: IsFavorite :one
+SELECT COUNT(*) FROM users_recipes_favorites WHERE username = ? AND recipe_id = ?;
+
 -- name: GetNumberOfFavorite :one
 SELECT COUNT(*) FROM users_recipes_favorites WHERE recipe_id = ?;
