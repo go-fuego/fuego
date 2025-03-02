@@ -67,6 +67,10 @@ func Patch[T, B any](s *Server, path string, controller func(ContextWithBody[B])
 	return registerFuegoController(s, http.MethodPatch, path, controller, options...)
 }
 
+func Options[T, B any](s *Server, path string, controller func(ContextWithBody[B]) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
+	return registerFuegoController(s, http.MethodOptions, path, controller, options...)
+}
+
 // Register registers a controller into the default net/http mux.
 //
 // Deprecated: Used internally. Please satisfy the [Registerer] interface instead and pass to [Registers].
@@ -130,6 +134,10 @@ func PutStd(s *Server, path string, controller func(http.ResponseWriter, *http.R
 
 func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
 	return registerStdController(s, http.MethodPatch, path, controller, options...)
+}
+
+func OptionsStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
+	return registerStdController(s, http.MethodOptions, path, controller, options...)
 }
 
 func registerFuegoController[T, B any](s *Server, method, path string, controller func(ContextWithBody[B]) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
