@@ -17,7 +17,7 @@ templ page(title string) {
 				<h4 class="ml-4">An error occurred</h4>
 				<button class="btn btn-red-bg" onclick="errormessage_off()">Close</button>
 			</div>
-			@NavBar()
+			@NavBar(NavBarProps{Username: ""})
 			<main id="page" class="container mx-auto">
 				{ children... }
 			</main>

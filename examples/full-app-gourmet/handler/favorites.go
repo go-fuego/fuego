@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa"
 )
 
 type FavoriteRepository interface {
@@ -58,13 +59,24 @@ func (rs Resource) removeFavorite(c fuego.ContextNoBody) (any, error) {
 	return nil, err
 }
 
-func (rs Resource) getMyFavorites(c fuego.ContextNoBody) ([]store.GetFavoritesByUserRow, error) {
+func (rs Resource) getMyFavorites(c fuego.ContextNoBody) (*fuego.DataOrTemplate[[]store.GetFavoritesByUserRow], error) {
 	caller, err := usernameFromContext(c.Context())
 	if err != nil {
 		return nil, err
 	}
 
-	return rs.FavoritesQueries.GetFavoritesByUser(c, caller)
+	favorites, err := rs.FavoritesQueries.GetFavoritesByUser(c, caller)
+	if err != nil {
+		return nil, err
+	}
+
+	return fuego.DataOrHTML(
+		favorites,
+		templa.Favorites(templa.FavoritesProps{
+			Username:  caller,
+			Favorites: favorites,
+		}),
+	), nil
 }
 
 func (rs Resource) getFavoritesByUser(c fuego.ContextNoBody) ([]store.GetFavoritesByUserRow, error) {

@@ -71,6 +71,11 @@ func (rs Resource) login(c fuego.ContextWithBody[LoginPayload]) (*TokenResponse,
 		// Secure:   true,
 	})
 
+	if c.QueryParam("redirect") != "" {
+		http.Redirect(c.Response(), c.Request(), c.QueryParam("redirect"), http.StatusFound)
+		return nil, nil
+	}
+
 	return &TokenResponse{
 		Token: s,
 	}, err
