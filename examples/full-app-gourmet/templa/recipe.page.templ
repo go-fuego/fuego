@@ -63,9 +63,9 @@ templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
 										<button
 											type="submit"
 											if props.Username == "" {
+												disabled
 												class="flex items-center gap-2 text-gray-300"
 											} else {
-												disabled
 												class="flex items-center gap-2 text-gray-300 hover:text-red-500"
 											}
 										>
