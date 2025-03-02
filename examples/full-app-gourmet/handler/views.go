@@ -30,6 +30,7 @@ func (rs Resource) Routes(s *fuego.Server) {
 	fuego.All(s, "/", rs.showIndex, option.Middleware(cache.New()))
 	fuego.GetStd(s, "/robots.txt", rs.robots, option.Middleware(cache.New()))
 	fuego.Get(s, "/recipes", rs.listRecipes, option.Tags("recipes"))
+	fuego.Get(s, "/connection", rs.connection, option.Tags("recipes"))
 	fuego.Get(s, "/planner", rs.planner)
 	fuego.Get(s, "/recipes/{id}", rs.singleRecipe, option.Tags("recipes"))
 	fuego.Get(s, "/recipes/{id}/related", rs.relatedRecipes, option.Tags("recipes"))
@@ -55,7 +56,10 @@ func (rs Resource) Routes(s *fuego.Server) {
 
 	// Users
 	fuego.Get(s, "/users/{username}", rs.getUserByUsername, option.Tags("users"))
-	fuego.Post(s, "/login", rs.login, option.Tags("auth"), option.AddResponse(401, "Unauthorized", fuego.Response{Type: fuego.HTTPError{}}))
+	fuego.Post(s, "/login", rs.login,
+		option.Tags("auth"),
+		option.Query("redirect", "Redirect URL", param.Example("example", "/favorites")),
+		option.AddResponse(401, "Unauthorized", fuego.Response{Type: fuego.HTTPError{}}))
 	fuego.Post(s, "/logout", rs.logout, option.Tags("auth"))
 	fuego.Get(s, "/me", rs.me, option.Tags("auth"))
 
