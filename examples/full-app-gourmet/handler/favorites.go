@@ -14,6 +14,7 @@ type FavoriteRepository interface {
 	AddFavorite(ctx context.Context, arg store.AddFavoriteParams) (store.UsersRecipesFavorite, error)
 	RemoveFavorite(ctx context.Context, arg store.RemoveFavoriteParams) error
 	GetFavoritesByUser(ctx context.Context, username string) ([]store.GetFavoritesByUserRow, error)
+	IsFavorite(ctx context.Context, arg store.IsFavoriteParams) (int64, error)
 	GetNumberOfFavorite(ctx context.Context, recipeID string) (int64, error)
 }
 
@@ -60,10 +61,18 @@ func (rs Resource) removeFavorite(c fuego.ContextNoBody) (any, error) {
 		return nil, fuego.ForbiddenError{Title: "you can only remove your own favorites"}
 	}
 
+	recipeID := c.QueryParam("recipeID")
 	err = rs.FavoritesQueries.RemoveFavorite(c, store.RemoveFavoriteParams{
 		Username: username,
-		RecipeID: c.QueryParam("recipeID"),
+		RecipeID: recipeID,
 	})
+
+	// if from htmx, return the recipe page
+	if c.Header("HX-Request") == "true" {
+		http.Redirect(c.Response(), c.Request(), "/recipes/"+recipeID, http.StatusSeeOther)
+		return nil, nil
+	}
+
 	return nil, err
 }
 

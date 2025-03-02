@@ -1,6 +1,9 @@
 package templa
 
-import "github.com/go-fuego/fuego/examples/full-app-gourmet/store"
+import (
+	"fmt"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
+)
 
 type FavoritesProps struct {
 	Username  string
@@ -17,7 +20,14 @@ templ Favorites(props FavoritesProps) {
 				} else {
 					<ul class="list-disc list-inside">
 						for _, favorite := range props.Favorites {
-							<li>{ favorite.Recipe.Name }</li>
+							<li>
+								<a
+									href={ templ.SafeURL(fmt.Sprintf("/recipes/%s", favorite.Recipe.ID)) }
+									hx-boost="true"
+								>
+									{ favorite.Recipe.Name }
+								</a>
+							</li>
 						}
 					</ul>
 				}

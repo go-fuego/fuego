@@ -24,6 +24,8 @@ type GeneralProps struct {
 
 type RecipePageProps struct {
 	Username       string
+	IsFavorite     bool
+	NumberOfStars  int
 	Recipe         store.Recipe
 	Ingredients    []store.GetIngredientsOfRecipeRow
 	RelatedRecipes []store.Recipe
@@ -56,26 +58,42 @@ templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
 										{ props.Recipe.Name }
 									</h1>
 									<form
-										action={ templ.SafeURL(fmt.Sprintf("/users/%s/favorites?recipeID=%s", props.Username, props.Recipe.ID)) }
+										id="favorite"
 										method="POST"
+										action={ templ.SafeURL(fmt.Sprintf("/users/%s/favorites?recipeID=%s", props.Username, props.Recipe.ID)) }
+										if props.IsFavorite {
+											hx-delete={ fmt.Sprintf("/users/%s/favorites?recipeID=%s", props.Username, props.Recipe.ID) }
+										}
 										hx-boost="true"
+										hx-target="#favorite"
+										hx-select="#favorite"
+										hx-swap="outerHTML scroll:top"
+										class="flex items-center gap-2"
 									>
 										<button
 											type="submit"
 											if props.Username == "" {
 												disabled
-												class="flex items-center gap-2 text-gray-300"
+												class="text-gray-300"
 											} else {
-												class="flex items-center gap-2 text-gray-300 hover:text-red-500"
+												if props.IsFavorite {
+													class="cursor-pointer text-red-500 hover:text-gray-300 hover:scale-90 transition-all"
+												} else {
+													class="cursor-pointer text-gray-300 hover:text-red-500 hover:scale-110 transition-all"
+												}
 											}
 										>
-											<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<svg class="pointer-events-none w-6 h-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 												<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
 											</svg>
-											<div hx-ext="sse" sse-connect={ "/recipes/" + props.Recipe.ID + "/stars" } sse-swap="count">
-												0
-											</div>
 										</button>
+										//  hx-ext="sse"
+										<div
+											sse-connect={ "/recipes/" + props.Recipe.ID + "/stars" }
+											sse-swap="count"
+										>
+											{ strconv.Itoa(props.NumberOfStars) }
+										</div>
 									</form>
 								</span>
 								@components.Stars(7)
