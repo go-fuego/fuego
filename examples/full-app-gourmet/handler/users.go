@@ -65,10 +65,10 @@ func (rs Resource) login(c fuego.ContextWithBody[LoginPayload]) (*TokenResponse,
 		Name:     fuego.JWTCookieName,
 		Value:    s,
 		HttpOnly: true,
-		MaxAge:   300,
+		MaxAge:   3600,
 		Domain:   os.Getenv("COOKIE_DOMAIN"),
 		// SameSite: http.SameSiteStrictMode,
-		// Secure:   true,
+		Secure: true,
 	})
 
 	if c.QueryParam("redirect") != "" {
