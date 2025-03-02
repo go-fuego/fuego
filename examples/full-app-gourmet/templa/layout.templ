@@ -4,6 +4,7 @@ import "github.com/go-fuego/fuego/examples/full-app-gourmet/templa/components"
 
 templ page(title string) {
 	{{ issuer, _ := ctx.Value("issuer").(string) }}
+	{{ debug, _ := ctx.Value("gourmet-debug").(bool) }}
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -23,7 +24,9 @@ templ page(title string) {
 				{ children... }
 			</main>
 			@components.Footer()
-			@components.Scripts()
+			@components.Scripts(components.ScriptsProps{
+				Debug: debug,
+			})
 		</body>
 	</html>
 }

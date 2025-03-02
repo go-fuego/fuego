@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 
@@ -21,6 +22,14 @@ func hotReload(s *fuego.Server) {
 			w.Write([]byte("data: Connected\n\n"))
 			w.(http.Flusher).Flush()
 		}
+	})
+	fuego.Use(s, func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+			ctx = context.WithValue(ctx, "gourmet-debug", true)
+			r = r.WithContext(ctx)
+			next.ServeHTTP(w, r)
+		})
 	})
 	reloadChan <- struct{}{}
 }
