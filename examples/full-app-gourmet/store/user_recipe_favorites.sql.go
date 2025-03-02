@@ -86,6 +86,22 @@ func (q *Queries) GetNumberOfFavorite(ctx context.Context, recipeID string) (int
 	return count, err
 }
 
+const isFavorite = `-- name: IsFavorite :one
+SELECT COUNT(*) FROM users_recipes_favorites WHERE username = ? AND recipe_id = ?
+`
+
+type IsFavoriteParams struct {
+	Username string `json:"username"`
+	RecipeID string `json:"recipe_id"`
+}
+
+func (q *Queries) IsFavorite(ctx context.Context, arg IsFavoriteParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, isFavorite, arg.Username, arg.RecipeID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const removeFavorite = `-- name: RemoveFavorite :exec
 DELETE FROM users_recipes_favorites WHERE username = ? AND recipe_id = ?
 `
