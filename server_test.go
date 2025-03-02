@@ -90,12 +90,13 @@ func TestWithOpenAPIConfig(t *testing.T) {
 			WithEngineOptions(
 				WithOpenAPIConfig(
 					OpenAPIConfig{
-						JSONFilePath:     "openapi.json",
-						DisableLocalSave: true,
-						PrettyFormatJSON: true,
-						Disabled:         true,
-						SwaggerURL:       "/api",
-						SpecURL:          "/api/openapi.json",
+						JSONFilePath:         "openapi.json",
+						DisableLocalSave:     true,
+						DisableDefaultServer: true,
+						PrettyFormatJSON:     true,
+						Disabled:             true,
+						SwaggerURL:           "/api",
+						SpecURL:              "/api/openapi.json",
 					}),
 			),
 		)
@@ -105,6 +106,7 @@ func TestWithOpenAPIConfig(t *testing.T) {
 		require.Equal(t, "openapi.json", s.OpenAPI.Config.JSONFilePath)
 		require.True(t, s.Engine.OpenAPI.Config.Disabled)
 		require.True(t, s.OpenAPI.Config.DisableLocalSave)
+		require.True(t, s.OpenAPI.Config.DisableDefaultServer)
 		require.True(t, s.OpenAPI.Config.PrettyFormatJSON)
 	})
 
@@ -346,17 +348,17 @@ func TestGroupParams(t *testing.T) {
 	route := Get(group, "/test2", controller)
 
 	require.Equal(t, "test-value", route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Description)
-	require.Equal(t, true, route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Required)
+	require.True(t, route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Required)
 	require.Equal(t, "example", route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Examples["example"].Value.Value)
 
 	document := s.OutputOpenAPISpec()
 	t.Log(document.Paths.Find("/").Get.Parameters[0].Value.Name)
 	require.Len(t, document.Paths.Find("/").Get.Parameters, 1)
-	require.Equal(t, document.Paths.Find("/").Get.Parameters[0].Value.Name, "Accept")
-	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[1].Value.Name, "Accept")
-	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "X-Test-Header")
-	require.Equal(t, document.Paths.Find("/api/test2").Get.Parameters[1].Value.Name, "Accept")
-	require.Equal(t, document.Paths.Find("/api/test2").Get.Parameters[0].Value.Name, "X-Test-Header")
+	require.Equal(t, "Accept", document.Paths.Find("/").Get.Parameters[0].Value.Name)
+	require.Equal(t, "Accept", document.Paths.Find("/api/test").Get.Parameters[1].Value.Name)
+	require.Equal(t, "X-Test-Header", document.Paths.Find("/api/test").Get.Parameters[0].Value.Name)
+	require.Equal(t, "Accept", document.Paths.Find("/api/test2").Get.Parameters[1].Value.Name)
+	require.Equal(t, "X-Test-Header", document.Paths.Find("/api/test2").Get.Parameters[0].Value.Name)
 }
 
 func TestGroupHeaderParams(t *testing.T) {
@@ -370,8 +372,8 @@ func TestGroupHeaderParams(t *testing.T) {
 	require.Equal(t, "test-value", route.Operation.Parameters.GetByInAndName("header", "X-Test-Header").Description)
 
 	document := s.OutputOpenAPISpec()
-	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[1].Value.Name, "Accept")
-	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "X-Test-Header")
+	require.Equal(t, "Accept", document.Paths.Find("/api/test").Get.Parameters[1].Value.Name)
+	require.Equal(t, "X-Test-Header", document.Paths.Find("/api/test").Get.Parameters[0].Value.Name)
 }
 
 func TestGroupCookieParams(t *testing.T) {
@@ -385,8 +387,8 @@ func TestGroupCookieParams(t *testing.T) {
 	require.Equal(t, "test-value", route.Operation.Parameters.GetByInAndName("cookie", "X-Test-Cookie").Description)
 
 	document := s.OutputOpenAPISpec()
-	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[1].Value.Name, "Accept")
-	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "X-Test-Cookie")
+	require.Equal(t, "Accept", document.Paths.Find("/api/test").Get.Parameters[1].Value.Name)
+	require.Equal(t, "X-Test-Cookie", document.Paths.Find("/api/test").Get.Parameters[0].Value.Name)
 }
 
 func TestGroupQueryParam(t *testing.T) {
@@ -400,8 +402,8 @@ func TestGroupQueryParam(t *testing.T) {
 	require.Equal(t, "test-value", route.Operation.Parameters.GetByInAndName("query", "X-Test-Query").Description)
 
 	document := s.OutputOpenAPISpec()
-	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[1].Value.Name, "Accept")
-	require.Equal(t, document.Paths.Find("/api/test").Get.Parameters[0].Value.Name, "X-Test-Query")
+	require.Equal(t, "Accept", document.Paths.Find("/api/test").Get.Parameters[1].Value.Name)
+	require.Equal(t, "X-Test-Query", document.Paths.Find("/api/test").Get.Parameters[0].Value.Name)
 }
 
 func TestGroupParamsInChildGroup(t *testing.T) {
@@ -751,6 +753,10 @@ func TestDefaultLoggingMiddleware(t *testing.T) {
 			// Check case of custom request id generator is propagated to response
 			if tc.config.RequestIDFunc != nil {
 				require.Equal(t, "custom-func-id", rec.Header().Get("X-Request-ID"))
+			}
+
+			if tc.wantStatus >= 400 {
+				handler.AssertMessage("Error in controller")
 			}
 
 			// all logs should be handled here

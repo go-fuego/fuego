@@ -23,13 +23,13 @@ subgraph fuego
 
  Controller{{Controller}}
 
- click Controller "/fuego/docs/guides/controllers" "Controllers"
- click Validation "/fuego/docs/guides/validation" "Controllers"
- click InTransformation "/fuego/docs/guides/transformation" "Transformation"
- click OutTransformation "/fuego/docs/guides/transformation" "Transformation"
- click Serialization "/fuego/docs/guides/serialization" "Serialization"
- click Deserialization "/fuego/docs/guides/serialization" "Serialization"
- click ErrorHandler "/fuego/docs/guides/errors" "Error Handling"
+ click Controller "/docs/guides/controllers" "Controllers"
+ click Validation "/docs/guides/validation" "Controllers"
+ click InTransformation "/docs/guides/transformation" "Transformation"
+ click OutTransformation "/docs/guides/transformation" "Transformation"
+ click Serialization "/docs/guides/serialization" "Serialization"
+ click Deserialization "/docs/guides/serialization" "Serialization"
+ click ErrorHandler "/docs/guides/errors" "Error Handling"
 end
 
 ErrorHandler -- JSON{b:'Error!'} --> resp(Response)

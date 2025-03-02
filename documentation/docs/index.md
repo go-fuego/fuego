@@ -5,7 +5,7 @@ sidebar_position: 1
 # 🔥 Fuego
 
 <p align="center">
-  <img src="/fuego/img/logo.svg" height="200" alt="Fuego Logo" />
+  <img src="/img/logo.svg" height="200" alt="Fuego Logo" />
 </p>
 
 Let's discover **Fuego in less than 5 minutes**.

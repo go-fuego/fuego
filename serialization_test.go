@@ -35,7 +35,7 @@ func TestSend(t *testing.T) {
 		templateToExecute: templateName,
 	})
 	body := w.Body.String()
-	require.Equal(t, "{}\n", body)
+	require.JSONEq(t, "{}\n", body)
 	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 }
 
@@ -49,7 +49,7 @@ func TestSendWhenError(t *testing.T) {
 	SendError(w, r, err)
 	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 	body := w.Body.String()
-	require.Equal(t, "{}\n", body)
+	require.JSONEq(t, "{}\n", body)
 }
 
 func TestRecursiveJSON(t *testing.T) {
@@ -393,7 +393,7 @@ func TestSendJSON(t *testing.T) {
 		err := SendJSON(errorWriter, nil, response{Message: "Hello World", Code: http.StatusOK})
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "cannot write on an errorWriter")
-		require.Equal(t, "{\"message\":\"Hello World\",\"code\":200}\n", errorWriter.Arg)
+		require.JSONEq(t, "{\"message\":\"Hello World\",\"code\":200}\n", errorWriter.Arg)
 	})
 }
 
@@ -401,6 +401,15 @@ func TestSendHTML(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		err := SendHTML(w, nil, "Hello World")
+		require.NoError(t, err)
+		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
+		require.Equal(t, "Hello World", w.Body.String())
+	})
+
+	t.Run("string reference", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		s := "Hello World"
+		err := SendHTML(w, nil, &s)
 		require.NoError(t, err)
 		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
 		require.Equal(t, "Hello World", w.Body.String())
@@ -493,9 +502,25 @@ func TestInferAcceptHeaderFromType(t *testing.T) {
 		require.Equal(t, "text/html", accept)
 	})
 
+	t.Run("can infer that reference type is a template (implements Renderer)", func(t *testing.T) {
+		accept := InferAcceptHeaderFromType(&templateMock{})
+		require.Equal(t, "text/html", accept)
+	})
+
 	t.Run("can infer that type is a template (implements CtxRenderer)", func(t *testing.T) {
 		accept := InferAcceptHeaderFromType(MockCtxRenderer{})
 		require.Equal(t, "text/html", accept)
+	})
+
+	t.Run("can infer that reference type is a template (implements CtxRenderer)", func(t *testing.T) {
+		accept := InferAcceptHeaderFromType(&MockCtxRenderer{})
+		require.Equal(t, "text/html", accept)
+	})
+
+	t.Run("can infer string reference", func(t *testing.T) {
+		s := "hello"
+		accept := InferAcceptHeaderFromType(&s)
+		require.Equal(t, "text/plain", accept)
 	})
 }
 

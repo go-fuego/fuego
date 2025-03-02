@@ -11,7 +11,7 @@ function HomepageHeader() {
   return (
     <header className={clsx(styles.heroBanner)}>
       <div className="container">
-        <img src="/fuego/img/logo.svg" alt="" width={200} height={200} />
+        <img src="/img/logo.svg" alt="" width={200} height={200} />
 
         <Heading as="h1" className="hero__title">
           {siteConfig.title}

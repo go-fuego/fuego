@@ -18,6 +18,15 @@ func TestWithErrorHandler(t *testing.T) {
 		errResponse := e.ErrorHandler(err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
 	})
+	t.Run("with HandleHTTPError", func(t *testing.T) {
+		e := NewEngine(
+			WithErrorHandler(HandleHTTPError),
+		)
+		err := errors.New("Not Found :c")
+		errResponse := e.ErrorHandler(err)
+		require.ErrorAs(t, errResponse, &HTTPError{})
+		require.ErrorContains(t, errResponse, "500 Internal Server Error")
+	})
 	t.Run("custom handler", func(t *testing.T) {
 		e := NewEngine(
 			WithErrorHandler(func(err error) error {
@@ -58,7 +67,7 @@ func TestWithErrorHandler(t *testing.T) {
 			Err: errors.New("Not Found"),
 		}
 		errResponse := e.ErrorHandler(err)
-		require.Nil(t, errResponse, "error handler can return nil, which might lead to unexpected behavior")
+		require.NoError(t, errResponse, "error handler can return nil, which might lead to unexpected behavior")
 	})
 }
 

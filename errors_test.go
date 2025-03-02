@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/thejerf/slogassert"
 )
 
 type myError struct {
@@ -22,14 +23,20 @@ var (
 func (e myError) Error() string     { return "test error" }
 func (e myError) StatusCode() int   { return e.status }
 func (e myError) DetailMsg() string { return e.detail }
-func (e myError) Unwrap() error     { return HTTPError(e.err) }
+func (e myError) Unwrap() error     { return e.err }
 
 func TestErrorHandler(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		err := errors.New("test error")
 
+		handler := slogassert.NewDefault(t)
+
 		errResponse := ErrorHandler(err)
 		require.ErrorContains(t, errResponse, "test error")
+
+		handler.AssertMessage("Error in controller")
+
+		handler.AssertEmpty()
 	})
 
 	t.Run("not found error", func(t *testing.T) {
@@ -113,6 +120,28 @@ func TestErrorHandler(t *testing.T) {
 		require.ErrorContains(t, errResponse, "Forbidden")
 		require.ErrorContains(t, errResponse, "403")
 		require.Equal(t, http.StatusForbidden, errResponse.(HTTPError).StatusCode())
+	})
+}
+
+func TestHandleHTTPError(t *testing.T) {
+	t.Run("should always be HTTPError", func(t *testing.T) {
+		err := errors.New("test error")
+
+		errResponse := HandleHTTPError(err)
+		require.ErrorAs(t, errResponse, &HTTPError{})
+		require.ErrorContains(t, errResponse, "500 Internal Server Error")
+	})
+
+	t.Run("not found error", func(t *testing.T) {
+		err := NotFoundError{
+			Err: errors.New("Not Found :c"),
+		}
+		errResponse := HandleHTTPError(err)
+		require.ErrorAs(t, errResponse, &HTTPError{})
+		require.ErrorContains(t, err, "Not Found :c")
+		require.ErrorContains(t, errResponse, "Not Found")
+		require.ErrorContains(t, errResponse, "404")
+		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).StatusCode())
 	})
 }
 

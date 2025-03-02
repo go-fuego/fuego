@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,7 +23,7 @@ func TestTags(t *testing.T) {
 	require.Equal(t, []string{"my-tag"}, route.Operation.Tags)
 	require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego.testController`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\nmy description", route.Operation.Description)
 	require.Equal(t, "my summary", route.Operation.Summary)
-	require.Equal(t, true, route.Operation.Deprecated)
+	require.True(t, route.Operation.Deprecated)
 }
 
 func TestAddTags(t *testing.T) {
@@ -33,7 +34,7 @@ func TestAddTags(t *testing.T) {
 			OptionTags("my-other-tag"),
 		)
 
-		require.Equal(t, route.Operation.Tags, []string{"my-tag", "my-other-tag"})
+		require.Equal(t, []string{"my-tag", "my-other-tag"}, route.Operation.Tags)
 	})
 
 	t.Run("with auto group tags", func(t *testing.T) {
@@ -189,6 +190,14 @@ func TestWithGlobalResponseType(t *testing.T) {
 				routeCustom.Operation.Responses.Value("202").Value.Content.Get("application/x-yaml").Schema.Ref,
 			)
 		})
+
+		t.Run("global 'default' response", func(t *testing.T) {
+			route := Get(s, "/test", testController,
+				OptionDefaultResponse("Default response", Response{Type: HTTPError{}}),
+			)
+			assert.Equal(t, "Default response", *route.Operation.Responses.Value("default").Value.Description)
+			assert.Equal(t, "#/components/schemas/HTTPError", route.Operation.Responses.Value("default").Value.Content.Get("application/json").Schema.Ref)
+		})
 	})
 
 	t.Run("should be fatal", func(t *testing.T) {
@@ -220,7 +229,7 @@ func TestCookieParams(t *testing.T) {
 		cookieParam := route.Operation.Parameters.GetByInAndName("cookie", "my-cookie")
 		t.Logf("%#v", cookieParam.Examples["example"].Value)
 		require.Equal(t, "my description", cookieParam.Description)
-		require.Equal(t, true, cookieParam.Required)
+		require.True(t, cookieParam.Required)
 		require.Equal(t, "my-example", cookieParam.Examples["example"].Value.Value)
 	})
 }

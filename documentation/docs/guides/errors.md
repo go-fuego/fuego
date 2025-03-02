@@ -2,57 +2,52 @@
 
 Error handling is a crucial part of any application. It is important to handle errors gracefully and provide meaningful feedback to the user. In this guide, we will cover how to handle errors in a Fuego application.
 
-## Error handling in Fuego
+## Default error handling in Fuego
 
 Fuego [controllers](./controllers) returns a value and an error. If the error is not `nil`,
 it means that an error occurred while processing the request.
-The error will be returned to the client as a JSON or XML response.
-
-The default error handler will transform any error that implements the
-`fuego.ErrorWithStatus` or `fuego.ErrorWithDetail` interfaces into a `fuego.HTTPError`. The `fuego.HTTPError` implements
-[RFC 9457](https://www.rfc-editor.org/rfc/rfc9457), which defines a standard error format for HTTP APIs.
-We strongly recommend following this standard, but you can also use your own errors.
-
-The default `fuego.ErrorHandler` can be overridden using `fuego.WithErrorHandler` at fuego Server creation time.
-
-The error type of `fuego.HTTPError` is returned as JSON or XML depending on the content-type specified.
-It's structure is the following:
+The error will be returned to the client as a JSON or XML response, and logged to the console.
 
 ```go
-// HTTPError is the error response used by the serialization part of the framework.
-type HTTPError struct {
-	// Developer readable error message. Not shown to the user to avoid security leaks.
-	Err error `json:"-" xml:"-"`
-	// URL of the error type. Can be used to lookup the error in a documentation
-	Type string `json:"type,omitempty" xml:"type,omitempty" description:"URL of the error type. Can be used to lookup the error in a documentation"`
-	// Short title of the error
-	Title string `json:"title,omitempty" xml:"title,omitempty" description:"Short title of the error"`
-	// HTTP status code. If using a different type than [HTTPError], for example [BadRequestError],
-	// this will be automatically overridden after Fuego error handling.
-	Status int `json:"status,omitempty" xml:"status,omitempty" description:"HTTP status code" example:"403"`
-	// Human readable error message
-	Detail   string      `json:"detail,omitempty" xml:"detail,omitempty" description:"Human readable error message"`
-	Instance string      `json:"instance,omitempty" xml:"instance,omitempty"`
-	Errors   []ErrorItem `json:"errors,omitempty" xml:"errors,omitempty"`
+func MyController(c fuego.ContextNoBody) (string, error) {
+	return "", errors.New("an error occurred") // Sends a 500. Will be logged but not returned to the client as it is not serializable.
 }
 ```
 
-If your error implements `fuego.ErrorWithStatus` or `fuego.ErrorWithDetail`
-the error will be returned as a `fuego.HTTPError`.
+You are encouraged to use provided fuego error types, that implement [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457), which defines a standard error format for HTTP APIs.
 
 ```go
-// ErrorWithStatus is an interface that can be implemented by an error to provide
-// a status code
+func MyController(c fuego.ContextNoBody) (string, error) {
+	_, err := someFunction()
+	if err != nil {
+		return "", fuego.BadRequestError{Title: "You cannot do that", Err: err} // Returns and logs a structured 400 error.
+	}
+
+	return "success", nil
+}
+```
+
+- `fuego.BadRequestError`: 400 Bad Request
+- `fuego.UnauthorizedError`: 401 Unauthorized
+- `fuego.ForbiddenError`: 403 Forbidden
+- `fuego.NotFoundError`: 404 Not Found
+- `fuego.NotAcceptableError`: 406 Not Acceptable
+- `fuego.ConflictError`: 409 Conflict
+- `fuego.InternalServerError`: 500 Internal Server Error
+
+## Custom error types
+
+The default error handler will transform any error that implements the
+`fuego.ErrorWithStatus` interfaces into a `fuego.HTTPError` (that implements
+[RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)).
+
+The error type of `fuego.HTTPError` is returned as JSON or XML depending on the `Accept` header specified.
+It's structure is the following:
+
+```go
 type ErrorWithStatus interface {
 	error
 	StatusCode() int
-}
-
-// ErrorWithDetail is an interface that can be implemented by an error to provide
-// an additional detail message about the error
-type ErrorWithDetail interface {
-	error
-	DetailMsg() string
 }
 ```
 
@@ -82,20 +77,54 @@ Alternatively, you can always use `fuego.HTTPError` directly such as:
 
 ```go
 err := fuego.HTTPError{
-	Title:  "unauthorized access",
-	Detail: "wrong username or password",
-	Status: http.StatusUnauthorized,
+	Title:  "Custom error",
+	Detail: "This is a custom error",
+	Status: http.StatusTeapot,
 }
 ```
 
-## Default errors
+## Custom error handling
 
-Fuego provides a set of default errors that you can use in your application.
+The default `fuego.ErrorHandler` can be overridden using `fuego.WithErrorHandler` at fuego `Engine` creation time. Example mapping sqlite errors to HTTP errors.
 
-- `fuego.BadRequestError`: 400 Bad Request
-- `fuego.UnauthorizedError`: 401 Unauthorized
-- `fuego.ForbiddenError`: 403 Forbidden
-- `fuego.NotFoundError`: 404 Not Found
-- `fuego.ConflictError`: 409 Conflict
-- `fuego.InternalServerError`: 500 Internal Server Error
-- `fuego.NotAcceptableError`: 406 Not Acceptable
+```go
+import (
+	"errors"
+
+	"modernc.org/sqlite"
+
+	"github.com/go-fuego/fuego"
+)
+
+func sqliteErrorHandler(err error) error {
+	var sqliteError *sqlite.Error
+	if errors.As(err, &sqliteError) {
+		sqliteErrorCode := sqliteError.Code()
+		switch sqliteErrorCode {
+		case 1555, 2067 /* UNIQUE constraint failed */ :
+			return fuego.ConflictError{Title: "Duplicate", Detail: sqliteError.Error(), Err: sqliteError}
+		default:
+			return fuego.InternalServerError{Title: "Internal Server Error", Detail: sqliteError.Error(), Err: sqliteError}
+		}
+	}
+
+	return err
+}
+
+// apply all error handlers that we want, like a chain of middlewares
+func customErrorHandler(err error) error {
+	return fuego.ErrorHandler(sqliteErrorHandler(myOtherCustomErrorHandler(err)))
+}
+
+func main() {
+	s := fuego.NewServer(
+		fuego.WithEngineOptions(
+			fuego.WithErrorHandler(customErrorHandler))
+		),
+	)
+
+	fuego.Get(s, "/", MyController)
+
+	s.Run()
+}
+```
