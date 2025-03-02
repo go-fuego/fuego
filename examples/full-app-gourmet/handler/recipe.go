@@ -151,6 +151,39 @@ func (rs Resource) relatedRecipes(c fuego.ContextNoBody) (*fuego.DataOrTemplate[
 	), nil
 }
 
+func (rs Resource) favoritesCount(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
+	oldCount := int64(-1)
+
+	for {
+		select {
+		case <-r.Context().Done():
+			return
+		default:
+		}
+
+		recipeID := r.PathValue("id")
+		count, err := rs.FavoritesQueries.GetNumberOfFavorite(r.Context(), recipeID)
+		if err != nil {
+			slog.Error("Error getting number of favorites", "error", err)
+			return
+		}
+		if count == oldCount {
+			continue // no need to send updates
+		}
+		oldCount = count
+
+		w.Write([]byte(fmt.Sprintf("event: count\n")))
+		w.Write([]byte(fmt.Sprintf("data: %d\n\n", count)))
+		w.(http.Flusher).Flush()
+
+		time.Sleep(3 * time.Second)
+	}
+}
+
 func (rs Resource) singleRecipe(c fuego.ContextNoBody) (*fuego.DataOrTemplate[store.Recipe], error) {
 	id := c.PathParam("id")
 
@@ -170,9 +203,12 @@ func (rs Resource) singleRecipe(c fuego.ContextNoBody) (*fuego.DataOrTemplate[st
 
 	adminCookie, _ := c.Request().Cookie("admin")
 
+	username, _ := usernameFromContext(c)
+
 	return fuego.DataOrHTML(
 		recipe,
 		templa.RecipePage(templa.RecipePageProps{
+			Username:       username,
 			Recipe:         recipe,
 			Ingredients:    ingredients,
 			RelatedRecipes: []store.Recipe{{}, {}, {}, {}, {}},
