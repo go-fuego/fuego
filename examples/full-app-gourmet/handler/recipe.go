@@ -125,6 +125,10 @@ func (rs Resource) listRecipes(c fuego.ContextNoBody) (*fuego.DataOrTemplate[[]s
 		})), nil
 }
 
+func (rs Resource) connection(c fuego.ContextNoBody) (fuego.CtxRenderer, error) {
+	return templa.Connection(), nil
+}
+
 func (rs Resource) relatedRecipes(c fuego.ContextNoBody) (*fuego.DataOrTemplate[[]store.Recipe], error) {
 	baseRecipeID := c.PathParam("id")
 

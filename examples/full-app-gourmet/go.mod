@@ -6,10 +6,10 @@ require (
 	github.com/a-h/templ v0.3.833
 	github.com/getkin/kin-openapi v0.129.0
 	github.com/go-chi/chi/v5 v5.2.1
-	github.com/go-fuego/fuego v0.18.3
-	github.com/go-fuego/fuego/extra/markdown v0.0.0-20250227194201-93f50ab60b6f
+	github.com/go-fuego/fuego v0.18.4
+	github.com/go-fuego/fuego/extra/markdown v0.0.0-20250301180850-1932a812338b
 	github.com/go-fuego/fuego/middleware/basicauth v0.15.1
-	github.com/go-fuego/fuego/middleware/cache v0.0.0-20250227195359-58fcd2673432
+	github.com/go-fuego/fuego/middleware/cache v0.0.0-20250301180850-1932a812338b
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/google/uuid v1.6.0
@@ -49,7 +49,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/crypto v0.35.0 // indirect
-	golang.org/x/exp v0.0.0-20250218142911-aa4b98e5adaa // indirect
+	golang.org/x/exp v0.0.0-20250228200357-dead58393ab7 // indirect
 	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
