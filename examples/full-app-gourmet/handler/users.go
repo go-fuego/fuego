@@ -81,13 +81,13 @@ func (rs Resource) login(c fuego.ContextWithBody[LoginPayload]) (*TokenResponse,
 	}, err
 }
 
-func (rs Resource) logout(c fuego.ContextNoBody) (any, error) {
-	http.SetCookie(c.Response(), &http.Cookie{
+func (rs Resource) logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
 		Name:   fuego.JWTCookieName,
 		Value:  "",
 		MaxAge: -1,
 	})
-	return nil, nil
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func (rs Resource) me(c fuego.ContextNoBody) (*store.User, error) {
