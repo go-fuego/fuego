@@ -222,7 +222,7 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 	for _, params := range route.Operation.Parameters {
 		if params.Value.In == "path" {
 			if !strings.Contains(route.Path, "{"+params.Value.Name) {
-				panic(fmt.Errorf("path parameter '%s' is not declared in the path", params.Value.Name))
+				panic(fmt.Errorf("path parameter '%s' is declared in OpenAPI but not on the route", params.Value.Name))
 			}
 		}
 	}
