@@ -94,6 +94,7 @@ templ RecipePage(props RecipePageProps, generalProps GeneralProps) {
 											sse-swap="count"
 											hx-target="#count"
 											hx-select="#count"
+											hx-swap="innerHTML"
 										>
 											{ strconv.Itoa(props.NumberOfStars) }
 										</div>
