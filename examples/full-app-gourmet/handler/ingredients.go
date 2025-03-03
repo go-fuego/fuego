@@ -8,21 +8,25 @@ import (
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templa"
 )
 
-func (rs Resource) showIngredients(c fuego.ContextNoBody) (fuego.Templ, error) {
+func (rs Resource) showIngredients(c fuego.ContextNoBody) (*fuego.DataOrTemplate[[]store.Ingredient], error) {
 	ingredients, _ := rs.IngredientsQueries.GetIngredients(c.Context())
 
 	if c.Header("HX-Request") == "true" && c.Header("HX-Target") == "#page" {
-		return templa.IngredientList(templa.IngredientListProps{
-			Ingredients: ingredients,
-		}), nil
+		return fuego.DataOrHTML(
+			ingredients,
+			templa.IngredientList(templa.IngredientListProps{
+				Ingredients: ingredients,
+			})), nil
 	}
 
 	// headerInfo, _ := rs.MetaQueries.GetHeaderInfo(c.Context())
 
-	return templa.IngredientPage(templa.IngredientPageProps{
-		Ingredients: ingredients,
-		// Header:      headerInfo,
-	}), nil
+	return fuego.DataOrHTML(
+		ingredients,
+		templa.IngredientPage(templa.IngredientPageProps{
+			Ingredients: ingredients,
+			// Header:      headerInfo,
+		})), nil
 }
 
 type IngredientRepository interface {
