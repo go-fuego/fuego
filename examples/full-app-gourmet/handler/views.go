@@ -85,6 +85,7 @@ func (rs Resource) Routes(s *fuego.Server) {
 	fuego.Get(s, "/users/{username}/favorites", rs.getFavoritesByUser, optionFavorites)
 	fuego.Get(s, "/users/{username}/favorites/sqlinjection", rs.getFavoritesByUserUnsecureSql, optionFavorites)
 	s.Mux.Handle("GET /recipes/{id}/stars", http.HandlerFunc(rs.favoritesCount))
+	s.Mux.Handle("GET /recipes/{id}/stars/fake", http.HandlerFunc(rs.favoritesCountFake))
 
 	// Admin Pages
 	basicAuth := basicauth.New(basicauth.Config{Username: os.Getenv("ADMIN_USER"), Password: os.Getenv("ADMIN_PASSWORD")})

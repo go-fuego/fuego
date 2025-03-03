@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"log/slog"
+	"math/rand/v2"
 	"net/http"
 	"path"
 	"time"
@@ -154,14 +155,17 @@ func (rs Resource) relatedRecipes(c fuego.ContextNoBody) (*fuego.DataOrTemplate[
 func (rs Resource) favoritesCount(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
 
 	oldCount := int64(-1)
 
 	for {
 		select {
 		case <-r.Context().Done():
+			slog.Info("client disconnected, closing its events channel")
 			return
 		default:
+			time.Sleep(3 * time.Second)
 		}
 
 		recipeID := r.PathValue("id")
@@ -178,8 +182,26 @@ func (rs Resource) favoritesCount(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(fmt.Sprintf("event: count\n")))
 		w.Write([]byte(fmt.Sprintf("data: %d\n\n", count)))
 		w.(http.Flusher).Flush()
+	}
+}
 
-		time.Sleep(3 * time.Second)
+func (rs Resource) favoritesCountFake(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
+	for {
+		select {
+		case <-r.Context().Done():
+			slog.Info("client disconnected, closing its events channel")
+			return
+		default:
+			time.Sleep(1 * time.Second)
+		}
+
+		w.Write([]byte(fmt.Sprintf("event: count\n")))
+		w.Write([]byte(fmt.Sprintf("data: %d\n\n", rand.IntN(100))))
+		w.(http.Flusher).Flush()
 	}
 }
 
