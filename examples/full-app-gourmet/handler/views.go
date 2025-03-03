@@ -84,8 +84,14 @@ func (rs Resource) Routes(s *fuego.Server) {
 	fuego.Get(s, "/favorites", rs.getMyFavorites, option.Tags("favorites"))
 	fuego.Get(s, "/users/{username}/favorites", rs.getFavoritesByUser, optionFavorites)
 	fuego.Get(s, "/users/{username}/favorites/sqlinjection", rs.getFavoritesByUserUnsecureSql, optionFavorites)
-	s.Mux.Handle("GET /recipes/{id}/stars", http.HandlerFunc(rs.favoritesCount))
-	s.Mux.Handle("GET /recipes/{id}/stars/fake", http.HandlerFunc(rs.favoritesCountFake))
+	fuego.GetStd(s, "/recipes/{id}/stars", http.HandlerFunc(rs.favoritesCount),
+		option.Tags("favorites"),
+		option.Description("Get the realtime number of favorites for a recipe with Server-Sent Events"),
+	)
+	fuego.GetStd(s, "/recipes/{id}/stars/fake", http.HandlerFunc(rs.favoritesCountFake),
+		option.Tags("favorites"),
+		option.Description("Fake route for testing the realtime number of favorites for a recipe with Server-Sent Events. It sends a random number every second."),
+	)
 
 	// Admin Pages
 	basicAuth := basicauth.New(basicauth.Config{Username: os.Getenv("ADMIN_USER"), Password: os.Getenv("ADMIN_PASSWORD")})

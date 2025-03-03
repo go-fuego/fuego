@@ -46,6 +46,9 @@ func (rs Resources) Setup(
 		),
 		fuego.WithEngineOptions(
 			fuego.WithErrorHandler(customErrorHandler),
+			fuego.WithMiddlewareConfig(fuego.MiddlewareConfig{
+				ShortMiddlewaresPaths: true,
+			}),
 		),
 	}
 
