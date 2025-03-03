@@ -16,12 +16,16 @@ github.com/go-fuego/fuego v0.18.3 h1:etMHnB12YYXoygMyuV3SyOsvYDvyzYDeUGvZ7EDDgrk
 github.com/go-fuego/fuego v0.18.3/go.mod h1:VQJJCpZHpt7rHwqHfD6jjcBGCBnBTt4l0n3SKSyyzIs=
 github.com/go-fuego/fuego v0.18.4 h1:5yR5RpD5K4yxsK3QGYKaVhGSyt5BQmsF76/sOSCI1co=
 github.com/go-fuego/fuego v0.18.4/go.mod h1:VQJJCpZHpt7rHwqHfD6jjcBGCBnBTt4l0n3SKSyyzIs=
+github.com/go-fuego/fuego v0.18.5 h1:DEjMp5neJU+bVlFFty1gu2lwWFVuH8VWcETQmxwm3cw=
+github.com/go-fuego/fuego v0.18.5/go.mod h1:VQJJCpZHpt7rHwqHfD6jjcBGCBnBTt4l0n3SKSyyzIs=
 github.com/go-fuego/fuego/extra/markdown v0.0.0-20250212171205-716df496262e h1:ASyOmsZbA0iHuvXSv8dd+XLkth1mowxd9jBYymxyNoM=
 github.com/go-fuego/fuego/extra/markdown v0.0.0-20250212171205-716df496262e/go.mod h1:j3yFxD3B56XETRYFP3tiYy2/ROTdtJTG2x2DqPq95CI=
 github.com/go-fuego/fuego/extra/markdown v0.0.0-20250227194201-93f50ab60b6f h1:NV+6IagXlQ2Dkp3+olNcmv6FH2UqmbAYJxifkYHKH3A=
 github.com/go-fuego/fuego/extra/markdown v0.0.0-20250227194201-93f50ab60b6f/go.mod h1:j3yFxD3B56XETRYFP3tiYy2/ROTdtJTG2x2DqPq95CI=
 github.com/go-fuego/fuego/extra/markdown v0.0.0-20250301180850-1932a812338b h1:cmOnHhDxHrXguQoCdgHrdOYPAn8dracIRDAakPxcLrE=
 github.com/go-fuego/fuego/extra/markdown v0.0.0-20250301180850-1932a812338b/go.mod h1:j3yFxD3B56XETRYFP3tiYy2/ROTdtJTG2x2DqPq95CI=
+github.com/go-fuego/fuego/extra/markdown v0.0.0-20250302202956-9a7a85c109d6 h1:MfpHQ34j7zwBBwlFHQBy7VBE0c/8A9H56EeGai+oTow=
+github.com/go-fuego/fuego/extra/markdown v0.0.0-20250302202956-9a7a85c109d6/go.mod h1:j3yFxD3B56XETRYFP3tiYy2/ROTdtJTG2x2DqPq95CI=
 github.com/go-fuego/fuego/middleware/basicauth v0.15.1 h1:8VelgvZjvm0pg6X29qCFDPVzSqCFdv5ppRDy7hWAykc=
 github.com/go-fuego/fuego/middleware/basicauth v0.15.1/go.mod h1:W2UY/grQlayDI3bJ1TpWhekeQXgSqIT1V3cu0pbvUYM=
 github.com/go-fuego/fuego/middleware/cache v0.0.0-20250212171205-716df496262e h1:DvIVFbyNtjrXxV7rxdFxYt9PYFOVC++DLzix1SinZ+s=
@@ -30,6 +34,8 @@ github.com/go-fuego/fuego/middleware/cache v0.0.0-20250227195359-58fcd2673432 h1
 github.com/go-fuego/fuego/middleware/cache v0.0.0-20250227195359-58fcd2673432/go.mod h1:oTsnRRa7n9iRz3Clvb46Zz+vovOGonkvAubGqcjXJQ8=
 github.com/go-fuego/fuego/middleware/cache v0.0.0-20250301180850-1932a812338b h1:5uyL1k0JC1O8Eb1OrJH0wAfkRFwETR81jGxcJVCMiA8=
 github.com/go-fuego/fuego/middleware/cache v0.0.0-20250301180850-1932a812338b/go.mod h1:oTsnRRa7n9iRz3Clvb46Zz+vovOGonkvAubGqcjXJQ8=
+github.com/go-fuego/fuego/middleware/cache v0.0.0-20250302202956-9a7a85c109d6 h1:cfpRWQ11forLr8zTJZ8yYL4FwPHIWjmeLahCvNj9/7Y=
+github.com/go-fuego/fuego/middleware/cache v0.0.0-20250302202956-9a7a85c109d6/go.mod h1:oTsnRRa7n9iRz3Clvb46Zz+vovOGonkvAubGqcjXJQ8=
 github.com/go-openapi/jsonpointer v0.21.0 h1:YgdVicSA9vH5RiHs9TZW5oyafXZFc6+2Vc1rr/O9oNQ=
 github.com/go-openapi/jsonpointer v0.21.0/go.mod h1:IUyH9l/+uyhIYQ/PXVA41Rexl+kOkAPDdXEYns6fzUY=
 github.com/go-openapi/swag v0.23.0 h1:vsEVJDUo2hPJ2tu0/Xc+4noaxyEffXNIs3cOULZ+GrE=
