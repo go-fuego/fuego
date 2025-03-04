@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"net/http"
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
@@ -66,23 +65,9 @@ func (rs Resources) Setup(
 	fuego.Handle(app, "/static/", http.StripPrefix("/static", static.Handler()), option.Middleware(cache))
 
 	fuego.Use(app,
-		rs.HandlersResources.Security.TokenToContext(fuego.TokenFromCookie, fuego.TokenFromHeader),
+		TokenToContext(rs.HandlersResources.Security, fuego.TokenFromCookie, fuego.TokenFromHeader),
 	)
-	fuego.Use(app, func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			t, err := fuego.TokenFromContext(r.Context())
-			if err != nil {
-				h.ServeHTTP(w, r)
-				return
-			}
 
-			iss, _ := t.GetIssuer()
-			ctx := context.WithValue(r.Context(), "issuer", iss)
-			r = r.WithContext(ctx)
-
-			h.ServeHTTP(w, r)
-		})
-	})
 	// Register views (controllers that return HTML pages)
 	rs.HandlersResources.Routes(app)
 
