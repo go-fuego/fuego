@@ -2,8 +2,9 @@ package server
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
-	"time"
+	"os"
 
 	"github.com/golang-jwt/jwt/v5"
 
@@ -38,6 +39,7 @@ func TokenToContext(security fuego.Security, searchFunc ...func(*http.Request) s
 				// Remove cookie
 				http.SetCookie(w, &http.Cookie{
 					Name:   fuego.JWTCookieName,
+					Domain: os.Getenv("COOKIE_DOMAIN"),
 					Value:  "",
 					MaxAge: -1,
 				})
@@ -69,7 +71,8 @@ func TokenFromCookie(r *http.Request) string {
 		return ""
 	}
 
-	if cookie == nil || cookie.Expires.Before(time.Now()) {
+	if cookie == nil || cookie.Valid() != nil {
+		slog.Info("Cookie is invalid", "cookie", cookie, "error", err)
 		return ""
 	}
 
