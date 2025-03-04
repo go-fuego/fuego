@@ -52,6 +52,8 @@ func main() {
 	db := store.InitDB(*dbPath)
 
 	store := store.New(db)
+	security := fuego.NewSecurity()
+	security.ExpiresInterval = handler.LoginExpirationTime
 
 	// Create resources that will be available in handlers
 	viewsResources := handler.Resource{
@@ -60,7 +62,7 @@ func main() {
 		DosingQueries:      store,
 		UsersQueries:       store,
 		FavoritesQueries:   store,
-		Security:           fuego.NewSecurity(),
+		Security:           security,
 		HotReload:          *debug,
 	}
 
