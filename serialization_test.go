@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -301,16 +302,16 @@ func TestSendTextError(t *testing.T) {
 		w := httptest.NewRecorder()
 		SendTextError(w, nil, errors.New("Hello World"))
 
-		require.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
-		require.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
-		require.Equal(t, "Hello World", w.Body.String())
+		assert.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
+		assert.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
+		assert.Equal(t, "Hello World", w.Body.String())
 	})
 	t.Run("error with status", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		SendTextError(w, nil, BadRequestError{Err: errors.New("Hello World")})
-		require.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
-		require.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
-		require.Equal(t, "Hello World", w.Body.String())
+		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+		assert.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
+		assert.Equal(t, "400 Bad Request", w.Body.String())
 	})
 }
 
@@ -476,10 +477,10 @@ func TestSendHTMLError(t *testing.T) {
 	})
 	t.Run("error with status", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendHTMLError(w, nil, BadRequestError{Err: errors.New("Hello World")})
+		SendHTMLError(w, nil, BadRequestError{Title: "My Error", Detail: "Greeting the world didn't work", Err: errors.New("Hello World failed")})
 		require.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
 		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
-		require.Equal(t, "Hello World", w.Body.String())
+		require.Equal(t, "400 My Error (Greeting the world didn't work)", w.Body.String())
 	})
 }
 

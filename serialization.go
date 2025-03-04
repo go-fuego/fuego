@@ -299,6 +299,12 @@ func SendHTMLError(w http.ResponseWriter, _ *http.Request, err error) {
 	}
 
 	w.WriteHeader(status)
+	var httpError HTTPError
+	if errors.As(err, &httpError) {
+		httpError.Status = status
+		_ = SendHTML(w, nil, httpError.PublicError())
+		return
+	}
 	_ = SendHTML(w, nil, err.Error())
 }
 
@@ -331,6 +337,12 @@ func SendTextError(w http.ResponseWriter, _ *http.Request, err error) {
 	}
 
 	w.WriteHeader(status)
+	var httpError HTTPError
+	if errors.As(err, &httpError) {
+		httpError.Status = status
+		_ = SendText(w, nil, httpError.PublicError())
+		return
+	}
 	_ = SendText(w, nil, err.Error())
 }
 

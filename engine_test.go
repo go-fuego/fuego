@@ -51,10 +51,10 @@ func TestWithErrorHandler(t *testing.T) {
 	t.Run("disable error handler", func(t *testing.T) {
 		e := NewEngine(DisableErrorHandler())
 		err := NotFoundError{
-			Err: errors.New("Not Found"),
+			Err: errors.New("My Not Found Error"),
 		}
 		errResponse := e.ErrorHandler(err)
-		require.Equal(t, "Not Found", errResponse.Error())
+		require.Equal(t, "404 Not Found: My Not Found Error", errResponse.Error())
 	})
 
 	t.Run("nil returning handler", func(t *testing.T) {
