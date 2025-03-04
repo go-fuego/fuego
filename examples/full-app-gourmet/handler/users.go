@@ -12,6 +12,8 @@ import (
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 )
 
+const LoginExpirationTime = 15 * time.Minute
+
 // MyCustomToken is a custom token that contains the standard claims and some custom claims.
 type MyCustomToken struct {
 	jwt.RegisteredClaims          // Required, this struct contains the standard claims
@@ -65,10 +67,9 @@ func (rs Resource) login(c fuego.ContextWithBody[LoginPayload]) (*TokenResponse,
 		Name:     fuego.JWTCookieName,
 		Value:    s,
 		HttpOnly: true,
-		MaxAge:   3600,
+		MaxAge:   int(2 * LoginExpirationTime),
 		Domain:   os.Getenv("COOKIE_DOMAIN"),
-		// SameSite: http.SameSiteStrictMode,
-		Secure: true,
+		Secure:   true,
 	})
 
 	if c.QueryParam("redirect") != "" {
@@ -85,6 +86,7 @@ func (rs Resource) logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:   fuego.JWTCookieName,
 		Value:  "",
+		Domain: os.Getenv("COOKIE_DOMAIN"),
 		MaxAge: -1,
 	})
 	http.Redirect(w, r, "/", http.StatusFound)
