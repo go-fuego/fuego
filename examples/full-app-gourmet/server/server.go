@@ -65,7 +65,7 @@ func (rs Resources) Setup(
 	fuego.Handle(app, "/static/", http.StripPrefix("/static", static.Handler()), option.Middleware(cache))
 
 	fuego.Use(app,
-		TokenToContext(rs.HandlersResources.Security, fuego.TokenFromCookie, fuego.TokenFromHeader),
+		TokenToContext(rs.HandlersResources.Security, TokenFromCookie, fuego.TokenFromHeader),
 	)
 
 	// Register views (controllers that return HTML pages)

@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 
@@ -60,4 +61,17 @@ func TokenToContext(security fuego.Security, searchFunc ...func(*http.Request) s
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func TokenFromCookie(r *http.Request) string {
+	cookie, err := r.Cookie(fuego.JWTCookieName)
+	if err != nil {
+		return ""
+	}
+
+	if cookie == nil || cookie.Expires.Before(time.Now()) {
+		return ""
+	}
+
+	return cookie.Value
 }
