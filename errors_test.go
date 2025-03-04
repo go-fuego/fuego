@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/thejerf/slogassert"
 )
@@ -48,7 +49,7 @@ func TestErrorHandler(t *testing.T) {
 		require.ErrorContains(t, err, "Not Found :c")
 		require.ErrorContains(t, errResponse, "Not Found")
 		require.ErrorContains(t, errResponse, "404")
-		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).StatusCode())
+		assert.Equal(t, http.StatusNotFound, errResponse.(HTTPError).StatusCode())
 	})
 
 	t.Run("not duplicate HTTPError", func(t *testing.T) {
@@ -174,4 +175,45 @@ func TestHTTPError_Unwrap(t *testing.T) {
 	var unwrapped myError
 	require.ErrorAs(t, errResponse.Unwrap(), &unwrapped)
 	require.Equal(t, 999, unwrapped.status)
+}
+
+func TestUnauthorizedError(t *testing.T) {
+	t.Run("without error", func(t *testing.T) {
+		err := UnauthorizedError{Title: "Unauthorized"}
+		assert.EqualError(t, err, "401 Unauthorized")
+	})
+
+	t.Run("with error", func(t *testing.T) {
+		err := UnauthorizedError{Title: "Unauthorized", Err: errors.New("error message")}
+		assert.EqualError(t, err, "401 Unauthorized: error message")
+	})
+
+	t.Run("with error and detail", func(t *testing.T) {
+		err := UnauthorizedError{Title: "Unauthorized", Detail: "detail message", Err: errors.New("error message")}
+		assert.EqualError(t, err, "401 Unauthorized (detail message): error message")
+	})
+}
+
+func TestForbiddenError(t *testing.T) {
+	t.Run("without error", func(t *testing.T) {
+		err := ForbiddenError{Title: "Access forbidden"}
+		assert.EqualError(t, err, "403 Access forbidden")
+	})
+
+	t.Run("with error", func(t *testing.T) {
+		err := ForbiddenError{Title: "Access forbidden", Err: errors.New("error message")}
+		assert.EqualError(t, err, "403 Access forbidden: error message")
+	})
+}
+
+func BenchmarkHTTPError_PublicError(b *testing.B) {
+	err := HTTPError{
+		Title:  "Custom Title",
+		Detail: "Custom Detail",
+		Status: http.StatusNotFound,
+	}
+
+	for range b.N {
+		_ = err.PublicError()
+	}
 }

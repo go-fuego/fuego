@@ -3,6 +3,7 @@ package fuego
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,7 +28,13 @@ func TestValidate(t *testing.T) {
 
 	var errStructValidation HTTPError
 	require.ErrorAs(t, err, &errStructValidation)
-	require.Equal(t, 400, errStructValidation.StatusCode())
-	require.Equal(t, "400 Validation Error: Name should be max=10, Age should be min=18, Required is required, Email should be a valid email, ExternalID should be a valid UUID", errStructValidation.Error())
-	require.Len(t, errStructValidation.Errors, 5)
+	assert.Equal(t, 400, errStructValidation.Status)
+	assert.Equal(t, "Validation Error", errStructValidation.Title)
+	assert.Len(t, errStructValidation.Errors, 5)
+	assert.Equal(t, "400 Validation Error (Name should be max=10, Age should be min=18, Required is required, Email should be a valid email, ExternalID should be a valid UUID)", errStructValidation.PublicError())
+	assert.EqualError(t, errStructValidation, `400 Validation Error (Name should be max=10, Age should be min=18, Required is required, Email should be a valid email, ExternalID should be a valid UUID): Key: 'validatableStruct.Name' Error:Field validation for 'Name' failed on the 'max' tag
+Key: 'validatableStruct.Age' Error:Field validation for 'Age' failed on the 'min' tag
+Key: 'validatableStruct.Required' Error:Field validation for 'Required' failed on the 'required' tag
+Key: 'validatableStruct.Email' Error:Field validation for 'Email' failed on the 'email' tag
+Key: 'validatableStruct.ExternalID' Error:Field validation for 'ExternalID' failed on the 'uuid' tag`)
 }

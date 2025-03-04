@@ -2,9 +2,10 @@ package fuego
 
 import (
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 // ErrorWithStatus is an interface that can be implemented by an error to provide
@@ -43,8 +44,14 @@ type ErrorItem struct {
 	Reason string         `json:"reason" xml:"reason" description:"Human readable error message"`
 }
 
-func (e HTTPError) Error() string {
+// PublicError returns a human readable error message.
+// It ignores the underlying error for security and only returns the status code, title and detail.
+func (e HTTPError) PublicError() string {
+	var msgBuilder strings.Builder
+
 	code := e.StatusCode()
+	msgBuilder.WriteString(strconv.Itoa(code))
+
 	title := e.Title
 	if title == "" {
 		title = http.StatusText(code)
@@ -52,14 +59,26 @@ func (e HTTPError) Error() string {
 			title = "HTTP Error"
 		}
 	}
-	msg := fmt.Sprintf("%d %s", code, title)
+	msgBuilder.WriteString(" ")
+	msgBuilder.WriteString(title)
 
-	detail := e.DetailMsg()
-	if detail == "" {
-		return msg
+	if e.Detail != "" {
+		msgBuilder.WriteString(" (")
+		msgBuilder.WriteString(e.Detail)
+		msgBuilder.WriteString(")")
 	}
 
-	return fmt.Sprintf("%s: %s", msg, e.Detail)
+	return msgBuilder.String()
+}
+
+func (e HTTPError) Error() string {
+	msg := e.PublicError()
+
+	if e.Err != nil {
+		msg = msg + ": " + e.Err.Error()
+	}
+
+	return msg
 }
 
 func (e HTTPError) StatusCode() int {
@@ -80,7 +99,10 @@ type BadRequestError HTTPError
 
 var _ ErrorWithStatus = BadRequestError{}
 
-func (e BadRequestError) Error() string { return e.Err.Error() }
+func (e BadRequestError) Error() string {
+	e.Status = http.StatusBadRequest
+	return HTTPError(e).Error()
+}
 
 func (e BadRequestError) StatusCode() int { return http.StatusBadRequest }
 
@@ -91,7 +113,10 @@ type NotFoundError HTTPError
 
 var _ ErrorWithStatus = NotFoundError{}
 
-func (e NotFoundError) Error() string { return e.Err.Error() }
+func (e NotFoundError) Error() string {
+	e.Status = http.StatusNotFound
+	return HTTPError(e).Error()
+}
 
 func (e NotFoundError) StatusCode() int { return http.StatusNotFound }
 
@@ -102,7 +127,10 @@ type UnauthorizedError HTTPError
 
 var _ ErrorWithStatus = UnauthorizedError{}
 
-func (e UnauthorizedError) Error() string { return e.Err.Error() }
+func (e UnauthorizedError) Error() string {
+	e.Status = http.StatusUnauthorized
+	return HTTPError(e).Error()
+}
 
 func (e UnauthorizedError) StatusCode() int { return http.StatusUnauthorized }
 
@@ -113,7 +141,10 @@ type ForbiddenError HTTPError
 
 var _ ErrorWithStatus = ForbiddenError{}
 
-func (e ForbiddenError) Error() string { return e.Err.Error() }
+func (e ForbiddenError) Error() string {
+	e.Status = http.StatusForbidden
+	return HTTPError(e).Error()
+}
 
 func (e ForbiddenError) StatusCode() int { return http.StatusForbidden }
 
@@ -124,7 +155,10 @@ type ConflictError HTTPError
 
 var _ ErrorWithStatus = ConflictError{}
 
-func (e ConflictError) Error() string { return e.Err.Error() }
+func (e ConflictError) Error() string {
+	e.Status = http.StatusConflict
+	return HTTPError(e).Error()
+}
 
 func (e ConflictError) StatusCode() int { return http.StatusConflict }
 
@@ -138,7 +172,10 @@ type NotAcceptableError HTTPError
 
 var _ ErrorWithStatus = NotAcceptableError{}
 
-func (e NotAcceptableError) Error() string { return e.Err.Error() }
+func (e NotAcceptableError) Error() string {
+	e.Status = http.StatusNotAcceptable
+	return HTTPError(e).Error()
+}
 
 func (e NotAcceptableError) StatusCode() int { return http.StatusNotAcceptable }
 
