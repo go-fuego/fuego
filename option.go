@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 )
@@ -458,5 +459,15 @@ func OptionSecurity(securityRequirements ...openapi3.SecurityRequirement) func(*
 
 		// Append all provided security requirements
 		*r.Operation.Security = append(*r.Operation.Security, securityRequirements...)
+	}
+}
+
+// OptionStripTrailingSlash ensure that the route declaration
+// will have its ending trailing slash stripped.
+func OptionStripTrailingSlash() func(*BaseRoute) {
+	return func(r *BaseRoute) {
+		if len(r.Path) > 1 {
+			r.Path = strings.TrimRight(r.Path, "/")
+		}
 	}
 }
