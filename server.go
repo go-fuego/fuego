@@ -449,3 +449,13 @@ func WithLoggingMiddleware(loggingConfig LoggingConfig) func(*Server) {
 		}
 	}
 }
+
+// WithStripTrailingSlash ensure all declared routes trailing slash
+// is stripped. This option also applies a middleware
+// that strips the trailing slash from every incoming request.
+func WithStripTrailingSlash() func(*Server) {
+	return func(s *Server) {
+		s.routeOptions = append(s.routeOptions, OptionStripTrailingSlash())
+		s.globalMiddlewares = append(s.globalMiddlewares, stripTrailingSlashMiddleware)
+	}
+}

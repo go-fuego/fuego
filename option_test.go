@@ -1016,3 +1016,11 @@ func TestDefaultStatusCode(t *testing.T) {
 		require.Equal(t, 500, w.Code)
 	})
 }
+
+func TestOptionStripTrailingSlash(t *testing.T) {
+	t.Run("Route trailing slash is stripped", func(t *testing.T) {
+		s := fuego.NewServer()
+		route := fuego.Get(s, "/test/", helloWorld, fuego.OptionStripTrailingSlash())
+		require.Equal(t, "/test", route.Path)
+	})
+}

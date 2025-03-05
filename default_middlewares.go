@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -156,5 +157,14 @@ func (l defaultLogger) middleware(next http.Handler) http.Handler {
 			duration := time.Since(start)
 			logResponse(r, wrapped, requestID, duration)
 		}
+	})
+}
+
+func stripTrailingSlashMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if len(r.URL.Path) > 1 {
+			r.URL.Path = strings.TrimRight(r.URL.Path, "/")
+		}
+		next.ServeHTTP(w, r)
 	})
 }
