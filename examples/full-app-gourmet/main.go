@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/joho/godotenv"
 	"github.com/lithammer/shortuuid/v4"
 	"github.com/lmittmann/tint"
+	_ "go.uber.org/automaxprocs"
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/handler"
@@ -68,7 +68,6 @@ func main() {
 
 	rs := server.Resources{
 		HandlersResources: viewsResources,
-		CorsOrigins:       strings.Split(os.Getenv("CORS_ORIGINS"), ","),
 	}
 
 	app := rs.Setup(

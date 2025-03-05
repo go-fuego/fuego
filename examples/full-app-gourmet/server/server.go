@@ -16,7 +16,6 @@ import (
 
 type Resources struct {
 	HandlersResources handler.Resource
-	CorsOrigins       []string
 }
 
 func cache(h http.Handler) http.Handler {
@@ -35,9 +34,10 @@ func (rs Resources) Setup(
 		fuego.WithTemplateFS(templates.FS),
 		fuego.WithTemplateGlobs("**/*.html", "**/**/*.html"),
 		fuego.WithGlobalMiddlewares(cors.New(cors.Options{
-			AllowedOrigins: rs.CorsOrigins,
-			AllowedHeaders: []string{"*"},
-			MaxAge:         300,
+			AllowOriginFunc:  func(origin string) bool { return true },
+			AllowedHeaders:   []string{"*"},
+			AllowCredentials: true,
+			MaxAge:           300,
 		}).Handler),
 		fuego.WithRouteOptions(
 			option.AddResponse(http.StatusForbidden, "Forbidden", fuego.Response{Type: fuego.HTTPError{}}),
