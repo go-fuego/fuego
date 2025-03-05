@@ -843,3 +843,57 @@ func TestWithSeveralGlobalMiddelwares(t *testing.T) {
 		require.Equal(t, "two", res.Body.String())
 	})
 }
+
+func TestWithStripTrailingSlash(t *testing.T) {
+	s := NewServer(
+		WithStripTrailingSlash(),
+		WithAddr(":9998"),
+	)
+	Get(s, "/withtrailingslash/", dummyController)
+	Get(s, "/withouttrailingslash", dummyController)
+
+	err := s.setup()
+	require.NoError(t, err)
+
+	t.Run("requests with trailing slash", func(t *testing.T) {
+		t.Run("route with trailing slash", func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/withtrailingslash/", nil)
+			res := httptest.NewRecorder()
+
+			s.Handler.ServeHTTP(res, req)
+
+			t.Log(res.Body.String())
+			require.Equal(t, 200, res.Code)
+		})
+		t.Run("route without trailing slash", func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/withouttrailingslash/", nil)
+			res := httptest.NewRecorder()
+
+			s.Handler.ServeHTTP(res, req)
+
+			t.Log(res.Body.String())
+			require.Equal(t, 200, res.Code)
+		})
+	})
+
+	t.Run("requests without trailing slash", func(t *testing.T) {
+		t.Run("route with trailing slash", func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/withtrailingslash", nil)
+			res := httptest.NewRecorder()
+
+			s.Handler.ServeHTTP(res, req)
+
+			t.Log(res.Body.String())
+			require.Equal(t, 200, res.Code)
+		})
+		t.Run("route without trailing slash", func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/withouttrailingslash", nil)
+			res := httptest.NewRecorder()
+
+			s.Handler.ServeHTTP(res, req)
+
+			t.Log(res.Body.String())
+			require.Equal(t, 200, res.Code)
+		})
+	})
+}
