@@ -106,10 +106,12 @@ type UserFavorite struct {
 }
 
 func (rs Resource) getFavoritesByUserUnsecureSql(c fuego.ContextNoBody) ([]UserFavorite, error) {
-	dbConn := store.InitDB("recipe.bad.db")
+	dbConn := store.InitDB("data/recipe.bad.db")
 	defer dbConn.Close()
 
-	badDBRequest := "SELECT username, recipe_id FROM users_recipes_favorites JOIN recipe ON users_recipes_favorites.recipe_id = recipe.id WHERE username = '" + c.PathParam("username") + "'" // nolint:gosec
+	badDBRequest := "SELECT username, recipe_id FROM users_recipes_favorites WHERE username = '" + c.PathParam("username") + "'" // nolint:gosec
+
+	slog.Info("sqlinjection", "request", badDBRequest)
 
 	rows, err := dbConn.Query(badDBRequest)
 	if err != nil {
