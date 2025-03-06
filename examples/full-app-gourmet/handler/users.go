@@ -2,8 +2,11 @@ package handler
 
 import (
 	"context"
+	"encoding/base64"
+	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -43,8 +46,19 @@ func (rs Resource) login(c fuego.ContextWithBody[LoginPayload]) (*TokenResponse,
 		return nil, err
 	}
 
-	if user.EncryptedPassword != body.Password+"-encrypted" {
-		return nil, fuego.UnauthorizedError{Title: "Unauthorized", Detail: "Invalid credentials"}
+	if strings.HasSuffix(user.EncryptedPassword, "-encrypted") {
+		// Encrypted strategy
+		if user.EncryptedPassword != body.Password+"-encrypted" {
+			return nil, fuego.UnauthorizedError{Title: "Unauthorized", Detail: "Invalid credentials"}
+		}
+	} else {
+		// Base64 strategy
+		bodyPasswordEncoded := base64.StdEncoding.EncodeToString([]byte(body.Password))
+
+		slog.Info("base64", "user.EncryptedPassword", user.EncryptedPassword, "bodyPasswordEncoded", string(bodyPasswordEncoded))
+		if user.EncryptedPassword != string(bodyPasswordEncoded) {
+			return nil, fuego.UnauthorizedError{Title: "Unauthorized", Detail: "Invalid credentials"}
+		}
 	}
 
 	myToken := MyCustomToken{
@@ -123,7 +137,7 @@ func (rs Resource) createUser(c fuego.ContextWithBody[CreateUserPayload]) (*stor
 		Username:          user.Username,
 		FullName:          user.FullName,
 		Email:             user.Email,
-		EncryptedPassword: user.Password + "-encrypted",
+		EncryptedPassword: base64.StdEncoding.EncodeToString([]byte(user.Password)),
 	})
 	if err != nil {
 		return nil, err
