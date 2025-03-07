@@ -6,6 +6,7 @@ import (
 	"modernc.org/sqlite"
 
 	"github.com/go-fuego/fuego"
+	fuegosql "github.com/go-fuego/fuego/extra/sql"
 )
 
 func SQLiteErrorHandler(err error) error {
@@ -24,5 +25,5 @@ func SQLiteErrorHandler(err error) error {
 }
 
 func customErrorHandler(err error) error {
-	return fuego.ErrorHandler(SQLiteErrorHandler(err))
+	return fuego.ErrorHandler(SQLiteErrorHandler(fuegosql.ErrorHandler(err)))
 }
