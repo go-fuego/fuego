@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"maps"
 	"net/url"
+	"slices"
 	"strconv"
 	"time"
 )
@@ -96,7 +98,7 @@ func (c CommonContext[B]) HasQueryParam(name string) bool {
 func (c CommonContext[B]) QueryParam(name string) string {
 	_, ok := c.OpenAPIParams[name]
 	if !ok {
-		slog.Warn("query parameter not expected in OpenAPI spec", "param", name, "expected_one_of", c.OpenAPIParams)
+		slog.Warn("query parameter not expected in OpenAPI spec", "param", name, "expected_one_of", slices.Collect(maps.Keys(c.OpenAPIParams)))
 	}
 
 	if !c.UrlValues.Has(name) {
