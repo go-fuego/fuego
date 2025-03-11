@@ -36,6 +36,7 @@ func (rs Resources) Setup(
 		fuego.WithGlobalMiddlewares(cors.New(cors.Options{
 			AllowOriginFunc:  func(origin string) bool { return true },
 			AllowedHeaders:   []string{"*"},
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 			AllowCredentials: true,
 			MaxAge:           300,
 		}).Handler),
