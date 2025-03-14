@@ -3,6 +3,7 @@ package fuego
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -31,8 +32,7 @@ func explainError(err validator.FieldError) string {
 var v = validator.New()
 
 func validate(a any) error {
-	_, ok := a.(map[string]any)
-	if ok {
+	if reflect.TypeOf(a).Kind() != reflect.Struct {
 		return nil
 	}
 

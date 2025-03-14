@@ -86,3 +86,87 @@ func TestGenericReturnType(t *testing.T) {
 		require.JSONEq(t, `{"title":"Validation Error","detail":"Name is required","errors":[{"more":{"field":"Name","nsField":"GenericInput[github.com/go-fuego/fuego_test.User].Data.Name","param":"","tag":"required","value":""},"name":"GenericInput[github.com/go-fuego/fuego_test.User].Data.Name","reason":"Key: 'GenericInput[github.com/go-fuego/fuego_test.User].Data.Name' Error:Field validation for 'Name' failed on the 'required' tag"}],"status":400}`, response)
 	})
 }
+
+func TestSlices(t *testing.T) {
+	type myListItem struct {
+		ID   int    `json:"id"`
+		Name string `json:"name"`
+	}
+
+	s := fuego.NewServer()
+	fuego.Get(s, "/ints", func(c fuego.ContextWithBody[[]int]) ([]int, error) { return c.Body() })
+	fuego.Get(s, "/strings", func(c fuego.ContextWithBody[[]string]) ([]string, error) { return c.Body() })
+	fuego.Get(s, "/structs", func(c fuego.ContextWithBody[[]myListItem]) ([]myListItem, error) { return c.Body() })
+
+	t.Run("nil body", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/ints", nil)
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+		response := w.Body.String()
+		require.JSONEq(t, "null", response)
+	})
+
+	t.Run("empty body", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/ints", strings.NewReader(``))
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+		response := w.Body.String()
+		require.JSONEq(t, "null", response)
+	})
+
+	t.Run("empty slice", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/ints", strings.NewReader(`[]`))
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+		response := w.Body.String()
+		require.JSONEq(t, `[]`, response)
+	})
+
+	t.Run("slice of ints", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/ints", strings.NewReader(`[1,2,3]`))
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+		response := w.Body.String()
+		require.JSONEq(t, `[1,2,3]`, response)
+	})
+
+	t.Run("slice of strings", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/strings", strings.NewReader(`["hello","world"]`))
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+		response := w.Body.String()
+		require.JSONEq(t, `["hello","world"]`, response)
+	})
+
+	t.Run("slice of structs", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/structs", strings.NewReader(`[{"id":1,"name":"Napoleon"}]`))
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+		response := w.Body.String()
+		require.JSONEq(t, `[{"id":1,"name":"Napoleon"}]`, response)
+	})
+}
