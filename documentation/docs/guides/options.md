@@ -14,9 +14,11 @@ import "github.com/go-fuego/fuego"
 func main() {
 	s := fuego.NewServer(
 		fuego.WithAddr("localhost:8080"),
-		fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
-			DisableSwagger: true,
-		}),
+		fuego.WithEngineOptions(
+			fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
+				DisableSwagger: true,
+			}),
+		),
 	)
 
 	fuego.Get(s, "/", func(c fuego.ContextNoBody) (string, error) {
