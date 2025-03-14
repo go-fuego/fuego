@@ -160,6 +160,8 @@ func (l defaultLogger) middleware(next http.Handler) http.Handler {
 	})
 }
 
+// stripTrailingSlashMiddleware is a middleware that removes trailing slashes from the request path.
+// Not active by default but can be added to the server using [WithStripTrailingSlash]
 func stripTrailingSlashMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if len(r.URL.Path) > 1 {

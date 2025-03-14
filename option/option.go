@@ -180,3 +180,7 @@ var Show = fuego.OptionShow
 
 // DefaultStatusCode sets the default status code for the route.
 var DefaultStatusCode = fuego.OptionDefaultStatusCode
+
+// StripTrailingSlash removes the trailing slash from the route.
+// By default, the trailing slash is kept, so becauseful when registering route like "/" within a group.
+var StripTrailingSlash = fuego.OptionStripTrailingSlash

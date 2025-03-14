@@ -849,7 +849,7 @@ func TestWithStripTrailingSlash(t *testing.T) {
 		WithStripTrailingSlash(),
 		WithAddr(":9998"),
 	)
-	Get(s, "/withtrailingslash/", dummyController)
+	Get(s, "/withtrailingslash/", dummyController) // Will be registered as /withtrailingslash
 	Get(s, "/withouttrailingslash", dummyController)
 
 	err := s.setup()
