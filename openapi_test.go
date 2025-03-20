@@ -423,12 +423,12 @@ func BenchmarkRoutesRegistration(b *testing.B) {
 		Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 			return MyStruct{}, nil
 		})
-		for j := 0; j < 100; j++ {
+		for j := range 100 {
 			Post(s, fmt.Sprintf("/post/%d", j), func(ContextWithBody[MyStruct]) ([]MyStruct, error) {
 				return nil, nil
 			})
 		}
-		for j := 0; j < 100; j++ {
+		for j := range 100 {
 			Get(s, fmt.Sprintf("/post/{id}/%d", j), func(ContextNoBody) (MyStruct, error) {
 				return MyStruct{}, nil
 			})
@@ -444,12 +444,12 @@ func BenchmarkServer_generateOpenAPI(b *testing.B) {
 		Get(s, "/", func(ContextNoBody) (MyStruct, error) {
 			return MyStruct{}, nil
 		})
-		for j := 0; j < 100; j++ {
+		for j := range 100 {
 			Post(s, fmt.Sprintf("/post/%d", j), func(ContextWithBody[MyStruct]) ([]MyStruct, error) {
 				return nil, nil
 			})
 		}
-		for j := 0; j < 100; j++ {
+		for j := range 100 {
 			Get(s, fmt.Sprintf("/post/{id}/%d", j), func(ContextNoBody) (MyStruct, error) {
 				return MyStruct{}, nil
 			})

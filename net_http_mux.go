@@ -169,7 +169,7 @@ func withMiddlewares(controller http.Handler, middlewares ...func(http.Handler) 
 }
 
 // FuncName returns the name of a function and the name with package path
-func FuncName(f interface{}) string {
+func FuncName(f any) string {
 	return strings.TrimSuffix(runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name(), "-fm")
 }
 

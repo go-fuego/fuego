@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/fs"
 	"log/slog"
+	"maps"
 	"net"
 	"net/http"
 	"os"
@@ -237,9 +238,7 @@ func WithSecurity(schemes openapi3.SecuritySchemes) func(*Server) {
 		if s.OpenAPI.Description().Components.SecuritySchemes == nil {
 			s.OpenAPI.Description().Components.SecuritySchemes = openapi3.SecuritySchemes{}
 		}
-		for name, scheme := range schemes {
-			s.OpenAPI.Description().Components.SecuritySchemes[name] = scheme
-		}
+		maps.Copy(s.OpenAPI.Description().Components.SecuritySchemes, schemes)
 	}
 }
 

@@ -33,7 +33,7 @@ func (m DataOrTemplate[T]) MarshalXML(e *xml.Encoder, _ xml.StartElement) error 
 	return e.Encode(m.Data)
 }
 
-func (m DataOrTemplate[T]) MarshalYAML() (interface{}, error) {
+func (m DataOrTemplate[T]) MarshalYAML() (any, error) {
 	return m.Data, nil
 }
 

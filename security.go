@@ -94,7 +94,7 @@ func (security Security) GenerateTokenToCookies(claims jwt.Claims, w http.Respon
 }
 
 func (security Security) ValidateToken(token string) (*jwt.Token, error) {
-	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+	t, err := jwt.Parse(token, func(token *jwt.Token) (any, error) {
 		return security.key.Public(), nil
 	},
 		jwt.WithStrictDecoding(),
@@ -266,13 +266,7 @@ func checkRolesOr(acceptedRoles ...string) func(userRoles ...string) bool {
 
 func checkRolesRegex(acceptedRolesRegex *regexp.Regexp) func(userRoles ...string) bool {
 	return func(userRoles ...string) bool {
-		for _, role := range userRoles {
-			if acceptedRolesRegex.MatchString(role) {
-				return true
-			}
-		}
-
-		return false
+		return slices.ContainsFunc(userRoles, acceptedRolesRegex.MatchString)
 	}
 }
 
