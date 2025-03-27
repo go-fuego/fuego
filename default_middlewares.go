@@ -81,7 +81,12 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 }
 
 func (rw *responseWriter) Flush() {
-	rw.ResponseWriter.(http.Flusher).Flush()
+	flusher, ok := rw.ResponseWriter.(http.Flusher)
+	if !ok {
+		slog.Warn("Flush not implemented, skipping")
+		return
+	}
+	flusher.Flush()
 }
 
 func (rw *responseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
