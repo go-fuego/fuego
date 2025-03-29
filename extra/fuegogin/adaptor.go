@@ -68,11 +68,14 @@ type ginRouteRegisterer[T, B any] struct {
 }
 
 func (a ginRouteRegisterer[T, B]) Register() fuego.Route[T, B] {
+	// We must register the gin handler first, so that the gin router can
+	// mutate the route path if it is a RouterGroup.
+	// This is because gin groups will prepend the group path to the route path itself.
+	a.ginRouter.Handle(a.route.Method, a.route.Path, a.ginHandler)
+
 	if _, ok := a.ginRouter.(*gin.RouterGroup); ok {
 		a.route.Path = a.ginRouter.(*gin.RouterGroup).BasePath() + a.route.Path
 	}
-
-	a.ginRouter.Handle(a.route.Method, a.route.Path, a.ginHandler)
 
 	return a.route
 }

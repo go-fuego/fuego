@@ -29,4 +29,14 @@ func TestFuegoGin(t *testing.T) {
 		require.Equal(t, http.StatusOK, w.Code)
 		require.JSONEq(t, `{"message":"Hello"}`, w.Body.String())
 	})
+
+	t.Run("test fuego plugin with gin group", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "/my-group/1/fuego", nil)
+		w := httptest.NewRecorder()
+
+		e.ServeHTTP(w, r)
+
+		require.Equal(t, http.StatusOK, w.Code)
+		require.JSONEq(t, `{"message":"Hello"}`, w.Body.String())
+	})
 }
