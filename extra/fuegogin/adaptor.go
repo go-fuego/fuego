@@ -68,10 +68,6 @@ type ginRouteRegisterer[T, B any] struct {
 }
 
 func (a ginRouteRegisterer[T, B]) Register() fuego.Route[T, B] {
-	if _, ok := a.ginRouter.(*gin.RouterGroup); ok {
-		a.route.Path = a.ginRouter.(*gin.RouterGroup).BasePath() + a.route.Path
-	}
-
 	a.ginRouter.Handle(a.route.Method, a.route.Path, a.ginHandler)
 
 	return a.route
