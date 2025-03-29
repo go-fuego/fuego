@@ -12,7 +12,7 @@ func TestGinPathWithGinGroup(t *testing.T) {
 	basePath := "/api"
 	apiPath := "/path"
 	completePath := basePath + apiPath
-	
+
 	e := fuego.NewEngine()
 	ginRouter := gin.New()
 	group := ginRouter.Group(basePath)
@@ -41,7 +41,7 @@ func TestFuegoPathWithGinGroup(t *testing.T) {
 	ginRouter := gin.New()
 	group := ginRouter.Group(basePath)
 
-	Get(e, group, apiPath, func(c fuego.ContextWithBody[any]) (string, error) {return "ok", nil})
+	Get(e, group, apiPath, func(c fuego.ContextWithBody[any]) (string, error) { return "ok", nil })
 
 	routes := ginRouter.Routes()
 	for _, route := range routes {
