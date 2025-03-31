@@ -46,6 +46,9 @@ func (rs Resources) Setup(
 		),
 		fuego.WithEngineOptions(
 			fuego.WithErrorHandler(customErrorHandler),
+			fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
+				PrettyFormatJSON: true,
+			}),
 			fuego.WithMiddlewareConfig(fuego.MiddlewareConfig{
 				ShortMiddlewaresPaths: true,
 			}),
