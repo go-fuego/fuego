@@ -251,7 +251,7 @@ func (rs Resource) singleRecipe(c fuego.ContextNoBody) (*fuego.DataOrTemplate[st
 	), nil
 }
 
-func (rs Resource) searchRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
+func (rs Resource) searchRecipes(c fuego.ContextNoBody) (*fuego.DataOrTemplate[[]store.Recipe], error) {
 	search := c.QueryParam("q")
 
 	recipes, err := rs.RecipesQueries.SearchRecipes(c.Context(), store.SearchRecipesParams{
@@ -262,15 +262,19 @@ func (rs Resource) searchRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 		MaxTime:     99999,
 		MaxCalories: 99999,
 		Published:   true,
+		Offset:      0,
+		Limit:       10,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return templa.SearchPage(templa.SearchProps{
-		Recipes: recipes,
-		Search:  search,
-	}), nil
+	return fuego.DataOrHTML(
+		recipes,
+		templa.SearchPage(templa.SearchProps{
+			Recipes: recipes,
+			Search:  search,
+		})), nil
 }
 
 func (rs Resource) fastRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
