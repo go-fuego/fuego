@@ -4180,12 +4180,18 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/unknown-interface"
+									"items": {
+										"$ref": "#/components/schemas/Recipe"
+									},
+									"type": "array"
 								}
 							},
 							"application/xml": {
 								"schema": {
-									"$ref": "#/components/schemas/unknown-interface"
+									"items": {
+										"$ref": "#/components/schemas/Recipe"
+									},
+									"type": "array"
 								}
 							}
 						},
