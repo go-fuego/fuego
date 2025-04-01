@@ -77,12 +77,22 @@ func (rs Resource) login(c fuego.ContextWithBody[LoginPayload]) (*TokenResponse,
 		return nil, err
 	}
 
+	// Display origin of the request
+	origin := c.Request().Header.Get("Origin")
+	origin = strings.TrimPrefix(origin, "http://")
+	origin = strings.TrimPrefix(origin, "https://")
+	if origin == "" {
+		origin = os.Getenv("COOKIE_DOMAIN")
+	}
+
+	slog.Info("setting a cookie on", "origin", origin)
+
 	http.SetCookie(c.Response(), &http.Cookie{
 		Name:     fuego.JWTCookieName,
 		Value:    s,
 		HttpOnly: true,
 		MaxAge:   int(2 * LoginExpirationTime),
-		Domain:   os.Getenv("COOKIE_DOMAIN"),
+		Domain:   origin,
 		Secure:   true,
 	})
 
