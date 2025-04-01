@@ -285,6 +285,7 @@ func (rs Resource) fastRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 		MaxTime:     15,
 		MaxCalories: 99999,
 		Published:   true,
+		Limit:       10,
 	})
 	if err != nil {
 		return nil, err
@@ -307,6 +308,7 @@ func (rs Resource) healthyRecipes(c fuego.ContextNoBody) (fuego.Templ, error) {
 		MaxTime:     99999,
 		MaxCalories: 500,
 		Published:   true,
+		Limit:       10,
 	})
 	if err != nil {
 		return nil, err
