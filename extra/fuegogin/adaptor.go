@@ -35,12 +35,44 @@ func PostGin(engine *fuego.Engine, ginRouter gin.IRouter, path string, handler g
 	return handleGin(engine, ginRouter, http.MethodPost, path, handler, options...)
 }
 
+func PutGin(engine *fuego.Engine, ginRouter gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	return handleGin(engine, ginRouter, http.MethodPut, path, handler, options...)
+}
+
+func DeleteGin(engine *fuego.Engine, ginRouter gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	return handleGin(engine, ginRouter, http.MethodDelete, path, handler, options...)
+}
+
+func PatchGin(engine *fuego.Engine, ginRouter gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	return handleGin(engine, ginRouter, http.MethodPatch, path, handler, options...)
+}
+
+func OptionsGin(engine *fuego.Engine, ginRouter gin.IRouter, path string, handler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
+	return handleGin(engine, ginRouter, http.MethodOptions, path, handler, options...)
+}
+
 func Get[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	return handleFuego(engine, ginRouter, http.MethodGet, path, handler, options...)
 }
 
 func Post[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
 	return handleFuego(engine, ginRouter, http.MethodPost, path, handler, options...)
+}
+
+func Put[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+	return handleFuego(engine, ginRouter, http.MethodPut, path, handler, options...)
+}
+
+func Delete[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+	return handleFuego(engine, ginRouter, http.MethodDelete, path, handler, options...)
+}
+
+func Patch[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+	return handleFuego(engine, ginRouter, http.MethodPatch, path, handler, options...)
+}
+
+func Options[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, path string, handler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
+	return handleFuego(engine, ginRouter, http.MethodOptions, path, handler, options...)
 }
 
 func handleFuego[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, method, path string, fuegoHandler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
