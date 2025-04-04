@@ -32,6 +32,26 @@ func TestGinPathWithGinGroup(t *testing.T) {
 	}
 }
 
+func TestFuegoPathWithGinPathParam(t *testing.T) {
+	basePath := "/api"
+	apiPath := "/path/:id"
+	e := fuego.NewEngine()
+	ginRouter := gin.New()
+	group := ginRouter.Group(basePath)
+
+	Get(e, group, apiPath, func(c fuego.ContextWithBody[any]) (string, error) { return "ok", nil })
+
+	spec := e.OutputOpenAPISpec()
+	specPath := spec.Paths.Find("/api/path/{id}")
+
+	routes := ginRouter.Routes()
+	assert.Assert(t, len(routes) == 1, "Expected exactly one route registered in Gin")
+	assert.Equal(t, routes[0].Path, basePath+apiPath)
+
+	assert.Check(t, specPath != nil,
+		"Expected path '/api/path/{id}' to be registered in OpenAPI spec")
+}
+
 func TestFuegoPathWithGinGroup(t *testing.T) {
 	basePath := "/api"
 	apiPath := "/path"

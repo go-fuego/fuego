@@ -2,12 +2,15 @@ package fuegogin
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/internal"
 )
+
+var pathRegex = regexp.MustCompile(`:([a-zA-Z0-9_]+)`)
 
 type OpenAPIHandler struct {
 	GinEngine *gin.Engine
@@ -44,34 +47,41 @@ func Post[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, path string, ha
 }
 
 func handleFuego[T, B any](engine *fuego.Engine, ginRouter gin.IRouter, method, path string, fuegoHandler func(c fuego.ContextWithBody[B]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B] {
-	baseRoute := fuego.NewBaseRoute(method, path, fuegoHandler, engine, options...)
+	baseRoute := fuego.NewBaseRoute(method, ginToFuegoRoute(path), fuegoHandler, engine, options...)
 	return fuego.Registers(engine, ginRouteRegisterer[T, B]{
-		ginRouter:  ginRouter,
-		route:      fuego.Route[T, B]{BaseRoute: baseRoute},
-		ginHandler: GinHandler(engine, fuegoHandler, baseRoute),
+		ginRouter:    ginRouter,
+		route:        fuego.Route[T, B]{BaseRoute: baseRoute},
+		ginHandler:   GinHandler(engine, fuegoHandler, baseRoute),
+		originalPath: path,
 	})
 }
 
 func handleGin(engine *fuego.Engine, ginRouter gin.IRouter, method, path string, ginHandler gin.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any] {
-	baseRoute := fuego.NewBaseRoute(method, path, ginHandler, engine, options...)
+	baseRoute := fuego.NewBaseRoute(method, ginToFuegoRoute(path), ginHandler, engine, options...)
 	return fuego.Registers(engine, ginRouteRegisterer[any, any]{
-		ginRouter:  ginRouter,
-		route:      fuego.Route[any, any]{BaseRoute: baseRoute},
-		ginHandler: ginHandler,
+		ginRouter:    ginRouter,
+		route:        fuego.Route[any, any]{BaseRoute: baseRoute},
+		ginHandler:   ginHandler,
+		originalPath: path,
 	})
 }
 
+func ginToFuegoRoute(path string) string {
+	return pathRegex.ReplaceAllString(path, `{$1}`)
+}
+
 type ginRouteRegisterer[T, B any] struct {
-	ginRouter  gin.IRouter
-	ginHandler gin.HandlerFunc
-	route      fuego.Route[T, B]
+	ginRouter    gin.IRouter
+	ginHandler   gin.HandlerFunc
+	route        fuego.Route[T, B]
+	originalPath string
 }
 
 func (a ginRouteRegisterer[T, B]) Register() fuego.Route[T, B] {
 	// We must register the gin handler first, so that the gin router can
 	// mutate the route path if it is a RouterGroup.
 	// This is because gin groups will prepend the group path to the route path itself.
-	a.ginRouter.Handle(a.route.Method, a.route.Path, a.ginHandler)
+	a.ginRouter.Handle(a.route.Method, a.originalPath, a.ginHandler)
 
 	if _, ok := a.ginRouter.(*gin.RouterGroup); ok {
 		a.route.Path = a.ginRouter.(*gin.RouterGroup).BasePath() + a.route.Path
