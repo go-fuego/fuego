@@ -32,7 +32,7 @@ func TestUIHandler(t *testing.T) {
 
 		require.Equal(t, 200, w.Code)
 		require.Contains(t, w.Body.String(), "OpenAPI specification")
-		require.Equal(t, "", w.Header().Get("X-Test-Response"))
+		require.Empty(t, w.Header().Get("X-Test-Response"))
 	})
 
 	t.Run("wrap DefaultOpenAPIHandler behind a middleware", func(t *testing.T) {
@@ -77,6 +77,6 @@ func TestUIHandler(t *testing.T) {
 
 		require.Equal(t, 404, w.Code)
 		require.Contains(t, w.Body.String(), "404 page not found")
-		require.Equal(t, "", w.Header().Get("X-Test-Response"))
+		require.Empty(t, w.Header().Get("X-Test-Response"))
 	})
 }

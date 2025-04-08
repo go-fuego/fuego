@@ -19,7 +19,7 @@ func (s *Server) Run() error {
 	if err := s.setup(); err != nil {
 		return err
 	}
-	return s.Server.Serve(s.listener)
+	return s.Serve(s.listener)
 }
 
 // RunTLS starts the server with a TLS listener
@@ -31,7 +31,7 @@ func (s *Server) RunTLS(certFile, keyFile string) error {
 	if err := s.setup(); err != nil {
 		return err
 	}
-	return s.Server.ServeTLS(s.listener, certFile, keyFile)
+	return s.ServeTLS(s.listener, certFile, keyFile)
 }
 
 func (s *Server) setup() error {
@@ -45,13 +45,13 @@ func (s *Server) setup() error {
 		})
 	}
 	go s.OutputOpenAPISpec()
-	s.Engine.RegisterOpenAPIRoutes(s)
+	s.RegisterOpenAPIRoutes(s)
 	s.printStartupMessage()
 
-	s.Server.Handler = s.Mux
+	s.Handler = s.Mux
 
 	for _, middleware := range s.globalMiddlewares {
-		s.Server.Handler = middleware(s.Server.Handler)
+		s.Handler = middleware(s.Handler)
 	}
 
 	return nil
@@ -83,7 +83,7 @@ func (s *Server) proto() string {
 }
 
 func (s *Server) url() string {
-	return s.proto() + "://" + s.Server.Addr
+	return s.proto() + "://" + s.Addr
 }
 
 // HTTPHandler converts a Fuego controller into a http.HandlerFunc.

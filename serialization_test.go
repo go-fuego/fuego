@@ -84,7 +84,7 @@ func TestJSON(t *testing.T) {
 		require.ErrorAs(t, err, &NotAcceptableError{})
 
 		body := w.Body.String()
-		require.Equal(t, "", body)
+		require.Empty(t, body)
 	})
 }
 
@@ -105,7 +105,7 @@ func TestXML(t *testing.T) {
 		require.ErrorAs(t, err, &NotAcceptableError{})
 
 		body := w.Body.String()
-		require.Equal(t, "", body)
+		require.Empty(t, body)
 	})
 
 	t.Run("can serialize xml error", func(t *testing.T) {
