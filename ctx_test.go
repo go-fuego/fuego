@@ -418,7 +418,7 @@ age: 30
 
 		body, err := c.Body()
 		require.Error(t, err)
-		require.Equal(t, "", body.Name)
+		require.Empty(t, body.Name)
 		require.Zero(t, body.Age)
 	})
 

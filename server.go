@@ -322,7 +322,7 @@ func WithDisallowUnknownFields(b bool) func(*Server) {
 // If a listener is explicitly set using WithListener, the provided address will be ignored,
 func WithAddr(addr string) func(*Server) {
 	return func(c *Server) {
-		c.Server.Addr = addr
+		c.Addr = addr
 	}
 }
 

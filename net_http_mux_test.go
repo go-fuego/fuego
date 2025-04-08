@@ -651,7 +651,7 @@ func TestGroup(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, "route1", w.Body.String())
-		require.Equal(t, "", w.Header().Get("X-Test-Response"), "middleware is not set to this group")
+		require.Empty(t, w.Header().Get("X-Test-Response"), "middleware is not set to this group")
 	})
 
 	t.Run("route2", func(t *testing.T) {
@@ -671,7 +671,7 @@ func TestGroup(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, "route3", w.Body.String())
-		require.Equal(t, "", w.Header().Get("X-Test-Response"), "middleware is not inherited")
+		require.Empty(t, w.Header().Get("X-Test-Response"), "middleware is not inherited")
 	})
 
 	t.Run("main group", func(t *testing.T) {
