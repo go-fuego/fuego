@@ -1,3 +1,6 @@
+// Package internal provides a common context for all adaptors (net/http, gin, echo, etc...)
+// It is used to share common functionality between all adaptors.
+// It is not intended to be used directly by the user.
 package internal
 
 import (

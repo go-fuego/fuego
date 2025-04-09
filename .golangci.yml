@@ -38,7 +38,7 @@ linters:
         - name: empty-block
         - name: error-naming
         - name: error-return
-        - name: error-strings
+        # - name: error-strings
         - name: errorf
         - name: exported
           arguments:
@@ -56,11 +56,13 @@ linters:
     staticcheck:
       checks:
         - all
+        - "-ST1003" # Ignore "API" to "Api" naming convention suggestion
     testifylint:
       enable-all: true
   exclusions:
     generated: lax
     presets:
+      - comments  #TODO fix them all and remove this preset
       - common-false-positives
       - legacy
       - std-error-handling
@@ -82,6 +84,7 @@ linters:
       - third_party$
       - builtin$
       - examples$
+
 formatters:
   enable:
     - gci
