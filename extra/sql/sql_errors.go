@@ -1,3 +1,5 @@
+// Package sql provides error handling for SQL operations.
+// It maps standard SQL errors to the corresponding fuego errors.
 package sql
 
 import (

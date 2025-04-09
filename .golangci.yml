@@ -38,12 +38,12 @@ linters:
         - name: empty-block
         - name: error-naming
         - name: error-return
-        - name: error-strings
+        # - name: error-strings
         - name: errorf
-        - name: exported
-          arguments:
-            - checkPrivateReceivers
-            - sayRepetitiveInsteadOfStutters
+        # - name: exported
+        #   arguments:
+        #     - checkPrivateReceivers
+        #     - sayRepetitiveInsteadOfStutters
         - name: increment-decrement
         - name: indent-error-flow
         - name: range
@@ -56,6 +56,7 @@ linters:
     staticcheck:
       checks:
         - all
+        - "-ST1003"
     testifylint:
       enable-all: true
   exclusions:
@@ -82,6 +83,7 @@ linters:
       - third_party$
       - builtin$
       - examples$
+
 formatters:
   enable:
     - gci

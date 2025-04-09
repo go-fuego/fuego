@@ -1,3 +1,5 @@
+// Package param provides a set of shortcuts to define parameters for the route Options.
+// See the [github.com/go-fuego/fuego/option] package for more information.
 package param
 
 import "github.com/go-fuego/fuego"
