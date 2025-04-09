@@ -18,9 +18,10 @@ import (
 )
 
 type MyStruct struct {
-	B string `json:"b"`
-	C int    `json:"c" example:"8" validate:"min=3,max=10" description:"my description"`
-	D bool   `json:"d"`
+	A float64 `json:"asking_price" example:"5.99"`
+	B string  `json:"b"`
+	C int     `json:"c" example:"8" validate:"min=3,max=10" description:"my description"`
+	D bool    `json:"d"`
 }
 
 type MyStructWithNested struct {
@@ -233,13 +234,22 @@ func Test_tagFromType(t *testing.T) {
 	t.Run("struct with embedded struct with tags", func(t *testing.T) {
 		s := NewServer()
 		tag := SchemaTagFromType(s.OpenAPI, MyStructWithEmbedded{})
-		c := tag.Value.Properties["c"]
-		require.NotNil(t, c)
-		require.NotNil(t, c.Value)
-		assert.Equal(t, "my description", c.Value.Description)
-		assert.Equal(t, 8, c.Value.Example)
-		assert.InDelta(t, float64(3), *c.Value.Min, 0)
-		assert.InDelta(t, float64(10), *c.Value.Max, 0)
+		t.Run("c", func(t *testing.T) {
+			c := tag.Value.Properties["c"]
+			require.NotNil(t, c)
+			require.NotNil(t, c.Value)
+			assert.Equal(t, "my description", c.Value.Description)
+			assert.Equal(t, 8, c.Value.Example)
+			assert.InDelta(t, float64(3), *c.Value.Min, 0)
+			assert.InDelta(t, float64(10), *c.Value.Max, 0)
+		})
+		t.Run("a", func(t *testing.T) {
+			a := tag.Value.Properties["asking_price"]
+			require.NotNil(t, a)
+			require.NotNil(t, a.Value)
+			assert.Equal(t, 5.99, a.Value.Example)
+		})
+
 	})
 
 	t.Run("struct with nested tags", func(t *testing.T) {
