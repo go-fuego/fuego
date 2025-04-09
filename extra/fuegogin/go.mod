@@ -1,10 +1,11 @@
 module github.com/go-fuego/fuego/extra/fuegogin
 
-go 1.23.6
+go 1.23.8
 
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-fuego/fuego v0.18.0
+	gotest.tools/v3 v3.5.1
 )
 
 require (
@@ -20,7 +21,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.24.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/schema v1.4.1 // indirect
