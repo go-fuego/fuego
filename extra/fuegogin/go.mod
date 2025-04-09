@@ -1,10 +1,11 @@
 module github.com/go-fuego/fuego/extra/fuegogin
 
-go 1.23.6
+go 1.23.8
 
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-fuego/fuego v0.18.0
+	gotest.tools/v3 v3.5.1
 )
 
 require (

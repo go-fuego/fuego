@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/echo-compat
 
-go 1.23.6
+go 1.23.8
 
 replace github.com/go-fuego/fuego => ../..
 

@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego
 
-go 1.23.6
+go 1.23.8
 
 require (
 	github.com/getkin/kin-openapi v0.129.0
@@ -8,6 +8,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/schema v1.4.1
+	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/stretchr/testify v1.10.0
 	github.com/thejerf/slogassert v0.3.4
 	gopkg.in/yaml.v3 v3.0.1
@@ -36,6 +37,6 @@ require (
 )
 
 retract (
-	v1.0.0 // Published accidentally.
 	v1.0.1 // Contains retractions only.
+	v1.0.0 // Published accidentally.
 )

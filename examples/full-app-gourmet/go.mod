@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/full-app-gourmet
 
-go 1.23.6
+go 1.23.8
 
 require (
 	github.com/a-h/templ v0.3.833
