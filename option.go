@@ -362,7 +362,7 @@ func OptionAddResponse(code int, description string, response Response) func(*Ba
 	}
 }
 
-// RequestBody represents a fuego.RequstBody that can be used
+// RequestBody represents a fuego.RequestBody that can be used
 // when setting custom request type on routes
 type RequestBody struct {
 	// user provided type

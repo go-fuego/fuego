@@ -486,6 +486,52 @@ func TestAddResponse(t *testing.T) {
 	})
 }
 
+func TestRequestBody(t *testing.T) {
+	type TestModel struct{}
+
+	t.Run("base", func(t *testing.T) {
+		s := fuego.NewServer()
+		route := fuego.Post(s, "/test", helloWorld, fuego.OptionRequestBody(
+			fuego.RequestBody{
+				ContentTypes: []string{"application/json"},
+				Type:         TestModel{},
+			},
+		))
+
+		req := route.Operation.RequestBody
+		require.NotNil(t, req)
+		require.NotNil(t, req.Value.Content.Get("application/json"))
+		require.Nil(t, req.Value.Content.Get("application/xml"))
+		require.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
+		require.NotNil(t, s.OpenAPI.Description().Components.Schemas["TestModel"])
+	})
+
+	t.Run("no content types provided", func(t *testing.T) {
+		s := fuego.NewServer()
+		route := fuego.Post(s, "/test", helloWorld, fuego.OptionRequestBody(
+			fuego.RequestBody{
+				Type: TestModel{},
+			},
+		))
+		req := route.Operation.RequestBody
+		require.NotNil(t, req)
+		require.NotNil(t, req.Value.Content.Get("application/json"))
+		require.NotNil(t, req.Value.Content.Get("application/xml"))
+		require.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
+		require.NotNil(t, s.OpenAPI.Description().Components.Schemas["TestModel"])
+	})
+
+	t.Run("should be fatal", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		require.Panics(t, func() {
+			fuego.Get(s, "/test", helloWorld, fuego.OptionRequestBody(
+				fuego.RequestBody{},
+			))
+		})
+	})
+}
+
 func TestHide(t *testing.T) {
 	s := fuego.NewServer()
 
