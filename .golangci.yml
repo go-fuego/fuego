@@ -80,10 +80,6 @@ linters:
           - usestdlibvars
           - whitespace
         path: _test\.go$
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
 
 formatters:
   enable:
@@ -97,10 +93,3 @@ formatters:
         - localmodule
     gofumpt:
       extra-rules: true
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
-      - _test\.go$

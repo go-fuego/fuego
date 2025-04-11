@@ -1,6 +1,6 @@
 default: ci
 
-ci: fmt lint cover
+ci: lint cover
 
 ci-full: ci dependencies-analyze openapi-check check-all-modules lint-markdown bench
 
