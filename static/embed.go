@@ -1,4 +1,5 @@
-package data
+// Package static provides embedded static files for the Fuego framework.
+package static
 
 import (
 	_ "embed"

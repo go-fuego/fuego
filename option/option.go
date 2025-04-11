@@ -1,3 +1,4 @@
+// Package option provides a set of shortcuts to configure routes in Fuego.
 package option
 
 import (
