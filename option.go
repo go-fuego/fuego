@@ -362,6 +362,27 @@ func OptionAddResponse(code int, description string, response Response) func(*Ba
 	}
 }
 
+// RequestBody represents a fuego.RequestBody that can be used
+// when setting custom request type on routes
+type RequestBody struct {
+	// user provided type
+	Type any
+	// content-type of the request i.e application/json
+	ContentTypes []string
+}
+
+// OptionRequestBody sets a request to a route
+// It replaces existing request body
+// Required: RequestBody.Type must be set
+// Optional: RequestBody.ContentTypes will default to `application/json` and `application/xml` if not set
+func OptionRequestBody(requestBody RequestBody) func(*BaseRoute) {
+	return func(r *BaseRoute) {
+		r.Operation.RequestBody = &openapi3.RequestBodyRef{
+			Value: r.OpenAPI.buildOpenapi3RequestBody(requestBody),
+		}
+	}
+}
+
 // OptionDefaultResponse adds a default response to a route
 // Required: Response.Type must be set
 // Optional: Response.ContentTypes will default to `application/json` and `application/xml` if not set

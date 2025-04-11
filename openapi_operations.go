@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"reflect"
 	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -40,6 +41,23 @@ func (o *OpenAPI) buildOpenapi3Response(description string, response Response) *
 	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, response.ContentTypes)
 	return openapi3.NewResponse().
 		WithDescription(description).
+		WithContent(content)
+}
+
+func (o *OpenAPI) buildOpenapi3RequestBody(requestBody RequestBody) *openapi3.RequestBody {
+	if requestBody.Type == nil {
+		panic("Type in RequestBody cannot be nil")
+	}
+
+	bodySchema := SchemaTagFromType(o, requestBody.Type)
+	if len(requestBody.ContentTypes) == 0 {
+		requestBody.ContentTypes = []string{"application/json", "application/xml"}
+	}
+
+	content := openapi3.NewContentWithSchemaRef(&bodySchema.SchemaRef, requestBody.ContentTypes)
+	return openapi3.NewRequestBody().
+		WithRequired(true).
+		WithDescription("Request body for " + reflect.TypeOf(requestBody.Type).String()).
 		WithContent(content)
 }
 
