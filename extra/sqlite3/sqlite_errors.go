@@ -1,3 +1,5 @@
+// Package sqlite3 provides error handling for SQLite3 database operations.
+// It maps mattn/go-sqlite3 errors to the corresponding fuego errors.
 package sqlite3
 
 import (

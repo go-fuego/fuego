@@ -12,11 +12,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: markdownlint-cli
-        uses: nosborn/github-action-markdown-cli@v3.3.0
+        uses: nosborn/github-action-markdown-cli@v3.4.0
         with:
           files: .
           config_file: .markdownlint.yaml
           dot: true
 
       - name: typos-action spellchecker
-        uses: crate-ci/typos@v1.24.5
+        uses: crate-ci/typos@v1.31.1

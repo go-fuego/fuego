@@ -114,9 +114,6 @@ func (c echoContext[B]) SetStatus(code int) {
 func (c echoContext[B]) Serialize(data any) error {
 	status := c.echoCtx.Response().Status
 	if status == 0 {
-		status = c.DefaultStatusCode
-	}
-	if status == 0 {
 		status = http.StatusOK
 	}
 	c.echoCtx.JSON(status, data)
@@ -136,5 +133,5 @@ func (c echoContext[B]) SetDefaultStatusCode() {
 	if c.DefaultStatusCode == 0 {
 		c.DefaultStatusCode = http.StatusOK
 	}
-	c.SetStatus(c.DefaultStatusCode)
+	c.echoCtx.Response().Status = c.DefaultStatusCode
 }

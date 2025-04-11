@@ -4,10 +4,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/go-fuego/fuego"
 	"github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-fuego/fuego"
 )
 
 func TestConflictErrors(t *testing.T) {

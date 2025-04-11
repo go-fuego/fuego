@@ -1,0 +1,12 @@
+# CODEOWNERS file for Fuego project
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+* @EwenQuim @dylanhitt
+
+# Documentation
+/documentation/ @EwenQuim @ccoVeille
+*.md @EwenQuim @ccoVeille
+
+# CI/CD and GitHub specific files
+/.github/ @EwenQuim

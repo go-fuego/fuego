@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/thejerf/slogassert"
 
@@ -85,7 +86,7 @@ func TestPerRouteMiddleware(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, "withoutmiddleware", w.Body.String())
-		require.Equal(t, "", w.Header().Get("X-Test-Response"))
+		require.Empty(t, w.Header().Get("X-Test-Response"))
 	})
 }
 
@@ -303,7 +304,7 @@ func TestPath(t *testing.T) {
 		fuego.Get(s, "/test/{id}", helloWorld)
 
 		require.Equal(t, "id", s.OpenAPI.Description().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Name)
-		require.Equal(t, "", s.OpenAPI.Description().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Description)
+		require.Empty(t, s.OpenAPI.Description().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Description)
 	})
 
 	t.Run("Declare explicitly an existing path parameter for the route", func(t *testing.T) {
@@ -482,6 +483,54 @@ func TestAddResponse(t *testing.T) {
 				"Conflict: Pet with the same name already exists",
 				fuego.Response{},
 			))
+		})
+	})
+}
+
+func TestRequestBody(t *testing.T) {
+	type TestModel struct{}
+
+	t.Run("base", func(t *testing.T) {
+		s := fuego.NewServer()
+		route := fuego.Post(s, "/test", helloWorld,
+			fuego.OptionRequestBody(fuego.RequestBody{
+				ContentTypes: []string{"application/json"},
+				Type:         TestModel{},
+			}),
+		)
+
+		req := route.Operation.RequestBody
+		require.NotNil(t, req)
+		assert.Nil(t, req.Value.Content.Get("application/xml"))
+		require.NotNil(t, req.Value.Content.Get("application/json"))
+		assert.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
+		assert.NotNil(t, s.OpenAPI.Description().Components.Schemas["TestModel"])
+	})
+
+	t.Run("no content types provided", func(t *testing.T) {
+		s := fuego.NewServer()
+		route := fuego.Post(s, "/test", helloWorld,
+			fuego.OptionRequestBody(fuego.RequestBody{
+				Type: TestModel{},
+			}),
+		)
+		req := route.Operation.RequestBody
+		require.NotNil(t, req)
+		require.NotNil(t, req.Value.Content.Get("application/json"))
+		assert.NotNil(t, req.Value.Content.Get("application/xml"))
+		assert.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
+		assert.NotNil(t, s.OpenAPI.Description().Components.Schemas["TestModel"])
+	})
+
+	t.Run("should be fatal", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		require.Panics(t, func() {
+			fuego.Get(s, "/test", helloWorld,
+				fuego.OptionRequestBody(
+					fuego.RequestBody{},
+				),
+			)
 		})
 	})
 }

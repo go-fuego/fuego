@@ -162,8 +162,8 @@ func (m *MockContext[B]) SetQueryParam(name, value string) *MockContext[B] {
 		Type:   "query",
 	}
 
-	m.CommonContext.OpenAPIParams[name] = param
-	m.CommonContext.UrlValues.Set(name, value)
+	m.OpenAPIParams[name] = param
+	m.UrlValues.Set(name, value)
 	return m
 }
 
@@ -175,8 +175,8 @@ func (m *MockContext[B]) SetQueryParamInt(name string, value int) *MockContext[B
 		Type:   "query",
 	}
 
-	m.CommonContext.OpenAPIParams[name] = param
-	m.CommonContext.UrlValues.Set(name, fmt.Sprintf("%d", value))
+	m.OpenAPIParams[name] = param
+	m.UrlValues.Set(name, fmt.Sprintf("%d", value))
 	return m
 }
 
@@ -188,7 +188,7 @@ func (m *MockContext[B]) SetQueryParamBool(name string, value bool) *MockContext
 		Type:   "query",
 	}
 
-	m.CommonContext.OpenAPIParams[name] = param
-	m.CommonContext.UrlValues.Set(name, fmt.Sprintf("%t", value))
+	m.OpenAPIParams[name] = param
+	m.UrlValues.Set(name, fmt.Sprintf("%t", value))
 	return m
 }
