@@ -5,9 +5,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/go-fuego/fuego"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-fuego/fuego"
 )
 
 // TestSQLErrorHandler_NotFound verifies that sql.ErrNoRows is correctly mapped
