@@ -116,7 +116,7 @@ func TestTokenFromQueryParam(t *testing.T) {
 		r := httptest.NewRequest("GET", "/", nil)
 
 		token := TokenFromQueryParam(r)
-		require.Equal(t, "", token)
+		require.Empty(t, token)
 	})
 
 	t.Run("with token", func(t *testing.T) {
@@ -132,7 +132,7 @@ func TestTokenFromHeader(t *testing.T) {
 		r := httptest.NewRequest("GET", "/", nil)
 
 		token := TokenFromHeader(r)
-		require.Equal(t, "", token)
+		require.Empty(t, token)
 	})
 
 	t.Run("with invalid token", func(t *testing.T) {
@@ -140,7 +140,7 @@ func TestTokenFromHeader(t *testing.T) {
 		r.Header.Set("Authorization", "Bla")
 
 		token := TokenFromHeader(r)
-		require.Equal(t, "", token)
+		require.Empty(t, token)
 	})
 
 	t.Run("with invalid token", func(t *testing.T) {
@@ -148,7 +148,7 @@ func TestTokenFromHeader(t *testing.T) {
 		r.Header.Set("Authorization", "Blabla 123")
 
 		token := TokenFromHeader(r)
-		require.Equal(t, "", token)
+		require.Empty(t, token)
 	})
 
 	t.Run("with valid token", func(t *testing.T) {
