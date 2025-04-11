@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/thejerf/slogassert"
 
@@ -491,43 +492,45 @@ func TestRequestBody(t *testing.T) {
 
 	t.Run("base", func(t *testing.T) {
 		s := fuego.NewServer()
-		route := fuego.Post(s, "/test", helloWorld, fuego.OptionRequestBody(
-			fuego.RequestBody{
+		route := fuego.Post(s, "/test", helloWorld,
+			fuego.OptionRequestBody(fuego.RequestBody{
 				ContentTypes: []string{"application/json"},
 				Type:         TestModel{},
-			},
-		))
+			}),
+		)
 
 		req := route.Operation.RequestBody
 		require.NotNil(t, req)
+		assert.Nil(t, req.Value.Content.Get("application/xml"))
 		require.NotNil(t, req.Value.Content.Get("application/json"))
-		require.Nil(t, req.Value.Content.Get("application/xml"))
-		require.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
-		require.NotNil(t, s.OpenAPI.Description().Components.Schemas["TestModel"])
+		assert.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
+		assert.NotNil(t, s.OpenAPI.Description().Components.Schemas["TestModel"])
 	})
 
 	t.Run("no content types provided", func(t *testing.T) {
 		s := fuego.NewServer()
-		route := fuego.Post(s, "/test", helloWorld, fuego.OptionRequestBody(
-			fuego.RequestBody{
+		route := fuego.Post(s, "/test", helloWorld,
+			fuego.OptionRequestBody(fuego.RequestBody{
 				Type: TestModel{},
-			},
-		))
+			}),
+		)
 		req := route.Operation.RequestBody
 		require.NotNil(t, req)
 		require.NotNil(t, req.Value.Content.Get("application/json"))
-		require.NotNil(t, req.Value.Content.Get("application/xml"))
-		require.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
-		require.NotNil(t, s.OpenAPI.Description().Components.Schemas["TestModel"])
+		assert.NotNil(t, req.Value.Content.Get("application/xml"))
+		assert.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
+		assert.NotNil(t, s.OpenAPI.Description().Components.Schemas["TestModel"])
 	})
 
 	t.Run("should be fatal", func(t *testing.T) {
 		s := fuego.NewServer()
 
 		require.Panics(t, func() {
-			fuego.Get(s, "/test", helloWorld, fuego.OptionRequestBody(
-				fuego.RequestBody{},
-			))
+			fuego.Get(s, "/test", helloWorld,
+				fuego.OptionRequestBody(
+					fuego.RequestBody{},
+				),
+			)
 		})
 	})
 }

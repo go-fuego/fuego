@@ -44,12 +44,12 @@ func (openAPI *OpenAPI) buildOpenapi3Response(description string, response Respo
 		WithContent(content)
 }
 
-func (o *OpenAPI) buildOpenapi3RequestBody(requestBody RequestBody) *openapi3.RequestBody {
+func (openAPI *OpenAPI) buildOpenapi3RequestBody(requestBody RequestBody) *openapi3.RequestBody {
 	if requestBody.Type == nil {
 		panic("Type in RequestBody cannot be nil")
 	}
 
-	bodySchema := SchemaTagFromType(o, requestBody.Type)
+	bodySchema := SchemaTagFromType(openAPI, requestBody.Type)
 	if len(requestBody.ContentTypes) == 0 {
 		requestBody.ContentTypes = []string{"application/json", "application/xml"}
 	}
