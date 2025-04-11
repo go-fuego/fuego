@@ -85,7 +85,7 @@ func TestPerRouteMiddleware(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, "withoutmiddleware", w.Body.String())
-		require.Equal(t, "", w.Header().Get("X-Test-Response"))
+		require.Empty(t, w.Header().Get("X-Test-Response"))
 	})
 }
 
@@ -303,7 +303,7 @@ func TestPath(t *testing.T) {
 		fuego.Get(s, "/test/{id}", helloWorld)
 
 		require.Equal(t, "id", s.OpenAPI.Description().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Name)
-		require.Equal(t, "", s.OpenAPI.Description().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Description)
+		require.Empty(t, s.OpenAPI.Description().Paths.Find("/test/{id}").Get.Parameters.GetByInAndName("path", "id").Description)
 	})
 
 	t.Run("Declare explicitly an existing path parameter for the route", func(t *testing.T) {

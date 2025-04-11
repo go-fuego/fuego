@@ -28,12 +28,12 @@ func addResponseIfNotSet(openapi *OpenAPI, operation *openapi3.Operation, code i
 	operation.AddResponse(code, openapi.buildOpenapi3Response(description, response))
 }
 
-func (o *OpenAPI) buildOpenapi3Response(description string, response Response) *openapi3.Response {
+func (openAPI *OpenAPI) buildOpenapi3Response(description string, response Response) *openapi3.Response {
 	if response.Type == nil {
 		panic("Type in Response cannot be nil")
 	}
 
-	responseSchema := SchemaTagFromType(o, response.Type)
+	responseSchema := SchemaTagFromType(openAPI, response.Type)
 	if len(response.ContentTypes) == 0 {
 		response.ContentTypes = []string{"application/json", "application/xml"}
 	}

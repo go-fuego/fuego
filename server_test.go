@@ -10,12 +10,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/thejerf/slogassert"
-
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/thejerf/slogassert"
 )
 
 func controller(c ContextNoBody) (testStruct, error) {
