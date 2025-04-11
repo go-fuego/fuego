@@ -425,10 +425,17 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		example, ok := field.Tag.Lookup("example")
 		if ok {
 			propertyValue.Example = example
-			if propertyValue.Type.Is(openapi3.TypeInteger) {
+			switch {
+			case propertyValue.Type.Is(openapi3.TypeInteger):
 				exNum, err := strconv.Atoi(example)
 				if err != nil {
 					slog.Warn("Example might be incorrect (should be integer)", "error", err)
+				}
+				propertyValue.Example = exNum
+			case propertyValue.Type.Is(openapi3.TypeNumber):
+				exNum, err := strconv.ParseFloat(example, 64)
+				if err != nil {
+					slog.Warn("Example might be incorrect (should be floating point number)", "error", err)
 				}
 				propertyValue.Example = exNum
 			}
