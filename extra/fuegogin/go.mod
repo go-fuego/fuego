@@ -4,7 +4,7 @@ go 1.23.8
 
 require (
 	github.com/gin-gonic/gin v1.10.0
-	github.com/go-fuego/fuego v0.18.6
+	github.com/go-fuego/fuego v0.18.7
 	gotest.tools/v3 v3.5.2
 )
 

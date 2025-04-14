@@ -3,7 +3,7 @@ module github.com/go-fuego/fuego/extra/fuegoecho
 go 1.23.8
 
 require (
-	github.com/go-fuego/fuego v0.18.6
+	github.com/go-fuego/fuego v0.18.7
 	github.com/labstack/echo/v4 v4.13.3
 )
 
