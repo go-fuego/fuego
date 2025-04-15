@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/extra/sql
 
-go 1.23.8
+go 1.24.2
 
 require (
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
