@@ -52,6 +52,19 @@ func (c ginContext[B, P]) MustBody() B {
 	return body
 }
 
+func (c ginContext[B, P]) Params() (P, error) {
+	var params P
+	return params, nil
+}
+
+func (c ginContext[B, P]) MustParams() P {
+	params, err := c.Params()
+	if err != nil {
+		panic(err)
+	}
+	return params
+}
+
 func (c ginContext[B, P]) PathParam(name string) string {
 	return c.ginCtx.Param(name)
 }

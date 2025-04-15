@@ -661,6 +661,7 @@ func TestNetHttpContext_Params(t *testing.T) {
 
 	_, err := c.Params()
 	require.NoError(t, err)
+	// TODO: implementation must pass this test
 	// require.NotEmpty(t, params)
 	// require.Equal(t, 456, params.ID)
 	// require.Equal(t, "hello", params.Other)

@@ -52,6 +52,23 @@ func (c echoContext[B, P]) MustBody() B {
 	return body
 }
 
+func (c echoContext[B, P]) Params() (P, error) {
+	var params P
+	err := c.echoCtx.Bind(&params)
+	if err != nil {
+		return params, err
+	}
+	return params, nil
+}
+
+func (c echoContext[B, P]) MustParams() P {
+	params, err := c.Params()
+	if err != nil {
+		panic(err)
+	}
+	return params
+}
+
 func (c echoContext[B, P]) PathParam(name string) string {
 	return c.echoCtx.Param(name)
 }
