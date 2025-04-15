@@ -55,9 +55,13 @@ type Context[B, P any] interface {
 	// Params returns the typed parameters of the request.
 	// It returns an error if the parameters are not valid.
 	// Please do not use a pointer type as parameters.
+	//
+	// Deprecated: Not defined yet, incoming in future Fuego versions.
 	Params() (P, error)
 
 	// MustParams works like Params, but panics if there is an error.
+	//
+	// Deprecated: Not defined yet, incoming in future Fuego versions.
 	MustParams() P
 
 	// PathParam returns the path parameter with the given name.
@@ -169,11 +173,16 @@ type netHttpContext[Body, Params any] struct {
 }
 
 var (
-	_ Context[string, struct{}] = &netHttpContext[string, struct{}]{} // Check that ContextWithBody implements Ctx.
-	_ Context[any, any]         = &netHttpContext[any, any]{}         // Check that ContextWithBody implements Ctx.
-	_ ContextWithBody[any]      = &netHttpContext[any, any]{}         // Check that ContextWithBody implements Ctx.
-	_ ContextWithBody[string]   = &netHttpContext[string, any]{}      // Check that ContextWithBody implements Ctx.
-	_ ValidableCtx              = &netHttpContext[any, any]{}         // Check that ContextWithBody implements ValidableCtx.
+	// Check that netHttpContext implements Context.
+	_ Context[string, struct{}] = &netHttpContext[string, struct{}]{}
+	_ Context[any, any]         = &netHttpContext[any, any]{}
+
+	// Check that netHttpContext implements ContextWithBody.
+	_ ContextWithBody[any]    = &netHttpContext[any, any]{}
+	_ ContextWithBody[string] = &netHttpContext[string, any]{}
+
+	// Check that netHttpContext implements ValidableCtx.
+	_ ValidableCtx = &netHttpContext[any, any]{}
 )
 
 // SetStatus sets the status code of the response.
@@ -350,7 +359,7 @@ func (c *netHttpContext[B, P]) Body() (B, error) {
 		return *c.body, nil
 	}
 
-	body, err := body[B](*c)
+	body, err := body(*c)
 	c.body = &body
 	return body, err
 }
