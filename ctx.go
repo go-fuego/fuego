@@ -38,7 +38,7 @@ type (
 // Context is the context of the request.
 // It contains the request body, the path parameters, the query parameters, and the HTTP request.
 // Please do not use a pointer type as parameters.
-// You can use the shortcuts ContextNoBody, ContextWithBody and ContextWithParams if you do not need to specify the type parameters.
+// You can use the shortcuts [ContextNoBody], [ContextWithBody] and [ContextWithParams] if you do not need to specify the type parameters.
 type Context[B, P any] interface {
 	context.Context
 
