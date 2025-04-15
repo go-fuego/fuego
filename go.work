@@ -19,6 +19,8 @@ use (
 	./extra/fuegoecho
 	./extra/fuegogin
 	./extra/markdown
+	./extra/sql
+	./extra/sqlite3
 	./middleware/basicauth
 	./middleware/cache
 	./testing-from-outside
