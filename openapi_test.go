@@ -21,7 +21,7 @@ type MyStruct struct {
 	A float64 `json:"asking_price" example:"5.99"`
 	B string  `json:"b"`
 	C int     `json:"c" example:"8" validate:"min=3,max=10" description:"my description"`
-	D bool    `json:"d"`
+	D bool    `json:"d" example:"true"`
 	F uint64  `json:"f" example:"10"`
 	G int64   `json:"g" example:"-10"`
 }
@@ -250,6 +250,12 @@ func Test_tagFromType(t *testing.T) {
 			assert.Equal(t, 8, c.Value.Example)
 			assert.InDelta(t, float64(3), *c.Value.Min, 0)
 			assert.InDelta(t, float64(10), *c.Value.Max, 0)
+		})
+		t.Run("d, boolean example", func(t *testing.T) {
+			d := tag.Value.Properties["d"]
+			require.NotNil(t, d)
+			require.NotNil(t, d.Value)
+			assert.Equal(t, true, d.Value.Example)
 		})
 		t.Run("f", func(t *testing.T) {
 			f := tag.Value.Properties["f"]

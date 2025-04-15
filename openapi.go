@@ -424,7 +424,6 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		// Example
 		example, ok := field.Tag.Lookup("example")
 		if ok {
-			propertyValue.Example = example
 			switch {
 			case propertyValue.Type.Is(openapi3.TypeInteger):
 				exNum, err := strconv.Atoi(example)
@@ -438,6 +437,14 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 					slog.Warn("Example might be incorrect (should be floating point number)", "error", err)
 				}
 				propertyValue.Example = exNum
+			case propertyValue.Type.Is(openapi3.TypeBoolean):
+				exBool, err := strconv.ParseBool(example)
+				if err != nil {
+					slog.Warn("Example might be incorrect (should be boolean)", "error", err)
+				}
+				propertyValue.Example = exBool
+			default:
+				propertyValue.Example = example
 			}
 		}
 
