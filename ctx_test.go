@@ -660,11 +660,12 @@ func TestNetHttpContext_Params(t *testing.T) {
 
 		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
 
-	_, err := c.Params()
-	require.NoError(t, err)
-	// TODO: implementation must pass this test
-	// require.NotEmpty(t, params)
-	// require.Equal(t, 456, params.ID)
-	// require.Equal(t, "hello", params.Other)
-	// require.Equal(t, "application/json", params.ContentType)
+		_, err := c.Params()
+		require.NoError(t, err)
+		// TODO: implementation must pass this test
+		// require.NotEmpty(t, params)
+		// require.Equal(t, 456, params.ID)
+		// require.Equal(t, "hello", params.Other)
+		// require.Equal(t, "application/json", params.ContentType)
+	})
 }

@@ -18,9 +18,9 @@ type ginContext[B, P any] struct {
 }
 
 var (
-	_ fuego.Context[any, any]    = &ginContext[any, any]{}
-	_ fuego.ContextWithBody[any] = &ginContext[any, any]{}
-	_ fuego.ContextFlowable[any] = &ginContext[any, any]{}
+	_ fuego.Context[any, any]         = &ginContext[any, any]{}
+	_ fuego.ContextWithBody[any]      = &ginContext[any, any]{}
+	_ fuego.ContextFlowable[any, any] = &ginContext[any, any]{}
 )
 
 func (c ginContext[B, P]) Body() (B, error) {
