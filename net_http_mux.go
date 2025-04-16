@@ -67,7 +67,7 @@ func Patch[T, B, P any](s *Server, path string, controller func(Context[B, P]) (
 	return registerFuegoController(s, http.MethodPatch, path, controller, options...)
 }
 
-func Options[T, B any](s *Server, path string, controller func(ContextWithBody[B]) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
+func Options[T, B, P any](s *Server, path string, controller func(Context[B, P]) (T, error), options ...func(*BaseRoute)) *Route[T, B, P] {
 	return registerFuegoController(s, http.MethodOptions, path, controller, options...)
 }
 
@@ -136,11 +136,11 @@ func PatchStd(s *Server, path string, controller func(http.ResponseWriter, *http
 	return registerStdController(s, http.MethodPatch, path, controller, options...)
 }
 
-func OptionsStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any] {
+func OptionsStd(s *Server, path string, controller func(http.ResponseWriter, *http.Request), options ...func(*BaseRoute)) *Route[any, any, any] {
 	return registerStdController(s, http.MethodOptions, path, controller, options...)
 }
 
-func registerFuegoController[T, B any](s *Server, method, path string, controller func(ContextWithBody[B]) (T, error), options ...func(*BaseRoute)) *Route[T, B] {
+func registerFuegoController[T, B, P any](s *Server, method, path string, controller func(Context[B, P]) (T, error), options ...func(*BaseRoute)) *Route[T, B, P] {
 	options = append(options, OptionHeader("Accept", ""))
 	route := NewRoute[T, B, P](method, path, controller, s.Engine, append(s.routeOptions, options...)...)
 

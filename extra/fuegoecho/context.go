@@ -18,8 +18,8 @@ type echoContext[B, P any] struct {
 }
 
 var (
-	_ fuego.ContextWithBody[any] = &echoContext[any, any]{}
-	_ fuego.ContextFlowable[any] = &echoContext[any, any]{}
+	_ fuego.ContextWithBody[any]      = &echoContext[any, any]{}
+	_ fuego.ContextFlowable[any, any] = &echoContext[any, any]{}
 )
 
 func (c echoContext[B, P]) Body() (B, error) {
