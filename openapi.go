@@ -119,7 +119,7 @@ func (s *Server) Show() *Server {
 }
 
 func validateSpecURL(specURL string) bool {
-	specURLRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_]+$`)
+	specURLRegexp := regexp.MustCompile(`^\/[\/a-zA-Z0-9\-\_\.]+$`)
 	return specURLRegexp.MatchString(specURL)
 }
 
