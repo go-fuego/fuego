@@ -498,7 +498,7 @@ func TestValidateSpecURL(t *testing.T) {
 	require.True(t, validateSpecURL("/openapi/specs/in/a/nested/dir"))
 	require.True(t, validateSpecURL("/_"))
 	require.True(t, validateSpecURL("/-.json"))
-	
+
 	require.False(t, validateSpecURL("path/to/jsonSpec.json"))
 	require.False(t, validateSpecURL("/späcs"))
 	require.False(t, validateSpecURL("/$pecs"))
