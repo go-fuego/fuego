@@ -121,7 +121,7 @@ func (a ginRouteRegisterer[T, B]) Register() fuego.Route[T, B] {
 	a.ginRouter.Handle(a.route.Method, a.originalPath, a.ginHandler)
 
 	if grouped, ok := a.ginRouter.(GroupedRouter); ok && !slices.Contains([]string{"", "/"}, grouped.BasePath()) {
-		a.route.Path = grouped.BasePath() + a.route.Path
+		a.route.Path = ginToFuegoRoute(grouped.BasePath()) + a.route.Path
 	}
 
 	return a.route
