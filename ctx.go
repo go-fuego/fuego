@@ -164,9 +164,8 @@ type readOptions struct {
 	LogBody               bool
 }
 
-func (c netHttpContext[B]) Redirect(code int, url string) (any, error) {
-	http.Redirect(c.Res, c.Req, url, code)
-
+func (c netHttpContext[B]) Redirect(code int, location string) (any, error) {
+	http.Redirect(c.Res, c.Req, location, code)
 	return nil, nil
 }
 

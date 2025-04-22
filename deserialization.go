@@ -31,67 +31,67 @@ var ReadOptions = readOptions{
 // ReadJSON reads the request body as JSON.
 // Can be used independently of Fuego framework.
 // Customizable by modifying ReadOptions.
-func ReadJSON[B any](context context.Context, input io.Reader) (B, error) {
-	return readJSON[B](context, input, ReadOptions)
+func ReadJSON[B any](ctx context.Context, input io.Reader) (B, error) {
+	return readJSON[B](ctx, input, ReadOptions)
 }
 
 // readJSON reads the request body as JSON.
 // Can be used independently of framework using ReadJSON,
 // or as a method of Context.
 // It will also read strings.
-func readJSON[B any](context context.Context, input io.Reader, options readOptions) (B, error) {
+func readJSON[B any](ctx context.Context, input io.Reader, options readOptions) (B, error) {
 	// Deserialize the request body.
 	dec := json.NewDecoder(input)
 	if options.DisallowUnknownFields {
 		dec.DisallowUnknownFields()
 	}
 
-	return read[B](context, dec)
+	return read[B](ctx, dec)
 }
 
 // ReadXML reads the request body as XML.
 // Can be used independently of Fuego framework.
 // Customizable by modifying ReadOptions.
-func ReadXML[B any](context context.Context, input io.Reader) (B, error) {
-	return readXML[B](context, input, ReadOptions)
+func ReadXML[B any](ctx context.Context, input io.Reader) (B, error) {
+	return readXML[B](ctx, input, ReadOptions)
 }
 
 // readXML reads the request body as XML.
 // Can be used independently of framework using readXML,
 // or as a method of Context.
-func readXML[B any](context context.Context, input io.Reader, options readOptions) (B, error) {
+func readXML[B any](ctx context.Context, input io.Reader, options readOptions) (B, error) {
 	dec := xml.NewDecoder(input)
 	if options.DisallowUnknownFields {
 		dec.Strict = true
 	}
 
-	return read[B](context, dec)
+	return read[B](ctx, dec)
 }
 
 // ReadYAML reads the request body as YAML.
 // Can be used independently of Fuego framework.
 // Customizable by modifying ReadOptions.
-func ReadYAML[B any](context context.Context, input io.Reader) (B, error) {
-	return readYAML[B](context, input, ReadOptions)
+func ReadYAML[B any](ctx context.Context, input io.Reader) (B, error) {
+	return readYAML[B](ctx, input, ReadOptions)
 }
 
 // readYAML reads the request body as YAML.
 // Can be used independently of framework using ReadYAML,
 // or as a method of Context.
-func readYAML[B any](context context.Context, input io.Reader, options readOptions) (B, error) {
+func readYAML[B any](ctx context.Context, input io.Reader, options readOptions) (B, error) {
 	dec := yaml.NewDecoder(input)
 	if options.DisallowUnknownFields {
 		dec.KnownFields(true)
 	}
 
-	return read[B](context, dec)
+	return read[B](ctx, dec)
 }
 
 type decoder interface {
 	Decode(v any) error
 }
 
-func read[B any](context context.Context, dec decoder) (B, error) {
+func read[B any](ctx context.Context, dec decoder) (B, error) {
 	var body B
 
 	err := dec.Decode(&body)
@@ -104,17 +104,17 @@ func read[B any](context context.Context, dec decoder) (B, error) {
 	}
 	slog.Debug("Decoded body", "body", body)
 
-	return TransformAndValidate(context, body)
+	return TransformAndValidate(ctx, body)
 }
 
 // ReadString reads the request body as string.
 // Can be used independently of Fuego framework.
 // Customizable by modifying ReadOptions.
-func ReadString[B ~string](context context.Context, input io.Reader) (B, error) {
-	return readString[B](context, input, ReadOptions)
+func ReadString[B ~string](ctx context.Context, input io.Reader) (B, error) {
+	return readString[B](ctx, input, ReadOptions)
 }
 
-func readString[B ~string](context context.Context, input io.Reader, _ readOptions) (B, error) {
+func readString[B ~string](ctx context.Context, input io.Reader, _ readOptions) (B, error) {
 	// Read the request body.
 	readBody, err := io.ReadAll(input)
 	if err != nil {
@@ -127,7 +127,7 @@ func readString[B ~string](context context.Context, input io.Reader, _ readOptio
 	body := B(readBody)
 	slog.Debug("Read body", "body", body)
 
-	return transform(context, body)
+	return transform(ctx, body)
 }
 
 func convertSQLNullString(value string) reflect.Value {
@@ -210,8 +210,8 @@ func transform[B any](ctx context.Context, body B) (B, error) {
 	return body, nil
 }
 
-func TransformAndValidate[B any](context context.Context, body B) (B, error) {
-	body, err := transform(context, body)
+func TransformAndValidate[B any](ctx context.Context, body B) (B, error) {
+	body, err := transform(ctx, body)
 	if err != nil {
 		return body, err
 	}
