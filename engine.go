@@ -123,6 +123,7 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 		e.OpenAPI.Config.DisableDefaultServer = config.DisableDefaultServer
 		e.OpenAPI.Config.PrettyFormatJSON = config.PrettyFormatJSON
 		e.OpenAPI.Config.DisableSwaggerUI = config.DisableSwaggerUI
+		e.OpenAPI.Config.DisableMessages = config.DisableMessages
 
 		if !validateSpecURL(e.OpenAPI.Config.SpecURL) {
 			slog.Error("Error serving OpenAPI JSON spec. Value of 's.OpenAPIServerConfig.SpecURL' option is not valid", "url", e.OpenAPI.Config.SpecURL)
