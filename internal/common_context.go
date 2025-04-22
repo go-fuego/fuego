@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"maps"
+	"net/http"
 	"net/url"
 	"slices"
 	"strconv"
@@ -140,7 +141,13 @@ type QueryParamNotFoundError struct {
 }
 
 func (e QueryParamNotFoundError) Error() string {
-	return fmt.Errorf("param %s not found", e.ParamName).Error()
+	return fmt.Sprintf("param %s not found", e.ParamName)
+}
+
+func (e QueryParamNotFoundError) StatusCode() int { return http.StatusUnprocessableEntity }
+
+func (e QueryParamNotFoundError) DetailMsg() string {
+	return e.Error()
 }
 
 type QueryParamInvalidTypeError struct {
@@ -151,7 +158,13 @@ type QueryParamInvalidTypeError struct {
 }
 
 func (e QueryParamInvalidTypeError) Error() string {
-	return fmt.Errorf("param %s=%s is not of type %s: %w", e.ParamName, e.ParamValue, e.ExpectedType, e.Err).Error()
+	return fmt.Sprintf("query param %s=%s is not of type %s: %s", e.ParamName, e.ParamValue, e.ExpectedType, e.Err.Error())
+}
+
+func (e QueryParamInvalidTypeError) StatusCode() int { return http.StatusUnprocessableEntity }
+
+func (e QueryParamInvalidTypeError) DetailMsg() string {
+	return e.Error()
 }
 
 // QueryParamArr returns an slice of string from the given query parameter.
