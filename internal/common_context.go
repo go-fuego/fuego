@@ -158,13 +158,13 @@ type QueryParamInvalidTypeError struct {
 }
 
 func (e QueryParamInvalidTypeError) Error() string {
-	return fmt.Sprintf("query param %s=%s is not of type %s: %s", e.ParamName, e.ParamValue, e.ExpectedType, e.Err.Error())
+	return fmt.Sprintf("%s: %s", e.DetailMsg(), e.Err)
 }
 
 func (e QueryParamInvalidTypeError) StatusCode() int { return http.StatusUnprocessableEntity }
 
 func (e QueryParamInvalidTypeError) DetailMsg() string {
-	return e.Error()
+	return fmt.Sprintf("query param %s=%s is not of type %s", e.ParamName, e.ParamValue, e.ExpectedType)
 }
 
 // QueryParamArr returns an slice of string from the given query parameter.

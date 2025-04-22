@@ -6,11 +6,15 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-fuego/fuego/internal"
 )
 
 func TestContext_PathParam(t *testing.T) {
@@ -72,12 +76,8 @@ func TestContext_PathParam(t *testing.T) {
 
 	t.Run("reading non-int path param to int sends an error", func(t *testing.T) {
 		s := NewServer()
-		Get(s, "/foo/{id}", func(c ContextNoBody) (ans, error) {
-			id, err := c.PathParamIntErr("id")
-			if err != nil {
-				return ans{}, err
-			}
-			return ans{Ans: fmt.Sprintf("%d", id)}, nil
+		Get(s, "/foo/{id}", func(c ContextNoBody) (any, error) {
+			return c.PathParamIntErr("id")
 		})
 
 		r := httptest.NewRequest("GET", "/foo/abc", nil)
@@ -85,13 +85,14 @@ func TestContext_PathParam(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, 422, w.Code)
+		assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
+		assert.JSONEq(t, `{"title":"Unprocessable Entity","status":422,"detail":"path param id=abc is not of type int"}`, w.Body.String())
 	})
 
-	t.Run("path param invalid", func(t *testing.T) {
+	t.Run("path param not found", func(t *testing.T) {
 		s := NewServer()
-		Get(s, "/foo/", func(c ContextNoBody) (ans, error) {
-			return ans{Ans: c.PathParam("id")}, nil
+		Get(s, "/foo/", func(c ContextNoBody) (any, error) {
+			return c.PathParamIntErr("id")
 		})
 
 		r := httptest.NewRequest("GET", "/foo/", nil)
@@ -99,7 +100,8 @@ func TestContext_PathParam(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, crlf(`{"ans":""}`), w.Body.String())
+		assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
+		assert.JSONEq(t, `{"title":"Unprocessable Entity","status":422,"detail":"path param id not found"}`, w.Body.String())
 	})
 }
 
@@ -138,13 +140,21 @@ func TestContext_QueryParam(t *testing.T) {
 
 		paramInt, err = c.QueryParamIntErr("notfound")
 		require.Error(t, err)
-		require.Equal(t, "param notfound not found", err.Error())
-		require.Zero(t, paramInt)
+		assert.Zero(t, paramInt)
+		var notFoundErr internal.QueryParamNotFoundError
+		require.ErrorAs(t, err, &notFoundErr)
+		assert.Equal(t, "param notfound not found", notFoundErr.Error())
+		assert.Equal(t, http.StatusUnprocessableEntity, notFoundErr.StatusCode())
+		assert.Equal(t, "param notfound not found", notFoundErr.DetailMsg())
 
 		paramInt, err = c.QueryParamIntErr("other")
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "param other=hello is not of type int")
 		require.Zero(t, paramInt)
+		var invalidErr internal.QueryParamInvalidTypeError
+		require.ErrorAs(t, err, &invalidErr)
+		assert.Equal(t, `query param other=hello is not of type int: strconv.Atoi: parsing "hello": invalid syntax`, invalidErr.Error())
+		assert.Equal(t, http.StatusUnprocessableEntity, invalidErr.StatusCode())
+		assert.Equal(t, "query param other=hello is not of type int", invalidErr.DetailMsg())
 	})
 
 	t.Run("bool", func(t *testing.T) {
@@ -164,11 +174,21 @@ func TestContext_QueryParam(t *testing.T) {
 
 		paramBool, err = c.QueryParamBoolErr("notfound")
 		require.Error(t, err)
-		require.False(t, paramBool)
+		assert.False(t, paramBool)
+		notFoundErr := &internal.QueryParamNotFoundError{}
+		require.ErrorAs(t, err, notFoundErr)
+		assert.Equal(t, "param notfound not found", notFoundErr.Error())
+		assert.Equal(t, http.StatusUnprocessableEntity, notFoundErr.StatusCode())
+		assert.Equal(t, "param notfound not found", notFoundErr.DetailMsg())
 
 		paramBool, err = c.QueryParamBoolErr("other")
 		require.Error(t, err)
-		require.False(t, paramBool)
+		assert.False(t, paramBool)
+		invalidErr := &internal.QueryParamInvalidTypeError{}
+		require.ErrorAs(t, err, invalidErr)
+		assert.Equal(t, `query param other=hello is not of type bool: strconv.ParseBool: parsing "hello": invalid syntax`, invalidErr.Error())
+		assert.Equal(t, http.StatusUnprocessableEntity, invalidErr.StatusCode())
+		assert.Equal(t, "query param other=hello is not of type bool", invalidErr.DetailMsg())
 	})
 
 	t.Run("slice", func(t *testing.T) {

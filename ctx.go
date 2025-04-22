@@ -246,13 +246,13 @@ type PathParamInvalidTypeError struct {
 }
 
 func (e PathParamInvalidTypeError) Error() string {
-	return fmt.Sprintf("path param %s=%s is not of type %s: %s", e.ParamName, e.ParamValue, e.ExpectedType, e.Err.Error())
+	return fmt.Sprintf("%s: %s", e.DetailMsg(), e.Err)
 }
 
 func (e PathParamInvalidTypeError) StatusCode() int { return http.StatusUnprocessableEntity }
 
 func (e PathParamInvalidTypeError) DetailMsg() string {
-	return e.Error()
+	return fmt.Sprintf("path param %s=%s is not of type %s", e.ParamName, e.ParamValue, e.ExpectedType)
 }
 
 type ContextWithPathParam interface {
