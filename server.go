@@ -165,8 +165,8 @@ func (s *Server) UIHandler(_ *Engine) {
 //	var templates embed.FS
 //	...
 //	WithTemplateFS(templates)
-func WithTemplateFS(fs fs.FS) func(*Server) {
-	return func(c *Server) { c.fs = fs }
+func WithTemplateFS(fsys fs.FS) func(*Server) {
+	return func(c *Server) { c.fs = fsys }
 }
 
 // WithGlobalMiddlewares adds middleware(s) that will be executed on ALL requests,

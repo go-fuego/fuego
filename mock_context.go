@@ -142,9 +142,9 @@ func (m *MockContext[B]) MainLocale() string {
 }
 
 // Redirect returns a redirect response
-func (m *MockContext[B]) Redirect(code int, url string) (any, error) {
+func (m *MockContext[B]) Redirect(code int, location string) (any, error) {
 	if m.response != nil {
-		http.Redirect(m.response, m.request, url, code)
+		http.Redirect(m.response, m.request, location, code)
 	}
 	return nil, nil
 }
