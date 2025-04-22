@@ -92,6 +92,7 @@ func TestWithOpenAPIConfig(t *testing.T) {
 						JSONFilePath:         "openapi.json",
 						DisableLocalSave:     true,
 						DisableDefaultServer: true,
+						DisableMessages:      true,
 						PrettyFormatJSON:     true,
 						Disabled:             true,
 						SwaggerURL:           "/api",
@@ -106,6 +107,7 @@ func TestWithOpenAPIConfig(t *testing.T) {
 		require.True(t, s.Engine.OpenAPI.Config.Disabled)
 		require.True(t, s.OpenAPI.Config.DisableLocalSave)
 		require.True(t, s.OpenAPI.Config.DisableDefaultServer)
+		require.True(t, s.OpenAPI.Config.DisableMessages)
 		require.True(t, s.OpenAPI.Config.PrettyFormatJSON)
 	})
 
