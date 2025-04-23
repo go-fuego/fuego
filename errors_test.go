@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -32,7 +33,7 @@ func TestErrorHandler(t *testing.T) {
 
 		handler := slogassert.NewDefault(t)
 
-		errResponse := ErrorHandler(err)
+		errResponse := ErrorHandler(context.Background(), err)
 		require.ErrorContains(t, errResponse, "test error")
 
 		handler.AssertMessage("Error in controller")
@@ -44,7 +45,7 @@ func TestErrorHandler(t *testing.T) {
 		err := NotFoundError{
 			Err: errors.New("Not Found :c"),
 		}
-		errResponse := ErrorHandler(err)
+		errResponse := ErrorHandler(context.Background(), err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
 		require.ErrorContains(t, err, "Not Found :c")
 		require.ErrorContains(t, errResponse, "Not Found")
@@ -56,7 +57,7 @@ func TestErrorHandler(t *testing.T) {
 		err := HTTPError{
 			Err: errors.New("HTTPError"),
 		}
-		errResponse := ErrorHandler(err)
+		errResponse := ErrorHandler(context.Background(), err)
 
 		var httpError HTTPError
 		require.ErrorAs(t, errResponse, &httpError)
@@ -68,7 +69,7 @@ func TestErrorHandler(t *testing.T) {
 		err := myError{
 			status: http.StatusNotFound,
 		}
-		errResponse := ErrorHandler(err)
+		errResponse := ErrorHandler(context.Background(), err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
 		require.ErrorContains(t, errResponse, "Not Found")
 		require.ErrorContains(t, errResponse, "404")
@@ -79,7 +80,7 @@ func TestErrorHandler(t *testing.T) {
 		err := myError{
 			detail: "my detail",
 		}
-		errResponse := ErrorHandler(err)
+		errResponse := ErrorHandler(context.Background(), err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
 		require.Contains(t, errResponse.Error(), "Internal Server Error")
 		require.Contains(t, errResponse.Error(), "500")
@@ -91,7 +92,7 @@ func TestErrorHandler(t *testing.T) {
 		err := ConflictError{
 			Err: errors.New("Conflict"),
 		}
-		errResponse := ErrorHandler(err)
+		errResponse := ErrorHandler(context.Background(), err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
 		require.ErrorContains(t, err, "Conflict")
 		require.ErrorContains(t, errResponse, "Conflict")
@@ -103,7 +104,7 @@ func TestErrorHandler(t *testing.T) {
 		err := UnauthorizedError{
 			Err: errors.New("coucou"),
 		}
-		errResponse := ErrorHandler(err)
+		errResponse := ErrorHandler(context.Background(), err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
 		require.ErrorContains(t, err, "coucou")
 		require.ErrorContains(t, errResponse, "Unauthorized")
@@ -115,7 +116,7 @@ func TestErrorHandler(t *testing.T) {
 		err := ForbiddenError{
 			Err: errors.New("Forbidden"),
 		}
-		errResponse := ErrorHandler(err)
+		errResponse := ErrorHandler(context.Background(), err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
 		require.ErrorContains(t, err, "Forbidden")
 		require.ErrorContains(t, errResponse, "Forbidden")
@@ -128,7 +129,7 @@ func TestHandleHTTPError(t *testing.T) {
 	t.Run("should always be HTTPError", func(t *testing.T) {
 		err := errors.New("test error")
 
-		errResponse := HandleHTTPError(err)
+		errResponse := HandleHTTPError(context.Background(), err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
 		require.ErrorContains(t, errResponse, "500 Internal Server Error")
 	})
@@ -137,7 +138,7 @@ func TestHandleHTTPError(t *testing.T) {
 		err := NotFoundError{
 			Err: errors.New("Not Found :c"),
 		}
-		errResponse := HandleHTTPError(err)
+		errResponse := HandleHTTPError(context.Background(), err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
 		require.ErrorContains(t, err, "Not Found :c")
 		require.ErrorContains(t, errResponse, "Not Found")

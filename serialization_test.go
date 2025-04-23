@@ -220,7 +220,7 @@ func TestJSONError(t *testing.T) {
 
 	err := validate(me)
 	w := httptest.NewRecorder()
-	err = ErrorHandler(err)
+	err = ErrorHandler(context.Background(), err)
 	SendJSONError(w, nil, err)
 	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 

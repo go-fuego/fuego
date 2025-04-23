@@ -59,7 +59,7 @@ func transformOut[T any](ctx context.Context, ans T) (T, error) {
 	_, ok := any(ans).(OutTransformer)
 	if ok {
 		err := errors.New("OutTransformer must be implemented by a POINTER RECEIVER. Please read the [OutTransformer] documentation")
-		slog.Warn(err.Error())
+		slog.WarnContext(ctx, err.Error())
 		return ans, InternalServerError{
 			Err: err,
 		}
@@ -117,7 +117,7 @@ func Send(w http.ResponseWriter, r *http.Request, ans any) (err error) {
 // SendYAML sends a YAML response.
 // Declared as a variable to be able to override it for clients that need to customize serialization.
 // If serialization fails, it does NOT write to the response writer. It has to be passed to SendJSONError.
-var SendYAML = func(w http.ResponseWriter, _ *http.Request, ans any) (err error) {
+var SendYAML = func(w http.ResponseWriter, r *http.Request, ans any) (err error) {
 	// Recovers if the serialization fails
 	defer func() {
 		if r := recover(); r != nil {
@@ -132,7 +132,7 @@ var SendYAML = func(w http.ResponseWriter, _ *http.Request, ans any) (err error)
 	err = yaml.NewEncoder(w).Encode(ans)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		slog.Error("Cannot serialize returned response to YAML", "error", err)
+		slog.ErrorContext(r.Context(), "Cannot serialize returned response to YAML", "error", err)
 		_, _ = w.Write([]byte(`{"error":"Cannot serialize returned response to YAML"}`))
 	}
 	return err
@@ -154,11 +154,11 @@ func SendYAMLError(w http.ResponseWriter, _ *http.Request, err error) {
 // SendJSON sends a JSON response.
 // Declared as a variable to be able to override it for clients that need to customize serialization.
 // If serialization fails, it does NOT write to the response writer. It has to be passed to SendJSONError.
-var SendJSON = func(w http.ResponseWriter, _ *http.Request, ans any) error {
+var SendJSON = func(w http.ResponseWriter, r *http.Request, ans any) error {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(ans)
 	if err != nil {
-		slog.Error("Cannot serialize returned response to JSON", "error", err, "errtype", fmt.Sprintf("%T", err))
+		slog.ErrorContext(r.Context(), "Cannot serialize returned response to JSON", "error", err, "errtype", fmt.Sprintf("%T", err))
 		var unsupportedType *json.UnsupportedTypeError
 		if errors.As(err, &unsupportedType) {
 			return NotAcceptableError{
@@ -218,11 +218,11 @@ func SendJSONError(w http.ResponseWriter, _ *http.Request, err error) {
 // SendXML sends a XML response.
 // Declared as a variable to be able to override it for clients that need to customize serialization.
 // If serialization fails, it does NOT write to the response writer. It has to be passed to SendJSONError.
-var SendXML = func(w http.ResponseWriter, _ *http.Request, ans any) error {
+var SendXML = func(w http.ResponseWriter, r *http.Request, ans any) error {
 	w.Header().Set("Content-Type", "application/xml")
 	err := xml.NewEncoder(w).Encode(ans)
 	if err != nil {
-		slog.Error("Cannot serialize returned response to XML", "error", err, "errtype", fmt.Sprintf("%T", err))
+		slog.ErrorContext(r.Context(), "Cannot serialize returned response to XML", "error", err, "errtype", fmt.Sprintf("%T", err))
 		var unsupportedType *xml.UnsupportedTypeError
 		if errors.As(err, &unsupportedType) {
 			return NotAcceptableError{
@@ -237,7 +237,7 @@ var SendXML = func(w http.ResponseWriter, _ *http.Request, ans any) error {
 
 // SendXMLError sends a XML error response.
 // If the error implements ErrorWithStatus, the status code will be set.
-func SendXMLError(w http.ResponseWriter, _ *http.Request, err error) {
+func SendXMLError(w http.ResponseWriter, r *http.Request, err error) {
 	status := http.StatusInternalServerError
 	var errorStatus ErrorWithStatus
 	if errors.As(err, &errorStatus) {
@@ -247,7 +247,7 @@ func SendXMLError(w http.ResponseWriter, _ *http.Request, err error) {
 	w.WriteHeader(status)
 	err = SendXML(w, nil, err)
 	if err != nil {
-		slog.Error("Cannot serialize returned response to XML", "error", err)
+		slog.ErrorContext(r.Context(), "Cannot serialize returned response to XML", "error", err)
 		_, _ = w.Write([]byte(`{"error":"Cannot serialize returned response to XML"}`))
 	}
 }

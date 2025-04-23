@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -187,15 +188,15 @@ func (e NotAcceptableError) Unwrap() error { return HTTPError(e) }
 // the error is transformed to a [HTTPError] using [HandleHTTPError].
 // If the error is not an [HTTPError] nor does it adhere to an
 // interface the error is returned as is.
-func ErrorHandler(err error) error {
+func ErrorHandler(ctx context.Context, err error) error {
 	var errorStatus ErrorWithStatus
 	switch {
 	case errors.As(err, &HTTPError{}),
 		errors.As(err, &errorStatus):
-		return HandleHTTPError(err)
+		return HandleHTTPError(ctx, err)
 	}
 
-	slog.Error("Error in controller", "error", err.Error())
+	slog.ErrorContext(ctx, "Error in controller", "error", err.Error())
 
 	return err
 }
@@ -216,7 +217,7 @@ func ErrorHandler(err error) error {
 //			fuego.WithErrorHandler(HandleHTTPError),
 //		),
 //	)
-func HandleHTTPError(err error) error {
+func HandleHTTPError(ctx context.Context, err error) error {
 	errResponse := HTTPError{
 		Err: err,
 	}
@@ -242,7 +243,7 @@ func HandleHTTPError(err error) error {
 		errResponse.Title = http.StatusText(errResponse.Status)
 	}
 
-	slog.Error("Error "+errResponse.Title, "status", errResponse.StatusCode(), "detail", errResponse.DetailMsg(), "error", errResponse.Err)
+	slog.ErrorContext(ctx, "Error "+errResponse.Title, "status", errResponse.StatusCode(), "detail", errResponse.DetailMsg(), "error", errResponse.Err)
 
 	return errResponse
 }

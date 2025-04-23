@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -15,7 +16,7 @@ func TestWithErrorHandler(t *testing.T) {
 		err := NotFoundError{
 			Err: errors.New("Not Found :c"),
 		}
-		errResponse := e.ErrorHandler(err)
+		errResponse := e.ErrorHandler(context.Background(), err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
 	})
 	t.Run("with HandleHTTPError", func(t *testing.T) {
@@ -23,20 +24,20 @@ func TestWithErrorHandler(t *testing.T) {
 			WithErrorHandler(HandleHTTPError),
 		)
 		err := errors.New("Not Found :c")
-		errResponse := e.ErrorHandler(err)
+		errResponse := e.ErrorHandler(context.Background(), err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
 		require.ErrorContains(t, errResponse, "500 Internal Server Error")
 	})
 	t.Run("custom handler", func(t *testing.T) {
 		e := NewEngine(
-			WithErrorHandler(func(err error) error {
+			WithErrorHandler(func(_ context.Context, err error) error {
 				return fmt.Errorf("%w foobar", err)
 			}),
 		)
 		err := NotFoundError{
 			Err: errors.New("Not Found :c"),
 		}
-		errResponse := e.ErrorHandler(err)
+		errResponse := e.ErrorHandler(context.Background(), err)
 		require.ErrorAs(t, errResponse, &HTTPError{})
 		require.ErrorContains(t, errResponse, "Not Found :c foobar")
 	})
@@ -53,20 +54,20 @@ func TestWithErrorHandler(t *testing.T) {
 		err := NotFoundError{
 			Err: errors.New("My Not Found Error"),
 		}
-		errResponse := e.ErrorHandler(err)
+		errResponse := e.ErrorHandler(context.Background(), err)
 		require.Equal(t, "404 Not Found: My Not Found Error", errResponse.Error())
 	})
 
 	t.Run("nil returning handler", func(t *testing.T) {
 		e := NewEngine(
-			WithErrorHandler(func(err error) error {
+			WithErrorHandler(func(_ context.Context, err error) error {
 				return nil
 			}),
 		)
 		err := NotFoundError{
 			Err: errors.New("Not Found"),
 		}
-		errResponse := e.ErrorHandler(err)
+		errResponse := e.ErrorHandler(context.Background(), err)
 		require.NoError(t, errResponse, "error handler can return nil, which might lead to unexpected behavior")
 	})
 }
