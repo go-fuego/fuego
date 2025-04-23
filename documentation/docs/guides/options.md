@@ -16,7 +16,7 @@ func main() {
 		fuego.WithAddr("localhost:8080"),
 		fuego.WithEngineOptions(
 			fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
-				DisableSwagger: true,
+				DisableSwaggerUI: true,
 			}),
 		),
 	)
@@ -53,9 +53,9 @@ s := fuego.NewServer(
 		fuego.WithErrorHandler(func(err error) error {
 			return fmt.Errorf("my wrapper: %w", err)
 		}),
-		fuego.WithOpenAPIConfig(OpenAPIConfig{
+		fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
 			UIHandler: func(specURL string) http.Handler {
-				return dummyMiddleware(DefaultOpenAPIHandler(specURL))
+				return dummyMiddleware(fuego.DefaultOpenAPIHandler(specURL))
 			},
 		}),
 	),
@@ -71,9 +71,15 @@ package main
 
 import (
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
+	"github.com/go-fuego/fuego/param"
 )
 
 type MyInput struct {
+	Name string `json:"name"`
+}
+
+type MyResponse struct {
 	Name string `json:"name"`
 }
 
@@ -90,7 +96,7 @@ var myReusableOption = option.Group(
 )
 
 func myCustomOption(r *fuego.BaseRoute) {
-	r.XXX = "YYY"
+	r.XXX = "YYY" // Direct access to the route struct to inject custom behavior
 }
 
 func main() {
@@ -119,6 +125,11 @@ I personally recommend **using the `option.Group` instead** of this to adopt a m
 ```go
 package main
 
+import (
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
+)
+
 func main() {
 	s := fuego.NewServer()
 
@@ -143,6 +154,11 @@ I personally recommend **using the `option.Group` instead** of this to adopt a m
 ```go
 package main
 
+import (
+	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
+)
+
 func main() {
 	s := fuego.NewServer(
 		fuego.WithRouteOptions(
@@ -152,7 +168,7 @@ func main() {
 		),
 	)
 
-	fuego.Get(g, "/", func(c fuego.ContextNoBody) (string, error) {
+	fuego.Get(s, "/", func(c fuego.ContextNoBody) (string, error) {
 		return "Hello, World!", nil
 	})
 }

@@ -33,7 +33,7 @@ so you don't have to worry about it. However, you can customize it if you want.
 
 Each route can be customized to add more information to the OpenAPI specification.
 
-Just add methods after the route declaration.
+Just add options after the route declaration.
 
 ```go
 package main
@@ -113,14 +113,14 @@ func helloWorld(c fuego.ContextNoBody) (string, error) {
 
 Fuego automatically provides an OpenAPI specification for your API in several ways:
 
-- **JSON file**
-- **Swagger UI**
-- **JSON endpoint**
+- **JSON file** - Saved locally at the specified path
+- **OpenAPI JSON endpoint** - Available at the specified URL
+- **Swagger UI** - Interactive documentation UI available at the specified URL
 
 Fuego will indicate in a log the paths where the OpenAPI specifications and
 Swagger UI are available.
 
-You can customize the paths and to activate or not the feature, with the option `WithOpenAPIConfig`.
+You can customize the paths and activate or deactivate these features with the `WithOpenAPIConfig` option.
 
 ```go
 package main
@@ -130,15 +130,18 @@ import (
 )
 
 func main() {
-	fuego.NewServer(
+	s := fuego.NewServer(
 		fuego.WithEngineOptions(
 			fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
-				DisableSwaggerUI: false,                   // If true, the server will not serve the swagger ui nor the openapi json spec
-				DisableLocalSave: false,                   // If true, the server will not save the openapi json spec locally
-				SwaggerURL:       "/swagger",              // URL to serve the swagger ui
-				SpecURL:          "/swagger/openapi.json", // URL to serve the openapi json spec
-				JSONFilePath:     "doc/openapi.json",      // Local path to save the openapi json spec
-				UIHandler:        DefaultOpenAPIHandler,   // Custom UI handler
+				Disabled:          false,                   // If true, the server will not serve nor generate any OpenAPI resources
+				DisableSwaggerUI:  false,                   // If true, the server will not serve the swagger ui
+				DisableLocalSave:  false,                   // If true, the server will not save the openapi json spec locally
+				DisableMessages:   false,                   // If true, the engine will not print messages
+				PrettyFormatJSON:  true,                    // Pretty prints the OpenAPI spec with proper JSON indentation
+				SwaggerURL:        "/swagger",              // URL to serve the swagger ui
+				SpecURL:           "/swagger/openapi.json", // URL to serve the openapi json spec
+				JSONFilePath:      "doc/openapi.json",      // Local path to save the openapi json spec
+				UIHandler:         fuego.DefaultOpenAPIHandler, // Custom UI handler
 			}),
 		),
 	)
@@ -153,8 +156,8 @@ func main() {
 
 ## Custom UI
 
-Fuego `Server` exposes a `UIHandler` field that enables you
-to implement your custom UI.
+By default, Fuego uses [Stoplight Elements](https://stoplight.io/open-source/elements) for the OpenAPI UI.
+You can customize this by providing your own `UIHandler` in the OpenAPIConfig.
 
 Example with `http-swagger`:
 
@@ -176,9 +179,11 @@ func openApiHandler(specURL string) http.Handler {
 
 func main() {
 	s := fuego.NewServer(
-		fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
-			UIHandler: openApiHandler("/swagger.json"),
-		}),
+		fuego.WithEngineOptions(
+			fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
+				UIHandler: openApiHandler,
+			}),
+		),
 	)
 
 	fuego.Get(s, "/", helloWorld)
@@ -187,15 +192,12 @@ func main() {
 }
 ```
 
-The default spec URL reference Element Stoplight Swagger UI.
+Comparison of UI options:
 
-Please note that if you embed swagger UI in your build it will increase its size
-by more than 10Mb.
-
-|               | StopLight Elements | Swagger        | Disabled |
-| ------------- | ------------------ | -------------- | -------- |
-| Works offline | No ❌              | Yes ✅         | -        |
-| Binary Size   | Smaller            | Larger (+10Mb) | Smallest |
+|               | StopLight Elements (Default) | Swagger UI     | Disabled |
+| ------------- | ---------------------------- | -------------- | -------- |
+| Works offline | No ❌                        | Yes ✅         | -        |
+| Binary Size   | Smaller                      | Larger (+10Mb) | Smallest |
 
 ## Get OpenAPI Spec at build time
 
@@ -228,28 +230,30 @@ func main() {
 
 Certain routes such as web routes you may not want to be part of the OpenAPI spec.
 
-You can prevent them from being added with the server.Hide().
+You can prevent them from being added to the OpenAPI documentation using route options.
 
 ```go
 package main
 
 import (
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
 )
 
 func main() {
 	s := fuego.NewServer()
 
 	// Create a group of routes to be hidden
-	web := s.Group(s, "/")
-	web.Hide()
+	web := fuego.Group(s, "/",
+		option.Hide(), // Hide all routes in this group from OpenAPI
+	)
 
 	fuego.Get(web, "/", func(c fuego.ContextNoBody) (string, error) {
 		return "Hello, World!", nil
 	})
 
 	// These routes will still be added to the spec
-	api := s.Group(s, "/api")
+	api := fuego.Group(s, "/api")
 	fuego.Get(api, "/hello", func(c fuego.ContextNoBody) (string, error) {
 		return "Hello, World!", nil
 	})

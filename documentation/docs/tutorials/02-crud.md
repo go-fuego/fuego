@@ -43,7 +43,8 @@ type BooksResources struct {
 
 type Books struct {
 	ID   string `json:"id"`
-
+	Name string `json:"name"`
+}
 
 // ....
 // ....
@@ -199,5 +200,4 @@ func DeleteBook(c fuego.ContextNoBody) (any, error) {
 	// Your code here
 	return nil, nil
 }
-
 ```

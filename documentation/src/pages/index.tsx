@@ -37,11 +37,12 @@ export default function Home(): JSX.Element {
           className={styles.video}
           width="640"
           height="360"
-          src="https://www.youtube.com/embed/OxokKDcYUK0"
+          src="https://www.youtube.com/embed/DqU7f1IKU1g?si=F6KwY5Zmh8FxCDXI&amp;start=804"
           title="Introducing Fuego !"
-          frameBorder="0"
+          frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
         ></iframe>
       </main>
     </Layout>
