@@ -121,12 +121,16 @@
 							"properties": {
 								"more": {
 									"additionalProperties": {},
+									"description": "Additional information about the error",
+									"nullable": true,
 									"type": "object"
 								},
 								"name": {
+									"description": "For example, name of the parameter that caused the error",
 									"type": "string"
 								},
 								"reason": {
+									"description": "Human readable error message",
 									"type": "string"
 								}
 							},
