@@ -62,7 +62,7 @@ func TestRecursiveJSON(t *testing.T) {
 		w := httptest.NewRecorder()
 		value := rec{}
 		value.Rec = &value
-		err := SendJSON(w, nil, value)
+		err := SendJSON(w, httptest.NewRequest("", "/", nil), value)
 
 		require.Error(t, err)
 	})
@@ -71,7 +71,7 @@ func TestRecursiveJSON(t *testing.T) {
 func TestJSON(t *testing.T) {
 	t.Run("can serialize json", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendJSON(w, nil, response{Message: "Hello World", Code: 200})
+		SendJSON(w, httptest.NewRequest("", "/", nil), response{Message: "Hello World", Code: 200})
 		body := w.Body.String()
 
 		require.Equal(t, crlf(`{"message":"Hello World","code":200}`), body)
@@ -79,7 +79,7 @@ func TestJSON(t *testing.T) {
 
 	t.Run("cannot serialize functions", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		err := SendJSON(w, nil, func() {})
+		err := SendJSON(w, httptest.NewRequest("", "/", nil), func() {})
 		require.Error(t, err)
 		require.ErrorAs(t, err, &NotAcceptableError{})
 
@@ -91,7 +91,7 @@ func TestJSON(t *testing.T) {
 func TestXML(t *testing.T) {
 	t.Run("can serialize xml", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		err := SendXML(w, nil, response{Message: "Hello World", Code: 200})
+		err := SendXML(w, httptest.NewRequest("", "/", nil), response{Message: "Hello World", Code: 200})
 		require.NoError(t, err)
 		body := w.Body.String()
 
@@ -100,7 +100,7 @@ func TestXML(t *testing.T) {
 
 	t.Run("cannot serialize functions", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		err := SendXML(w, nil, func() {})
+		err := SendXML(w, httptest.NewRequest("", "/", nil), func() {})
 		require.Error(t, err)
 		require.ErrorAs(t, err, &NotAcceptableError{})
 
@@ -111,7 +111,7 @@ func TestXML(t *testing.T) {
 	t.Run("can serialize xml error", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		err := HTTPError{Detail: "Hello World"}
-		SendXMLError(w, nil, err)
+		SendXMLError(w, httptest.NewRequest("", "/", nil), err)
 		body := w.Body.String()
 
 		require.Equal(t, `<HTTPError><detail>Hello World</detail></HTTPError>`, body)
@@ -333,14 +333,14 @@ func (errorWriter) Header() http.Header {
 func TestSendYAML(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendYAML(w, nil, response{Message: "Hello World", Code: http.StatusOK})
+		SendYAML(w, httptest.NewRequest("", "/", nil), response{Message: "Hello World", Code: http.StatusOK})
 		require.Equal(t, "application/x-yaml", w.Header().Get("Content-Type"))
 		require.Equal(t, "message: Hello World\ncode: 200\n", w.Body.String())
 	})
 
 	t.Run("error", func(t *testing.T) {
 		errorWriter := &errorWriter{}
-		SendYAML(errorWriter, nil, response{Message: "Hello World", Code: http.StatusOK})
+		SendYAML(errorWriter, httptest.NewRequest("", "/", nil), response{Message: "Hello World", Code: http.StatusOK})
 		require.Contains(t, errorWriter.Arg, "Cannot serialize returned response to YAML")
 	})
 }
@@ -391,7 +391,7 @@ func TestSendJSON(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		errorWriter := &errorWriter{}
-		err := SendJSON(errorWriter, nil, response{Message: "Hello World", Code: http.StatusOK})
+		err := SendJSON(errorWriter, httptest.NewRequest("", "/", nil), response{Message: "Hello World", Code: http.StatusOK})
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "cannot write on an errorWriter")
 		require.JSONEq(t, "{\"message\":\"Hello World\",\"code\":200}\n", errorWriter.Arg)
