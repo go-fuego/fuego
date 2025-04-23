@@ -3,7 +3,6 @@ package fuegogin
 import (
 	"net/http"
 	"regexp"
-	"slices"
 
 	"github.com/gin-gonic/gin"
 
@@ -110,6 +109,23 @@ type ginRouteRegisterer[T, B any] struct {
 	originalPath string
 }
 
+// GroupedRouter interface can be used when you want to implement your own wrapper around gin router
+// and want it to support grouping functionality. By implementing this interface, your wrapper
+// will be able to properly handle path prefixes from router groups.
+//
+// Example:
+//
+//	type MyWrappedRouter struct {
+//	    router gin.IRouter
+//	}
+//
+//	func (m *MyWrappedRouter) BasePath() string {
+//	    if grouped, ok := m.router.(GroupedRouter); ok {
+//	        return grouped.BasePath()
+//	    }
+//
+//	    return ""
+//	}
 type GroupedRouter interface {
 	BasePath() string
 }
@@ -120,8 +136,14 @@ func (a ginRouteRegisterer[T, B]) Register() fuego.Route[T, B] {
 	// This is because gin groups will prepend the group path to the route path itself.
 	a.ginRouter.Handle(a.route.Method, a.originalPath, a.ginHandler)
 
-	if grouped, ok := a.ginRouter.(GroupedRouter); ok && !slices.Contains([]string{"", "/"}, grouped.BasePath()) {
-		a.route.Path = ginToFuegoRoute(grouped.BasePath()) + a.route.Path
+	if grouped, ok := a.ginRouter.(GroupedRouter); ok {
+		basePath := grouped.BasePath()
+		switch basePath {
+		case "", "/":
+			// exclude basic groups
+		default:
+			a.route.Path = ginToFuegoRoute(basePath) + a.route.Path
+		}
 	}
 
 	return a.route
