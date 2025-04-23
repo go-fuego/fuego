@@ -648,13 +648,13 @@ func TestContextNoBody_Redirect(t *testing.T) {
 }
 
 func TestNetHttpContext_Params(t *testing.T) {
-	type MyParams struct {
-		ID          int     `query:"id"`
-		Temperature float64 `query:"temperature"`
-		Other       string  `query:"other" description:"my description"`
-		ContentType string  `header:"Content-Type"`
-	}
 	t.Run("can write and read params", func(t *testing.T) {
+		type MyParams struct {
+			ID          int     `query:"id"`
+			Temperature float64 `query:"temperature"`
+			Other       string  `query:"other" description:"my description"`
+			ContentType string  `header:"Content-Type"`
+		}
 		r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello&temperature=20.30", nil)
 		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
@@ -668,5 +668,26 @@ func TestNetHttpContext_Params(t *testing.T) {
 		assert.Equal(t, "hello", params.Other)
 		assert.Equal(t, "application/json", params.ContentType)
 		assert.InEpsilon(t, 20.30, params.Temperature, 0.01)
+	})
+
+	t.Run("support for more integer types", func(t *testing.T) {
+		type MyParams struct {
+			ID          int8    `query:"id"`
+			Temperature float32 `query:"temperature"`
+			Other       uint32  `query:"other" description:"my description"`
+			MyHeader    uint64  `header:"MyHeader"`
+		}
+
+		r := httptest.NewRequest("GET", "http://example.com/foo/123?id=12&other=23782&temperature=20.30", nil)
+		r.Header.Set("MyHeader", "8923")
+		w := httptest.NewRecorder()
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+		params, err := c.Params()
+		require.NoError(t, err)
+		require.NotEmpty(t, params)
+		assert.Equal(t, int8(12), params.ID)
+		assert.Equal(t, uint32(23782), params.Other)
+		assert.Equal(t, uint64(8923), params.MyHeader)
+		assert.InEpsilon(t, float32(20.30), params.Temperature, 0.01)
 	})
 }
