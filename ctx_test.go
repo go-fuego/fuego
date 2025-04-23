@@ -649,12 +649,13 @@ func TestContextNoBody_Redirect(t *testing.T) {
 
 func TestNetHttpContext_Params(t *testing.T) {
 	type MyParams struct {
-		ID          int    `query:"id"`
-		Other       string `query:"other" description:"my description"`
-		ContentType string `header:"Content-Type"`
+		ID          int     `query:"id"`
+		Temperature float64 `query:"temperature"`
+		Other       string  `query:"other" description:"my description"`
+		ContentType string  `header:"Content-Type"`
 	}
 	t.Run("can write and read params", func(t *testing.T) {
-		r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello", nil)
+		r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello&temperature=20.30", nil)
 		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
@@ -663,8 +664,9 @@ func TestNetHttpContext_Params(t *testing.T) {
 		params, err := c.Params()
 		require.NoError(t, err)
 		require.NotEmpty(t, params)
-		require.Equal(t, 456, params.ID)
-		require.Equal(t, "hello", params.Other)
-		require.Equal(t, "application/json", params.ContentType)
+		assert.Equal(t, 456, params.ID)
+		assert.Equal(t, "hello", params.Other)
+		assert.Equal(t, "application/json", params.ContentType)
+		assert.InEpsilon(t, 20.30, params.Temperature, 0.01)
 	})
 }
