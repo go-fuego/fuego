@@ -365,6 +365,41 @@ func (c *netHttpContext[B, P]) Body() (B, error) {
 	return body, err
 }
 
+// setParamValue sets a value to a reflect.Value based on its kind
+func setParamValue(value reflect.Value, paramValue string, kind reflect.Kind) error {
+	switch kind {
+	case reflect.String:
+		value.SetString(paramValue)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		intValue, err := strconv.Atoi(paramValue)
+		if err != nil {
+			return fmt.Errorf("cannot convert %s to int: %w", paramValue, err)
+		}
+		value.SetInt(int64(intValue))
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		uintValue, err := strconv.ParseUint(paramValue, 10, 64)
+		if err != nil {
+			return fmt.Errorf("cannot convert %s to uint: %w", paramValue, err)
+		}
+		value.SetUint(uintValue)
+	case reflect.Float32, reflect.Float64:
+		floatValue, err := strconv.ParseFloat(paramValue, 64)
+		if err != nil {
+			return fmt.Errorf("cannot convert %s to float64: %w", paramValue, err)
+		}
+		value.SetFloat(floatValue)
+	case reflect.Bool:
+		boolValue, err := strconv.ParseBool(paramValue)
+		if err != nil {
+			return fmt.Errorf("cannot convert %s to bool: %w", paramValue, err)
+		}
+		value.SetBool(boolValue)
+	default:
+		return fmt.Errorf("unsupported type %s", kind)
+	}
+	return nil
+}
+
 func (c *netHttpContext[B, P]) Params() (P, error) {
 	p := new(P)
 
@@ -376,54 +411,47 @@ func (c *netHttpContext[B, P]) Params() (P, error) {
 
 	for i := range paramsType.NumField() {
 		field := paramsType.Field(i)
+		fieldValue := paramsValue.Field(i)
 
-		var paramValue string
-		tag := field.Tag.Get("query")
-		if tag != "" {
-			paramValue = c.QueryParam(tag)
-			if paramValue == "" {
-				continue
-			}
-		} else {
-			tag = field.Tag.Get("header")
-			if tag != "" {
-				paramValue = c.Header(tag)
+		// Process query parameters
+		if tag := field.Tag.Get("query"); tag != "" {
+			// Handle slice/array types
+			if field.Type.Kind() == reflect.Slice || field.Type.Kind() == reflect.Array {
+				paramValues := c.QueryParamArr(tag)
+				if len(paramValues) == 0 {
+					continue
+				}
+
+				sliceType := field.Type.Elem()
+				slice := reflect.MakeSlice(field.Type, len(paramValues), len(paramValues))
+
+				for j, paramValue := range paramValues {
+					if err := setParamValue(slice.Index(j), paramValue, sliceType.Kind()); err != nil {
+						return *p, err
+					}
+				}
+				fieldValue.Set(slice)
+			} else {
+				// Handle single value
+				paramValue := c.QueryParam(tag)
 				if paramValue == "" {
 					continue
 				}
+				err := setParamValue(fieldValue, paramValue, field.Type.Kind())
+				if err != nil {
+					return *p, err
+				}
 			}
-		}
-		fieldValue := paramsValue.Field(i)
-
-		switch field.Type.Kind() {
-		case reflect.String:
-			fieldValue.SetString(paramValue)
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			intValue, err := strconv.Atoi(paramValue)
+		} else if tag := field.Tag.Get("header"); tag != "" {
+			// Process header parameters
+			paramValue := c.Header(tag)
+			if paramValue == "" {
+				continue
+			}
+			err := setParamValue(fieldValue, paramValue, field.Type.Kind())
 			if err != nil {
-				return *p, fmt.Errorf("cannot convert %s to int: %w", paramValue, err)
+				return *p, err
 			}
-			fieldValue.SetInt(int64(intValue))
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			uintValue, err := strconv.ParseUint(paramValue, 10, 64)
-			if err != nil {
-				return *p, fmt.Errorf("cannot convert %s to uint: %w", paramValue, err)
-			}
-			fieldValue.SetUint(uintValue)
-		case reflect.Float32, reflect.Float64:
-			floatValue, err := strconv.ParseFloat(paramValue, 64)
-			if err != nil {
-				return *p, fmt.Errorf("cannot convert %s to float64: %w", paramValue, err)
-			}
-			fieldValue.SetFloat(floatValue)
-		case reflect.Bool:
-			boolValue, err := strconv.ParseBool(paramValue)
-			if err != nil {
-				return *p, fmt.Errorf("cannot convert %s to bool: %w", paramValue, err)
-			}
-			fieldValue.SetBool(boolValue)
-		default:
-			return *p, fmt.Errorf("unsupported type %s", field.Type.Kind())
 		}
 	}
 
