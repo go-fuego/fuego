@@ -89,15 +89,15 @@ func Send(w http.ResponseWriter, r *http.Request, ans any) (err error) {
 	for _, header := range parseAcceptHeader(r.Header) {
 		switch inferAcceptHeader(header, ans) {
 		case "application/xml":
-			err = SendXML(w, nil, ans)
+			err = SendXML(w, r, ans)
 		case "text/html":
 			err = SendHTML(w, r, ans)
 		case "text/plain":
-			err = SendText(w, nil, ans)
+			err = SendText(w, r, ans)
 		case "application/json":
-			err = SendJSON(w, nil, ans)
+			err = SendJSON(w, r, ans)
 		case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
-			err = SendYAML(w, nil, ans)
+			err = SendYAML(w, r, ans)
 		default:
 			// if we don't support the header, try the next one
 			continue
