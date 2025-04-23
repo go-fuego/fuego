@@ -488,13 +488,23 @@ func BenchmarkServer_generateOpenAPI(b *testing.B) {
 	}
 }
 
-func TestValidateJsonSpecURL(t *testing.T) {
+func TestValidateSpecURL(t *testing.T) {
 	require.True(t, validateSpecURL("/path/to/jsonSpec.json"))
 	require.True(t, validateSpecURL("/spec.json"))
 	require.True(t, validateSpecURL("/path_/jsonSpec.json"))
+	require.True(t, validateSpecURL("/openapi.yaml"))
+	require.True(t, validateSpecURL("/_specs.json"))
+	require.True(t, validateSpecURL("/SPECS123"))
+	require.True(t, validateSpecURL("/openapi/specs/in/a/nested/dir"))
+	require.True(t, validateSpecURL("/_"))
+	require.True(t, validateSpecURL("/-.json"))
+
 	require.False(t, validateSpecURL("path/to/jsonSpec.json"))
-	require.False(t, validateSpecURL("/path/to/jsonSpec"))
-	require.False(t, validateSpecURL("/path/to/jsonSpec.jsn"))
+	require.False(t, validateSpecURL("/späcs"))
+	require.False(t, validateSpecURL("/$pecs"))
+	require.False(t, validateSpecURL("/"))
+	require.False(t, validateSpecURL(""))
+	require.False(t, validateSpecURL("a"))
 }
 
 func TestValidateSwaggerUrl(t *testing.T) {

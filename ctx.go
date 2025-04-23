@@ -164,9 +164,8 @@ type readOptions struct {
 	LogBody               bool
 }
 
-func (c netHttpContext[B]) Redirect(code int, url string) (any, error) {
-	http.Redirect(c.Res, c.Req, url, code)
-
+func (c netHttpContext[B]) Redirect(code int, location string) (any, error) {
+	http.Redirect(c.Res, c.Req, location, code)
 	return nil, nil
 }
 
@@ -229,10 +228,14 @@ type PathParamNotFoundError struct {
 }
 
 func (e PathParamNotFoundError) Error() string {
-	return fmt.Errorf("param %s not found", e.ParamName).Error()
+	return fmt.Sprintf("path param %s not found", e.ParamName)
 }
 
-func (e PathParamNotFoundError) StatusCode() int { return 404 }
+func (e PathParamNotFoundError) StatusCode() int { return http.StatusUnprocessableEntity }
+
+func (e PathParamNotFoundError) DetailMsg() string {
+	return e.Error()
+}
 
 type PathParamInvalidTypeError struct {
 	Err          error
@@ -242,10 +245,14 @@ type PathParamInvalidTypeError struct {
 }
 
 func (e PathParamInvalidTypeError) Error() string {
-	return fmt.Errorf("param %s=%s is not of type %s: %w", e.ParamName, e.ParamValue, e.ExpectedType, e.Err).Error()
+	return fmt.Sprintf("%s: %s", e.DetailMsg(), e.Err)
 }
 
-func (e PathParamInvalidTypeError) StatusCode() int { return 422 }
+func (e PathParamInvalidTypeError) StatusCode() int { return http.StatusUnprocessableEntity }
+
+func (e PathParamInvalidTypeError) DetailMsg() string {
+	return fmt.Sprintf("path param %s=%s is not of type %s", e.ParamName, e.ParamValue, e.ExpectedType)
+}
 
 type ContextWithPathParam interface {
 	PathParam(name string) string
