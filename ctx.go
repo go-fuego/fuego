@@ -404,6 +404,12 @@ func (c *netHttpContext[B, P]) Params() (P, error) {
 				return *p, fmt.Errorf("cannot convert %s to int: %w", paramValue, err)
 			}
 			fieldValue.SetInt(int64(intValue))
+		case reflect.Float64:
+			floatValue, err := strconv.ParseFloat(paramValue, 64)
+			if err != nil {
+				return *p, fmt.Errorf("cannot convert %s to float64: %w", paramValue, err)
+			}
+			fieldValue.SetFloat(floatValue)
 		case reflect.Bool:
 			boolValue, err := strconv.ParseBool(paramValue)
 			if err != nil {
