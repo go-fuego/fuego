@@ -133,7 +133,7 @@ func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c Context
 	// PARAMS VALIDATION
 	err := ValidateParams(ctx)
 	if err != nil {
-		err = s.ErrorHandler(err)
+		err = s.ErrorHandler(ctx, err)
 		ctx.SerializeError(err)
 		return
 	}
@@ -144,7 +144,7 @@ func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c Context
 	// CONTROLLER
 	ans, err := controller(ctx)
 	if err != nil {
-		err = s.ErrorHandler(err)
+		err = s.ErrorHandler(ctx, err)
 		ctx.SerializeError(err)
 		return
 	}
@@ -160,7 +160,7 @@ func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c Context
 	timeTransformOut := time.Now()
 	ans, err = transformOut(ctx.Context(), ans)
 	if err != nil {
-		err = s.ErrorHandler(err)
+		err = s.ErrorHandler(ctx, err)
 		ctx.SerializeError(err)
 		return
 	}
@@ -170,7 +170,7 @@ func Flow[B, T any](s *Engine, ctx ContextFlowable[B], controller func(c Context
 	// SERIALIZATION
 	err = ctx.Serialize(ans)
 	if err != nil {
-		err = s.ErrorHandler(err)
+		err = s.ErrorHandler(ctx, err)
 		ctx.SerializeError(err)
 	}
 	ctx.SetHeader("Server-Timing", Timing{"serialize", "", time.Since(timeAfterTransformOut)}.String())

@@ -38,7 +38,7 @@ func NewEngine(options ...func(*Engine)) *Engine {
 // The Engine is the main struct of the framework.
 type Engine struct {
 	OpenAPI      *OpenAPI
-	ErrorHandler func(error) error
+	ErrorHandler func(context.Context, error) error
 
 	requestContentTypes []string
 }
@@ -139,7 +139,7 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 }
 
 // WithErrorHandler sets a customer error handler for the server
-func WithErrorHandler(errorHandler func(err error) error) func(*Engine) {
+func WithErrorHandler(errorHandler func(ctx context.Context, err error) error) func(*Engine) {
 	return func(e *Engine) {
 		if errorHandler == nil {
 			panic("errorHandler cannot be nil")
@@ -152,7 +152,7 @@ func WithErrorHandler(errorHandler func(err error) error) func(*Engine) {
 // DisableErrorHandler overrides ErrorHandler with a simple pass-through
 func DisableErrorHandler() func(*Engine) {
 	return func(e *Engine) {
-		e.ErrorHandler = func(err error) error { return err }
+		e.ErrorHandler = func(_ context.Context, err error) error { return err }
 	}
 }
 

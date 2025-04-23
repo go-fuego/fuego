@@ -637,7 +637,7 @@ func TestFlow(t *testing.T) {
 		assert.Equal(t, crlf(`{"ans":"Hello World"}`), w.Body.String())
 	})
 	t.Run("with nil return in ErrorHandler", func(t *testing.T) {
-		e := NewEngine(WithErrorHandler(func(err error) error { return nil }))
+		e := NewEngine(WithErrorHandler(func(_ context.Context, err error) error { return nil }))
 		w := httptest.NewRecorder()
 		ctx := newTestCtx(w, httptest.NewRequest("GET", "/", nil))
 		Flow(e, ctx, testControllerWithError)

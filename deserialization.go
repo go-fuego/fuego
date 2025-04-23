@@ -102,7 +102,7 @@ func read[B any](ctx context.Context, dec decoder) (B, error) {
 			Detail: "cannot decode request body: " + err.Error(),
 		}
 	}
-	slog.Debug("Decoded body", "body", body)
+	slog.DebugContext(ctx, "Decoded body", "body", body)
 
 	return TransformAndValidate(ctx, body)
 }
@@ -125,7 +125,7 @@ func readString[B ~string](ctx context.Context, input io.Reader, _ readOptions) 
 	}
 
 	body := B(readBody)
-	slog.Debug("Read body", "body", body)
+	slog.DebugContext(ctx, "Read body", "body", body)
 
 	return transform(ctx, body)
 }
@@ -183,7 +183,7 @@ func readURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
 			},
 		}
 	}
-	slog.Debug("Decoded body", "body", body)
+	slog.DebugContext(r.Context(), "Decoded body", "body", body)
 
 	return TransformAndValidate(r.Context(), body)
 }
@@ -204,7 +204,7 @@ func transform[B any](ctx context.Context, body B) (B, error) {
 		}
 		body = *any(inTransformerBody).(*B)
 
-		slog.Debug("InTransformd body", "body", body)
+		slog.DebugContext(ctx, "InTransformd body", "body", body)
 	}
 
 	return body, nil
