@@ -398,13 +398,19 @@ func (c *netHttpContext[B, P]) Params() (P, error) {
 		switch field.Type.Kind() {
 		case reflect.String:
 			fieldValue.SetString(paramValue)
-		case reflect.Int:
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			intValue, err := strconv.Atoi(paramValue)
 			if err != nil {
 				return *p, fmt.Errorf("cannot convert %s to int: %w", paramValue, err)
 			}
 			fieldValue.SetInt(int64(intValue))
-		case reflect.Float64:
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			uintValue, err := strconv.ParseUint(paramValue, 10, 64)
+			if err != nil {
+				return *p, fmt.Errorf("cannot convert %s to uint: %w", paramValue, err)
+			}
+			fieldValue.SetUint(uintValue)
+		case reflect.Float32, reflect.Float64:
 			floatValue, err := strconv.ParseFloat(paramValue, 64)
 			if err != nil {
 				return *p, fmt.Errorf("cannot convert %s to float64: %w", paramValue, err)
