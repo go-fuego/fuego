@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"math/big"
 	"net"
 	"net/http"
@@ -21,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/thejerf/slogassert"
 )
 
 type ans struct {
@@ -235,6 +237,73 @@ func TestSetStatusBeforeSend(t *testing.T) {
 		body := w.Body.String()
 		require.Equal(t, crlf(`{"ans":"Hello World"}`), body)
 	})
+}
+
+type spanID string
+
+const mySpanID spanID = "span_id"
+
+func spanMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), mySpanID, "my-id")
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+type ContextHandler struct {
+	slog.Handler
+}
+
+func (h *ContextHandler) Handle(ctx context.Context, r slog.Record) error {
+	if requestID, ok := ctx.Value(mySpanID).(string); ok {
+		r.AddAttrs(slog.String(string(mySpanID), requestID))
+	}
+	return h.Handler.Handle(ctx, r)
+}
+
+func TestContextLoggingThroughHandler(t *testing.T) {
+	sloghandler := slogassert.New(t, slog.LevelDebug, slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{}))
+	ctxHandler := &ContextHandler{
+		Handler: sloghandler,
+	}
+
+	s := NewServer(
+		WithLogHandler(ctxHandler),
+		WithLoggingMiddleware(LoggingConfig{DisableRequest: true, DisableResponse: true}),
+	)
+	Use(s, spanMiddleware)
+	Get(s, "/testing", func(c ContextNoBody) (ans, error) {
+		c.QueryParam("i do not exist")
+		c.SetStatus(http.StatusBadRequest)
+		return ans{}, errors.New("hello")
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/testing", nil)
+	w := httptest.NewRecorder()
+	s.Mux.ServeHTTP(w, req)
+	require.Equal(t, http.StatusBadRequest, w.Code)
+
+	sloghandler.AssertMessage("registering controller GET /testing")
+	sloghandler.AssertPrecise(slogassert.LogMessageMatch{
+		Message:       "Error in controller",
+		Level:         slog.LevelError,
+		AllAttrsMatch: true,
+		Attrs: map[string]any{
+			"span_id": "my-id",
+			"error":   "hello",
+		},
+	})
+	sloghandler.AssertPrecise(slogassert.LogMessageMatch{
+		Message:       "query parameter not expected in OpenAPI spec",
+		Level:         slog.LevelWarn,
+		AllAttrsMatch: false,
+		Attrs: map[string]any{
+			"span_id":         "my-id",
+			"param":           "i do not exist",
+			"expected_one_of": []string{"Accept"},
+		},
+	})
+	sloghandler.AssertEmpty()
 }
 
 type testRenderer struct{}
