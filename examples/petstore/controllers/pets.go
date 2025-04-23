@@ -42,8 +42,6 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 	)
 
 	fuego.Get(petsGroup, "/strongly-typed", rs.filterPetsStronglyTyped,
-		optionPagination,
-
 		option.Description("Filter pets"),
 	)
 
@@ -133,7 +131,7 @@ func (rs PetsResources) filterPets(c fuego.ContextNoBody) ([]models.Pets, error)
 }
 
 type FilterParams struct {
-	Name        string `query:"name"`
+	Name        string `query:"name" description:"Filter by name" example:"cat name"`
 	YoungerThan int    `query:"younger_than"`
 }
 
