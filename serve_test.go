@@ -644,6 +644,17 @@ func TestFlow(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.Equal(t, crlf(`null`), w.Body.String())
 	})
+	t.Run("ensure context is passed to ErrorHandler", func(t *testing.T) {
+		var receivedCtx context.Context
+		e := NewEngine(WithErrorHandler(func(ctx context.Context, err error) error {
+			receivedCtx = ctx
+			return nil
+		}))
+		w := httptest.NewRecorder()
+		ctx := newTestCtx(w, httptest.NewRequest("GET", "/", nil))
+		Flow(e, ctx, testControllerWithError)
+		assert.Equal(t, ctx, receivedCtx)
+	})
 	t.Run("transformOut error on value receiver", func(t *testing.T) {
 		e := NewEngine()
 		tcs := []struct {
