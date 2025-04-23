@@ -1271,35 +1271,6 @@
 						}
 					},
 					{
-						"description": "Number of items per page",
-						"in": "query",
-						"name": "per_page",
-						"required": true,
-						"schema": {
-							"type": "integer"
-						}
-					},
-					{
-						"description": "Page number",
-						"examples": {
-							"100th page": {
-								"value": 100
-							},
-							"1st page": {
-								"value": 1
-							},
-							"42nd page": {
-								"value": 42
-							}
-						},
-						"in": "query",
-						"name": "page",
-						"schema": {
-							"default": 1,
-							"type": "integer"
-						}
-					},
-					{
 						"in": "header",
 						"name": "Accept",
 						"schema": {
@@ -1307,6 +1278,12 @@
 						}
 					},
 					{
+						"description": "Filter by name",
+						"examples": {
+							"example": {
+								"value": "Filter by name"
+							}
+						},
 						"in": "query",
 						"name": "name",
 						"schema": {
@@ -1341,19 +1318,7 @@
 								}
 							}
 						},
-						"description": "OK",
-						"headers": {
-							"Content-Range": {
-								"examples": {
-									"42 pets": {
-										"value": "0-10/42"
-									}
-								},
-								"schema": {
-									"type": "string"
-								}
-							}
-						}
+						"description": "OK"
 					},
 					"204": {
 						"content": {
@@ -1369,21 +1334,6 @@
 							}
 						},
 						"description": "No Content"
-					},
-					"206": {
-						"description": "OK",
-						"headers": {
-							"Content-Range": {
-								"examples": {
-									"42 pets": {
-										"value": "0-10/42"
-									}
-								},
-								"schema": {
-									"type": "string"
-								}
-							}
-						}
 					},
 					"400": {
 						"content": {
