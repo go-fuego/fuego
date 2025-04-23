@@ -14,20 +14,21 @@ import (
 // MockContext provides a framework-agnostic implementation of ContextWithBody
 // for testing purposes. It allows testing controllers without depending on
 // specific web frameworks like Gin or Echo.
-type MockContext[B any] struct {
+type MockContext[B, P any] struct {
 	internal.CommonContext[B]
 
-	RequestBody B
-	Headers     http.Header
-	PathParams  map[string]string
-	response    http.ResponseWriter
-	request     *http.Request
-	Cookies     map[string]*http.Cookie
+	RequestBody   B
+	RequestParams P
+	Headers       http.Header
+	PathParams    map[string]string
+	response      http.ResponseWriter
+	request       *http.Request
+	Cookies       map[string]*http.Cookie
 }
 
 // NewMockContext creates a new MockContext instance with the provided body
-func NewMockContext[B any](body B) *MockContext[B] {
-	return &MockContext[B]{
+func NewMockContext[B, P any](body B, params P) *MockContext[B, P] {
+	return &MockContext[B, P]{
 		CommonContext: internal.CommonContext[B]{
 			CommonCtx:         context.Background(),
 			UrlValues:         make(url.Values),
@@ -42,54 +43,64 @@ func NewMockContext[B any](body B) *MockContext[B] {
 }
 
 // NewMockContextNoBody creates a new MockContext suitable for a request & controller with no body
-func NewMockContextNoBody() *MockContext[any] {
-	return NewMockContext[any](nil)
+func NewMockContextNoBody() *MockContext[any, any] {
+	return NewMockContext[any, any](nil, nil)
 }
 
-var _ ContextWithBody[string] = &MockContext[string]{}
+var _ ContextWithBody[string] = &MockContext[string, any]{}
 
 // Body returns the previously set body value
-func (m *MockContext[B]) Body() (B, error) {
+func (m *MockContext[B, P]) Body() (B, error) {
 	return m.RequestBody, nil
 }
 
 // MustBody returns the body or panics if there's an error
-func (m *MockContext[B]) MustBody() B {
+func (m *MockContext[B, P]) MustBody() B {
 	return m.RequestBody
 }
 
+// Params returns the previously set params value
+func (m *MockContext[B, P]) Params() (P, error) {
+	return m.RequestParams, nil
+}
+
+// MustParams returns the params or panics if there's an error
+func (m *MockContext[B, P]) MustParams() P {
+	return m.RequestParams
+}
+
 // HasHeader checks if a header exists
-func (m *MockContext[B]) HasHeader(key string) bool {
+func (m *MockContext[B, P]) HasHeader(key string) bool {
 	_, exists := m.Headers[key]
 	return exists
 }
 
 // HasCookie checks if a cookie exists
-func (m *MockContext[B]) HasCookie(key string) bool {
+func (m *MockContext[B, P]) HasCookie(key string) bool {
 	_, exists := m.Cookies[key]
 	return exists
 }
 
 // Header returns the value of the specified header
-func (m *MockContext[B]) Header(key string) string {
+func (m *MockContext[B, P]) Header(key string) string {
 	return m.Headers.Get(key)
 }
 
 // SetHeader sets a header in the mock context
-func (m *MockContext[B]) SetHeader(key, value string) {
+func (m *MockContext[B, P]) SetHeader(key, value string) {
 	m.Headers.Set(key, value)
 }
 
 // PathParam returns a mock path parameter
-func (m *MockContext[B]) PathParam(name string) string {
+func (m *MockContext[B, P]) PathParam(name string) string {
 	return m.PathParams[name]
 }
 
-func (m *MockContext[B]) PathParamIntErr(name string) (int, error) {
+func (m *MockContext[B, P]) PathParamIntErr(name string) (int, error) {
 	return strconv.Atoi(m.PathParams[name])
 }
 
-func (m *MockContext[B]) PathParamInt(name string) int {
+func (m *MockContext[B, P]) PathParamInt(name string) int {
 	if i, err := m.PathParamIntErr(name); err == nil {
 		return i
 	}
@@ -97,24 +108,24 @@ func (m *MockContext[B]) PathParamInt(name string) int {
 }
 
 // Request returns the mock request
-func (m *MockContext[B]) Request() *http.Request {
+func (m *MockContext[B, P]) Request() *http.Request {
 	return m.request
 }
 
 // Response returns the mock response writer
-func (m *MockContext[B]) Response() http.ResponseWriter {
+func (m *MockContext[B, P]) Response() http.ResponseWriter {
 	return m.response
 }
 
 // SetStatus sets the response status code
-func (m *MockContext[B]) SetStatus(code int) {
+func (m *MockContext[B, P]) SetStatus(code int) {
 	if m.response != nil {
 		m.response.WriteHeader(code)
 	}
 }
 
 // Cookie returns a mock cookie
-func (m *MockContext[B]) Cookie(name string) (*http.Cookie, error) {
+func (m *MockContext[B, P]) Cookie(name string) (*http.Cookie, error) {
 	cookie, exists := m.Cookies[name]
 	if !exists {
 		return nil, http.ErrNoCookie
@@ -123,12 +134,12 @@ func (m *MockContext[B]) Cookie(name string) (*http.Cookie, error) {
 }
 
 // SetCookie sets a cookie in the mock context
-func (m *MockContext[B]) SetCookie(cookie http.Cookie) {
+func (m *MockContext[B, P]) SetCookie(cookie http.Cookie) {
 	m.Cookies[cookie.Name] = &cookie
 }
 
 // MainLang returns the main language from Accept-Language header
-func (m *MockContext[B]) MainLang() string {
+func (m *MockContext[B, P]) MainLang() string {
 	lang := m.Headers.Get("Accept-Language")
 	if lang == "" {
 		return ""
@@ -137,12 +148,12 @@ func (m *MockContext[B]) MainLang() string {
 }
 
 // MainLocale returns the main locale from Accept-Language header
-func (m *MockContext[B]) MainLocale() string {
+func (m *MockContext[B, P]) MainLocale() string {
 	return m.Headers.Get("Accept-Language")
 }
 
 // Redirect returns a redirect response
-func (m *MockContext[B]) Redirect(code int, location string) (any, error) {
+func (m *MockContext[B, P]) Redirect(code int, location string) (any, error) {
 	if m.response != nil {
 		http.Redirect(m.response, m.request, location, code)
 	}
@@ -150,12 +161,12 @@ func (m *MockContext[B]) Redirect(code int, location string) (any, error) {
 }
 
 // Render is a mock implementation that does nothing
-func (m *MockContext[B]) Render(templateToExecute string, data any, templateGlobsToOverride ...string) (CtxRenderer, error) {
+func (m *MockContext[B, P]) Render(templateToExecute string, data any, templateGlobsToOverride ...string) (CtxRenderer, error) {
 	panic("not implemented")
 }
 
 // SetQueryParam adds a query parameter to the mock context with OpenAPI validation
-func (m *MockContext[B]) SetQueryParam(name, value string) *MockContext[B] {
+func (m *MockContext[B, P]) SetQueryParam(name, value string) *MockContext[B, P] {
 	param := OpenAPIParam{
 		Name:   name,
 		GoType: "string",
@@ -168,7 +179,7 @@ func (m *MockContext[B]) SetQueryParam(name, value string) *MockContext[B] {
 }
 
 // SetQueryParamInt adds an integer query parameter to the mock context with OpenAPI validation
-func (m *MockContext[B]) SetQueryParamInt(name string, value int) *MockContext[B] {
+func (m *MockContext[B, P]) SetQueryParamInt(name string, value int) *MockContext[B, P] {
 	param := OpenAPIParam{
 		Name:   name,
 		GoType: "integer",
@@ -181,7 +192,7 @@ func (m *MockContext[B]) SetQueryParamInt(name string, value int) *MockContext[B
 }
 
 // SetQueryParamBool adds a boolean query parameter to the mock context with OpenAPI validation
-func (m *MockContext[B]) SetQueryParamBool(name string, value bool) *MockContext[B] {
+func (m *MockContext[B, P]) SetQueryParamBool(name string, value bool) *MockContext[B, P] {
 	param := OpenAPIParam{
 		Name:   name,
 		GoType: "boolean",

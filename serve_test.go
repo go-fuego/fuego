@@ -370,7 +370,7 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextNoBody", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := NewNetHTTPContext[any](BaseRoute{}, w, req, readOptions{})
+		ctx := NewNetHTTPContext[any, any](BaseRoute{}, w, req, readOptions{})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -380,7 +380,7 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextNoBody", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := NewNetHTTPContext[any](BaseRoute{}, w, req, readOptions{})
+		ctx := NewNetHTTPContext[any, any](BaseRoute{}, w, req, readOptions{})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -390,7 +390,7 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextWithBody[string]", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := NewNetHTTPContext[any](BaseRoute{}, w, req, readOptions{})
+		ctx := NewNetHTTPContext[any, any](BaseRoute{}, w, req, readOptions{})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -400,7 +400,7 @@ func TestIni(t *testing.T) {
 	t.Run("can initialize ContextWithBody[struct]", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/ctx/error-in-rendering", nil)
 		w := httptest.NewRecorder()
-		ctx := NewNetHTTPContext[any](BaseRoute{}, w, req, readOptions{})
+		ctx := NewNetHTTPContext[any, any](BaseRoute{}, w, req, readOptions{})
 
 		require.NotNil(t, ctx)
 		require.NotNil(t, ctx.Request())
@@ -619,8 +619,8 @@ func newTLSTestHelper() (*tlsTestHelper, error) {
 }
 
 func TestFlow(t *testing.T) {
-	newTestCtx := func(w *httptest.ResponseRecorder, r *http.Request) *netHttpContext[any] {
-		return NewNetHTTPContext[any](
+	newTestCtx := func(w *httptest.ResponseRecorder, r *http.Request) *netHttpContext[any, any] {
+		return NewNetHTTPContext[any, any](
 			BaseRoute{},
 			w,
 			r,

@@ -83,7 +83,7 @@ func TestSearchUsersController(t *testing.T) {
 	tests := []struct {
 		name          string
 		body          UserSearchRequest
-		setupContext  func(*fuego.MockContext[UserSearchRequest])
+		setupContext  func(*fuego.MockContext[UserSearchRequest, any])
 		expectedError string
 		expected      UserSearchResponse
 	}{
@@ -94,7 +94,7 @@ func TestSearchUsersController(t *testing.T) {
 				MaxAge:    35,
 				NameQuery: "John",
 			},
-			setupContext: func(ctx *fuego.MockContext[UserSearchRequest]) {
+			setupContext: func(ctx *fuego.MockContext[UserSearchRequest, any]) {
 				ctx.SetQueryParamInt("page", 1)
 				ctx.SetQueryParamInt("perPage", 20)
 			},
@@ -137,7 +137,7 @@ func TestSearchUsersController(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create mock context with the test body
-			ctx := fuego.NewMockContext(tt.body)
+			ctx := fuego.NewMockContext(tt.body, any(nil))
 
 			// Set up context with query parameters if provided
 			if tt.setupContext != nil {
