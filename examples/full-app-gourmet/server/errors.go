@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 
 	"modernc.org/sqlite"
@@ -24,6 +25,6 @@ func SQLiteErrorHandler(err error) error {
 	return err
 }
 
-func customErrorHandler(err error) error {
-	return fuego.ErrorHandler(SQLiteErrorHandler(fuegosql.ErrorHandler(err)))
+func customErrorHandler(ctx context.Context, err error) error {
+	return fuego.ErrorHandler(ctx, SQLiteErrorHandler(fuegosql.ErrorHandler(err)))
 }
