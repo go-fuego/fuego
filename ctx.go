@@ -365,25 +365,39 @@ func (c *netHttpContext[B, P]) Body() (B, error) {
 	return body, err
 }
 
+func bitSize(kind reflect.Kind) int {
+	switch kind {
+	case reflect.Uint8, reflect.Int8:
+		return 8
+	case reflect.Uint16, reflect.Int16:
+		return 16
+	case reflect.Uint32, reflect.Int32, reflect.Float32:
+		return 32
+	case reflect.Uint, reflect.Int:
+		return strconv.IntSize
+	}
+	return 64
+}
+
 // setParamValue sets a value to a reflect.Value based on its kind
 func setParamValue(value reflect.Value, paramValue string, kind reflect.Kind) error {
 	switch kind {
 	case reflect.String:
 		value.SetString(paramValue)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		intValue, err := strconv.Atoi(paramValue)
+		intValue, err := strconv.ParseInt(paramValue, 10, bitSize(kind))
 		if err != nil {
 			return fmt.Errorf("cannot convert %s to int: %w", paramValue, err)
 		}
-		value.SetInt(int64(intValue))
+		value.SetInt(intValue)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		uintValue, err := strconv.ParseUint(paramValue, 10, 64)
+		uintValue, err := strconv.ParseUint(paramValue, 10, bitSize(kind))
 		if err != nil {
 			return fmt.Errorf("cannot convert %s to uint: %w", paramValue, err)
 		}
 		value.SetUint(uintValue)
 	case reflect.Float32, reflect.Float64:
-		floatValue, err := strconv.ParseFloat(paramValue, 64)
+		floatValue, err := strconv.ParseFloat(paramValue, bitSize(kind))
 		if err != nil {
 			return fmt.Errorf("cannot convert %s to float64: %w", paramValue, err)
 		}
