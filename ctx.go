@@ -416,7 +416,8 @@ func (c *netHttpContext[B, P]) Params() (P, error) {
 		// Process query parameters
 		if tag := field.Tag.Get("query"); tag != "" {
 			// Handle slice/array types
-			if field.Type.Kind() == reflect.Slice || field.Type.Kind() == reflect.Array {
+			switch field.Type.Kind() {
+			case reflect.Slice, reflect.Array:
 				paramValues := c.QueryParamArr(tag)
 				if len(paramValues) == 0 {
 					continue
@@ -431,7 +432,7 @@ func (c *netHttpContext[B, P]) Params() (P, error) {
 					}
 				}
 				fieldValue.Set(slice)
-			} else {
+			default:
 				// Handle single value
 				paramValue := c.QueryParam(tag)
 				if paramValue == "" {
