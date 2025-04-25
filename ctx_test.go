@@ -670,6 +670,31 @@ func TestNetHttpContext_Params(t *testing.T) {
 		assert.InEpsilon(t, 20.30, params.Temperature, 0.01)
 	})
 
+	t.Run("does not support other receivers than struct", func(t *testing.T) {
+		t.Run("pointer to struct", func(t *testing.T) {
+			type MyParams struct{}
+			r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello&temperature=20.30", nil)
+			r.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			c := NewNetHTTPContext[any, *MyParams](BaseRoute{}, w, r, readOptions{})
+
+			_, err := c.Params()
+
+			require.ErrorContains(t, err, "params must be a struct, got *fuego.MyParams")
+		})
+
+		t.Run("interface", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello&temperature=20.30", nil)
+			r.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			c := NewNetHTTPContext[any, any](BaseRoute{}, w, r, readOptions{})
+
+			_, err := c.Params()
+
+			require.ErrorContains(t, err, "params must be a struct, got <nil>")
+		})
+	})
+
 	t.Run("support for more integer types", func(t *testing.T) {
 		type MyParams struct {
 			ID          int8    `query:"id"`
