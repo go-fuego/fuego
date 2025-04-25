@@ -387,19 +387,19 @@ func setParamValue(value reflect.Value, paramValue string, kind reflect.Kind) er
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		intValue, err := strconv.ParseInt(paramValue, 10, bitSize(kind))
 		if err != nil {
-			return fmt.Errorf("cannot convert %s to int: %w", paramValue, err)
+			return fmt.Errorf("cannot convert %s to %s: %w", paramValue, kind, err)
 		}
 		value.SetInt(intValue)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		uintValue, err := strconv.ParseUint(paramValue, 10, bitSize(kind))
 		if err != nil {
-			return fmt.Errorf("cannot convert %s to uint: %w", paramValue, err)
+			return fmt.Errorf("cannot convert %s to %s: %w", paramValue, kind, err)
 		}
 		value.SetUint(uintValue)
 	case reflect.Float32, reflect.Float64:
 		floatValue, err := strconv.ParseFloat(paramValue, bitSize(kind))
 		if err != nil {
-			return fmt.Errorf("cannot convert %s to float64: %w", paramValue, err)
+			return fmt.Errorf("cannot convert %s to %s: %w", paramValue, kind, err)
 		}
 		value.SetFloat(floatValue)
 	case reflect.Bool:
