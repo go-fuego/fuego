@@ -780,14 +780,14 @@ func TestNetHttpContext_Params(t *testing.T) {
 			Float64s []float64 `query:"float64s"`
 		}
 
-		r := httptest.NewRequest("GET", "http://example.com/foo?float32s=1.1&float32s=2.2&float64s=3.3&float64s=4.4", nil)
+		r := httptest.NewRequest("GET", "http://example.com/foo?float32s=1.1&float32s=-2.2&float64s=-3.3&float64s=4.4", nil)
 		w := httptest.NewRecorder()
 		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
 		params, err := c.Params()
 		require.NoError(t, err)
 		require.NotEmpty(t, params)
-		assert.InEpsilonSlice(t, []float32{1.1, 2.2}, params.Float32s, 0.01)
-		assert.InEpsilonSlice(t, []float64{3.3, 4.4}, params.Float64s, 0.01)
+		assert.InEpsilonSlice(t, []float32{1.1, -2.2}, params.Float32s, 0.01)
+		assert.InEpsilonSlice(t, []float64{-3.3, 4.4}, params.Float64s, 0.01)
 	})
 
 	t.Run("error handling for invalid array values", func(t *testing.T) {
@@ -832,5 +832,100 @@ func TestNetHttpContext_Params(t *testing.T) {
 		assert.Equal(t, 123, params.ID)
 		assert.Equal(t, []string{"golang", "web"}, params.Tags)
 		assert.Equal(t, 50, params.Limit)
+	})
+
+	t.Run("error handling for integer overflow", func(t *testing.T) {
+		t.Run("int8 overflow", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?value=128", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Value int8 `query:"value"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "cannot convert 128 to int")
+		})
+
+		t.Run("int8 underflow", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?value=-129", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Value int8 `query:"value"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "cannot convert -129 to int")
+		})
+
+		t.Run("int16 overflow", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?value=32768", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Value int16 `query:"value"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "cannot convert 32768 to int")
+		})
+
+		t.Run("uint8 overflow", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?value=256", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Value uint8 `query:"value"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "cannot convert 256 to uint")
+		})
+
+		t.Run("negative value for unsigned type", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?value=-1", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Value uint32 `query:"value"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "cannot convert -1 to uint")
+		})
+
+		t.Run("array with overflow value", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?values=100&values=300", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Values []uint8 `query:"values"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "cannot convert 300 to uint")
+		})
+
+		t.Run("valid values within range", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?int8=127&uint8=255&int16=32767&uint16=65535", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Int8   int8   `query:"int8"`
+				Uint8  uint8  `query:"uint8"`
+				Int16  int16  `query:"int16"`
+				Uint16 uint16 `query:"uint16"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.NoError(t, err)
+		})
 	})
 }
