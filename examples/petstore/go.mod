@@ -3,7 +3,7 @@ module github.com/go-fuego/fuego/examples/petstore
 go 1.24.2
 
 require (
-	github.com/go-fuego/fuego v0.18.7
+	github.com/go-fuego/fuego v0.18.8
 	github.com/stretchr/testify v1.10.0
 	gotest.tools/v3 v3.5.2
 )

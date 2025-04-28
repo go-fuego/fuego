@@ -2,7 +2,7 @@ module github.com/go-fuego/fuego/examples/openapi-generate
 
 go 1.24.2
 
-require github.com/go-fuego/fuego v0.18.7
+require github.com/go-fuego/fuego v0.18.8
 
 require (
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
