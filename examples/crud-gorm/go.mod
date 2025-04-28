@@ -3,10 +3,10 @@ module github.com/go-fuego/fuego/examples/crud-gorm
 go 1.24.2
 
 require (
-	github.com/go-fuego/fuego v0.18.7
+	github.com/go-fuego/fuego v0.18.8
 	github.com/golang/mock v1.6.0
 	gorm.io/driver/sqlite v1.5.7
-	gorm.io/gorm v1.25.12
+	gorm.io/gorm v1.26.0
 )
 
 require (

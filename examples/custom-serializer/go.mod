@@ -3,7 +3,7 @@ module github.com/go-fuego/fuego/examples/custom-serializer
 go 1.24.2
 
 require (
-	github.com/go-fuego/fuego v0.18.7
+	github.com/go-fuego/fuego v0.18.8
 	github.com/json-iterator/go v1.1.12
 )
 
