@@ -412,7 +412,7 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 
 		property := schemaRef.Value.Properties[jsonFieldName]
 		if property == nil {
-			slog.Warn("Property not found in schema", "property", jsonFieldName)
+			slog.Warn("Property not found in schema", "property", jsonFieldName, "struct", t.Name())
 			continue
 		}
 

@@ -293,7 +293,15 @@ func Test_tagFromType(t *testing.T) {
 		)
 
 		SchemaTagFromType(s.OpenAPI, InvalidExample{})
-		handler.AssertMessage("Property not found in schema")
+		handler.AssertPrecise(slogassert.LogMessageMatch{
+			Message:       "Property not found in schema",
+			Level:         slog.LevelWarn,
+			AllAttrsMatch: true,
+			Attrs: map[string]any{
+				"property": "XMLName",
+				"struct":   "InvalidExample",
+			},
+		})
 		handler.AssertMessage("Example might be incorrect (should be integer)")
 		handler.AssertMessage("Max might be incorrect (should be integer)")
 		handler.AssertMessage("Min might be incorrect (should be integer)")
