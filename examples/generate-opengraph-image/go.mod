@@ -3,11 +3,11 @@ module github.com/go-fuego/fuego/examples/generate-opengraph-image
 go 1.24.2
 
 require (
-	github.com/getkin/kin-openapi v0.131.0
+	github.com/getkin/kin-openapi v0.132.0
 	github.com/go-fuego/fuego v0.18.8
 	github.com/go-fuego/fuego/middleware/cache v0.0.0-20250205094027-802052722609
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-	golang.org/x/image v0.26.0
+	golang.org/x/image v0.27.0
 )
 
 require (
@@ -31,6 +31,6 @@ require (
 	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.24.0 // indirect
+	golang.org/x/text v0.25.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
