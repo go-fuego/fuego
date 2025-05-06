@@ -3,6 +3,7 @@ package fuego
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 	"slices"
 	"strconv"
 	"strings"
@@ -74,6 +75,46 @@ func OptionQueryBool(name, description string, options ...func(*OpenAPIParam)) f
 	options = append(options, ParamDescription(description), paramType(QueryParamType), ParamBool())
 	return func(r *BaseRoute) {
 		OptionParam(name, options...)(r)
+	}
+}
+
+// OptionQueryArray declares a query parameter for the route with an array type.
+// This will be added to the OpenAPI spec.
+// Example:
+//
+//	OptionQueryArray("tags", "Filter by tags", reflect.Int, ParamExample("tag list", "1,2,3"))
+//
+// The list of options is in the param package.
+func OptionQueryArray(name, description string, elemKind reflect.Kind, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+	return func(r *BaseRoute) {
+		param, openapiParam := buildParam(name, append(options, ParamDescription(description), paramType(QueryParamType))...)
+
+		// Create an array schema
+		arraySchema := openapi3.NewSchema()
+		arraySchema.Type = &openapi3.Types{openapi3.TypeArray}
+
+		// Set the items type based on the element kind
+		itemsSchema := openapi3.NewSchema()
+		switch elemKind {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			itemsSchema.Type = &openapi3.Types{openapi3.TypeInteger}
+		case reflect.Float32, reflect.Float64:
+			itemsSchema.Type = &openapi3.Types{openapi3.TypeNumber}
+		case reflect.Bool:
+			itemsSchema.Type = &openapi3.Types{openapi3.TypeBoolean}
+		default:
+			itemsSchema.Type = &openapi3.Types{openapi3.TypeString}
+		}
+
+		arraySchema.Items = &openapi3.SchemaRef{Value: itemsSchema}
+		openapiParam.Schema = &openapi3.SchemaRef{Value: arraySchema}
+
+		r.Operation.AddParameter(openapiParam)
+		if r.Params == nil {
+			r.Params = make(map[string]OpenAPIParam)
+		}
+		r.Params[name] = param
 	}
 }
 
