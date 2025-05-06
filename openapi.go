@@ -276,6 +276,8 @@ func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 					OptionQueryBool(queryKey, description, params...)(&route.BaseRoute)
 				case reflect.String:
 					OptionQuery(queryKey, description, params...)(&route.BaseRoute)
+				case reflect.Slice, reflect.Array:
+					OptionQueryArray(queryKey, description, field.Type.Elem().Kind(), params...)(&route.BaseRoute)
 				}
 			}
 			if cookieKey, ok := field.Tag.Lookup("cookie"); ok {

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -133,6 +134,7 @@ func (rs PetsResources) filterPets(c fuego.ContextNoBody) ([]models.Pets, error)
 type FilterParams struct {
 	Name        string `query:"name" description:"Filter by name" example:"cat name"`
 	YoungerThan int    `query:"younger_than"`
+	JustAnArray []int  `query:"just_an_array" example:"1,2,3"`
 }
 
 func (rs PetsResources) filterPetsStronglyTyped(c fuego.ContextWithParams[FilterParams]) ([]models.Pets, error) {
@@ -140,6 +142,8 @@ func (rs PetsResources) filterPetsStronglyTyped(c fuego.ContextWithParams[Filter
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println("params", params)
 
 	return rs.PetsService.FilterPets(PetsFilter{
 		Name:        params.Name,

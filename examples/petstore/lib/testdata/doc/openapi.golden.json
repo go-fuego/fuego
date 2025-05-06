@@ -1296,6 +1296,16 @@
 						"schema": {
 							"type": "integer"
 						}
+					},
+					{
+						"in": "query",
+						"name": "just_an_array",
+						"schema": {
+							"items": {
+								"type": "integer"
+							},
+							"type": "array"
+						}
 					}
 				],
 				"responses": {
