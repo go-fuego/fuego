@@ -2,9 +2,12 @@ package fuego_test
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -1071,5 +1074,59 @@ func TestOptionStripTrailingSlash(t *testing.T) {
 		s := fuego.NewServer()
 		route := fuego.Get(s, "/test/", helloWorld, fuego.OptionStripTrailingSlash())
 		require.Equal(t, "/test", route.Path)
+	})
+}
+
+// myCustomType has custom serialization and deserialization logic
+type myCustomType struct {
+	A string
+	B int
+}
+
+// Serialize custom serialization logic
+func (s myCustomType) Serialize(v any) ([]byte, error) {
+	v2, ok := v.(myCustomType)
+	if !ok {
+		return nil, errors.New("invalid type")
+	}
+	return []byte(fmt.Sprintf("%s:%d", v2.A, v2.B)), nil
+}
+
+// Deserialize custom deserialization logic
+func (s myCustomType) Deserialize(data []byte) (any, error) {
+	var v myCustomType
+	var err error
+	parts := strings.Split(string(data), ":")
+	if len(parts) != 2 {
+		return myCustomType{}, errors.New("invalid data")
+	}
+	v.A = parts[0]
+	v.B, err = strconv.Atoi(parts[1])
+	return v, err
+}
+
+func TestWithCustomSerde(t *testing.T) {
+	t.Run("Custom serde is used", func(t *testing.T) {
+		s := fuego.NewServer()
+		route := fuego.Post(s, "/times2",
+			func(c fuego.ContextWithBody[myCustomType]) (myCustomType, error) {
+				body, err := c.Body()
+				if err != nil {
+					return myCustomType{}, err
+				}
+				return myCustomType{A: body.A + " times 2", B: body.B * 2}, nil
+			},
+			option.WithContentTypeSerde("application/vnd.foo", myCustomType{}),
+		)
+		require.Equal(t, "/times2", route.Path)
+
+		r := httptest.NewRequest("POST", "/times2", strings.NewReader("hello:2"))
+		r.Header.Set("Content-Type", "application/vnd.foo")
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+		require.Equal(t, "hello times 2:4", w.Body.String())
 	})
 }
