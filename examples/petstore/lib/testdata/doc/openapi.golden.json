@@ -42,6 +42,34 @@
 									}
 								},
 								"type": "object"
+							},
+							"treats": {
+								"items": {
+									"nullable": true,
+									"properties": {
+										"brand": {
+											"description": "The brand of the treat",
+											"nullable": true,
+											"type": "string"
+										},
+										"itemId": {
+											"description": "The unique id of the treat",
+											"format": "uuid",
+											"type": "string"
+										},
+										"name": {
+											"description": "the name of a treat",
+											"type": "string"
+										}
+									},
+									"required": [
+										"itemId",
+										"name"
+									],
+									"type": "object"
+								},
+								"nullable": true,
+								"type": "array"
 							}
 						},
 						"required": [
@@ -94,6 +122,34 @@
 									}
 								},
 								"type": "object"
+							},
+							"treats": {
+								"items": {
+									"nullable": true,
+									"properties": {
+										"brand": {
+											"description": "The brand of the treat",
+											"nullable": true,
+											"type": "string"
+										},
+										"itemId": {
+											"description": "The unique id of the treat",
+											"format": "uuid",
+											"type": "string"
+										},
+										"name": {
+											"description": "the name of a treat",
+											"type": "string"
+										}
+									},
+									"required": [
+										"itemId",
+										"name"
+									],
+									"type": "object"
+								},
+								"nullable": true,
+								"type": "array"
 							}
 						},
 						"required": [
@@ -118,9 +174,13 @@
 					},
 					"errors": {
 						"items": {
+							"nullable": true,
 							"properties": {
 								"more": {
-									"additionalProperties": {},
+									"additionalProperties": {
+										"description": "Additional information about the error",
+										"nullable": true
+									},
 									"description": "Additional information about the error",
 									"nullable": true,
 									"type": "object"
@@ -201,6 +261,34 @@
 							}
 						},
 						"type": "object"
+					},
+					"treats": {
+						"items": {
+							"nullable": true,
+							"properties": {
+								"brand": {
+									"description": "The brand of the treat",
+									"nullable": true,
+									"type": "string"
+								},
+								"itemId": {
+									"description": "The unique id of the treat",
+									"format": "uuid",
+									"type": "string"
+								},
+								"name": {
+									"description": "the name of a treat",
+									"type": "string"
+								}
+							},
+							"required": [
+								"itemId",
+								"name"
+							],
+							"type": "object"
+						},
+						"nullable": true,
+						"type": "array"
 					}
 				},
 				"required": [
@@ -291,6 +379,34 @@
 							}
 						},
 						"type": "object"
+					},
+					"treats": {
+						"items": {
+							"nullable": true,
+							"properties": {
+								"brand": {
+									"description": "The brand of the treat",
+									"nullable": true,
+									"type": "string"
+								},
+								"itemId": {
+									"description": "The unique id of the treat",
+									"format": "uuid",
+									"type": "string"
+								},
+								"name": {
+									"description": "the name of a treat",
+									"type": "string"
+								}
+							},
+							"required": [
+								"itemId",
+								"name"
+							],
+							"type": "object"
+						},
+						"nullable": true,
+						"type": "array"
 					}
 				},
 				"type": "object"

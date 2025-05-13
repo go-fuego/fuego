@@ -22,6 +22,7 @@ type Pets struct {
 	IsAdopted  bool       `json:"is_adopted" description:"Is the pet adopted"`
 	References References `json:"references"`
 	BirthDate  time.Time  `json:"birth_date"`
+	FavTreats  []Treat    `json:"treats,omitempty" validate:"dive"`
 }
 
 type PetsCreate struct {
@@ -36,11 +37,18 @@ type PetsUpdate struct {
 	Age        int        `json:"age,omitempty" validate:"max=100" example:"2"`
 	IsAdopted  *bool      `json:"is_adopted,omitempty" description:"Is the pet adopted"`
 	References References `json:"references"`
+	FavTreats  []Treat    `json:"treats,omitempty"`
 }
 
 type References struct {
 	Type  string `json:"type" example:"pet-123456" description:"type of reference"`
 	Value string `json:"value"`
+}
+
+type Treat struct {
+	Name   string `json:"name" validate:"required" description:"the name of a treat"`
+	Brand  string `json:"brand,omitempty" description:"The brand of the treat"`
+	ItemID string `json:"itemId" validate:"required,uuid" description:"The unique id of the treat"`
 }
 
 var _ fuego.InTransformer = &Pets{}
