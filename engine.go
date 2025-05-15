@@ -139,7 +139,7 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 
 		WithMiddlewareConfig(config.MiddlewareConfig)(e)
 
-		if config.OpenApiGeneratorOptions != nil && len(config.OpenApiGeneratorOptions) > 0 {
+		if len(config.OpenApiGeneratorOptions) > 0 {
 			e.OpenAPI.generator = openapi3gen.NewGenerator(config.OpenApiGeneratorOptions...)
 		}
 	}

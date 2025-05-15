@@ -418,6 +418,7 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		// here, indicating that this schema is only a reference and does not contain an inline definition.
 		return
 	}
+	schemaRef.Value.Required = []string{}
 
 	for i := range t.NumField() {
 		field := t.Field(i)
