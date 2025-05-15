@@ -142,6 +142,7 @@ func main() {
 				SpecURL:           "/swagger/openapi.json", // URL to serve the openapi json spec
 				JSONFilePath:      "doc/openapi.json",      // Local path to save the openapi json spec
 				UIHandler:         fuego.DefaultOpenAPIHandler, // Custom UI handler
+				OpenApiGeneratorOptions: []openapigen3.Option, // Allows customization of the OpenAPI generator
 			}),
 		),
 	)
