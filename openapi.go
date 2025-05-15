@@ -383,7 +383,7 @@ func (openAPI *OpenAPI) createSchema(key string, v any) *openapi3.SchemaRef {
 		schemaRef.Value.Description = descriptionable.Description()
 	}
 
-	parseStructTags(reflect.TypeOf(v), schemaRef)
+	parseStructTags(reflect.TypeOf(v), schemaRef, openAPI.Description().Components.Schemas)
 
 	openAPI.Description().Components.Schemas[key] = schemaRef
 
@@ -402,7 +402,7 @@ func (openAPI *OpenAPI) createSchema(key string, v any) *openapi3.SchemaRef {
 //   - min=1 => minLength=1 (for strings)
 //   - max=100 => max=100 (for integers)
 //   - max=100 => maxLength=100 (for strings)
-func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
+func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef, schemas openapi3.Schemas) {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
@@ -411,6 +411,15 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		return
 	}
 
+	if schemaRef.Value == nil {
+		// Find the schema by ref in schemas and set it to schemaRef.Value
+		if schema, ok := schemas[schemaRef.Ref[strings.LastIndex(schemaRef.Ref, "/")+1:]]; ok && schema != nil {
+			schemaRef.Value = schema.Value
+		} else {
+			slog.Warn("parseStructTags: cannot process tags for this schema because an ref could not be resolved", "schemaRef", schemaRef.Ref, "struct", t.Name())
+			return
+		}
+	}
 	schemaRef.Value.Required = []string{}
 
 	for i := range t.NumField() {
@@ -420,7 +429,7 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		}
 		if field.Anonymous {
 			fieldType := field.Type
-			parseStructTags(fieldType, schemaRef)
+			parseStructTags(fieldType, schemaRef, schemas)
 			continue
 		}
 
@@ -442,11 +451,11 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		switch field.Type.Kind() {
 		case reflect.Slice, reflect.Array:
 			arraySchema := property.Value.Items
-			parseStructTags(field.Type.Elem(), arraySchema)
+			parseStructTags(field.Type.Elem(), arraySchema, schemas)
 		case reflect.Ptr, reflect.Map, reflect.Chan, reflect.Func, reflect.UnsafePointer:
-			parseStructTags(field.Type.Elem(), property)
+			parseStructTags(field.Type.Elem(), property, schemas)
 		case reflect.Struct:
-			parseStructTags(field.Type, property)
+			parseStructTags(field.Type, property, schemas)
 		}
 
 		propertyCopy := *property
