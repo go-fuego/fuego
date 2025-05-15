@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3gen"
 )
 
 // NewEngine creates a new Engine with the given options.
@@ -67,6 +68,8 @@ type OpenAPIConfig struct {
 	DisableSwaggerUI bool
 	// Middleware configuration for the engine
 	MiddlewareConfig MiddlewareConfig
+	// OpenAPI generator options
+	OpenApiGeneratorOptions []openapi3gen.Option
 }
 
 var defaultOpenAPIConfig = OpenAPIConfig{
@@ -135,6 +138,10 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 		}
 
 		WithMiddlewareConfig(config.MiddlewareConfig)(e)
+
+		if config.OpenApiGeneratorOptions != nil && len(config.OpenApiGeneratorOptions) > 0 {
+			e.OpenAPI.generator = openapi3gen.NewGenerator(config.OpenApiGeneratorOptions...)
+		}
 	}
 }
 
