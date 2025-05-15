@@ -411,13 +411,6 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		return
 	}
 
-	if schemaRef.Value == nil {
-		// This situation can occur when the OpenAPI generator's ExportComponentSchemas option is enabled.
-		// With this setting, the generator avoids creating duplicate schemas and instead uses references
-		// (i.e., $ref) to previously defined component schemas. As a result, schemaRef.Value may be nil
-		// here, indicating that this schema is only a reference and does not contain an inline definition.
-		return
-	}
 	schemaRef.Value.Required = []string{}
 
 	for i := range t.NumField() {
@@ -457,11 +450,6 @@ func parseStructTags(t reflect.Type, schemaRef *openapi3.SchemaRef) {
 		}
 
 		propertyCopy := *property
-		if propertyCopy.Value == nil {
-			// This can also happen if the OpenAPI generator's ExportComponentSchemas option is enabled,
-			// which causes schemas to be referenced rather than inlined, resulting in property.Value being nil.
-			continue
-		}
 		propertyValue := *propertyCopy.Value
 
 		// Example
