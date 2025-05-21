@@ -78,10 +78,11 @@ func TestWithOpenAPIConfig(t *testing.T) {
 			),
 		)
 
-		require.Equal(t, "/swagger", s.OpenAPI.Config.SwaggerURL)
-		require.Equal(t, "/swagger/openapi.json", s.OpenAPI.Config.SpecURL)
-		require.Equal(t, "doc/openapi.json", s.OpenAPI.Config.JSONFilePath)
-		require.False(t, s.OpenAPI.Config.PrettyFormatJSON)
+		assert.Equal(t, "/swagger", s.OpenAPI.Config.SwaggerURL)
+		assert.Equal(t, "/swagger/openapi.json", s.OpenAPI.Config.SpecURL)
+		assert.Equal(t, "doc/openapi.json", s.OpenAPI.Config.JSONFilePath)
+		assert.False(t, s.OpenAPI.Config.PrettyFormatJSON)
+		assert.Equal(t, defaultOpenAPIConfig.Info, s.OpenAPI.Description().Info)
 	})
 
 	t.Run("with custom values", func(t *testing.T) {
@@ -97,18 +98,23 @@ func TestWithOpenAPIConfig(t *testing.T) {
 						Disabled:             true,
 						SwaggerURL:           "/api",
 						SpecURL:              "/api/openapi.json",
+						Info: &openapi3.Info{
+							Title: "MyTitle",
+						},
 					}),
 			),
 		)
 
-		require.Equal(t, "/api", s.OpenAPI.Config.SwaggerURL)
-		require.Equal(t, "/api/openapi.json", s.OpenAPI.Config.SpecURL)
-		require.Equal(t, "openapi.json", s.OpenAPI.Config.JSONFilePath)
-		require.True(t, s.Engine.OpenAPI.Config.Disabled)
-		require.True(t, s.OpenAPI.Config.DisableLocalSave)
-		require.True(t, s.OpenAPI.Config.DisableDefaultServer)
-		require.True(t, s.OpenAPI.Config.DisableMessages)
-		require.True(t, s.OpenAPI.Config.PrettyFormatJSON)
+		assert.Equal(t, "/api", s.OpenAPI.Config.SwaggerURL)
+		assert.Equal(t, "/api/openapi.json", s.OpenAPI.Config.SpecURL)
+		assert.Equal(t, "openapi.json", s.OpenAPI.Config.JSONFilePath)
+		assert.True(t, s.Engine.OpenAPI.Config.Disabled)
+		assert.True(t, s.OpenAPI.Config.DisableLocalSave)
+		assert.True(t, s.OpenAPI.Config.DisableDefaultServer)
+		assert.True(t, s.OpenAPI.Config.DisableMessages)
+		assert.True(t, s.OpenAPI.Config.PrettyFormatJSON)
+		assert.Equal(t, "MyTitle", s.OpenAPI.Description().Info.Title)
+		assert.Empty(t, s.OpenAPI.Description().Info.Description)
 	})
 
 	t.Run("with invalid local path values", func(t *testing.T) {

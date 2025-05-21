@@ -67,6 +67,8 @@ type OpenAPIConfig struct {
 	DisableSwaggerUI bool
 	// Middleware configuration for the engine
 	MiddlewareConfig MiddlewareConfig
+	// Info [openapi3.Info] config, nil if blank
+	Info *openapi3.Info
 }
 
 var defaultOpenAPIConfig = OpenAPIConfig{
@@ -78,6 +80,11 @@ var defaultOpenAPIConfig = OpenAPIConfig{
 		DisableMiddlewareSection: false,
 		MaxNumberOfMiddlewares:   6,
 		ShortMiddlewaresPaths:    false,
+	},
+	Info: &openapi3.Info{
+		Title:       "OpenAPI",
+		Description: openapiDescription,
+		Version:     "0.0.1",
 	},
 }
 
@@ -116,6 +123,9 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 		}
 		if config.UIHandler != nil {
 			e.OpenAPI.Config.UIHandler = config.UIHandler
+		}
+		if config.Info != nil {
+			e.OpenAPI.description.Info = config.Info
 		}
 
 		e.OpenAPI.Config.Disabled = config.Disabled
