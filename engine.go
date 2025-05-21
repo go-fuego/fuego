@@ -94,6 +94,7 @@ var (
 			Version:     "0.0.1",
 		},
 	}
+	defaultResponseContentTypes = []string{"application/json", "application/xml"}
 )
 
 // WithRequestContentType sets the accepted content types for the engine.
@@ -139,7 +140,7 @@ func WithOpenAPIConfig(config OpenAPIConfig) EngineOption {
 			e.OpenAPI.Config.UIHandler = config.UIHandler
 		}
 		if config.Info != nil {
-			e.OpenAPI.description.Info = config.Info
+			e.OpenAPI.mergeInfo(config.Info)
 		}
 
 		e.OpenAPI.Config.Disabled = config.Disabled
