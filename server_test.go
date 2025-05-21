@@ -114,7 +114,23 @@ func TestWithOpenAPIConfig(t *testing.T) {
 		assert.True(t, s.OpenAPI.Config.DisableMessages)
 		assert.True(t, s.OpenAPI.Config.PrettyFormatJSON)
 		assert.Equal(t, "MyTitle", s.OpenAPI.Description().Info.Title)
-		assert.Empty(t, s.OpenAPI.Description().Info.Description)
+	})
+
+	t.Run("test that rest of info is populated", func(t *testing.T) {
+		s := NewServer(
+			WithEngineOptions(
+				WithOpenAPIConfig(OpenAPIConfig{
+					Info: &openapi3.Info{
+						TermsOfService: "for reuse in projects",
+						Contact:        &openapi3.Contact{Name: "Fuego User"},
+					},
+				}),
+			),
+		)
+
+		assert.Equal(t, "for reuse in projects", s.OpenAPI.Description().Info.TermsOfService)
+		assert.Equal(t, "Fuego User", s.OpenAPI.Description().Info.Contact.Name)
+		assert.Equal(t, "OpenAPI", s.OpenAPI.Description().Info.Title)
 	})
 
 	t.Run("with invalid local path values", func(t *testing.T) {
