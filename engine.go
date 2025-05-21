@@ -149,6 +149,22 @@ func WithErrorHandler(errorHandler func(ctx context.Context, err error) error) f
 	}
 }
 
+func WithTags(tags ...openapi3.Tag) func(*Engine) {
+	return func(e *Engine) {
+		for _, tag := range tags {
+			if tag.Name == "" {
+				panic("Tag name cannot be empty")
+			}
+
+			if e.OpenAPI.Description().Tags.Get(tag.Name) != nil {
+				slog.Warn("Tag already exists, will not overwrite", "tag", tag.Name)
+				continue
+			}
+			e.OpenAPI.Description().Tags = append(e.OpenAPI.Description().Tags, &tag)
+		}
+	}
+}
+
 // DisableErrorHandler overrides ErrorHandler with a simple pass-through
 func DisableErrorHandler() func(*Engine) {
 	return func(e *Engine) {
