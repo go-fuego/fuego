@@ -125,7 +125,7 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 			e.OpenAPI.Config.UIHandler = config.UIHandler
 		}
 		if config.Info != nil {
-			e.OpenAPI.description.Info = config.Info
+			e.OpenAPI.mergeInfo(config.Info)
 		}
 
 		e.OpenAPI.Config.Disabled = config.Disabled

@@ -40,6 +40,19 @@ func (openAPI *OpenAPI) Generator() *openapi3gen.Generator {
 	return openAPI.generator
 }
 
+func (openAPI *OpenAPI) mergeInfo(info *openapi3.Info) {
+	if info.Title == "" {
+		info.Title = openAPI.description.Info.Title
+	}
+	if info.Description == "" {
+		info.Description = openAPI.description.Info.Description
+	}
+	if info.Version == "" {
+		info.Version = openAPI.description.Info.Version
+	}
+	openAPI.description.Info = info
+}
+
 // Compute the tags to declare at the root of the OpenAPI spec from the tags declared in the operations.
 func (openAPI *OpenAPI) computeTags() {
 	for _, pathItem := range openAPI.Description().Paths.Map() {
