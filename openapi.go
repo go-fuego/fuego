@@ -73,14 +73,9 @@ func (openAPI *OpenAPI) computeTags() {
 }
 
 func NewOpenApiSpec() openapi3.T {
-	info := &openapi3.Info{
-		Title:       "OpenAPI",
-		Description: openapiDescription,
-		Version:     "0.0.1",
-	}
-	spec := openapi3.T{
+	return openapi3.T{
 		OpenAPI:  "3.1.0",
-		Info:     info,
+		Info:     defaultOpenAPIConfig.Info,
 		Paths:    &openapi3.Paths{},
 		Servers:  []*openapi3.Server{},
 		Security: openapi3.SecurityRequirements{},
@@ -90,7 +85,6 @@ func NewOpenApiSpec() openapi3.T {
 			Responses:     make(map[string]*openapi3.ResponseRef),
 		},
 	}
-	return spec
 }
 
 type OpenAPIServable interface {
