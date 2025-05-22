@@ -30,8 +30,9 @@ type EngineOption func(*Engine)
 // Options all begin with `With`.
 func NewEngine(options ...EngineOption) *Engine {
 	e := &Engine{
-		OpenAPI:      NewOpenAPI(),
-		ErrorHandler: ErrorHandler,
+		OpenAPI:              NewOpenAPI(),
+		ErrorHandler:         ErrorHandler,
+		responseContentTypes: []string{"application/json", "application/xml"},
 	}
 	for _, option := range options {
 		option(e)
@@ -44,7 +45,8 @@ type Engine struct {
 	OpenAPI      *OpenAPI
 	ErrorHandler func(context.Context, error) error
 
-	requestContentTypes []string
+	requestContentTypes  []string
+	responseContentTypes []string
 }
 
 type OpenAPIConfig struct {
@@ -73,22 +75,30 @@ type OpenAPIConfig struct {
 	MiddlewareConfig MiddlewareConfig
 }
 
-var defaultOpenAPIConfig = OpenAPIConfig{
-	JSONFilePath: "doc/openapi.json",
-	SpecURL:      "/swagger/openapi.json",
-	SwaggerURL:   "/swagger",
-	UIHandler:    DefaultOpenAPIHandler,
-	MiddlewareConfig: MiddlewareConfig{
-		DisableMiddlewareSection: false,
-		MaxNumberOfMiddlewares:   6,
-		ShortMiddlewaresPaths:    false,
-	},
-}
+var (
+	defaultOpenAPIConfig = OpenAPIConfig{
+		JSONFilePath: "doc/openapi.json",
+		SpecURL:      "/swagger/openapi.json",
+		SwaggerURL:   "/swagger",
+		UIHandler:    DefaultOpenAPIHandler,
+		MiddlewareConfig: MiddlewareConfig{
+			DisableMiddlewareSection: false,
+			MaxNumberOfMiddlewares:   6,
+			ShortMiddlewaresPaths:    false,
+		},
+	}
+)
 
 // WithRequestContentType sets the accepted content types for the engine.
 // By default, the accepted content types is */*.
 func WithRequestContentType(consumes ...string) EngineOption {
 	return func(e *Engine) { e.requestContentTypes = consumes }
+}
+
+// WithResponseContentType sets content types of the returned body.
+// By default, the returned content-types' are application/json and application/xml
+func WithResponseContentType(consumes ...string) func(*Engine) {
+	return func(e *Engine) { e.responseContentTypes = consumes }
 }
 
 type MiddlewareConfig struct {

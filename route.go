@@ -22,13 +22,14 @@ type Route[ResponseBody any, RequestBody any, Params any] struct {
 
 func NewBaseRoute(method, path string, handler any, e *Engine, options ...func(*BaseRoute)) BaseRoute {
 	baseRoute := BaseRoute{
-		Method:              method,
-		Path:                path,
-		Params:              make(map[string]OpenAPIParam),
-		FullName:            FuncName(handler),
-		Operation:           openapi3.NewOperation(),
-		OpenAPI:             e.OpenAPI,
-		RequestContentTypes: e.requestContentTypes,
+		Method:               method,
+		Path:                 path,
+		Params:               make(map[string]OpenAPIParam),
+		FullName:             FuncName(handler),
+		Operation:            openapi3.NewOperation(),
+		OpenAPI:              e.OpenAPI,
+		RequestContentTypes:  e.requestContentTypes,
+		ResponseContentTypes: e.responseContentTypes,
 	}
 
 	for _, o := range options {
@@ -63,6 +64,9 @@ type BaseRoute struct {
 
 	// Content types accepted for the request body. If nil, all content types (*/*) are accepted.
 	RequestContentTypes []string
+
+	// Content types for the response body.
+	ResponseContentTypes []string
 
 	Middlewares []func(http.Handler) http.Handler
 
