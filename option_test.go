@@ -1121,43 +1121,66 @@ func TestWithCustomSerde(t *testing.T) {
 		return body, nil
 	}
 
-	t.Run("Custom serde is used", func(t *testing.T) {
-		s := fuego.NewServer()
-		fuego.Post(s, "/keyvalue", controller,
-			option.WithContentTypeSerde("application/vnd.keyvalue", kvSerde{}),
-		)
+	s := fuego.NewServer()
+	fuego.Post(s, "/keyvalue", controller,
+		option.WithContentTypeSerde("application/vnd.keyvalue", kvSerde{}),
+	)
 
-		// In kv; out kv
-		r := httptest.NewRequest(http.MethodPost, "/keyvalue", strings.NewReader("key1=hello;key2=2"))
-		r.Header.Set("Accept", "application/vnd.keyvalue")
-		r.Header.Set("Content-Type", "application/vnd.keyvalue")
-		w := httptest.NewRecorder()
+	tt := []struct {
+		name         string
+		requestBody  string
+		contentType  string
+		accept       string
+		expectedBody string
+		checkJSON    bool
+	}{
+		{
+			name:         "In kv; out kv",
+			requestBody:  "key1=hello;key2=2",
+			contentType:  "application/vnd.keyvalue",
+			accept:       "application/vnd.keyvalue",
+			expectedBody: "foo=bar;key1=hello;key2=2",
+		},
+		{
+			name:         "In kv; out json",
+			requestBody:  "key1=hello;key2=2",
+			contentType:  "application/vnd.keyvalue",
+			accept:       "application/json",
+			expectedBody: `{"foo":"bar","key1":"hello","key2":"2"}`,
+			checkJSON:    true,
+		},
+		{
+			name:         "In json; out kv",
+			requestBody:  `{"key1":"hello","key2":"2"}`,
+			contentType:  "application/json",
+			accept:       "application/vnd.keyvalue",
+			expectedBody: "foo=bar;key1=hello;key2=2",
+		},
+		{
+			name:         "In json; out json",
+			requestBody:  `{"key1":"hello","key2":"2"}`,
+			contentType:  "application/json",
+			accept:       "application/json",
+			expectedBody: `{"foo":"bar","key1":"hello","key2":"2"}`,
+			checkJSON:    true,
+		},
+	}
 
-		s.Mux.ServeHTTP(w, r)
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPost, "/keyvalue", strings.NewReader(tc.requestBody))
+			r.Header.Set("Accept", tc.accept)
+			r.Header.Set("Content-Type", tc.contentType)
+			w := httptest.NewRecorder()
 
-		require.Equal(t, http.StatusOK, w.Code)
-		require.Equal(t, "foo=bar;key1=hello;key2=2", w.Body.String())
+			s.Mux.ServeHTTP(w, r)
 
-		// In kv; out json
-		r = httptest.NewRequest(http.MethodPost, "/keyvalue", strings.NewReader("key1=hello;key2=2"))
-		r.Header.Set("Accept", "application/json")
-		r.Header.Set("Content-Type", "application/vnd.keyvalue")
-		w = httptest.NewRecorder()
-
-		s.Mux.ServeHTTP(w, r)
-
-		require.Equal(t, http.StatusOK, w.Code)
-		require.JSONEq(t, `{"foo":"bar","key1":"hello","key2":"2"}`, w.Body.String())
-
-		// In json; out kv
-		r = httptest.NewRequest(http.MethodPost, "/keyvalue", strings.NewReader(`{"key1":"hello","key2":"2"}`))
-		r.Header.Set("Accept", "application/vnd.keyvalue")
-		r.Header.Set("Content-Type", "application/json")
-		w = httptest.NewRecorder()
-
-		s.Mux.ServeHTTP(w, r)
-
-		require.Equal(t, http.StatusOK, w.Code)
-		require.Equal(t, "foo=bar;key1=hello;key2=2", w.Body.String())
-	})
+			require.Equal(t, http.StatusOK, w.Code)
+			if tc.checkJSON {
+				require.JSONEq(t, tc.expectedBody, w.Body.String())
+			} else {
+				require.Equal(t, tc.expectedBody, w.Body.String())
+			}
+		})
+	}
 }
