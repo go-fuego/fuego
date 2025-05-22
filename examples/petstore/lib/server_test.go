@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/golden"
 
@@ -18,6 +19,10 @@ func TestPetstoreOpenAPIGeneration(t *testing.T) {
 			fuego.WithOpenAPIConfig(fuego.OpenAPIConfig{
 				JSONFilePath:     "testdata/doc/openapi.json",
 				PrettyFormatJSON: true,
+				Info: &openapi3.Info{
+					Title:   "Pet Store",
+					Version: "0.0.2",
+				},
 			}),
 		),
 	)
