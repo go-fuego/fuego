@@ -99,7 +99,36 @@ func TestWithRequestContentType(t *testing.T) {
 
 		require.Nil(t, content["application/x-yaml"])
 
-		_, ok := s.OpenAPI.Description().Components.RequestBodies["ReqBody"]
-		require.False(t, ok)
+		require.NotContains(t, s.OpenAPI.Description().Components.RequestBodies, "ReqBody")
+	})
+}
+
+func TestWithResponseContentType(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		e := NewEngine()
+		assert.Equal(t, []string{"application/json", "application/xml"}, e.responseContentTypes)
+	})
+
+	t.Run("input", func(t *testing.T) {
+		arr := []string{"application/yml"}
+		e := NewEngine(WithResponseContentType("application/yml"))
+		require.ElementsMatch(t, arr, e.responseContentTypes)
+	})
+
+	t.Run("ensure applied to route", func(t *testing.T) {
+		s := NewServer(WithEngineOptions(
+			WithResponseContentType("application/yml")),
+		)
+		route := Post(s, "/test", dummyController)
+
+		response := route.Operation.Responses.Map()["200"]
+		require.NotNil(t, response)
+		content := response.Value.Content
+		require.Contains(t, content, "application/yml")
+		assert.Equal(t, "#/components/schemas/Resp", content["application/yml"].Schema.Ref)
+
+		require.NotContains(t, content, "application/xml")
+
+		require.NotContains(t, s.OpenAPI.Description().Components.RequestBodies, "ReqBody")
 	})
 }

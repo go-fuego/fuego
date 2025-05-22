@@ -201,7 +201,7 @@ func RegisterOpenAPIOperation[T, B, P any](openapi *OpenAPI, route Route[T, B, P
 	// Automatically add non-declared Content for 200 (or other) Response
 	if responseDefault.Value.Content == nil {
 		responseSchema := SchemaTagFromType(openapi, *new(T))
-		content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
+		content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, route.ResponseContentTypes)
 		responseDefault.Value.WithContent(content)
 	}
 
