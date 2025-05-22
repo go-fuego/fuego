@@ -1128,36 +1128,36 @@ func TestWithCustomSerde(t *testing.T) {
 		)
 
 		// In kv; out kv
-		r := httptest.NewRequest("POST", "/keyvalue", strings.NewReader("key1=hello;key2=2"))
+		r := httptest.NewRequest(http.MethodPost, "/keyvalue", strings.NewReader("key1=hello;key2=2"))
 		r.Header.Set("Accept", "application/vnd.keyvalue")
 		r.Header.Set("Content-Type", "application/vnd.keyvalue")
 		w := httptest.NewRecorder()
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, "foo=bar;key1=hello;key2=2", w.Body.String())
 
 		// In kv; out json
-		r = httptest.NewRequest("POST", "/keyvalue", strings.NewReader("key1=hello;key2=2"))
+		r = httptest.NewRequest(http.MethodPost, "/keyvalue", strings.NewReader("key1=hello;key2=2"))
 		r.Header.Set("Accept", "application/json")
 		r.Header.Set("Content-Type", "application/vnd.keyvalue")
 		w = httptest.NewRecorder()
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 		require.JSONEq(t, `{"foo":"bar","key1":"hello","key2":"2"}`, w.Body.String())
 
 		// In json; out kv
-		r = httptest.NewRequest("POST", "/keyvalue", strings.NewReader("{\"key1\":\"hello\",\"key2\":\"2\"}"))
+		r = httptest.NewRequest(http.MethodPost, "/keyvalue", strings.NewReader("{\"key1\":\"hello\",\"key2\":\"2\"}"))
 		r.Header.Set("Accept", "application/vnd.keyvalue")
 		r.Header.Set("Content-Type", "application/json")
 		w = httptest.NewRecorder()
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, 200, w.Code)
+		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, "foo=bar;key1=hello;key2=2", w.Body.String())
 	})
 }
