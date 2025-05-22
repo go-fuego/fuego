@@ -32,7 +32,7 @@ func NewEngine(options ...EngineOption) *Engine {
 	e := &Engine{
 		OpenAPI:              NewOpenAPI(),
 		ErrorHandler:         ErrorHandler,
-		responseContentTypes: []string{"application/json", "application/xml"},
+		responseContentTypes: defaultResponseContentTypes,
 	}
 	for _, option := range options {
 		option(e)
@@ -87,6 +87,7 @@ var (
 			ShortMiddlewaresPaths:    false,
 		},
 	}
+	defaultResponseContentTypes = []string{"application/json", "application/xml"}
 )
 
 // WithRequestContentType sets the accepted content types for the engine.

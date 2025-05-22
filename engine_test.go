@@ -106,7 +106,7 @@ func TestWithRequestContentType(t *testing.T) {
 func TestWithResponseContentType(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		e := NewEngine()
-		assert.Equal(t, []string{"application/json", "application/xml"}, e.responseContentTypes)
+		assert.Equal(t, defaultResponseContentTypes, e.responseContentTypes)
 	})
 
 	t.Run("input", func(t *testing.T) {
