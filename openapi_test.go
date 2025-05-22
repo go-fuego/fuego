@@ -709,8 +709,6 @@ func TestSetGeneratorSchemaCustomizer(t *testing.T) {
 			return nil
 		}
 
-		fmt.Println(t.Kind())
-
 		if t.Kind() == reflect.Slice || t.Kind() == reflect.Struct {
 			return nil
 		}
@@ -747,7 +745,7 @@ func TestSetGeneratorSchemaCustomizer(t *testing.T) {
 	num_wordsValue := pageValue.Properties["num_words"].Value
 	require.NotEmpty(t, num_wordsValue.Description)
 	require.Equal(t,
-		fmt.Sprintf("Custom tag for num_words with tag value: The number of words on my page"),
+		"Custom tag for num_words with tag value: The number of words on my page",
 		num_wordsValue.Description,
 	)
 }

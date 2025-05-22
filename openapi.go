@@ -47,10 +47,7 @@ func (openAPI *OpenAPI) SetGeneratorSchemaCustomizer(sc openapi3gen.SchemaCustom
 		if err := SchemaCustomizer(name, t, tag, schema); err != nil {
 			return err
 		}
-		if err := sc(name, t, tag, schema); err != nil {
-			return err
-		}
-		return nil
+		return sc(name, t, tag, schema)
 	}
 	openAPI.generator = openapi3gen.NewGenerator(openapi3gen.SchemaCustomizer(customizerFn))
 }
