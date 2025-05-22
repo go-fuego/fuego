@@ -1112,7 +1112,6 @@ func (s kvSerde) Deserialize(data []byte) (any, error) {
 }
 
 func TestWithCustomSerde(t *testing.T) {
-
 	controller := func(c fuego.ContextWithBody[map[string]string]) (map[string]string, error) {
 		body, err := c.Body()
 		if err != nil {
@@ -1148,7 +1147,7 @@ func TestWithCustomSerde(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, 200, w.Code)
-		require.Equal(t, "{\"foo\":\"bar\",\"key1\":\"hello\",\"key2\":\"2\"}\n", w.Body.String())
+		require.JSONEq(t, `{"foo":"bar","key1":"hello","key2":"2"}`, w.Body.String())
 
 		// In json; out kv
 		r = httptest.NewRequest("POST", "/keyvalue", strings.NewReader("{\"key1\":\"hello\",\"key2\":\"2\"}"))

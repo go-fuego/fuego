@@ -486,18 +486,20 @@ func (c *netHttpContext[B, P]) MustParams() P {
 
 // Serialize serializes the given data to the response. It uses the Content-Type header to determine the serialization format.
 func (c netHttpContext[B, P]) Serialize(data any) error {
-
 	// facilitate user-defined content type serialization
 	for _, contentType := range parseAcceptHeader(c.Req.Header) {
-		if serde, ok := c.route.contentTypeSerde[contentType]; ok {
-			bytes, err := serde.Serialize(data)
-			if err != nil {
-				return err
-			}
-			c.Res.Header().Set("Content-Type", contentType)
-			c.Res.Write(bytes)
-			return nil
+		serde, ok := c.route.contentTypeSerde[contentType]
+		if !ok {
+			continue
 		}
+
+		bytes, err := serde.Serialize(data)
+		if err != nil {
+			return err
+		}
+		c.Res.Header().Set("Content-Type", contentType)
+		_, err = c.Res.Write(bytes)
+		return err
 	}
 
 	if c.serializer == nil {
