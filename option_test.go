@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
+	"slices"
 	"strings"
 	"testing"
 
@@ -1077,56 +1077,88 @@ func TestOptionStripTrailingSlash(t *testing.T) {
 	})
 }
 
-// myCustomType has custom serialization and deserialization logic
-type myCustomType struct {
-	A string
-	B int
-}
+// kvSerde has custom serialization and deserialization logic for key-value pairs
+// in the format "key1=value1;key2=value2;..."
+type kvSerde struct{}
 
 // Serialize custom serialization logic
-func (s myCustomType) Serialize(v any) ([]byte, error) {
-	v2, ok := v.(myCustomType)
+func (s kvSerde) Serialize(v any) ([]byte, error) {
+	v2, ok := v.(map[string]string)
 	if !ok {
-		return nil, errors.New("invalid type")
+		return nil, errors.New("invalid type; kvSerde expected map[string]string")
 	}
-	return []byte(fmt.Sprintf("%s:%d", v2.A, v2.B)), nil
+	parts := make([]string, 0, len(v2))
+	for k, v := range v2 {
+		parts = append(parts, fmt.Sprintf("%s=%s", k, v))
+	}
+	slices.Sort(parts)
+	joined := strings.Join(parts, ";")
+	return []byte(joined), nil
 }
 
 // Deserialize custom deserialization logic
-func (s myCustomType) Deserialize(data []byte) (any, error) {
-	var v myCustomType
-	var err error
-	parts := strings.Split(string(data), ":")
-	if len(parts) != 2 {
-		return myCustomType{}, errors.New("invalid data")
+func (s kvSerde) Deserialize(data []byte) (any, error) {
+	v := map[string]string{}
+	pairs := strings.Split(string(data), ";")
+
+	for _, pair := range pairs {
+		kv := strings.Split(pair, "=")
+		if len(kv) != 2 {
+			return nil, errors.New("invalid format; kvSerde expected key=value pairs separated by ;")
+		}
+		v[kv[0]] = kv[1]
 	}
-	v.A = parts[0]
-	v.B, err = strconv.Atoi(parts[1])
-	return v, err
+	return v, nil
 }
 
 func TestWithCustomSerde(t *testing.T) {
+
+	controller := func(c fuego.ContextWithBody[map[string]string]) (map[string]string, error) {
+		body, err := c.Body()
+		if err != nil {
+			return nil, err
+		}
+		body["foo"] = "bar"
+		return body, nil
+	}
+
 	t.Run("Custom serde is used", func(t *testing.T) {
 		s := fuego.NewServer()
-		route := fuego.Post(s, "/times2",
-			func(c fuego.ContextWithBody[myCustomType]) (myCustomType, error) {
-				body, err := c.Body()
-				if err != nil {
-					return myCustomType{}, err
-				}
-				return myCustomType{A: body.A + " times 2", B: body.B * 2}, nil
-			},
-			option.WithContentTypeSerde("application/vnd.foo", myCustomType{}),
+		fuego.Post(s, "/keyvalue", controller,
+			option.WithContentTypeSerde("application/vnd.keyvalue", kvSerde{}),
 		)
-		require.Equal(t, "/times2", route.Path)
 
-		r := httptest.NewRequest("POST", "/times2", strings.NewReader("hello:2"))
-		r.Header.Set("Content-Type", "application/vnd.foo")
+		// In kv; out kv
+		r := httptest.NewRequest("POST", "/keyvalue", strings.NewReader("key1=hello;key2=2"))
+		r.Header.Set("Accept", "application/vnd.keyvalue")
+		r.Header.Set("Content-Type", "application/vnd.keyvalue")
 		w := httptest.NewRecorder()
 
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, 200, w.Code)
-		require.Equal(t, "hello times 2:4", w.Body.String())
+		require.Equal(t, "foo=bar;key1=hello;key2=2", w.Body.String())
+
+		// In kv; out json
+		r = httptest.NewRequest("POST", "/keyvalue", strings.NewReader("key1=hello;key2=2"))
+		r.Header.Set("Accept", "application/json")
+		r.Header.Set("Content-Type", "application/vnd.keyvalue")
+		w = httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+		require.Equal(t, "{\"foo\":\"bar\",\"key1\":\"hello\",\"key2\":\"2\"}\n", w.Body.String())
+
+		// In json; out kv
+		r = httptest.NewRequest("POST", "/keyvalue", strings.NewReader("{\"key1\":\"hello\",\"key2\":\"2\"}"))
+		r.Header.Set("Accept", "application/vnd.keyvalue")
+		r.Header.Set("Content-Type", "application/json")
+		w = httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, 200, w.Code)
+		require.Equal(t, "foo=bar;key1=hello;key2=2", w.Body.String())
 	})
 }
