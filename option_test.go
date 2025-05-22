@@ -1150,7 +1150,7 @@ func TestWithCustomSerde(t *testing.T) {
 		require.JSONEq(t, `{"foo":"bar","key1":"hello","key2":"2"}`, w.Body.String())
 
 		// In json; out kv
-		r = httptest.NewRequest(http.MethodPost, "/keyvalue", strings.NewReader("{\"key1\":\"hello\",\"key2\":\"2\"}"))
+		r = httptest.NewRequest(http.MethodPost, "/keyvalue", strings.NewReader(`{"key1":"hello","key2":"2"}`))
 		r.Header.Set("Accept", "application/vnd.keyvalue")
 		r.Header.Set("Content-Type", "application/json")
 		w = httptest.NewRecorder()
