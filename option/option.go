@@ -47,6 +47,16 @@ var QueryInt = fuego.OptionQueryInt
 // The list of options is in the param package.
 var QueryBool = fuego.OptionQueryBool
 
+// QueryArray declares an array query parameter for the route.
+// This will be added to the OpenAPI spec.
+// The query parameter is transmitted as a string in the URL, but it is parsed as an array.
+// Example:
+//
+//	QueryArray("tags", "Filter by tags", param.Example("tag1,tag2", []string{"tag1", "tag2"}), param.Nullable())
+//
+// The list of options is in the param package.
+var QueryArray = fuego.OptionQueryArray
+
 // Header declares a header parameter for the route.
 // This will be added to the OpenAPI spec.
 // Example:

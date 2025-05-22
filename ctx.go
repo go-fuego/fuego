@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -364,10 +365,112 @@ func (c *netHttpContext[B, P]) Body() (B, error) {
 	return body, err
 }
 
-func (c *netHttpContext[B, P]) Params() (P, error) {
-	var p P
+func bitSize(kind reflect.Kind) int {
+	switch kind {
+	case reflect.Uint8, reflect.Int8:
+		return 8
+	case reflect.Uint16, reflect.Int16:
+		return 16
+	case reflect.Uint32, reflect.Int32, reflect.Float32:
+		return 32
+	case reflect.Uint, reflect.Int:
+		return strconv.IntSize
+	}
+	return 64
+}
 
-	return p, nil
+// setParamValue sets a value to a reflect.Value based on its kind
+func setParamValue(value reflect.Value, paramValue string, kind reflect.Kind) error {
+	switch kind {
+	case reflect.String:
+		value.SetString(paramValue)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		intValue, err := strconv.ParseInt(paramValue, 10, bitSize(kind))
+		if err != nil {
+			return fmt.Errorf("cannot convert %s to %s: %w", paramValue, kind, err)
+		}
+		value.SetInt(intValue)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		uintValue, err := strconv.ParseUint(paramValue, 10, bitSize(kind))
+		if err != nil {
+			return fmt.Errorf("cannot convert %s to %s: %w", paramValue, kind, err)
+		}
+		value.SetUint(uintValue)
+	case reflect.Float32, reflect.Float64:
+		floatValue, err := strconv.ParseFloat(paramValue, bitSize(kind))
+		if err != nil {
+			return fmt.Errorf("cannot convert %s to %s: %w", paramValue, kind, err)
+		}
+		value.SetFloat(floatValue)
+	case reflect.Bool:
+		boolValue, err := strconv.ParseBool(paramValue)
+		if err != nil {
+			return fmt.Errorf("cannot convert %s to bool: %w", paramValue, err)
+		}
+		value.SetBool(boolValue)
+	default:
+		return fmt.Errorf("unsupported type %s", kind)
+	}
+	return nil
+}
+
+func (c *netHttpContext[B, P]) Params() (P, error) {
+	p := new(P)
+
+	paramsType := reflect.TypeOf(p).Elem()
+	if paramsType.Kind() != reflect.Struct {
+		return *p, fmt.Errorf("params must be a struct, got %T", *p)
+	}
+	paramsValue := reflect.ValueOf(p).Elem()
+
+	for i := range paramsType.NumField() {
+		field := paramsType.Field(i)
+		fieldValue := paramsValue.Field(i)
+
+		// Process query parameters
+		if tag := field.Tag.Get("query"); tag != "" {
+			// Handle slice/array types
+			switch field.Type.Kind() {
+			case reflect.Slice, reflect.Array:
+				paramValues := c.QueryParamArr(tag)
+				if len(paramValues) == 0 {
+					continue
+				}
+
+				sliceType := field.Type.Elem()
+				slice := reflect.MakeSlice(field.Type, len(paramValues), len(paramValues))
+
+				for j, paramValue := range paramValues {
+					if err := setParamValue(slice.Index(j), paramValue, sliceType.Kind()); err != nil {
+						return *p, err
+					}
+				}
+				fieldValue.Set(slice)
+			default:
+				// Handle single value
+				paramValue := c.QueryParam(tag)
+				if paramValue == "" {
+					continue
+				}
+				err := setParamValue(fieldValue, paramValue, field.Type.Kind())
+				if err != nil {
+					return *p, err
+				}
+			}
+		} else if tag := field.Tag.Get("header"); tag != "" {
+			// Process header parameters
+			paramValue := c.Header(tag)
+			if paramValue == "" {
+				continue
+			}
+			err := setParamValue(fieldValue, paramValue, field.Type.Kind())
+			if err != nil {
+				return *p, err
+			}
+		}
+	}
+
+	return *p, nil
 }
 
 func (c *netHttpContext[B, P]) MustParams() P {

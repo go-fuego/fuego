@@ -648,22 +648,309 @@ func TestContextNoBody_Redirect(t *testing.T) {
 }
 
 func TestNetHttpContext_Params(t *testing.T) {
-	type MyParams struct {
-		ID          int     `json:"id" query:"id"`
-		Other       *string `json:"other,omitempty" query:"other"`
-		ContentType string  `json:"content_type" header:"Content-Type"`
-	}
-	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello", nil)
-	w := httptest.NewRecorder()
-	r.Header.Set("Content-Type", "application/json")
+	t.Run("can write and read params", func(t *testing.T) {
+		type MyParams struct {
+			ID          int     `query:"id"`
+			Temperature float64 `query:"temperature"`
+			Other       string  `query:"other" description:"my description"`
+			ContentType string  `header:"Content-Type"`
+		}
+		r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello&temperature=20.30", nil)
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
 
-	c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
 
-	_, err := c.Params()
-	require.NoError(t, err)
-	// TODO: implementation must pass this test
-	// require.NotEmpty(t, params)
-	// require.Equal(t, 456, params.ID)
-	// require.Equal(t, "hello", params.Other)
-	// require.Equal(t, "application/json", params.ContentType)
+		params, err := c.Params()
+		require.NoError(t, err)
+		require.NotEmpty(t, params)
+		assert.Equal(t, 456, params.ID)
+		assert.Equal(t, "hello", params.Other)
+		assert.Equal(t, "application/json", params.ContentType)
+		assert.InEpsilon(t, 20.30, params.Temperature, 0.01)
+	})
+
+	t.Run("does not support other receivers than struct", func(t *testing.T) {
+		t.Run("pointer to struct", func(t *testing.T) {
+			type MyParams struct{}
+			r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello&temperature=20.30", nil)
+			r.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			c := NewNetHTTPContext[any, *MyParams](BaseRoute{}, w, r, readOptions{})
+
+			_, err := c.Params()
+
+			require.ErrorContains(t, err, "params must be a struct, got *fuego.MyParams")
+		})
+
+		t.Run("interface", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello&temperature=20.30", nil)
+			r.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			c := NewNetHTTPContext[any, any](BaseRoute{}, w, r, readOptions{})
+
+			_, err := c.Params()
+
+			require.ErrorContains(t, err, "params must be a struct, got <nil>")
+		})
+	})
+
+	t.Run("support for more integer types", func(t *testing.T) {
+		type MyParams struct {
+			ID          int8    `query:"id"`
+			Temperature float32 `query:"temperature"`
+			Other       uint32  `query:"other" description:"my description"`
+			MyHeader    uint64  `header:"MyHeader"`
+		}
+
+		r := httptest.NewRequest("GET", "http://example.com/foo/123?id=12&other=23782&temperature=20.30", nil)
+		r.Header.Set("MyHeader", "8923")
+		w := httptest.NewRecorder()
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+		params, err := c.Params()
+		require.NoError(t, err)
+		require.NotEmpty(t, params)
+		assert.Equal(t, int8(12), params.ID)
+		assert.Equal(t, uint32(23782), params.Other)
+		assert.Equal(t, uint64(8923), params.MyHeader)
+		assert.InEpsilon(t, float32(20.30), params.Temperature, 0.01)
+	})
+
+	t.Run("support for array of strings", func(t *testing.T) {
+		type MyParams struct {
+			Tags []string `query:"tags"`
+		}
+
+		r := httptest.NewRequest("GET", "http://example.com/foo?tags=golang&tags=web&tags=api", nil)
+		w := httptest.NewRecorder()
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+		params, err := c.Params()
+		require.NoError(t, err)
+		require.NotEmpty(t, params)
+		assert.Equal(t, []string{"golang", "web", "api"}, params.Tags)
+	})
+
+	t.Run("support for array of integers", func(t *testing.T) {
+		type MyParams struct {
+			IDs []int `query:"ids"`
+		}
+
+		r := httptest.NewRequest("GET", "http://example.com/foo?ids=1&ids=2&ids=3", nil)
+		w := httptest.NewRecorder()
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+		params, err := c.Params()
+		require.NoError(t, err)
+		require.NotEmpty(t, params)
+		assert.Equal(t, []int{1, 2, 3}, params.IDs)
+	})
+
+	t.Run("support for array of various integer types", func(t *testing.T) {
+		type MyParams struct {
+			Int8s   []int8   `query:"int8s"`
+			Int16s  []int16  `query:"int16s"`
+			Int32s  []int32  `query:"int32s"`
+			Int64s  []int64  `query:"int64s"`
+			Uints   []uint   `query:"uints"`
+			Uint8s  []uint8  `query:"uint8s"`
+			Uint16s []uint16 `query:"uint16s"`
+			Uint32s []uint32 `query:"uint32s"`
+			Uint64s []uint64 `query:"uint64s"`
+		}
+
+		url := "http://example.com/foo?" +
+			"int8s=1&int8s=2&" +
+			"int16s=300&int16s=400&" +
+			"int32s=70000&int32s=80000&" +
+			"int64s=9000000000&int64s=9100000000&" +
+			"uints=1&uints=2&" +
+			"uint8s=200&uint8s=201&" +
+			"uint16s=60000&uint16s=60001&" +
+			"uint32s=3000000000&uint32s=3100000000&" +
+			"uint64s=9000000000&uint64s=9100000000"
+
+		r := httptest.NewRequest("GET", url, nil)
+		w := httptest.NewRecorder()
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+		params, err := c.Params()
+		require.NoError(t, err)
+		require.NotEmpty(t, params)
+		assert.Equal(t, []int8{1, 2}, params.Int8s)
+		assert.Equal(t, []int16{300, 400}, params.Int16s)
+		assert.Equal(t, []int32{70000, 80000}, params.Int32s)
+		assert.Equal(t, []int64{9000000000, 9100000000}, params.Int64s)
+		assert.Equal(t, []uint{1, 2}, params.Uints)
+		assert.Equal(t, []uint8{200, 201}, params.Uint8s)
+		assert.Equal(t, []uint16{60000, 60001}, params.Uint16s)
+		assert.Equal(t, []uint32{3000000000, 3100000000}, params.Uint32s)
+		assert.Equal(t, []uint64{9000000000, 9100000000}, params.Uint64s)
+	})
+
+	t.Run("support for array of booleans", func(t *testing.T) {
+		type MyParams struct {
+			Flags []bool `query:"flags"`
+		}
+
+		r := httptest.NewRequest("GET", "http://example.com/foo?flags=true&flags=false&flags=true", nil)
+		w := httptest.NewRecorder()
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+		params, err := c.Params()
+		require.NoError(t, err)
+		require.NotEmpty(t, params)
+		assert.Equal(t, []bool{true, false, true}, params.Flags)
+	})
+
+	t.Run("support for array of floats", func(t *testing.T) {
+		type MyParams struct {
+			Float32s []float32 `query:"float32s"`
+			Float64s []float64 `query:"float64s"`
+		}
+
+		r := httptest.NewRequest("GET", "http://example.com/foo?float32s=1.1&float32s=-2.2&float64s=-3.3&float64s=4.4", nil)
+		w := httptest.NewRecorder()
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+		params, err := c.Params()
+		require.NoError(t, err)
+		require.NotEmpty(t, params)
+		assert.InEpsilonSlice(t, []float32{1.1, -2.2}, params.Float32s, 0.01)
+		assert.InEpsilonSlice(t, []float64{-3.3, 4.4}, params.Float64s, 0.01)
+	})
+
+	t.Run("error handling for invalid array values", func(t *testing.T) {
+		type MyParams struct {
+			IDs []int `query:"ids"`
+		}
+
+		r := httptest.NewRequest("GET", "http://example.com/foo?ids=1&ids=invalid&ids=3", nil)
+		w := httptest.NewRecorder()
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+		_, err := c.Params()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "cannot convert invalid to int")
+	})
+
+	t.Run("empty array when no query parameters", func(t *testing.T) {
+		type MyParams struct {
+			Tags []string `query:"tags"`
+		}
+
+		r := httptest.NewRequest("GET", "http://example.com/foo", nil)
+		w := httptest.NewRecorder()
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+		params, err := c.Params()
+		require.NoError(t, err)
+		assert.Empty(t, params.Tags)
+	})
+
+	t.Run("mixed single and array parameters", func(t *testing.T) {
+		type MyParams struct {
+			ID    int      `query:"id"`
+			Tags  []string `query:"tags"`
+			Limit int      `query:"limit"`
+		}
+
+		r := httptest.NewRequest("GET", "http://example.com/foo?id=123&tags=golang&tags=web&limit=50", nil)
+		w := httptest.NewRecorder()
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+		params, err := c.Params()
+		require.NoError(t, err)
+		require.NotEmpty(t, params)
+		assert.Equal(t, 123, params.ID)
+		assert.Equal(t, []string{"golang", "web"}, params.Tags)
+		assert.Equal(t, 50, params.Limit)
+	})
+
+	t.Run("error handling for integer overflow", func(t *testing.T) {
+		t.Run("int8 overflow", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?value=128", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Value int8 `query:"value"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "cannot convert 128 to int")
+		})
+
+		t.Run("int8 underflow", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?value=-129", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Value int8 `query:"value"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "cannot convert -129 to int")
+		})
+
+		t.Run("int16 overflow", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?value=32768", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Value int16 `query:"value"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "cannot convert 32768 to int")
+		})
+
+		t.Run("uint8 overflow", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?value=256", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Value uint8 `query:"value"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "cannot convert 256 to uint")
+		})
+
+		t.Run("negative value for unsigned type", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?value=-1", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Value uint32 `query:"value"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "cannot convert -1 to uint")
+		})
+
+		t.Run("array with overflow value", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?values=100&values=300", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Values []uint8 `query:"values"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "cannot convert 300 to uint")
+		})
+
+		t.Run("valid values within range", func(t *testing.T) {
+			r := httptest.NewRequest("GET", "http://example.com/foo?int8=127&uint8=255&int16=32767&uint16=65535", nil)
+			w := httptest.NewRecorder()
+
+			ctx := NewNetHTTPContext[any, struct {
+				Int8   int8   `query:"int8"`
+				Uint8  uint8  `query:"uint8"`
+				Int16  int16  `query:"int16"`
+				Uint16 uint16 `query:"uint16"`
+			}](BaseRoute{}, w, r, readOptions{})
+
+			_, err := ctx.Params()
+			require.NoError(t, err)
+		})
+	})
 }

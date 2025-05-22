@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -38,6 +39,10 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		optionPagination,
 		option.Query("name", "Filter by name", param.Example("cat name", "felix"), param.Nullable()),
 		option.QueryInt("younger_than", "Only get pets younger than given age in years", param.Default(3)),
+		option.Description("Filter pets"),
+	)
+
+	fuego.Get(petsGroup, "/strongly-typed", rs.filterPetsStronglyTyped,
 		option.Description("Filter pets"),
 	)
 
@@ -123,6 +128,26 @@ func (rs PetsResources) filterPets(c fuego.ContextNoBody) ([]models.Pets, error)
 	return rs.PetsService.FilterPets(PetsFilter{
 		Name:        c.QueryParam("name"),
 		YoungerThan: c.QueryParamInt("younger_than"),
+	})
+}
+
+type FilterParams struct {
+	Name        string `query:"name" description:"Filter by name" example:"cat name"`
+	YoungerThan int    `query:"younger_than"`
+	JustAnArray []int  `query:"just_an_array" example:"1,2,3"`
+}
+
+func (rs PetsResources) filterPetsStronglyTyped(c fuego.ContextWithParams[FilterParams]) ([]models.Pets, error) {
+	params, err := c.Params()
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("params", params)
+
+	return rs.PetsService.FilterPets(PetsFilter{
+		Name:        params.Name,
+		YoungerThan: params.YoungerThan,
 	})
 }
 

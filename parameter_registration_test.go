@@ -13,7 +13,7 @@ func Test_RegisterOpenAPIOperation(t *testing.T) {
 	s := NewServer()
 
 	t.Run("Nil operation handling", func(t *testing.T) {
-		route := NewRouteWithParams[struct{}, struct{}, struct{}](
+		route := NewRoute[struct{}, struct{}, struct{}](
 			http.MethodGet,
 			"/test",
 			handler,
@@ -26,10 +26,10 @@ func Test_RegisterOpenAPIOperation(t *testing.T) {
 	})
 
 	t.Run("Register with params", func(t *testing.T) {
-		route := NewRouteWithParams[struct {
+		route := NewRoute[struct{}, struct{}, struct {
 			QueryParam  string `query:"queryParam"`
 			HeaderParam string `header:"headerParam"`
-		}, struct{}, struct{}](
+		}](
 			http.MethodGet,
 			"/some/path/{pathParam}",
 			handler,
@@ -50,8 +50,8 @@ func Test_RegisterOpenAPIOperation(t *testing.T) {
 		assert.Equal(t, "headerParam", headerParam.Name)
 	})
 
-	t.Run("RegisterParams should not with interfaces", func(t *testing.T) {
-		route := NewRouteWithParams[any, struct{}, struct{}](
+	t.Run("RegisterParams do not raise error with interface types", func(t *testing.T) {
+		route := NewRoute[struct{}, struct{}, any](
 			http.MethodGet,
 			"/no-interfaces",
 			handler,
@@ -60,6 +60,6 @@ func Test_RegisterOpenAPIOperation(t *testing.T) {
 		)
 
 		err := route.RegisterParams()
-		require.Error(t, err)
+		require.NoError(t, err)
 	})
 }

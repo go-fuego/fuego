@@ -1,7 +1,6 @@
 package fuego
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -142,7 +141,7 @@ func validateSwaggerURL(swaggerURL string) bool {
 
 // RegisterOpenAPIOperation registers the route to the OpenAPI description.
 // Modifies the route's Operation.
-func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(openapi *OpenAPI) error {
+func (route *Route[ResponseBody, RequestBody, Params]) RegisterOpenAPIOperation(openapi *OpenAPI) error {
 	if route.Hidden || route.Method == "" {
 		return nil
 	}
@@ -155,7 +154,7 @@ func (route *Route[ResponseBody, RequestBody]) RegisterOpenAPIOperation(openapi 
 // RegisterOpenAPIOperation registers an OpenAPI operation.
 //
 // Deprecated: Use `(*Route[ResponseBody, RequestBody]).RegisterOpenAPIOperation` instead.
-func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*openapi3.Operation, error) {
+func RegisterOpenAPIOperation[T, B, P any](openapi *OpenAPI, route Route[T, B, P]) (*openapi3.Operation, error) {
 	if route.Operation == nil {
 		route.Operation = openapi3.NewOperation()
 	}
@@ -239,6 +238,11 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 		}
 	}
 
+	err := route.RegisterParams()
+	if err != nil {
+		return nil, err
+	}
+
 	openapi.Description().AddOperation(route.Path, route.Method, route.Operation)
 
 	return route.Operation, nil
@@ -247,14 +251,14 @@ func RegisterOpenAPIOperation[T, B any](openapi *OpenAPI, route Route[T, B]) (*o
 // RegisterParams registers the parameters of a given type to an OpenAPI operation.
 // It inspects the fields of the provided struct, looking for "header" tags, and creates
 // OpenAPI parameters for each tagged field.
-func (route *RouteWithParams[Params, ResponseBody, RequestBody]) RegisterParams() error {
+func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 	if route.Operation == nil {
 		route.Operation = openapi3.NewOperation()
 	}
 	params := *new(Params)
 	typeOfParams := reflect.TypeOf(params)
 	if typeOfParams == nil {
-		return errors.New("params cannot be nil")
+		return nil
 	}
 	if typeOfParams.Kind() == reflect.Ptr {
 		typeOfParams = typeOfParams.Elem()
@@ -263,14 +267,33 @@ func (route *RouteWithParams[Params, ResponseBody, RequestBody]) RegisterParams(
 	if typeOfParams.Kind() == reflect.Struct {
 		for i := range typeOfParams.NumField() {
 			field := typeOfParams.Field(i)
+			params := []func(param *OpenAPIParam){}
+			example, _ := field.Tag.Lookup("description")
+			if example != "" {
+				params = append(params, ParamExample("example", example))
+			}
+
+			description, _ := field.Tag.Lookup("description")
 			if headerKey, ok := field.Tag.Lookup("header"); ok {
-				OptionHeader(headerKey, "string")(&route.BaseRoute)
+				OptionHeader(headerKey, description, params...)(&route.BaseRoute)
 			}
 			if queryKey, ok := field.Tag.Lookup("query"); ok {
-				OptionQuery(queryKey, "string")(&route.BaseRoute)
+				switch field.Type.Kind() {
+				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+					reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+					reflect.Float32, reflect.Float64:
+					OptionQueryInt(queryKey, description, params...)(&route.BaseRoute)
+
+				case reflect.Bool:
+					OptionQueryBool(queryKey, description, params...)(&route.BaseRoute)
+				case reflect.String:
+					OptionQuery(queryKey, description, params...)(&route.BaseRoute)
+				case reflect.Slice, reflect.Array:
+					OptionQueryArray(queryKey, description, field.Type.Elem().Kind(), params...)(&route.BaseRoute)
+				}
 			}
 			if cookieKey, ok := field.Tag.Lookup("cookie"); ok {
-				OptionCookie(cookieKey, "string")(&route.BaseRoute)
+				OptionCookie(cookieKey, description, params...)(&route.BaseRoute)
 			}
 		}
 	}
