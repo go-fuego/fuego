@@ -1111,7 +1111,7 @@ func (s kvSerde) Deserialize(data []byte) (any, error) {
 	return v, nil
 }
 
-func TestWithCustomSerde(t *testing.T) {
+func TestWithCustomEndpointSerde(t *testing.T) {
 	controller := func(c fuego.ContextWithBody[map[string]string]) (map[string]string, error) {
 		body, err := c.Body()
 		if err != nil {
@@ -1169,6 +1169,160 @@ func TestWithCustomSerde(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/keyvalue", strings.NewReader(tc.requestBody))
+			r.Header.Set("Accept", tc.accept)
+			r.Header.Set("Content-Type", tc.contentType)
+			w := httptest.NewRecorder()
+
+			s.Mux.ServeHTTP(w, r)
+
+			require.Equal(t, http.StatusOK, w.Code)
+			if tc.checkJSON {
+				require.JSONEq(t, tc.expectedBody, w.Body.String())
+			} else {
+				require.Equal(t, tc.expectedBody, w.Body.String())
+			}
+		})
+	}
+}
+
+func TestWithCustomGroupSerde(t *testing.T) {
+	controller := func(c fuego.ContextWithBody[map[string]string]) (map[string]string, error) {
+		body, err := c.Body()
+		if err != nil {
+			return nil, err
+		}
+		body["foo"] = "bar"
+		return body, nil
+	}
+
+	s := fuego.NewServer()
+
+	group := fuego.Group(s, "/keyvalue",
+		option.WithContentTypeSerde("application/vnd.keyvalue", kvSerde{}),
+	)
+
+	fuego.Post(group, "/foo", controller)
+
+	tt := []struct {
+		name         string
+		requestBody  string
+		contentType  string
+		accept       string
+		expectedBody string
+		checkJSON    bool
+	}{
+		{
+			name:         "In kv; out kv",
+			requestBody:  "key1=hello;key2=2",
+			contentType:  "application/vnd.keyvalue",
+			accept:       "application/vnd.keyvalue",
+			expectedBody: "foo=bar;key1=hello;key2=2",
+		},
+		{
+			name:         "In kv; out json",
+			requestBody:  "key1=hello;key2=2",
+			contentType:  "application/vnd.keyvalue",
+			accept:       "application/json",
+			expectedBody: `{"foo":"bar","key1":"hello","key2":"2"}`,
+			checkJSON:    true,
+		},
+		{
+			name:         "In json; out kv",
+			requestBody:  `{"key1":"hello","key2":"2"}`,
+			contentType:  "application/json",
+			accept:       "application/vnd.keyvalue",
+			expectedBody: "foo=bar;key1=hello;key2=2",
+		},
+		{
+			name:         "In json; out json",
+			requestBody:  `{"key1":"hello","key2":"2"}`,
+			contentType:  "application/json",
+			accept:       "application/json",
+			expectedBody: `{"foo":"bar","key1":"hello","key2":"2"}`,
+			checkJSON:    true,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPost, "/keyvalue/foo", strings.NewReader(tc.requestBody))
+			r.Header.Set("Accept", tc.accept)
+			r.Header.Set("Content-Type", tc.contentType)
+			w := httptest.NewRecorder()
+
+			s.Mux.ServeHTTP(w, r)
+
+			require.Equal(t, http.StatusOK, w.Code)
+			if tc.checkJSON {
+				require.JSONEq(t, tc.expectedBody, w.Body.String())
+			} else {
+				require.Equal(t, tc.expectedBody, w.Body.String())
+			}
+		})
+	}
+}
+
+func TestWithCustomServerSerde(t *testing.T) {
+	controller := func(c fuego.ContextWithBody[map[string]string]) (map[string]string, error) {
+		body, err := c.Body()
+		if err != nil {
+			return nil, err
+		}
+		body["foo"] = "bar"
+		return body, nil
+	}
+
+	s := fuego.NewServer(
+		fuego.WithRouteOptions(
+			option.WithContentTypeSerde("application/vnd.keyvalue", kvSerde{}),
+		),
+	)
+
+	fuego.Post(s, "/foo", controller)
+
+	tt := []struct {
+		name         string
+		requestBody  string
+		contentType  string
+		accept       string
+		expectedBody string
+		checkJSON    bool
+	}{
+		{
+			name:         "In kv; out kv",
+			requestBody:  "key1=hello;key2=2",
+			contentType:  "application/vnd.keyvalue",
+			accept:       "application/vnd.keyvalue",
+			expectedBody: "foo=bar;key1=hello;key2=2",
+		},
+		{
+			name:         "In kv; out json",
+			requestBody:  "key1=hello;key2=2",
+			contentType:  "application/vnd.keyvalue",
+			accept:       "application/json",
+			expectedBody: `{"foo":"bar","key1":"hello","key2":"2"}`,
+			checkJSON:    true,
+		},
+		{
+			name:         "In json; out kv",
+			requestBody:  `{"key1":"hello","key2":"2"}`,
+			contentType:  "application/json",
+			accept:       "application/vnd.keyvalue",
+			expectedBody: "foo=bar;key1=hello;key2=2",
+		},
+		{
+			name:         "In json; out json",
+			requestBody:  `{"key1":"hello","key2":"2"}`,
+			contentType:  "application/json",
+			accept:       "application/json",
+			expectedBody: `{"foo":"bar","key1":"hello","key2":"2"}`,
+			checkJSON:    true,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPost, "/foo", strings.NewReader(tc.requestBody))
 			r.Header.Set("Accept", tc.accept)
 			r.Header.Set("Content-Type", tc.contentType)
 			w := httptest.NewRecorder()
