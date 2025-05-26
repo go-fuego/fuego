@@ -7,7 +7,7 @@ replace github.com/go-fuego/fuego => ../..
 replace github.com/go-fuego/fuego/extra/fuegogin => ../../extra/fuegogin
 
 require (
-	github.com/gin-gonic/gin v1.10.0
+	github.com/gin-gonic/gin v1.10.1
 	github.com/go-fuego/fuego v0.18.8
 	github.com/go-fuego/fuego/extra/fuegogin v0.1.0
 	github.com/stretchr/testify v1.10.0
