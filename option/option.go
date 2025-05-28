@@ -203,4 +203,5 @@ var DefaultStatusCode = fuego.OptionDefaultStatusCode
 var StripTrailingSlash = fuego.OptionStripTrailingSlash
 
 // WithContentTypeSerde sets a custom serializer and deserializer for a content type.
+// This option is currently only applicable to the [fuego.Server]. Other adaptors are not affected by this option.
 var WithContentTypeSerde = fuego.OptionWithContentTypeSerde
