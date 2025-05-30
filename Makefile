@@ -4,11 +4,15 @@ ci: lint cover
 
 ci-full: ci dependencies-analyze openapi-check check-all-modules lint-markdown bench
 
+PATHS := ./... ./examples/petstore/... $\
+	./extra/fuegogin/... ./examples/gin-compat/... $\
+	./extra/sql/... ./extra/sqlite3/... $\
+	./extra/fuegoecho/... ./examples/echo-compat/...
 test: 
-	go test ./... ./examples/petstore/... ./extra/fuegogin/... ./examples/gin-compat/... ./extra/sql/... ./extra/sqlite3/...
+	go test $(PATHS)
 
 cover:
-	go test -coverprofile=coverage.out ./... ./examples/petstore/... ./extra/fuegogin/... ./examples/gin-compat/... ./extra/sql/... ./extra/sqlite3/...
+	go test -coverprofile=coverage.out ${PATHS}
 	go tool cover -func=coverage.out
 
 check-all-modules:
