@@ -1,7 +1,12 @@
 package fuego
 
+import (
+	"context"
+	"io"
+)
+
 // Serde implements serialization and deserialization for a given type.
 type Serde interface {
 	Serialize(v any) ([]byte, error)
-	Deserialize(data []byte) (any, error)
+	Deserialize(ctx context.Context, input io.Reader) (any, error)
 }

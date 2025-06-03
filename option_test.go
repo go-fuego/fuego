@@ -1,8 +1,10 @@
 package fuego_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -1099,9 +1101,13 @@ func (s kvSerde) Serialize(v any) ([]byte, error) {
 }
 
 // Deserialize custom deserialization logic
-func (s kvSerde) Deserialize(data []byte) (any, error) {
+func (s kvSerde) Deserialize(_ context.Context, input io.Reader) (any, error) {
+	buf, err := io.ReadAll(input)
+	if err != nil {
+		return nil, err
+	}
 	v := map[string]string{}
-	pairs := strings.Split(string(data), s.delimiter)
+	pairs := strings.Split(string(buf), s.delimiter)
 
 	for _, pair := range pairs {
 		kv := strings.Split(pair, "=")

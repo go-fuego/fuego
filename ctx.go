@@ -538,15 +538,15 @@ func body[B, P any](c netHttpContext[B, P]) (B, error) {
 
 	// facilitate user-defined content type deserialization
 	if serde, ok := c.route.contentTypeSerde[contentType]; ok {
-		bytes, err := io.ReadAll(c.Req.Body)
+		bodyDeserialized, err := serde.Deserialize(c.Req.Context(), c.Req.Body)
 		if err != nil {
 			return body, err
 		}
-		bodyDeserialized, err := serde.Deserialize(bytes)
-		if err != nil {
-			return body, err
+		body, ok := bodyDeserialized.(B)
+		if !ok {
+			err = fmt.Errorf("serde %#v returned %T; expected %T", serde, bodyDeserialized, body)
 		}
-		return bodyDeserialized.(B), nil
+		return body, err
 	}
 
 	switch contentType {
