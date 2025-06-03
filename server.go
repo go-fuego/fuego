@@ -402,7 +402,7 @@ func WithListener(listener net.Listener) func(*Server) {
 //	)
 //
 // Engine Options all begin with `With`.
-func WithEngineOptions(options ...func(*Engine)) func(*Server) {
+func WithEngineOptions(options ...EngineOption) func(*Server) {
 	return func(s *Server) {
 		for _, option := range options {
 			option(s.Engine)
