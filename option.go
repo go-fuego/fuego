@@ -312,14 +312,17 @@ func OptionTagInfo(name, description string) func(*BaseRoute) {
 		}
 
 		existingTag := r.OpenAPI.Description().Tags.Get(name)
-		if existingTag == nil {
-			r.OpenAPI.Description().Tags = append(r.OpenAPI.Description().Tags, &openapi3.Tag{
-				Name:        name,
-				Description: description,
-			})
-		} else if existingTag.Description == "" {
-			existingTag.Description = description
+		if existingTag != nil {
+			if existingTag.Description == "" {
+				existingTag.Description = description
+			}
+			return
 		}
+
+		r.OpenAPI.Description().Tags = append(r.OpenAPI.Description().Tags, &openapi3.Tag{
+			Name:        name,
+			Description: description,
+		})
 	}
 }
 
