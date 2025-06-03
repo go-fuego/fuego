@@ -13,6 +13,9 @@ import (
 	"github.com/getkin/kin-openapi/openapi3gen"
 )
 
+// An EngineOption represents configures the behavior of an [Engine].
+type EngineOption func(*Engine)
+
 // NewEngine creates a new Engine with the given options.
 // For example:
 //
@@ -25,7 +28,7 @@ import (
 //	)
 //
 // Options all begin with `With`.
-func NewEngine(options ...func(*Engine)) *Engine {
+func NewEngine(options ...EngineOption) *Engine {
 	e := &Engine{
 		OpenAPI:      NewOpenAPI(),
 		ErrorHandler: ErrorHandler,
@@ -84,7 +87,7 @@ var defaultOpenAPIConfig = OpenAPIConfig{
 
 // WithRequestContentType sets the accepted content types for the engine.
 // By default, the accepted content types is */*.
-func WithRequestContentType(consumes ...string) func(*Engine) {
+func WithRequestContentType(consumes ...string) EngineOption {
 	return func(e *Engine) { e.requestContentTypes = consumes }
 }
 
@@ -94,7 +97,7 @@ type MiddlewareConfig struct {
 	ShortMiddlewaresPaths    bool
 }
 
-func WithMiddlewareConfig(cfg MiddlewareConfig) func(*Engine) {
+func WithMiddlewareConfig(cfg MiddlewareConfig) EngineOption {
 	return func(e *Engine) {
 		e.OpenAPI.Config.MiddlewareConfig.DisableMiddlewareSection = cfg.DisableMiddlewareSection
 		e.OpenAPI.Config.MiddlewareConfig.ShortMiddlewaresPaths = cfg.ShortMiddlewaresPaths
@@ -104,7 +107,7 @@ func WithMiddlewareConfig(cfg MiddlewareConfig) func(*Engine) {
 	}
 }
 
-func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
+func WithOpenAPIConfig(config OpenAPIConfig) EngineOption {
 	return func(e *Engine) {
 		if config.JSONFilePath != "" {
 			e.OpenAPI.Config.JSONFilePath = config.JSONFilePath
@@ -140,14 +143,14 @@ func WithOpenAPIConfig(config OpenAPIConfig) func(*Engine) {
 }
 
 // WithOpenAPIGeneratorConfig sets the options for the generator.
-func WithOpenAPIGeneratorSchemaCustomizer(sc openapi3gen.SchemaCustomizerFn) func(*Engine) {
+func WithOpenAPIGeneratorSchemaCustomizer(sc openapi3gen.SchemaCustomizerFn) EngineOption {
 	return func(e *Engine) {
 		e.OpenAPI.SetGeneratorSchemaCustomizer(sc)
 	}
 }
 
 // WithErrorHandler sets a customer error handler for the server
-func WithErrorHandler(errorHandler func(ctx context.Context, err error) error) func(*Engine) {
+func WithErrorHandler(errorHandler func(ctx context.Context, err error) error) EngineOption {
 	return func(e *Engine) {
 		if errorHandler == nil {
 			panic("errorHandler cannot be nil")
@@ -158,7 +161,7 @@ func WithErrorHandler(errorHandler func(ctx context.Context, err error) error) f
 }
 
 // DisableErrorHandler overrides ErrorHandler with a simple pass-through
-func DisableErrorHandler() func(*Engine) {
+func DisableErrorHandler() EngineOption {
 	return func(e *Engine) {
 		e.ErrorHandler = func(_ context.Context, err error) error { return err }
 	}
