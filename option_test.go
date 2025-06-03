@@ -1096,8 +1096,8 @@ func TestOptionTagInfo(t *testing.T) {
 		// Check that the tag was added to the global OpenAPI tags with description
 		globalTag := openAPI.Description().Tags.Get(tagName)
 		require.NotNil(t, globalTag)
-		require.Equal(t, tagName, globalTag.Name)
-		require.Equal(t, tagDescription, globalTag.Description)
+		assert.Equal(t, tagName, globalTag.Name)
+		assert.Equal(t, tagDescription, globalTag.Description)
 	})
 
 	t.Run("does not duplicate tags on route", func(t *testing.T) {
@@ -1151,8 +1151,8 @@ func TestOptionTagInfo(t *testing.T) {
 		// Check that the existing tag now has the description
 		globalTag := openAPI.Description().Tags.Get(tagName)
 		require.NotNil(t, globalTag)
-		require.Equal(t, tagName, globalTag.Name)
-		require.Equal(t, tagDescription, globalTag.Description)
+		assert.Equal(t, tagName, globalTag.Name)
+		assert.Equal(t, tagDescription, globalTag.Description)
 	})
 
 	t.Run("does not overwrite existing description", func(t *testing.T) {
@@ -1182,7 +1182,7 @@ func TestOptionTagInfo(t *testing.T) {
 		// Check that the existing description is preserved
 		globalTag := openAPI.Description().Tags.Get(tagName)
 		require.NotNil(t, globalTag)
-		require.Equal(t, tagName, globalTag.Name)
+		assert.Equal(t, tagName, globalTag.Name)
 		require.Equal(t, existingDescription, globalTag.Description)
 	})
 
@@ -1247,8 +1247,8 @@ func TestOptionTagInfo(t *testing.T) {
 		require.NotNil(t, openAPI.Description().Tags)
 		globalTag := openAPI.Description().Tags.Get(tagName)
 		require.NotNil(t, globalTag)
-		require.Equal(t, tagName, globalTag.Name)
-		require.Equal(t, tagDescription, globalTag.Description)
+		assert.Equal(t, tagName, globalTag.Name)
+		assert.Equal(t, tagDescription, globalTag.Description)
 	})
 
 	t.Run("works with empty description", func(t *testing.T) {
@@ -1271,7 +1271,7 @@ func TestOptionTagInfo(t *testing.T) {
 		require.Contains(t, route.Operation.Tags, tagName)
 		globalTag := openAPI.Description().Tags.Get(tagName)
 		require.NotNil(t, globalTag)
-		require.Equal(t, tagName, globalTag.Name)
+		assert.Equal(t, tagName, globalTag.Name)
 		require.Empty(t, globalTag.Description)
 	})
 
