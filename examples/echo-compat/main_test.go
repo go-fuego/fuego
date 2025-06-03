@@ -9,7 +9,7 @@ import (
 )
 
 func TestFuegoControllerPost(t *testing.T) {
-	testCtx := fuego.NewMockContext(HelloRequest{Word: "World"}, struct{}{})
+	testCtx := fuego.NewMockContext(HelloRequest{Word: "World"}, any(nil))
 	testCtx.SetQueryParam("name", "Ewen")
 
 	response, err := fuegoControllerPost(testCtx)
