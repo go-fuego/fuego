@@ -42,6 +42,34 @@
 									}
 								},
 								"type": "object"
+							},
+							"treats": {
+								"items": {
+									"nullable": true,
+									"properties": {
+										"brand": {
+											"description": "The brand of the treat",
+											"nullable": true,
+											"type": "string"
+										},
+										"itemId": {
+											"description": "The unique id of the treat",
+											"format": "uuid",
+											"type": "string"
+										},
+										"name": {
+											"description": "the name of a treat",
+											"type": "string"
+										}
+									},
+									"required": [
+										"itemId",
+										"name"
+									],
+									"type": "object"
+								},
+								"nullable": true,
+								"type": "array"
 							}
 						},
 						"required": [
@@ -94,6 +122,34 @@
 									}
 								},
 								"type": "object"
+							},
+							"treats": {
+								"items": {
+									"nullable": true,
+									"properties": {
+										"brand": {
+											"description": "The brand of the treat",
+											"nullable": true,
+											"type": "string"
+										},
+										"itemId": {
+											"description": "The unique id of the treat",
+											"format": "uuid",
+											"type": "string"
+										},
+										"name": {
+											"description": "the name of a treat",
+											"type": "string"
+										}
+									},
+									"required": [
+										"itemId",
+										"name"
+									],
+									"type": "object"
+								},
+								"nullable": true,
+								"type": "array"
 							}
 						},
 						"required": [
@@ -118,9 +174,13 @@
 					},
 					"errors": {
 						"items": {
+							"nullable": true,
 							"properties": {
 								"more": {
-									"additionalProperties": {},
+									"additionalProperties": {
+										"description": "Additional information about the error",
+										"nullable": true
+									},
 									"description": "Additional information about the error",
 									"nullable": true,
 									"type": "object"
@@ -201,6 +261,34 @@
 							}
 						},
 						"type": "object"
+					},
+					"treats": {
+						"items": {
+							"nullable": true,
+							"properties": {
+								"brand": {
+									"description": "The brand of the treat",
+									"nullable": true,
+									"type": "string"
+								},
+								"itemId": {
+									"description": "The unique id of the treat",
+									"format": "uuid",
+									"type": "string"
+								},
+								"name": {
+									"description": "the name of a treat",
+									"type": "string"
+								}
+							},
+							"required": [
+								"itemId",
+								"name"
+							],
+							"type": "object"
+						},
+						"nullable": true,
+						"type": "array"
 					}
 				},
 				"required": [
@@ -291,6 +379,34 @@
 							}
 						},
 						"type": "object"
+					},
+					"treats": {
+						"items": {
+							"nullable": true,
+							"properties": {
+								"brand": {
+									"description": "The brand of the treat",
+									"nullable": true,
+									"type": "string"
+								},
+								"itemId": {
+									"description": "The unique id of the treat",
+									"format": "uuid",
+									"type": "string"
+								},
+								"name": {
+									"description": "the name of a treat",
+									"type": "string"
+								}
+							},
+							"required": [
+								"itemId",
+								"name"
+							],
+							"type": "object"
+						},
+						"nullable": true,
+						"type": "array"
 					}
 				},
 				"type": "object"
@@ -1254,6 +1370,134 @@
 				"tags": [
 					"pets",
 					"std"
+				]
+			}
+		},
+		"/pets/strongly-typed": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.filterPetsStronglyTyped`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\nFilter pets",
+				"operationId": "GET_/pets/strongly-typed",
+				"parameters": [
+					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by name",
+						"examples": {
+							"example": {
+								"value": "Filter by name"
+							}
+						},
+						"in": "query",
+						"name": "name",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "younger_than",
+						"schema": {
+							"type": "integer"
+						}
+					},
+					{
+						"in": "query",
+						"name": "just_an_array",
+						"schema": {
+							"items": {
+								"type": "integer"
+							},
+							"type": "array"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Pets"
+									},
+									"type": "array"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Pets"
+									},
+									"type": "array"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"204": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NoContent"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/NoContent"
+								}
+							}
+						},
+						"description": "No Content"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"description": ""
+					}
+				},
+				"summary": "filter pets strongly typed",
+				"tags": [
+					"pets"
 				]
 			}
 		},

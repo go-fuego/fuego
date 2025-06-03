@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -19,11 +20,11 @@ import (
 
 type MyStruct struct {
 	A float64 `json:"asking_price" example:"5.99"`
-	B string  `json:"b"`
-	C int     `json:"c" example:"8" validate:"min=3,max=10" description:"my description"`
+	B string  `json:"b" validate:"required"`
+	C int     `json:"c" example:"8" validate:"min=3,max=10,required" description:"my description"`
 	D bool    `json:"d" example:"true"`
 	F uint64  `json:"f" example:"10"`
-	G int64   `json:"g" example:"-10"`
+	G int64   `json:"g,omitempty" example:"-10"`
 }
 
 type MyStructWithNested struct {
@@ -286,6 +287,26 @@ func Test_tagFromType(t *testing.T) {
 		assert.InDelta(t, float64(10), *c.Value.Max, 0)
 	})
 
+	t.Run("required properties are reflected", func(t *testing.T) {
+		s := NewServer()
+
+		tag := SchemaTagFromType(s.OpenAPI, MyStruct{})
+
+		requiredList := tag.Value.Required
+		assert.Equal(t, []string{"b", "c"}, requiredList)
+	})
+
+	t.Run("ommitempty values are nullable", func(t *testing.T) {
+		s := NewServer()
+
+		tag := SchemaTagFromType(s.OpenAPI, MyStruct{})
+
+		nullableB := tag.Value.Properties["b"].Value.Nullable
+		nullableG := tag.Value.Properties["g"].Value.Nullable
+		assert.False(t, nullableB)
+		assert.True(t, nullableG)
+	})
+
 	t.Run("ensure warnings", func(t *testing.T) {
 		handler := slogassert.New(t, slog.LevelWarn, nil)
 		s := NewServer(
@@ -293,15 +314,6 @@ func Test_tagFromType(t *testing.T) {
 		)
 
 		SchemaTagFromType(s.OpenAPI, InvalidExample{})
-		handler.AssertPrecise(slogassert.LogMessageMatch{
-			Message:       "Property not found in schema",
-			Level:         slog.LevelWarn,
-			AllAttrsMatch: true,
-			Attrs: map[string]any{
-				"property": "XMLName",
-				"struct":   "InvalidExample",
-			},
-		})
 		handler.AssertMessage("Example might be incorrect (should be integer)")
 		handler.AssertMessage("Max might be incorrect (should be integer)")
 		handler.AssertMessage("Min might be incorrect (should be integer)")
@@ -687,4 +699,53 @@ func TestPrivateFieldInStruct(t *testing.T) {
 	Post(s, "/user", func(c ContextWithBody[User]) (User, error) { return c.Body() })
 
 	handler.AssertEmpty() // No warning "Property not found in schema" for the 'password' field
+}
+
+func TestSetGeneratorSchemaCustomizer(t *testing.T) {
+	// A custom function that looks for a custom tag and updates the description
+	customTagParser := func(name string, t reflect.Type, tag reflect.StructTag, schema *openapi3.Schema) error {
+		myTag, ok := tag.Lookup("my-tag")
+		if !ok {
+			return nil
+		}
+
+		if t.Kind() == reflect.Slice || t.Kind() == reflect.Struct {
+			return nil
+		}
+
+		schema.Description = fmt.Sprintf("Custom tag for %s with tag value: %s", name, myTag)
+		return nil
+	}
+	type Page struct {
+		NumberWords int32 `json:"num_words" my-tag:"The number of words on my page" description:"This should be overwritten"`
+	}
+	type Book struct {
+		Pages []Page `json:"pages" my-tag:"This should not appear in spec"`
+	}
+
+	s := NewServer(WithEngineOptions(WithOpenAPIGeneratorSchemaCustomizer(customTagParser)))
+	Get(s, "/book", func(ContextNoBody) (Book, error) {
+		return Book{}, nil
+	})
+
+	// Get openapi spec
+	openApiSpec := s.OutputOpenAPISpec()
+	require.NotNil(t, openApiSpec)
+	bookValue := openApiSpec.Components.Schemas["Book"].Value
+
+	// Make sure that the pages description is not set because it is a slice
+	pagesValue := bookValue.Properties["pages"].Value
+	require.Empty(t, pagesValue.Description)
+
+	// Make sure that the page description is not set because it is a struct
+	pageValue := pagesValue.Items.Value
+	require.Empty(t, pageValue.Description)
+
+	// Now the num_words should have the custom tag
+	num_wordsValue := pageValue.Properties["num_words"].Value
+	require.NotEmpty(t, num_wordsValue.Description)
+	require.Equal(t,
+		"Custom tag for num_words with tag value: The number of words on my page",
+		num_wordsValue.Description,
+	)
 }

@@ -6,11 +6,11 @@ import (
 
 // Registerer is an interface that allows registering routes.
 // It can be implementable by any router.
-type Registerer[T, B any] interface {
-	Register() Route[T, B]
+type Registerer[T, B, P any] interface {
+	Register() Route[T, B, P]
 }
 
-func Registers[B, T any](engine *Engine, a Registerer[B, T]) *Route[B, T] {
+func Registers[B, T, P any](engine *Engine, a Registerer[B, T, P]) *Route[B, T, P] {
 	route := a.Register()
 	err := route.RegisterOpenAPIOperation(engine.OpenAPI)
 	if err != nil {
