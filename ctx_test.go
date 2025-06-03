@@ -105,6 +105,43 @@ func TestContext_PathParam(t *testing.T) {
 	})
 }
 
+func TestNetHttpContext_MustParams(t *testing.T) {
+	t.Run("can read params without error", func(t *testing.T) {
+		type MyParams struct {
+			ID          int     `query:"id"`
+			Temperature float64 `query:"temperature"`
+			Other       string  `query:"other"`
+			ContentType string  `header:"Content-Type"`
+		}
+		r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello&temperature=20.30", nil)
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+
+		params := c.MustParams()
+		require.NotEmpty(t, params)
+		assert.Equal(t, 456, params.ID)
+		assert.Equal(t, "hello", params.Other)
+		assert.Equal(t, "application/json", params.ContentType)
+		assert.InEpsilon(t, 20.30, params.Temperature, 0.01)
+	})
+
+	t.Run("panics when params parsing fails", func(t *testing.T) {
+		type MyParams struct {
+			ID int `query:"id"`
+		}
+		r := httptest.NewRequest("GET", "http://example.com/foo?id=invalid", nil)
+		w := httptest.NewRecorder()
+
+		c := NewNetHTTPContext[any, MyParams](BaseRoute{}, w, r, readOptions{})
+
+		require.Panics(t, func() {
+			c.MustParams()
+		})
+	})
+}
+
 func TestContext_QueryParam(t *testing.T) {
 	r := httptest.NewRequest("GET", "http://example.com/foo/123?id=456&other=hello&boo=true&name=jhon&name=doe", nil)
 	w := httptest.NewRecorder()

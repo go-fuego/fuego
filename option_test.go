@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -1071,5 +1072,177 @@ func TestOptionStripTrailingSlash(t *testing.T) {
 		s := fuego.NewServer()
 		route := fuego.Get(s, "/test/", helloWorld, fuego.OptionStripTrailingSlash())
 		require.Equal(t, "/test", route.Path)
+	})
+}
+
+func TestOptionQueryArray(t *testing.T) {
+	t.Run("Declare an array query parameter for the route with string elements", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionQueryArray("tags", "Filter by tags", reflect.String, param.Example("tag list", "tag1,tag2,tag3")),
+		)
+
+		require.NotNil(t, route.Params)
+		require.Contains(t, route.Params, "tags")
+		require.Equal(t, "Filter by tags", route.Params["tags"].Description)
+
+		// Check OpenAPI parameter
+		param := route.Operation.Parameters.GetByInAndName("query", "tags")
+		require.NotNil(t, param)
+		require.Equal(t, "tags", param.Name)
+		require.Equal(t, "query", param.In)
+		require.Equal(t, "Filter by tags", param.Description)
+
+		// Check schema is array type
+		require.NotNil(t, param.Schema)
+		require.NotNil(t, param.Schema.Value)
+		require.True(t, param.Schema.Value.Type.Is("array"))
+		require.NotNil(t, param.Schema.Value.Items)
+		require.True(t, param.Schema.Value.Items.Value.Type.Is("string"))
+	})
+
+	t.Run("Declare an array query parameter for the route with integer elements", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionQueryArray("ids", "Filter by IDs", reflect.Int, param.Example("id list", "1,2,3")),
+		)
+
+		require.NotNil(t, route.Params)
+		require.Contains(t, route.Params, "ids")
+
+		// Check OpenAPI parameter
+		param := route.Operation.Parameters.GetByInAndName("query", "ids")
+		require.NotNil(t, param)
+		require.True(t, param.Schema.Value.Type.Is("array"))
+		require.True(t, param.Schema.Value.Items.Value.Type.Is("integer"))
+	})
+
+	t.Run("Declare an array query parameter for the route with boolean elements", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionQueryArray("flags", "Filter by flags", reflect.Bool, param.Example("flag list", "true,false,true")),
+		)
+
+		require.NotNil(t, route.Params)
+		require.Contains(t, route.Params, "flags")
+
+		// Check OpenAPI parameter
+		param := route.Operation.Parameters.GetByInAndName("query", "flags")
+		require.NotNil(t, param)
+		require.True(t, param.Schema.Value.Type.Is("array"))
+		require.True(t, param.Schema.Value.Items.Value.Type.Is("boolean"))
+	})
+
+	t.Run("Declare an array query parameter for the route with float elements", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionQueryArray("values", "Filter by values", reflect.Float64, param.Example("value list", "1.1,2.2,3.3")),
+		)
+
+		require.NotNil(t, route.Params)
+		require.Contains(t, route.Params, "values")
+
+		// Check OpenAPI parameter
+		param := route.Operation.Parameters.GetByInAndName("query", "values")
+		require.NotNil(t, param)
+		require.True(t, param.Schema.Value.Type.Is("array"))
+		require.True(t, param.Schema.Value.Items.Value.Type.Is("number"))
+	})
+
+	t.Run("Declare an array query parameter for the route with various integer types", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		testCases := []struct {
+			name string
+			kind reflect.Kind
+		}{
+			{"int8", reflect.Int8},
+			{"int16", reflect.Int16},
+			{"int32", reflect.Int32},
+			{"int64", reflect.Int64},
+			{"uint", reflect.Uint},
+			{"uint8", reflect.Uint8},
+			{"uint16", reflect.Uint16},
+			{"uint32", reflect.Uint32},
+			{"uint64", reflect.Uint64},
+		}
+
+		for _, tc := range testCases {
+			t.Run(tc.name, func(t *testing.T) {
+				route := fuego.Get(s, "/test/"+tc.name, helloWorld,
+					fuego.OptionQueryArray("values", "Filter by values", tc.kind),
+				)
+
+				param := route.Operation.Parameters.GetByInAndName("query", "values")
+				require.NotNil(t, param)
+				require.True(t, param.Schema.Value.Type.Is("array"))
+				require.True(t, param.Schema.Value.Items.Value.Type.Is("integer"))
+			})
+		}
+	})
+
+	t.Run("Declare an array query parameter for the route with float32", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionQueryArray("values", "Filter by values", reflect.Float32),
+		)
+
+		param := route.Operation.Parameters.GetByInAndName("query", "values")
+		require.NotNil(t, param)
+		require.True(t, param.Schema.Value.Type.Is("array"))
+		require.True(t, param.Schema.Value.Items.Value.Type.Is("number"))
+	})
+
+	t.Run("Declare an array query parameter for the route with unsupported type defaults to string", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionQueryArray("values", "Filter by values", reflect.Complex64),
+		)
+
+		param := route.Operation.Parameters.GetByInAndName("query", "values")
+		require.NotNil(t, param)
+		require.True(t, param.Schema.Value.Type.Is("array"))
+		require.True(t, param.Schema.Value.Items.Value.Type.Is("string"))
+	})
+}
+
+func TestOptionAddDescription(t *testing.T) {
+	t.Run("Add description to existing description", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionDescription("Initial description."),
+			fuego.OptionAddDescription(" Additional description."),
+		)
+
+		require.Contains(t, route.Operation.Description, "Initial description. Additional description.")
+	})
+
+	t.Run("Add description to default Fuego description", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionAddDescription(" Custom addition."),
+		)
+
+		require.Contains(t, route.Operation.Description, "github.com/go-fuego/fuego_test.helloWorld")
+		require.Contains(t, route.Operation.Description, " Custom addition.")
+	})
+
+	t.Run("Multiple add descriptions", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionAddDescription(" First addition."),
+			fuego.OptionAddDescription(" Second addition."),
+		)
+
+		require.Contains(t, route.Operation.Description, " First addition. Second addition.")
 	})
 }
