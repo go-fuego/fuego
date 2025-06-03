@@ -1,0 +1,275 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g., v1.2.3)"
+        required: true
+        type: string
+      dry_run:
+        description: "Dry run (preview only, no actual release)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.validate.outputs.version }}
+      modules: ${{ steps.discover.outputs.modules }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.2"
+
+      - name: Validate version format
+        id: validate
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+            echo "❌ Invalid version format: $VERSION"
+            echo "Expected format: v1.2.3 or v1.2.3-alpha.1"
+            exit 1
+          fi
+          echo "✅ Version format is valid: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if tags already exist
+        run: |
+          VERSION="${{ steps.validate.outputs.version }}"
+
+          # Check main module tag
+          if git tag -l | grep -q "^${VERSION}$"; then
+            echo "❌ Tag $VERSION already exists"
+            exit 1
+          fi
+
+          # Check extra module tags
+          for module in extra/fuegoecho extra/fuegogin extra/markdown extra/sql extra/sqlite3; do
+            tag="${module}/${VERSION}"
+            if git tag -l | grep -q "^${tag}$"; then
+              echo "❌ Tag $tag already exists"
+              exit 1
+            fi
+          done
+
+          echo "✅ All tags are available"
+
+      - name: Discover modules
+        id: discover
+        run: |
+          # Parse go.work to find all modules
+          modules=$(grep -E "^\s*\./|^\s*\." go.work | grep -E "extra/" | sed 's/^\s*\.\///' | tr '\n' ' ')
+          echo "Discovered modules: $modules"
+          echo "modules=$modules" >> $GITHUB_OUTPUT
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.2"
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Run CI tests
+        run: make ci
+
+      - name: Run full CI suite
+        run: make ci-full
+
+  approval:
+    name: Manual Approval
+    runs-on: ubuntu-latest
+    needs: [validate, test]
+    if: ${{ !github.event.inputs.dry_run }}
+    steps:
+      - name: Request approval
+        run: |
+          echo "🚀 Ready to release ${{ needs.validate.outputs.version }}"
+          echo "📦 Modules to be tagged:"
+          echo "  - ${{ needs.validate.outputs.version }} (main)"
+          for module in ${{ needs.validate.outputs.modules }}; do
+            echo "  - ${module}/${{ needs.validate.outputs.version }}"
+          done
+          echo ""
+          echo "✅ Tests passed"
+          echo "⏳ Waiting for manual approval..."
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [validate, test, approval]
+    if: ${{ always() && (needs.approval.result == 'success' || github.event.inputs.dry_run) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.2"
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tags
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+
+          echo "🏷️ Creating tags for version: $VERSION"
+
+          # Create main module tag
+          echo "Creating main tag: $VERSION"
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "[DRY RUN] Would create: git tag -a $VERSION -m 'Release $VERSION'"
+          else
+            git tag -a "$VERSION" -m "Release $VERSION"
+          fi
+
+          # Create extra module tags
+          for module in ${{ needs.validate.outputs.modules }}; do
+            tag="${module}/${VERSION}"
+            echo "Creating module tag: $tag"
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "[DRY RUN] Would create: git tag -a $tag -m 'Release $tag'"
+            else
+              git tag -a "$tag" -m "Release $tag"
+            fi
+          done
+
+          # Push tags
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "[DRY RUN] Would push all tags to origin"
+          else
+            echo "📤 Pushing tags to origin..."
+            git push origin --tags
+          fi
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+
+          # Get the last release tag
+          LAST_TAG=$(git tag -l "v*" | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+$" | sort -V | tail -n 2 | head -n 1)
+          if [[ -z "$LAST_TAG" ]]; then
+            LAST_TAG=$(git rev-list --max-parents=0 HEAD)
+            echo "No previous release found, using first commit"
+          else
+            echo "Last release: $LAST_TAG"
+          fi
+
+          # Generate changelog
+          echo "## What's Changed" > changelog.md
+          echo "" >> changelog.md
+
+          # Get commits since last release
+          git log --pretty=format:"* %s (%h)" "${LAST_TAG}..HEAD" >> changelog.md
+
+          # Add contributors
+          echo "" >> changelog.md
+          echo "## Contributors" >> changelog.md
+          git log --pretty=format:"* @%an" "${LAST_TAG}..HEAD" | sort -u >> changelog.md
+
+          # Output for GitHub release
+          {
+            echo 'CHANGELOG<<EOF'
+            cat changelog.md
+            echo EOF
+          } >> $GITHUB_OUTPUT
+
+      - name: Create GitHub releases
+        if: ${{ !github.event.inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+
+          # Create main release
+          echo "🚀 Creating GitHub release for main module: $VERSION"
+          gh release create "$VERSION" \
+            --title "Release $VERSION" \
+            --notes "${{ steps.changelog.outputs.CHANGELOG }}" \
+            --latest
+
+          # Create releases for extra modules
+          for module in ${{ needs.validate.outputs.modules }}; do
+            tag="${module}/${VERSION}"
+            echo "🚀 Creating GitHub release for $module: $tag"
+            gh release create "$tag" \
+              --title "Release $tag" \
+              --notes "Release $VERSION for $module module
+
+          ${{ steps.changelog.outputs.CHANGELOG }}"
+          done
+
+      - name: Summary
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+
+          echo "## 🎉 Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "**🧪 DRY RUN COMPLETED**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "The following would have been created:" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**✅ RELEASE COMPLETED**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Successfully created the following releases:" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏷️ Tags Created" >> $GITHUB_STEP_SUMMARY
+          echo "- \`$VERSION\` (main module)" >> $GITHUB_STEP_SUMMARY
+
+          for module in ${{ needs.validate.outputs.modules }}; do
+            echo "- \`${module}/${VERSION}\` ($module module)" >> $GITHUB_STEP_SUMMARY
+          done
+
+          if [[ "$DRY_RUN" != "true" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📦 GitHub Releases" >> $GITHUB_STEP_SUMMARY
+            echo "- [Release $VERSION](https://github.com/${{ github.repository }}/releases/tag/$VERSION)" >> $GITHUB_STEP_SUMMARY
+            
+            for module in ${{ needs.validate.outputs.modules }}; do
+              tag="${module}/${VERSION}"
+              echo "- [Release $tag](https://github.com/${{ github.repository }}/releases/tag/$tag)" >> $GITHUB_STEP_SUMMARY
+            done
+          fi
