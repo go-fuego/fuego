@@ -1073,3 +1073,230 @@ func TestOptionStripTrailingSlash(t *testing.T) {
 		require.Equal(t, "/test", route.Path)
 	})
 }
+
+func TestOptionTagInfo(t *testing.T) {
+	t.Run("adds tag with description to route and global tags", func(t *testing.T) {
+		// Create a new OpenAPI instance
+		openAPI := fuego.NewOpenAPI()
+
+		// Create a base route
+		route := &fuego.BaseRoute{
+			OpenAPI:   openAPI,
+			Operation: openapi3.NewOperation(),
+		}
+
+		// Apply the TagInfo option
+		tagName := "users"
+		tagDescription := "Operations related to user management"
+		fuego.OptionTagInfo(tagName, tagDescription)(route)
+
+		// Check that the tag was added to the route operation
+		require.Contains(t, route.Operation.Tags, tagName)
+
+		// Check that the tag was added to the global OpenAPI tags with description
+		globalTag := openAPI.Description().Tags.Get(tagName)
+		require.NotNil(t, globalTag)
+		require.Equal(t, tagName, globalTag.Name)
+		require.Equal(t, tagDescription, globalTag.Description)
+	})
+
+	t.Run("does not duplicate tags on route", func(t *testing.T) {
+		// Create a new OpenAPI instance
+		openAPI := fuego.NewOpenAPI()
+
+		// Create a base route
+		route := &fuego.BaseRoute{
+			OpenAPI:   openAPI,
+			Operation: openapi3.NewOperation(),
+		}
+
+		tagName := "users"
+		tagDescription := "Operations related to user management"
+
+		// Apply the TagInfo option twice
+		fuego.OptionTagInfo(tagName, tagDescription)(route)
+		fuego.OptionTagInfo(tagName, tagDescription)(route)
+
+		// Check that the tag appears only once in the route operation
+		count := 0
+		for _, tag := range route.Operation.Tags {
+			if tag == tagName {
+				count++
+			}
+		}
+		require.Equal(t, 1, count)
+	})
+
+	t.Run("updates empty description in existing global tag", func(t *testing.T) {
+		// Create a new OpenAPI instance
+		openAPI := fuego.NewOpenAPI()
+
+		// Pre-add a tag without description
+		openAPI.Description().Tags = append(openAPI.Description().Tags, &openapi3.Tag{
+			Name: "users",
+		})
+
+		// Create a base route
+		route := &fuego.BaseRoute{
+			OpenAPI:   openAPI,
+			Operation: openapi3.NewOperation(),
+		}
+
+		tagName := "users"
+		tagDescription := "Operations related to user management"
+
+		// Apply the TagInfo option
+		fuego.OptionTagInfo(tagName, tagDescription)(route)
+
+		// Check that the existing tag now has the description
+		globalTag := openAPI.Description().Tags.Get(tagName)
+		require.NotNil(t, globalTag)
+		require.Equal(t, tagName, globalTag.Name)
+		require.Equal(t, tagDescription, globalTag.Description)
+	})
+
+	t.Run("does not overwrite existing description", func(t *testing.T) {
+		// Create a new OpenAPI instance
+		openAPI := fuego.NewOpenAPI()
+
+		existingDescription := "Existing description"
+
+		// Pre-add a tag with description
+		openAPI.Description().Tags = append(openAPI.Description().Tags, &openapi3.Tag{
+			Name:        "users",
+			Description: existingDescription,
+		})
+
+		// Create a base route
+		route := &fuego.BaseRoute{
+			OpenAPI:   openAPI,
+			Operation: openapi3.NewOperation(),
+		}
+
+		tagName := "users"
+		newDescription := "New description"
+
+		// Apply the TagInfo option
+		fuego.OptionTagInfo(tagName, newDescription)(route)
+
+		// Check that the existing description is preserved
+		globalTag := openAPI.Description().Tags.Get(tagName)
+		require.NotNil(t, globalTag)
+		require.Equal(t, tagName, globalTag.Name)
+		require.Equal(t, existingDescription, globalTag.Description)
+	})
+
+	t.Run("handles multiple different tags", func(t *testing.T) {
+		// Create a new OpenAPI instance
+		openAPI := fuego.NewOpenAPI()
+
+		// Create a base route
+		route := &fuego.BaseRoute{
+			OpenAPI:   openAPI,
+			Operation: openapi3.NewOperation(),
+		}
+
+		// Apply multiple different TagInfo options
+		fuego.OptionTagInfo("users", "User management operations")(route)
+		fuego.OptionTagInfo("products", "Product management operations")(route)
+		fuego.OptionTagInfo("orders", "Order management operations")(route)
+
+		// Check that all tags were added to the route operation
+		require.Contains(t, route.Operation.Tags, "users")
+		require.Contains(t, route.Operation.Tags, "products")
+		require.Contains(t, route.Operation.Tags, "orders")
+		require.Len(t, route.Operation.Tags, 3)
+
+		// Check that all tags were added to the global OpenAPI tags with descriptions
+		usersTag := openAPI.Description().Tags.Get("users")
+		require.NotNil(t, usersTag)
+		require.Equal(t, "users", usersTag.Name)
+		require.Equal(t, "User management operations", usersTag.Description)
+
+		productsTag := openAPI.Description().Tags.Get("products")
+		require.NotNil(t, productsTag)
+		require.Equal(t, "products", productsTag.Name)
+		require.Equal(t, "Product management operations", productsTag.Description)
+
+		ordersTag := openAPI.Description().Tags.Get("orders")
+		require.NotNil(t, ordersTag)
+		require.Equal(t, "orders", ordersTag.Name)
+		require.Equal(t, "Order management operations", ordersTag.Description)
+	})
+
+	t.Run("initializes tags slice if nil", func(t *testing.T) {
+		// Create a new OpenAPI instance
+		openAPI := fuego.NewOpenAPI()
+
+		// Ensure tags is nil
+		openAPI.Description().Tags = nil
+
+		// Create a base route
+		route := &fuego.BaseRoute{
+			OpenAPI:   openAPI,
+			Operation: openapi3.NewOperation(),
+		}
+
+		tagName := "users"
+		tagDescription := "Operations related to user management"
+
+		// Apply the TagInfo option
+		fuego.OptionTagInfo(tagName, tagDescription)(route)
+
+		// Check that tags slice was initialized and tag was added
+		require.NotNil(t, openAPI.Description().Tags)
+		globalTag := openAPI.Description().Tags.Get(tagName)
+		require.NotNil(t, globalTag)
+		require.Equal(t, tagName, globalTag.Name)
+		require.Equal(t, tagDescription, globalTag.Description)
+	})
+
+	t.Run("works with empty description", func(t *testing.T) {
+		// Create a new OpenAPI instance
+		openAPI := fuego.NewOpenAPI()
+
+		// Create a base route
+		route := &fuego.BaseRoute{
+			OpenAPI:   openAPI,
+			Operation: openapi3.NewOperation(),
+		}
+
+		tagName := "users"
+		tagDescription := ""
+
+		// Apply the TagInfo option with empty description
+		fuego.OptionTagInfo(tagName, tagDescription)(route)
+
+		// Check that the tag was added with empty description
+		require.Contains(t, route.Operation.Tags, tagName)
+		globalTag := openAPI.Description().Tags.Get(tagName)
+		require.NotNil(t, globalTag)
+		require.Equal(t, tagName, globalTag.Name)
+		require.Empty(t, globalTag.Description)
+	})
+
+	t.Run("integration test with real route", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			option.TagInfo("users", "Operations related to user management"),
+		)
+
+		// Check that the tag was added to the route operation
+		require.Contains(t, route.Operation.Tags, "users")
+
+		// Check that the tag was added to the global OpenAPI tags with description
+		globalTag := s.OpenAPI.Description().Tags.Get("users")
+		require.NotNil(t, globalTag)
+		require.Equal(t, "users", globalTag.Name)
+		require.Equal(t, "Operations related to user management", globalTag.Description)
+
+		// Test that the route still works
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, "hello world", w.Body.String())
+	})
+}
