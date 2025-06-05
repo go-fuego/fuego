@@ -21,7 +21,7 @@ func (o *OpenAPIHandler) UIHandler(e *fuego.Engine) {
 	GetEcho(
 		e,
 		o.Echo,
-		e.OpenAPI.Config.SwaggerURL+"/",
+		e.OpenAPI.Config.SwaggerURL,
 		echo.WrapHandler(e.OpenAPI.Config.UIHandler(e.OpenAPI.Config.SpecURL)),
 		fuego.OptionHide(),
 	)
