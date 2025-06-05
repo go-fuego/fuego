@@ -59,7 +59,7 @@ type Server struct {
 	// that will be applied of the route.
 	routeOptions []func(*BaseRoute)
 
-	middlewares []func(http.Handler) http.Handler
+	middlewares []any
 
 	maxBodySize int64
 	// If true, the server will return an error if the request body contains unknown fields. Useful for quick debugging in development.
@@ -126,7 +126,7 @@ func NewServer(options ...func(*Server)) *Server {
 			OptionSummary("Logout"),
 		)
 
-		s.middlewares = []func(http.Handler) http.Handler{
+		s.middlewares = []any{
 			s.Security.TokenToContext(TokenFromCookie, TokenFromHeader),
 		}
 

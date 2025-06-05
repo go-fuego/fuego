@@ -98,7 +98,12 @@ func UseStd(s *Server, middlewares ...func(http.Handler) http.Handler) {
 }
 
 func Use(s *Server, middlewares ...func(http.Handler) http.Handler) {
-	s.middlewares = append(s.middlewares, middlewares...)
+	// Convert middlewares to []any before appending
+	anyMiddlewares := make([]any, len(middlewares))
+	for i, m := range middlewares {
+		anyMiddlewares[i] = m
+	}
+	s.middlewares = append(s.middlewares, anyMiddlewares...)
 }
 
 // Handle registers a standard HTTP handler into the default mux.
@@ -161,9 +166,14 @@ func registerStdController(s *Server, method, path string, controller func(http.
 	})
 }
 
-func withMiddlewares(controller http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
+func withMiddlewares(controller http.Handler, middlewares ...any) http.Handler {
 	for i := len(middlewares) - 1; i >= 0; i-- {
-		controller = middlewares[i](controller)
+		if v, ok := middlewares[i].(func(http.Handler) http.Handler); ok {
+			controller = v(controller)
+		} else {
+			panic("wrong middleware format for fuego engine")
+		}
+
 	}
 	return controller
 }
