@@ -173,7 +173,6 @@ func withMiddlewares(controller http.Handler, middlewares ...any) http.Handler {
 		} else {
 			panic("wrong middleware format for fuego engine")
 		}
-
 	}
 	return controller
 }
