@@ -68,7 +68,7 @@ type BaseRoute struct {
 	// Content types for the response body.
 	ResponseContentTypes []string
 
-	Middlewares []func(http.Handler) http.Handler
+	Middlewares []any
 
 	// Default status code for the response
 	DefaultStatusCode int
