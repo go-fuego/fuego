@@ -52,6 +52,19 @@ func (openAPI *OpenAPI) SetGeneratorSchemaCustomizer(sc openapi3gen.SchemaCustom
 	openAPI.generator = openapi3gen.NewGenerator(openapi3gen.SchemaCustomizer(customizerFn))
 }
 
+func (openAPI *OpenAPI) mergeInfo(info *openapi3.Info) {
+	if info.Title == "" {
+		info.Title = openAPI.description.Info.Title
+	}
+	if info.Description == "" {
+		info.Description = openAPI.description.Info.Description
+	}
+	if info.Version == "" {
+		info.Version = openAPI.description.Info.Version
+	}
+	openAPI.description.Info = info
+}
+
 // Compute the tags to declare at the root of the OpenAPI spec from the tags declared in the operations.
 func (openAPI *OpenAPI) computeTags() {
 	for _, pathItem := range openAPI.Description().Paths.Map() {
@@ -73,14 +86,9 @@ func (openAPI *OpenAPI) computeTags() {
 }
 
 func NewOpenApiSpec() openapi3.T {
-	info := &openapi3.Info{
-		Title:       "OpenAPI",
-		Description: openapiDescription,
-		Version:     "0.0.1",
-	}
-	spec := openapi3.T{
+	return openapi3.T{
 		OpenAPI:  "3.1.0",
-		Info:     info,
+		Info:     defaultOpenAPIConfig.Info,
 		Paths:    &openapi3.Paths{},
 		Servers:  []*openapi3.Server{},
 		Security: openapi3.SecurityRequirements{},
@@ -90,7 +98,6 @@ func NewOpenApiSpec() openapi3.T {
 			Responses:     make(map[string]*openapi3.ResponseRef),
 		},
 	}
-	return spec
 }
 
 type OpenAPIServable interface {
@@ -213,7 +220,7 @@ func RegisterOpenAPIOperation[T, B, P any](openapi *OpenAPI, route Route[T, B, P
 	// Automatically add non-declared Content for 200 (or other) Response
 	if responseDefault.Value.Content == nil {
 		responseSchema := SchemaTagFromType(openapi, *new(T))
-		content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, []string{"application/json", "application/xml"})
+		content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, route.ResponseContentTypes)
 		responseDefault.Value.WithContent(content)
 	}
 

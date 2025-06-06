@@ -104,6 +104,13 @@ var Param = fuego.OptionParam
 // Tags adds one or more tags to the route.
 var Tags = fuego.OptionTags
 
+// TagInfo adds a tag with name and description to the route and registers it in the global OpenAPI tags.
+// This ensures the tag appears in the OpenAPI spec with its description.
+// Example:
+//
+//	TagInfo("users", "Operations related to user management")
+var TagInfo = fuego.OptionTagInfo
+
 // Summary adds a summary to the route.
 var Summary = fuego.OptionSummary
 

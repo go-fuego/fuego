@@ -299,6 +299,33 @@ func OptionTags(tags ...string) func(*BaseRoute) {
 	}
 }
 
+// OptionTagInfo adds a tag with name and description to the route and registers it in the global OpenAPI tags.
+// This ensures the tag appears in the OpenAPI spec with its description.
+func OptionTagInfo(name, description string) func(*BaseRoute) {
+	return func(r *BaseRoute) {
+		if !slices.Contains(r.Operation.Tags, name) {
+			r.Operation.Tags = append(r.Operation.Tags, name)
+		}
+
+		if r.OpenAPI.Description().Tags == nil {
+			r.OpenAPI.Description().Tags = openapi3.Tags{}
+		}
+
+		existingTag := r.OpenAPI.Description().Tags.Get(name)
+		if existingTag != nil {
+			if existingTag.Description == "" {
+				existingTag.Description = description
+			}
+			return
+		}
+
+		r.OpenAPI.Description().Tags = append(r.OpenAPI.Description().Tags, &openapi3.Tag{
+			Name:        name,
+			Description: description,
+		})
+	}
+}
+
 // OptionSummary adds a summary to the route.
 func OptionSummary(summary string) func(*BaseRoute) {
 	return func(r *BaseRoute) {
