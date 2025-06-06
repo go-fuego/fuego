@@ -9,7 +9,6 @@ import (
 // A round trip of SerDes is expected to be idempotent.
 // This means that the result of Serialize(Deserialize(v)) should be equal to v.
 type SerDes interface {
-
 	// Serialize serializes the value v into a byte slice.
 	// The byte slice is expected to be a valid representation of the value v for the content-type.
 	// If the value v is not valid, an error is returned.
