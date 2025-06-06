@@ -1306,17 +1306,17 @@ func TestOptionTagInfo(t *testing.T) {
 	})
 }
 
-// kvSerde has custom serialization and deserialization logic for key-value pairs
+// kvSerDes has custom serialization and deserialization logic for key-value pairs
 // in the format "key1=value1;key2=value2;..."
-type kvSerde struct {
+type kvSerDes struct {
 	delimiter string
 }
 
 // Serialize custom serialization logic
-func (s kvSerde) Serialize(v any) ([]byte, error) {
+func (s kvSerDes) Serialize(v any) ([]byte, error) {
 	v2, ok := v.(map[string]string)
 	if !ok {
-		return nil, errors.New("invalid type; kvSerde expected map[string]string")
+		return nil, errors.New("invalid type; kvSerDes expected map[string]string")
 	}
 	parts := make([]string, 0, len(v2))
 	for k, v := range v2 {
@@ -1328,7 +1328,7 @@ func (s kvSerde) Serialize(v any) ([]byte, error) {
 }
 
 // Deserialize custom deserialization logic
-func (s kvSerde) Deserialize(_ context.Context, input io.Reader) (any, error) {
+func (s kvSerDes) Deserialize(_ context.Context, input io.Reader) (any, error) {
 	buf, err := io.ReadAll(input)
 	if err != nil {
 		return nil, err
@@ -1339,14 +1339,14 @@ func (s kvSerde) Deserialize(_ context.Context, input io.Reader) (any, error) {
 	for _, pair := range pairs {
 		kv := strings.Split(pair, "=")
 		if len(kv) != 2 {
-			return nil, errors.New("invalid format; kvSerde expected key=value pairs separated by " + s.delimiter)
+			return nil, errors.New("invalid format; kvSerDes expected key=value pairs separated by " + s.delimiter)
 		}
 		v[kv[0]] = kv[1]
 	}
 	return v, nil
 }
 
-func TestWithCustomEndpointSerde(t *testing.T) {
+func TestWithCustomEndpointSerDes(t *testing.T) {
 	controller := func(c fuego.ContextWithBody[map[string]string]) (map[string]string, error) {
 		body, err := c.Body()
 		if err != nil {
@@ -1358,7 +1358,7 @@ func TestWithCustomEndpointSerde(t *testing.T) {
 
 	s := fuego.NewServer()
 	fuego.Post(s, "/keyvalue", controller,
-		option.WithContentTypeSerde("application/vnd.keyvalue", kvSerde{delimiter: ";"}),
+		option.WithContentTypeSerDes("application/vnd.keyvalue", kvSerDes{delimiter: ";"}),
 	)
 
 	tt := []struct {
@@ -1420,7 +1420,7 @@ func TestWithCustomEndpointSerde(t *testing.T) {
 	}
 }
 
-func TestWithCustomGroupSerde(t *testing.T) {
+func TestWithCustomGroupSerDes(t *testing.T) {
 	controller := func(c fuego.ContextWithBody[map[string]string]) (map[string]string, error) {
 		body, err := c.Body()
 		if err != nil {
@@ -1433,7 +1433,7 @@ func TestWithCustomGroupSerde(t *testing.T) {
 	s := fuego.NewServer()
 
 	group := fuego.Group(s, "/keyvalue",
-		option.WithContentTypeSerde("application/vnd.keyvalue", kvSerde{delimiter: ";"}),
+		option.WithContentTypeSerDes("application/vnd.keyvalue", kvSerDes{delimiter: ";"}),
 	)
 
 	fuego.Post(group, "/foo", controller)
@@ -1497,7 +1497,7 @@ func TestWithCustomGroupSerde(t *testing.T) {
 	}
 }
 
-func TestWithCustomServerSerde(t *testing.T) {
+func TestWithCustomServerSerDes(t *testing.T) {
 	controller := func(c fuego.ContextWithBody[map[string]string]) (map[string]string, error) {
 		body, err := c.Body()
 		if err != nil {
@@ -1509,7 +1509,7 @@ func TestWithCustomServerSerde(t *testing.T) {
 
 	s := fuego.NewServer(
 		fuego.WithRouteOptions(
-			option.WithContentTypeSerde("application/vnd.keyvalue", kvSerde{delimiter: ";"}),
+			option.WithContentTypeSerDes("application/vnd.keyvalue", kvSerDes{delimiter: ";"}),
 		),
 	)
 
@@ -1574,7 +1574,7 @@ func TestWithCustomServerSerde(t *testing.T) {
 	}
 }
 
-func TestWithCustomSerdePriority(t *testing.T) {
+func TestWithCustomSerDesPriority(t *testing.T) {
 	contentType := "application/vnd.keyvalue"
 	controller := func(c fuego.ContextWithBody[map[string]string]) (map[string]string, error) {
 		body, err := c.Body()
@@ -1590,18 +1590,18 @@ func TestWithCustomSerdePriority(t *testing.T) {
 
 	s := fuego.NewServer(
 		fuego.WithRouteOptions(
-			option.WithContentTypeSerde(contentType, kvSerde{delimiter: ";"}),
+			option.WithContentTypeSerDes(contentType, kvSerDes{delimiter: ";"}),
 		),
 	)
-	fuego.Post(s, "/server-serde", controller)
+	fuego.Post(s, "/server-serdes", controller)
 
 	group := fuego.Group(s, "/group",
-		option.WithContentTypeSerde(contentType, kvSerde{delimiter: "&"}),
+		option.WithContentTypeSerDes(contentType, kvSerDes{delimiter: "&"}),
 	)
-	fuego.Post(group, "/group-serde", controller)
+	fuego.Post(group, "/group-serdes", controller)
 
-	fuego.Post(group, "/endpoint-serde", controller,
-		option.WithContentTypeSerde(contentType, kvSerde{delimiter: "#"}),
+	fuego.Post(group, "/endpoint-serdes", controller,
+		option.WithContentTypeSerDes(contentType, kvSerDes{delimiter: "#"}),
 	)
 
 	tt := []struct {
@@ -1611,22 +1611,22 @@ func TestWithCustomSerdePriority(t *testing.T) {
 		endpoint     string
 	}{
 		{
-			name:         "server serde is used when no group or endpoint serde is set",
+			name:         "server serdes is used when no group or endpoint serdes is set",
 			requestBody:  "key1=hello;key2=2",
 			expectedBody: "foo=bar;key1=hello;key2=2",
-			endpoint:     "/server-serde",
+			endpoint:     "/server-serdes",
 		},
 		{
-			name:         "group serde takes priority over server serde when no endpoint serde is set",
+			name:         "group serdes takes priority over server serdes when no endpoint serdes is set",
 			requestBody:  "key1=hello&key2=2",
 			expectedBody: "foo=bar&key1=hello&key2=2",
-			endpoint:     "/group/group-serde",
+			endpoint:     "/group/group-serdes",
 		},
 		{
-			name:         "endpoint serde takes priority over group and server serde",
+			name:         "endpoint serdes takes priority over group and server serdes",
 			requestBody:  "key1=hello#key2=2",
 			expectedBody: "foo=bar#key1=hello#key2=2",
-			endpoint:     "/group/endpoint-serde",
+			endpoint:     "/group/endpoint-serdes",
 		},
 	}
 
@@ -1645,7 +1645,7 @@ func TestWithCustomSerdePriority(t *testing.T) {
 	}
 }
 
-func TestWithCustomSerdeError(t *testing.T) {
+func TestWithCustomSerDesError(t *testing.T) {
 	controller := func(c fuego.ContextWithBody[[]string]) ([]string, error) {
 		body, err := c.Body()
 		return body, err
@@ -1653,11 +1653,11 @@ func TestWithCustomSerdeError(t *testing.T) {
 
 	s := fuego.NewServer()
 	fuego.Post(s, "/bad-deserialize", controller,
-		// intentionally use a serde that returns the wrong type for the controller
-		option.WithContentTypeSerde("application/vnd.keyvalue", kvSerde{}),
+		// intentionally use a serdes that returns the wrong type for the controller
+		option.WithContentTypeSerDes("application/vnd.keyvalue", kvSerDes{}),
 	)
 
-	t.Run("serde deserialize error", func(t *testing.T) {
+	t.Run("serdes deserialize error", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, "/bad-deserialize", strings.NewReader("key1=hello;key2=2"))
 		r.Header.Set("Accept", "application/vnd.keyvalue")
 		r.Header.Set("Content-Type", "application/vnd.keyvalue")

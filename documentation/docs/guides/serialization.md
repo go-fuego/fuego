@@ -98,9 +98,9 @@ func helloWorld(c fuego.ContextNoBody) (string, error) {
 
 ### Custom Content Negotiation Serialization and Deserialization
 
-You can define custom serializers and deserializers for specific content types using the `WithContentTypeSerde` option. This allows you to handle custom data formats beyond the built-in JSON, XML, YAML, and other supported formats.
+You can define custom serializers and deserializers for specific content types using the `WithContentTypeSerDes` option. This allows you to handle custom data formats beyond the built-in JSON, XML, YAML, and other supported formats.
 
-Just implement the `Serde` interface:
+Just implement the `SerDes` interface:
 
 ```go
 package main
@@ -117,11 +117,11 @@ import (
 
 // Custom key-value serializer that handles data like "key1=value1;key2=value2"
 // This contrived example merely demonstrates how to perform custom de/serialiation
-type kvSerde struct {
+type kvSerDes struct {
 	delimiter string
 }
 
-func (s kvSerde) Serialize(v any) ([]byte, error) {
+func (s kvSerDes) Serialize(v any) ([]byte, error) {
 	data, ok := v.(map[string]string)
 	if !ok {
 		return nil, fmt.Errorf("expected map[string]string, got %T", v)
@@ -134,7 +134,7 @@ func (s kvSerde) Serialize(v any) ([]byte, error) {
 	return []byte(strings.Join(parts, s.delimiter)), nil
 }
 
-func (s kvSerde) Deserialize(ctx context.Context, input io.Reader) (any, error) {
+func (s kvSerDes) Deserialize(ctx context.Context, input io.Reader) (any, error) {
 	body, err := io.ReadAll(input)
 	if err != nil {
 		return nil, err
@@ -163,7 +163,7 @@ func main() {
 	s := fuego.NewServer()
 
 	fuego.Post(s, "/supports-keyvalue", myController,
-		option.WithContentTypeSerde("application/vnd.keyvalue", kvSerde{delimiter: ";"}),
+		option.WithContentTypeSerDes("application/vnd.keyvalue", kvSerDes{delimiter: ";"}),
 	)
 
 	s.Run()
@@ -175,9 +175,9 @@ With this setup:
 - Responses with `Accept: application/vnd.keyvalue` will be serialized using your custom serializer
 - The route still supports standard Fuego content negotiation for JSON, YAML, XML, etc.
 
-Custom serdes take precedence over built-in serdes for the specified content type, meaning you can override Fuego's default de/serialization logic for JSON, XML, YAML, etc. if you choose.
+Custom SerDes take precedence over built-in SerDes for the specified content type, meaning you can override Fuego's default de/serialization logic for JSON, XML, YAML, etc. if you choose.
 
-Note that your `Serde`'s `Deserialize` implementation must return the type expected by your controller's body (`fuego.ContextWithBody[FooType]`) or an internal server error (HTTP status 500) will be thrown.
+Note that your `SerDes`'s `Deserialize` implementation must return the type expected by your controller's body (`fuego.ContextWithBody[FooType]`) or an internal server error (HTTP status 500) will be thrown.
 
 You can also use this option at the group or server level to easily apply custom content negotiation to multiple routes.
 

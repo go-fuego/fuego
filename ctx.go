@@ -488,12 +488,12 @@ func (c *netHttpContext[B, P]) MustParams() P {
 func (c netHttpContext[B, P]) Serialize(data any) error {
 	// facilitate user-defined content type serialization
 	for _, contentType := range parseAcceptHeader(c.Req.Header) {
-		serde, ok := c.route.contentTypeSerde[contentType]
+		serdes, ok := c.route.contentTypeSerDes[contentType]
 		if !ok {
 			continue
 		}
 
-		bytes, err := serde.Serialize(data)
+		bytes, err := serdes.Serialize(data)
 		if err != nil {
 			return err
 		}
@@ -537,14 +537,14 @@ func body[B, P any](c netHttpContext[B, P]) (B, error) {
 	contentType := c.Req.Header.Get("Content-Type")
 
 	// facilitate user-defined content type deserialization
-	if serde, ok := c.route.contentTypeSerde[contentType]; ok {
-		bodyDeserialized, err := serde.Deserialize(c.Req.Context(), c.Req.Body)
+	if serdes, ok := c.route.contentTypeSerDes[contentType]; ok {
+		bodyDeserialized, err := serdes.Deserialize(c.Req.Context(), c.Req.Body)
 		if err != nil {
 			return body, err
 		}
 		body, ok := bodyDeserialized.(B)
 		if !ok {
-			err = fmt.Errorf("serde %#v returned %T; expected %T", serde, bodyDeserialized, body)
+			err = fmt.Errorf("serdes %#v returned %T; expected %T", serdes, bodyDeserialized, body)
 		}
 		return body, err
 	}
