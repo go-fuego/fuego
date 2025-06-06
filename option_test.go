@@ -1417,3 +1417,27 @@ func TestWithCustomSerdePriority(t *testing.T) {
 		})
 	}
 }
+
+func TestWithCustomSerdeError(t *testing.T) {
+	controller := func(c fuego.ContextWithBody[[]string]) ([]string, error) {
+		body, err := c.Body()
+		return body, err
+	}
+
+	s := fuego.NewServer()
+	fuego.Post(s, "/bad-deserialize", controller,
+		// intentionally use a serde that returns the wrong type for the controller
+		option.WithContentTypeSerde("application/vnd.keyvalue", kvSerde{}),
+	)
+
+	t.Run("serde deserialize error", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodPost, "/bad-deserialize", strings.NewReader("key1=hello;key2=2"))
+		r.Header.Set("Accept", "application/vnd.keyvalue")
+		r.Header.Set("Content-Type", "application/vnd.keyvalue")
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, http.StatusInternalServerError, w.Code)
+	})
+}
