@@ -274,7 +274,7 @@ func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 	if typeOfParams.Kind() == reflect.Struct {
 		for i := range typeOfParams.NumField() {
 			field := typeOfParams.Field(i)
-			params := []func(param *OpenAPIParam){}
+			var params []ParamOption
 			example, _ := field.Tag.Lookup("description")
 			if example != "" {
 				params = append(params, ParamExample("example", example))
