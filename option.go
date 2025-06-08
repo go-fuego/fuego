@@ -41,7 +41,7 @@ func OptionMiddleware(middleware ...func(http.Handler) http.Handler) func(*BaseR
 //	OptionQuery("name", "Filter by name", ParamExample("cat name", "felix"), ParamNullable())
 //
 // The list of options is in the param package.
-func OptionQuery(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+func OptionQuery(name, description string, options ...ParamOption) func(*BaseRoute) {
 	options = append(options, ParamDescription(description), paramType(QueryParamType), ParamString())
 	return func(r *BaseRoute) {
 		OptionParam(name, options...)(r)
@@ -56,7 +56,7 @@ func OptionQuery(name, description string, options ...func(*OpenAPIParam)) func(
 //	OptionQueryInt("age", "Filter by age (in years)", ParamExample("3 years old", 3), ParamNullable())
 //
 // The list of options is in the param package.
-func OptionQueryInt(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+func OptionQueryInt(name, description string, options ...ParamOption) func(*BaseRoute) {
 	options = append(options, ParamDescription(description), paramType(QueryParamType), ParamInteger())
 	return func(r *BaseRoute) {
 		OptionParam(name, options...)(r)
@@ -71,7 +71,7 @@ func OptionQueryInt(name, description string, options ...func(*OpenAPIParam)) fu
 //	OptionQueryBool("is_active", "Filter by active status", ParamExample("true", true), ParamNullable())
 //
 // The list of options is in the param package.
-func OptionQueryBool(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+func OptionQueryBool(name, description string, options ...ParamOption) func(*BaseRoute) {
 	options = append(options, ParamDescription(description), paramType(QueryParamType), ParamBool())
 	return func(r *BaseRoute) {
 		OptionParam(name, options...)(r)
@@ -85,7 +85,7 @@ func OptionQueryBool(name, description string, options ...func(*OpenAPIParam)) f
 //	OptionQueryArray("tags", "Filter by tags", reflect.Int, ParamExample("tag list", "1,2,3"))
 //
 // The list of options is in the param package.
-func OptionQueryArray(name, description string, elemKind reflect.Kind, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+func OptionQueryArray(name, description string, elemKind reflect.Kind, options ...ParamOption) func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		param, openapiParam := buildParam(name, append(options, ParamDescription(description), paramType(QueryParamType))...)
 
@@ -125,7 +125,7 @@ func OptionQueryArray(name, description string, elemKind reflect.Kind, options .
 //	OptionHeader("Authorization", "Bearer token", ParamRequired())
 //
 // The list of options is in the param package.
-func OptionHeader(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+func OptionHeader(name, description string, options ...ParamOption) func(*BaseRoute) {
 	options = append(options, ParamDescription(description), paramType(HeaderParamType))
 	return func(r *BaseRoute) {
 		OptionParam(name, options...)(r)
@@ -139,7 +139,7 @@ func OptionHeader(name, description string, options ...func(*OpenAPIParam)) func
 //	OptionCookie("session_id", "Session ID", ParamRequired())
 //
 // The list of options is in the param package.
-func OptionCookie(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+func OptionCookie(name, description string, options ...ParamOption) func(*BaseRoute) {
 	options = append(options, ParamDescription(description), paramType(CookieParamType))
 	return func(r *BaseRoute) {
 		OptionParam(name, options...)(r)
@@ -154,7 +154,7 @@ func OptionCookie(name, description string, options ...func(*OpenAPIParam)) func
 //	OptionPath("id", "ID of the item")
 //
 // The list of options is in the param package.
-func OptionPath(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+func OptionPath(name, description string, options ...ParamOption) func(*BaseRoute) {
 	options = append(options, ParamDescription(description), paramType(PathParamType), ParamRequired())
 	return func(r *BaseRoute) {
 		OptionParam(name, options...)(r)
@@ -200,7 +200,7 @@ func panicsIfNotCorrectType(openapiParam *openapi3.Parameter, exampleValue any) 
 //	OptionResponseHeader("Set-Cookie", "Session cookie", ParamExample("session abc123", "session=abc123; Expires=Wed, 09 Jun 2021 10:18:14 GMT"))
 //
 // The list of options is in the param package.
-func OptionResponseHeader(name, description string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+func OptionResponseHeader(name, description string, options ...ParamOption) func(*BaseRoute) {
 	apiParam, openapiParam := buildParam(name, options...)
 
 	openapiParam.Name = ""
@@ -234,7 +234,7 @@ func OptionResponseHeader(name, description string, options ...func(*OpenAPIPara
 	}
 }
 
-func buildParam(name string, options ...func(*OpenAPIParam)) (OpenAPIParam, *openapi3.Parameter) {
+func buildParam(name string, options ...ParamOption) (OpenAPIParam, *openapi3.Parameter) {
 	param := OpenAPIParam{
 		Name: name,
 	}
@@ -275,7 +275,7 @@ func buildParam(name string, options ...func(*OpenAPIParam)) (OpenAPIParam, *ope
 }
 
 // OptionParam registers a parameter for the route. Prefer using the [OptionQuery], [OptionQueryInt], [OptionHeader], [OptionCookie] shortcuts.
-func OptionParam(name string, options ...func(*OpenAPIParam)) func(*BaseRoute) {
+func OptionParam(name string, options ...ParamOption) func(*BaseRoute) {
 	param, openapiParam := buildParam(name, options...)
 
 	return func(r *BaseRoute) {
