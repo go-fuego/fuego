@@ -27,9 +27,9 @@ func cache(h http.Handler) http.Handler {
 }
 
 func (rs Resources) Setup(
-	options ...func(*fuego.Server),
+	options ...fuego.ServerOption,
 ) *fuego.Server {
-	serverOptions := []func(*fuego.Server){
+	serverOptions := []fuego.ServerOption{
 		fuego.WithAutoAuth(controller.LoginFunc),
 		fuego.WithTemplateFS(templates.FS),
 		fuego.WithTemplateGlobs("**/*.html", "**/**/*.html"),
