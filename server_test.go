@@ -287,7 +287,7 @@ func TestWithAddr(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(
 			tt.name, func(t *testing.T) {
-				var opts []func(*Server)
+				var opts []ServerOption
 
 				if tt.addr != "" {
 					opts = append(opts, WithAddr(tt.addr))
