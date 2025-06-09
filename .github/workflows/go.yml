@@ -3,6 +3,9 @@
 
 name: Go
 
+permissions:
+  contents: read
+
 on:
   pull_request:
   push:
