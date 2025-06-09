@@ -7,7 +7,7 @@ require (
 	github.com/go-fuego/fuego v0.18.8
 	github.com/go-fuego/fuego/middleware/cache v0.0.0-20250205094027-802052722609
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-	golang.org/x/image v0.27.0
+	golang.org/x/image v0.28.0
 )
 
 require (
