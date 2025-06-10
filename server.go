@@ -69,8 +69,8 @@ type Server struct {
 	isTLS                  bool
 }
 
-// An ServerOption represents configures the behavior of a [Server].
-type ServerOption func(*Server)
+// A ServerOption represents configures the behavior of a [Server].
+type ServerOption = func(*Server)
 
 // NewServer creates a new server with the given options.
 // Fuego's [Server] is built on top of the standard library's [http.Server].
