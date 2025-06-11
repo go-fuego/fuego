@@ -2,7 +2,6 @@ package fuego
 
 import (
 	"fmt"
-	"net/http"
 	"reflect"
 	"slices"
 	"strconv"
@@ -28,7 +27,7 @@ func GroupOptions(options ...func(*BaseRoute)) func(*BaseRoute) {
 }
 
 // OptionMiddleware adds one or more route-scoped middleware.
-func OptionMiddleware(middleware ...func(http.Handler) http.Handler) func(*BaseRoute) {
+func OptionMiddleware(middleware ...any) func(*BaseRoute) {
 	return func(r *BaseRoute) {
 		r.Middlewares = append(r.Middlewares, middleware...)
 	}

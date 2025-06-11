@@ -1,12 +1,23 @@
 package fuegogin
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
+	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/assert"
 )
+
+func orderMiddleware(s string) func(*gin.Context) {
+	return func(c *gin.Context) {
+		c.Request.Header.Add("X-Test-Order", s)
+		c.Next()
+	}
+}
 
 func TestGinPathWithGinGroup(t *testing.T) {
 	basePath := "/api"
@@ -67,4 +78,109 @@ func TestFuegoPathWithGinGroup(t *testing.T) {
 	for _, route := range routes {
 		assert.Equal(t, route.Path, completePath)
 	}
+}
+
+func TestGinMiddlewares(t *testing.T) {
+	t.Run("gin handler & one middleware", func(t *testing.T) {
+		engine := fuego.NewEngine()
+		router := gin.Default()
+
+		GetGin(engine, router, "/test",
+			func(ctx *gin.Context) {
+				ctx.AbortWithStatus(200)
+			},
+			option.Middleware(orderMiddleware("First!")),
+		)
+
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		r.Header.Set("X-Test-Order", "Start!")
+		w := httptest.NewRecorder()
+
+		router.ServeHTTP(w, r)
+
+		require.Equal(t, []string{"Start!", "First!"}, r.Header["X-Test-Order"])
+	})
+
+	t.Run("gin handler & multiple middlewares", func(t *testing.T) {
+		engine := fuego.NewEngine()
+		router := gin.Default()
+
+		GetGin(engine, router, "/test",
+			func(ctx *gin.Context) {
+				ctx.AbortWithStatus(200)
+			},
+			option.Middleware(orderMiddleware("First!")),
+			option.Middleware(orderMiddleware("Second!")),
+		)
+
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		r.Header.Set("X-Test-Order", "Start!")
+		w := httptest.NewRecorder()
+
+		router.ServeHTTP(w, r)
+
+		require.Equal(t, []string{"Start!", "First!", "Second!"}, r.Header["X-Test-Order"])
+	})
+
+	t.Run("gin handler & group middlewares", func(t *testing.T) {
+		engine := fuego.NewEngine()
+		router := gin.Default()
+
+		router.Use(orderMiddleware("First!"))
+
+		GetGin(engine, router, "/test",
+			func(ctx *gin.Context) {
+				ctx.AbortWithStatus(200)
+			},
+			option.Middleware(orderMiddleware("Second!")),
+			option.Middleware(orderMiddleware("Third!")),
+		)
+
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		r.Header.Set("X-Test-Order", "Start!")
+		w := httptest.NewRecorder()
+
+		router.ServeHTTP(w, r)
+
+		require.Equal(t, []string{"Start!", "First!", "Second!", "Third!"}, r.Header["X-Test-Order"])
+	})
+
+	t.Run("fuego handler & multiple middlewares", func(t *testing.T) {
+		engine := fuego.NewEngine()
+		router := gin.Default()
+
+		Get(engine, router, "/test",
+			func(ctx fuego.ContextNoBody) (any, error) {
+				return nil, nil
+			},
+			option.Middleware(orderMiddleware("First!")),
+			option.Middleware(orderMiddleware("Second!")),
+		)
+
+		r := httptest.NewRequest(http.MethodGet, "/test", nil)
+		r.Header.Set("X-Test-Order", "Start!")
+		w := httptest.NewRecorder()
+
+		router.ServeHTTP(w, r)
+
+		require.Equal(t, []string{"Start!", "First!", "Second!"}, r.Header["X-Test-Order"])
+	})
+
+	t.Run("panics on wrong middleware", func(t *testing.T) {
+		engine := fuego.NewEngine()
+		router := gin.Default()
+
+		require.Panics(t, func() {
+			GetGin(engine, router, "/test",
+				func(ctx *gin.Context) {
+					ctx.AbortWithStatus(200)
+				},
+				option.Middleware(func(next http.Handler) http.Handler {
+					return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						next.ServeHTTP(w, r)
+					})
+				}),
+			)
+		})
+	})
 }
