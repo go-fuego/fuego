@@ -489,6 +489,7 @@ func TestAddResponse(t *testing.T) {
 
 func TestRequestBody(t *testing.T) {
 	type TestModel struct{}
+	type AnotherTestModel struct{}
 
 	t.Run("base", func(t *testing.T) {
 		s := fuego.NewServer()
@@ -501,8 +502,8 @@ func TestRequestBody(t *testing.T) {
 
 		req := route.Operation.RequestBody
 		require.NotNil(t, req)
-		assert.Nil(t, req.Value.Content.Get("application/xml"))
-		require.NotNil(t, req.Value.Content.Get("application/json"))
+		assert.NotContains(t, req.Value.Content, "application/xml")
+		require.Contains(t, req.Value.Content, "application/json")
 		assert.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
 		assert.NotNil(t, s.OpenAPI.Description().Components.Schemas["TestModel"])
 	})
@@ -516,10 +517,54 @@ func TestRequestBody(t *testing.T) {
 		)
 		req := route.Operation.RequestBody
 		require.NotNil(t, req)
-		require.NotNil(t, req.Value.Content.Get("application/json"))
-		assert.NotNil(t, req.Value.Content.Get("application/xml"))
+		require.Contains(t, req.Value.Content, "application/json")
+		assert.Contains(t, req.Value.Content, "application/xml")
 		assert.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
-		assert.NotNil(t, s.OpenAPI.Description().Components.Schemas["TestModel"])
+		assert.Contains(t, s.OpenAPI.Description().Components.Schemas, "TestModel")
+	})
+
+	t.Run("multiple inputs", func(t *testing.T) {
+		s := fuego.NewServer()
+		route := fuego.Post(s, "/test", helloWorld,
+			fuego.OptionRequestBody(fuego.RequestBody{
+				ContentTypes: []string{"application/json"},
+				Type:         TestModel{},
+			}),
+			fuego.OptionRequestBody(fuego.RequestBody{
+				ContentTypes: []string{"custom-type"},
+				Type:         AnotherTestModel{},
+			}),
+		)
+
+		req := route.Operation.RequestBody
+		require.NotNil(t, req)
+		require.Len(t, req.Value.Content, 2)
+		assert.NotContains(t, req.Value.Content, "application/xml")
+		require.Contains(t, req.Value.Content, "application/json")
+		assert.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
+		require.Contains(t, req.Value.Content, "custom-type")
+		assert.Equal(t, "#/components/schemas/AnotherTestModel", req.Value.Content.Get("custom-type").Schema.Ref)
+	})
+
+	t.Run("override previous input", func(t *testing.T) {
+		s := fuego.NewServer()
+		route := fuego.Post(s, "/test", helloWorld,
+			fuego.OptionRequestBody(fuego.RequestBody{
+				ContentTypes: []string{"application/json"},
+				Type:         TestModel{},
+			}),
+			fuego.OptionRequestBody(fuego.RequestBody{
+				ContentTypes: []string{"application/json"},
+				Type:         AnotherTestModel{},
+			}),
+		)
+
+		req := route.Operation.RequestBody
+		require.NotNil(t, req)
+		require.Len(t, req.Value.Content, 1)
+		require.Contains(t, req.Value.Content, "application/json")
+		assert.NotEqual(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
+		assert.Equal(t, "#/components/schemas/AnotherTestModel", req.Value.Content.Get("application/json").Schema.Ref)
 	})
 
 	t.Run("should be fatal", func(t *testing.T) {

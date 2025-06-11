@@ -62,6 +62,12 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 	)
 	fuego.Post(petsGroup, "/", rs.postPets,
 		option.DefaultStatusCode(201),
+		option.RequestBody(fuego.RequestBody{
+			Type: models.PetsCreate{}, ContentTypes: []string{"custom-content-type", "and-another"},
+		}),
+		option.RequestBody(fuego.RequestBody{
+			Type: models.Pets{}, ContentTypes: []string{"different-type"},
+		}),
 		option.AddResponse(409, "Conflict: Pet with the same name already exists", fuego.Response{Type: PetsError{}}),
 	)
 
