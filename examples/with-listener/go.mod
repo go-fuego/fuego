@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/with-listener
 
-go 1.24.2
+go 1.24.4
 
 require github.com/go-fuego/fuego v0.18.8
 
