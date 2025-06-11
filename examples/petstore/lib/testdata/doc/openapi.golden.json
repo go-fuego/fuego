@@ -621,9 +621,19 @@
 				],
 				"requestBody": {
 					"content": {
-						"*/*": {
+						"and-another": {
 							"schema": {
 								"$ref": "#/components/schemas/PetsCreate"
+							}
+						},
+						"custom-content-type": {
+							"schema": {
+								"$ref": "#/components/schemas/PetsCreate"
+							}
+						},
+						"different-type": {
+							"schema": {
+								"$ref": "#/components/schemas/Pets"
 							}
 						}
 					},
