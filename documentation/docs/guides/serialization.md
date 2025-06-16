@@ -179,7 +179,7 @@ Custom SerDes take precedence over built-in SerDes for the specified content typ
 
 Note that your `SerDes`'s `Deserialize` implementation must return the type expected by your controller's body (`fuego.ContextWithBody[FooType]`) or an internal server error (HTTP status 500) will be thrown.
 
-You can also use this option at the group or server level to easily apply custom content negotiation to multiple routes.
+You can also use this option at the group or server level to easily apply custom content negotiation to multiple routes by using `WithRouteOptions`.
 
 ## Combining Data and HTML with DataOrHTML
 
