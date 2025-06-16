@@ -126,7 +126,7 @@ func (s kvSerDes) Serialize(v any) ([]byte, error) {
 	if !ok {
 		return nil, fmt.Errorf("expected map[string]string, got %T", v)
 	}
-	
+
 	var parts []string
 	for key, value := range data {
 		parts = append(parts, fmt.Sprintf("%s=%s", key, value))
@@ -139,7 +139,7 @@ func (s kvSerDes) Deserialize(ctx context.Context, input io.Reader) (any, error)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	result := make(map[string]string)
 	pairs := strings.Split(string(body), s.delimiter)
 	for _, pair := range pairs {
@@ -171,6 +171,7 @@ func main() {
 ```
 
 With this setup:
+
 - Requests with `Content-Type: application/vnd.keyvalue` will be deserialized using your custom deserializer
 - Responses with `Accept: application/vnd.keyvalue` will be serialized using your custom serializer
 - The route still supports standard Fuego content negotiation for JSON, YAML, XML, etc.
