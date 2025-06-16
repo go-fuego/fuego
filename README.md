@@ -20,19 +20,6 @@ Inspired by Nest, built for Go developers.
 Also empowers templating with `html/template`, `a-h/templ` and `maragudk/gomponents`:
 see [the example](./examples/full-app-gourmet) [running live](https://gourmet.quimerch.com).
 
-## Sponsors
-
-Fuego is proudly sponsored by [Zuplo](https://zuplo.link/fuego-gh),
-that provides [a Fuego integration](https://zuplo.link/fuego-gh)!
-
-<div align="center">
-	<img src="./assets/Zuplo.png" style="border-radius:10px" height="100"
-	alt="Fuego Logo" />
-</div>
-
-> Zuplo allows you to secure your Fuego API, scale it globally,
-> generate documentation from your OpenAPI, and monetize your users.
-
 ## Why Fuego?
 
 Chi, Gin, Fiber and Echo are great frameworks.

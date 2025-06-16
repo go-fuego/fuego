@@ -36,12 +36,6 @@ func fuegoControllerPost(c fuego.ContextWithBody[HelloRequest]) (*HelloResponse,
 	}, nil
 }
 
-func serveOpenApiJSONDescription(s *fuego.OpenAPI) echo.HandlerFunc {
-	return func(ctx echo.Context) error {
-		return ctx.JSON(http.StatusOK, s.Description())
-	}
-}
-
 func DefaultOpenAPIHandler(specURL string) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		ctx.Response().Header().Set(echo.HeaderContentType, "text/html; charset=utf-8")

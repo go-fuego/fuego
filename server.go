@@ -69,6 +69,9 @@ type Server struct {
 	isTLS                  bool
 }
 
+// A ServerOption represents configures the behavior of a [Server].
+type ServerOption = func(*Server)
+
 // NewServer creates a new server with the given options.
 // Fuego's [Server] is built on top of the standard library's [http.Server].
 // The OpenAPI and data flow is handled by the [Engine], a lightweight abstraction available for all kind of routers (net/http, Gin, Echo).
@@ -82,7 +85,7 @@ type Server struct {
 // Options all begin with `With`.
 // Some options are at engine level, and can be set with [WithEngineOptions].
 // Some default options are set in the function body.
-func NewServer(options ...func(*Server)) *Server {
+func NewServer(options ...ServerOption) *Server {
 	s := &Server{
 		Server: &http.Server{
 			ReadTimeout:       30 * time.Second,
@@ -99,7 +102,7 @@ func NewServer(options ...func(*Server)) *Server {
 	}
 
 	// Default options that can be overridden
-	defaultOptions := [...]func(*Server){
+	defaultOptions := [...]ServerOption{
 		WithAddr("localhost:9999"),
 		WithDisallowUnknownFields(true),
 		WithSerializer(Send),
@@ -165,7 +168,7 @@ func (s *Server) UIHandler(_ *Engine) {
 //	var templates embed.FS
 //	...
 //	WithTemplateFS(templates)
-func WithTemplateFS(fsys fs.FS) func(*Server) {
+func WithTemplateFS(fsys fs.FS) ServerOption {
 	return func(c *Server) { c.fs = fsys }
 }
 
@@ -186,7 +189,7 @@ func WithTemplateFS(fsys fs.FS) func(*Server) {
 //			AllowCredentials: true,
 //		}).Handler),
 //	)
-func WithGlobalMiddlewares(middlewares ...func(http.Handler) http.Handler) func(*Server) {
+func WithGlobalMiddlewares(middlewares ...func(http.Handler) http.Handler) ServerOption {
 	return func(c *Server) {
 		c.globalMiddlewares = append(c.globalMiddlewares, middlewares...)
 	}
@@ -195,7 +198,7 @@ func WithGlobalMiddlewares(middlewares ...func(http.Handler) http.Handler) func(
 // WithCorsMiddleware adds CORS middleware to the server.
 //
 // Deprecated: Please use [WithGlobalMiddlewares] instead.
-func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Server) {
+func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) ServerOption {
 	return WithGlobalMiddlewares(corsMiddleware)
 }
 
@@ -210,7 +213,7 @@ func WithCorsMiddleware(corsMiddleware func(http.Handler) http.Handler) func(*Se
 //	)
 //
 // Deprecated: Please use [OptionAddResponse] with [WithRouteOptions]
-func WithGlobalResponseTypes(code int, description string, response Response) func(*Server) {
+func WithGlobalResponseTypes(code int, description string, response Response) ServerOption {
 	return func(c *Server) {
 		WithRouteOptions(
 			OptionAddResponse(code, description, response),
@@ -233,7 +236,7 @@ func WithGlobalResponseTypes(code int, description string, response Response) fu
 //			},
 //		}),
 //	)
-func WithSecurity(schemes openapi3.SecuritySchemes) func(*Server) {
+func WithSecurity(schemes openapi3.SecuritySchemes) ServerOption {
 	return func(s *Server) {
 		if s.OpenAPI.Description().Components.SecuritySchemes == nil {
 			s.OpenAPI.Description().Components.SecuritySchemes = openapi3.SecuritySchemes{}
@@ -252,13 +255,13 @@ func WithSecurity(schemes openapi3.SecuritySchemes) func(*Server) {
 //	})
 //
 //	RecipeThis route will be tagged with "recipes" by default, but with this option, they will not be tagged.
-func WithoutAutoGroupTags() func(*Server) {
+func WithoutAutoGroupTags() ServerOption {
 	return func(c *Server) { c.disableAutoGroupTags = true }
 }
 
 // WithTemplates loads the templates used to render HTML.
 // To be used with [WithTemplateFS]. If not set, it will use the os filesystem, at folder "./templates".
-func WithTemplates(templates *template.Template) func(*Server) {
+func WithTemplates(templates *template.Template) ServerOption {
 	return func(s *Server) {
 		if s.fs == nil {
 			s.fs = os.DirFS("./templates")
@@ -278,7 +281,7 @@ func WithTemplates(templates *template.Template) func(*Server) {
 //	WithTemplateGlobs("pages/*.html", "pages/admin/*.html")
 //
 // for reference about the glob patterns in Go (no ** support for example): https://pkg.go.dev/path/filepath?utm_source=godoc#Match
-func WithTemplateGlobs(patterns ...string) func(*Server) {
+func WithTemplateGlobs(patterns ...string) ServerOption {
 	return func(s *Server) {
 		if s.fs == nil {
 			s.fs = os.DirFS("./templates")
@@ -294,15 +297,15 @@ func WithTemplateGlobs(patterns ...string) func(*Server) {
 	}
 }
 
-func WithBasePath(basePath string) func(*Server) {
+func WithBasePath(basePath string) ServerOption {
 	return func(c *Server) { c.basePath = basePath }
 }
 
-func WithMaxBodySize(maxBodySize int64) func(*Server) {
+func WithMaxBodySize(maxBodySize int64) ServerOption {
 	return func(c *Server) { c.maxBodySize = maxBodySize }
 }
 
-func WithAutoAuth(verifyUserInfo func(user, password string) (jwt.Claims, error)) func(*Server) {
+func WithAutoAuth(verifyUserInfo func(user, password string) (jwt.Claims, error)) ServerOption {
 	return func(c *Server) {
 		c.autoAuth.Enabled = true
 		c.autoAuth.VerifyUserInfo = verifyUserInfo
@@ -313,14 +316,14 @@ func WithAutoAuth(verifyUserInfo func(user, password string) (jwt.Claims, error)
 // If true, the server will return an error if the request body contains unknown fields.
 // Useful for quick debugging in development.
 // Defaults to true.
-func WithDisallowUnknownFields(b bool) func(*Server) {
+func WithDisallowUnknownFields(b bool) ServerOption {
 	return func(c *Server) { c.DisallowUnknownFields = b }
 }
 
 // WithAddr optionally specifies the TCP address for the server to listen on, in the form "host:port".
 // If not specified addr ':9999' will be used.
 // If a listener is explicitly set using WithListener, the provided address will be ignored,
-func WithAddr(addr string) func(*Server) {
+func WithAddr(addr string) ServerOption {
 	return func(c *Server) {
 		c.Addr = addr
 	}
@@ -329,7 +332,7 @@ func WithAddr(addr string) func(*Server) {
 // WithXML sets the serializer to XML
 //
 // Deprecated: fuego supports automatic XML serialization when using the header "Accept: application/xml".
-func WithXML() func(*Server) {
+func WithXML() ServerOption {
 	return func(c *Server) {
 		c.Serialize = SendXML
 		c.SerializeError = SendXMLError
@@ -337,7 +340,7 @@ func WithXML() func(*Server) {
 }
 
 // WithLogHandler sets the log handler of the server.
-func WithLogHandler(handler slog.Handler) func(*Server) {
+func WithLogHandler(handler slog.Handler) ServerOption {
 	return func(*Server) {
 		if handler != nil {
 			slog.SetDefault(slog.New(handler))
@@ -347,18 +350,18 @@ func WithLogHandler(handler slog.Handler) func(*Server) {
 
 // WithSerializer sets a custom serializer of type Sender that overrides the default one.
 // Please send a PR if you think the default serializer should be improved, instead of jumping to this option.
-func WithSerializer(serializer Sender) func(*Server) {
+func WithSerializer(serializer Sender) ServerOption {
 	return func(c *Server) { c.Serialize = serializer }
 }
 
 // WithErrorSerializer sets a custom serializer of type ErrorSender that overrides the default one.
 // Please send a PR if you think the default serializer should be improved, instead of jumping to this option.
-func WithErrorSerializer(serializer ErrorSender) func(*Server) {
+func WithErrorSerializer(serializer ErrorSender) ServerOption {
 	return func(c *Server) { c.SerializeError = serializer }
 }
 
 // WithoutStartupMessages disables the startup message
-func WithoutStartupMessages() func(*Server) {
+func WithoutStartupMessages() ServerOption {
 	return func(c *Server) {
 		c.disableStartupMessages = true
 		c.OpenAPI.Config.DisableMessages = true
@@ -366,7 +369,7 @@ func WithoutStartupMessages() func(*Server) {
 }
 
 // WithoutLogger disables the default logger.
-func WithoutLogger() func(*Server) {
+func WithoutLogger() ServerOption {
 	return func(*Server) {
 		slog.SetDefault(slog.New(slog.NewTextHandler(io.Discard, nil)))
 	}
@@ -382,7 +385,7 @@ func WithoutLogger() func(*Server) {
 //	    WithListener(listener),
 //	    WithAddr(":9999"), // This will be ignored because WithListener takes precedence.
 //	)
-func WithListener(listener net.Listener) func(*Server) {
+func WithListener(listener net.Listener) ServerOption {
 	return func(s *Server) {
 		s.listener = listener
 	}
@@ -402,7 +405,7 @@ func WithListener(listener net.Listener) func(*Server) {
 //	)
 //
 // Engine Options all begin with `With`.
-func WithEngineOptions(options ...EngineOption) func(*Server) {
+func WithEngineOptions(options ...EngineOption) ServerOption {
 	return func(s *Server) {
 		for _, option := range options {
 			option(s.Engine)
@@ -422,7 +425,7 @@ func WithEngineOptions(options ...EngineOption) func(*Server) {
 //	}
 //
 // The above struct will be validated using the default validator, and if any errors occur, they will be returned as part of the response.
-func WithValidator(newValidator *validator.Validate) func(*Server) {
+func WithValidator(newValidator *validator.Validate) ServerOption {
 	if newValidator == nil {
 		panic("new validator not provided")
 	}
@@ -432,14 +435,14 @@ func WithValidator(newValidator *validator.Validate) func(*Server) {
 	}
 }
 
-func WithRouteOptions(options ...func(*BaseRoute)) func(*Server) {
+func WithRouteOptions(options ...func(*BaseRoute)) ServerOption {
 	return func(s *Server) {
 		s.routeOptions = append(s.routeOptions, options...)
 	}
 }
 
 // WithLoggingMiddleware configures the default logging middleware for the server.
-func WithLoggingMiddleware(loggingConfig LoggingConfig) func(*Server) {
+func WithLoggingMiddleware(loggingConfig LoggingConfig) ServerOption {
 	return func(s *Server) {
 		s.loggingConfig.DisableRequest = loggingConfig.DisableRequest
 		s.loggingConfig.DisableResponse = loggingConfig.DisableResponse
@@ -452,7 +455,7 @@ func WithLoggingMiddleware(loggingConfig LoggingConfig) func(*Server) {
 // WithStripTrailingSlash ensure all declared routes trailing slash
 // is stripped. This option also applies a middleware
 // that strips the trailing slash from every incoming request.
-func WithStripTrailingSlash() func(*Server) {
+func WithStripTrailingSlash() ServerOption {
 	return func(s *Server) {
 		s.routeOptions = append(s.routeOptions, OptionStripTrailingSlash())
 		s.globalMiddlewares = append(s.globalMiddlewares, stripTrailingSlashMiddleware)

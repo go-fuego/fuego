@@ -24,7 +24,7 @@ func (o *OpenAPIHandler) UIHandler(e *fuego.Engine) {
 	GetGin(
 		e,
 		o.GinEngine,
-		e.OpenAPI.Config.SwaggerURL+"/",
+		e.OpenAPI.Config.SwaggerURL,
 		gin.WrapH(e.OpenAPI.Config.UIHandler(e.OpenAPI.Config.SpecURL)),
 		fuego.OptionHide(),
 	)

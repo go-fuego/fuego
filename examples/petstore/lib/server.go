@@ -32,7 +32,7 @@ var uuidParser openapi3gen.SchemaCustomizerFn = func(name string, t reflect.Type
 	return nil
 }
 
-func NewPetStoreServer(options ...func(*fuego.Server)) *fuego.Server {
+func NewPetStoreServer(options ...fuego.ServerOption) *fuego.Server {
 	options = append(options, fuego.WithRouteOptions(
 		option.AddResponse(http.StatusNoContent, "No Content", fuego.Response{Type: NoContent{}}),
 	))

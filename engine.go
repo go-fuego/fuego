@@ -14,7 +14,7 @@ import (
 )
 
 // An EngineOption represents configures the behavior of an [Engine].
-type EngineOption func(*Engine)
+type EngineOption = func(*Engine)
 
 // NewEngine creates a new Engine with the given options.
 // For example:

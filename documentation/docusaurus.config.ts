@@ -91,14 +91,6 @@ const config: Config = {
           label: "GitHub",
           position: "right",
         },
-        {
-          position: "left",
-          value: `<div class='display-large' style='background-color: light-dark(rgb(235 237 240), rgb(68 73 80));padding-top: 6px; padding-bottom: 6px; padding-left: 6px; padding-right: 6px;border-radius: 12px; color: light-dark(black, white)'><span>Secure, Document, and Monetize your Fuego API for FREE</span><a target='_blank' href='https://zuplo.link/fuego-web' style='background-color: rgb(255 0 189);padding: 6px;border-radius: 8px; margin-left:6px; color: white; text-wrap: nowrap'>Try Zuplo!</a></div>
-            <div class='display-medium' style='background-color: light-dark(rgb(235 237 240), rgb(68 73 80));padding-top: 6px; padding-bottom: 6px; padding-left: 6px; padding-right: 6px;border-radius: 12px; color: light-dark(black, white)'><span class='hidden-when-very-small'>Scale your Fuego API</span><a target='_blank' href='https://zuplo.link/fuego-web' style='background-color: rgb(255 0 189);padding: 6px;border-radius: 8px; margin-left:6px; color: white; text-wrap: nowrap'>Try Zuplo!</a></div>
-            <a class='display-small' target='_blank' href='https://zuplo.link/fuego-web' style='background-color: rgb(255 0 189);padding: 6px;border-radius: 8px; margin-left:6px; color: white; text-wrap: nowrap'>Try Zuplo!</a>
-            <div class='display-mobile' style='background-color: light-dark(rgb(235 237 240), rgb(68 73 80));padding-top: 6px; padding-bottom: 6px; padding-left: 6px; padding-right: 6px;border-radius: 12px; color: light-dark(black, white)'><span class='hidden-when-very-small'>Scale your Fuego API</span><a target='_blank' href='https://zuplo.link/fuego-web' style='background-color: rgb(255 0 189);padding: 6px;border-radius: 8px; margin-left:6px; color: white; text-wrap: nowrap'>Try Zuplo!</a></div>`,
-          type: "html",
-        },
       ],
     },
     footer: {
