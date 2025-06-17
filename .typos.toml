@@ -1,6 +1,9 @@
 [default]
-extend-words = { "SerDes" = "SerDes" }
 locale = "en-us"
+
+[default.extend-words]
+# Don't correct the surname "ser"
+ser = "ser"
 
 [files]
 # excluded file
