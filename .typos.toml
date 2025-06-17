@@ -1,4 +1,5 @@
 [default]
+extend-words = { "SerDes" = "SerDes" }
 locale = "en-us"
 
 [files]
