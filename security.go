@@ -54,6 +54,10 @@ func NewSecurity() Security {
 		panic(err)
 	}
 
+	return NewSecurityWithKey(key)
+}
+
+func NewSecurityWithKey(key *ecdsa.PrivateKey) Security {
 	return Security{
 		key:             key,
 		Now:             time.Now,
