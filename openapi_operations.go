@@ -29,41 +29,33 @@ func addResponseIfNotSet(openapi *OpenAPI, operation *openapi3.Operation, code i
 }
 
 func (openAPI *OpenAPI) buildOpenapi3Response(description string, response Response) *openapi3.Response {
-	if response.Type == nil {
-		panic("Type in Response cannot be nil")
-	}
-
-	responseSchema := SchemaTagFromType(openAPI, response.Type)
-	if len(response.ContentTypes) == 0 {
-		response.ContentTypes = []string{"application/json", "application/xml"}
-	}
-
-	content := openapi3.NewContentWithSchemaRef(&responseSchema.SchemaRef, response.ContentTypes)
 	return openapi3.NewResponse().
 		WithDescription(description).
-		WithContent(content)
+		WithContent(openAPI.buildContent(response.Type, response.ContentTypes...))
 }
 
 func (openAPI *OpenAPI) buildOpenapi3RequestBody(requestBody RequestBody) *openapi3.RequestBody {
-	if requestBody.Type == nil {
-		panic("Type in RequestBody cannot be nil")
-	}
-
-	bodySchema := SchemaTagFromType(openAPI, requestBody.Type)
-	if len(requestBody.ContentTypes) == 0 {
-		requestBody.ContentTypes = []string{"application/json", "application/xml"}
-	}
-
-	content := openapi3.NewContentWithSchemaRef(&bodySchema.SchemaRef, requestBody.ContentTypes)
 	return openapi3.NewRequestBody().
 		WithRequired(true).
 		WithDescription("Request body for " + reflect.TypeOf(requestBody.Type).String()).
-		WithContent(content)
+		WithContent(openAPI.buildContent(requestBody.Type, requestBody.ContentTypes...))
+}
+
+func (openAPI *OpenAPI) buildContent(t any, consumes ...string) openapi3.Content {
+	if t == nil {
+		panic("Type in RequestBody cannot be nil")
+	}
+	if len(consumes) == 0 {
+		consumes = []string{"application/json", "application/xml"}
+	}
+
+	bodySchema := SchemaTagFromType(openAPI, t)
+	return openapi3.NewContentWithSchemaRef(&bodySchema.SchemaRef, consumes)
 }
 
 // openAPIResponse describes a response error in the OpenAPI spec.
 type openAPIResponse struct {
-	Description string
 	Response
-	Code int
+	Description string
+	Code        int
 }
