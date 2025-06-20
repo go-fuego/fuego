@@ -3,7 +3,7 @@ module github.com/go-fuego/fuego/examples/custom-errors
 go 1.24.4
 
 require (
-	github.com/go-chi/chi/v5 v5.2.1
+	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-fuego/fuego v0.18.8
 	github.com/rs/cors v1.11.1
 )
