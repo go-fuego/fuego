@@ -2,6 +2,7 @@ package fuego
 
 import (
 	"fmt"
+	"maps"
 	"net/http"
 	"reflect"
 	"slices"
@@ -439,15 +440,22 @@ type RequestBody struct {
 	ContentTypes []string
 }
 
-// OptionRequestBody sets a request to a route
-// It replaces existing request body
+// OptionRequestBody sets a request body to a route
+// Can be called multiple times to set additional ContentType values.
+// If two of the same ContentTypes are provided the last provided will be
+// what is set in the spec.
 // Required: RequestBody.Type must be set
 // Optional: RequestBody.ContentTypes will default to `application/json` and `application/xml` if not set
 func OptionRequestBody(requestBody RequestBody) func(*BaseRoute) {
 	return func(r *BaseRoute) {
-		r.Operation.RequestBody = &openapi3.RequestBodyRef{
-			Value: r.OpenAPI.buildOpenapi3RequestBody(requestBody),
+		if r.Operation.RequestBody == nil {
+			r.Operation.RequestBody = &openapi3.RequestBodyRef{
+				Value: r.OpenAPI.buildOpenapi3RequestBody(requestBody),
+			}
+			return
 		}
+		content := r.OpenAPI.buildContent(requestBody.Type, requestBody.ContentTypes...)
+		maps.Copy(r.Operation.RequestBody.Value.Content, content)
 	}
 }
 

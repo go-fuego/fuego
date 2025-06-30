@@ -1,6 +1,6 @@
 package fuego
 
-// A ParamOption configures OpenAPI properties of an OpenAPI Param
+// A ParamOption configures OpenAPI properties of [OpenAPIParam]
 // i.e path/query parameters, cookies, and headers
 type ParamOption = func(param *OpenAPIParam)
 
