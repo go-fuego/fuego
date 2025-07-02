@@ -131,10 +131,12 @@ type GroupedRouter interface {
 }
 
 func (a ginRouteRegisterer[T, B, P]) Register() fuego.Route[T, B, P] {
+	handlerWithMiddlewares := applyMiddlewares(a.ginHandler, a.route.Middlewares)
+
 	// We must register the gin handler first, so that the gin router can
 	// mutate the route path if it is a RouterGroup.
 	// This is because gin groups will prepend the group path to the route path itself.
-	a.ginRouter.Handle(a.route.Method, a.originalPath, a.ginHandler)
+	a.ginRouter.Handle(a.route.Method, a.originalPath, handlerWithMiddlewares...)
 
 	if grouped, ok := a.ginRouter.(GroupedRouter); ok {
 		basePath := grouped.BasePath()
@@ -147,6 +149,20 @@ func (a ginRouteRegisterer[T, B, P]) Register() fuego.Route[T, B, P] {
 	}
 
 	return a.route
+}
+
+func applyMiddlewares(handler gin.HandlerFunc, middlewares []any) []gin.HandlerFunc {
+	res := make([]gin.HandlerFunc, 0, len(middlewares)+1)
+
+	for _, m := range middlewares {
+		if v, ok := m.(func(c *gin.Context)); ok {
+			res = append(res, v)
+		} else {
+			panic("wrong middleware format for gin engine")
+		}
+	}
+
+	return append(res, handler)
 }
 
 // Convert a Fuego handler to a Gin handler.

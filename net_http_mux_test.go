@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 	"github.com/thejerf/slogassert"
 )
@@ -96,6 +97,21 @@ func TestUse(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, []string{"Start!", "First!", "Second!", "Third!"}, r.Header["X-Test-Order"])
+	})
+
+	t.Run("panics on wrong middleware", func(t *testing.T) {
+		s := NewServer()
+
+		require.Panics(t, func() {
+			Get(s, "/test",
+				func(ctx ContextNoBody) (string, error) {
+					return "test", nil
+				},
+				OptionMiddleware(func(c *gin.Context) {
+					c.Next()
+				}),
+			)
+		})
 	})
 }
 
