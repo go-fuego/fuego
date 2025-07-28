@@ -32,7 +32,8 @@ func explainError(err validator.FieldError) string {
 var v = validator.New()
 
 func validate(a any) error {
-	if reflect.TypeOf(a).Kind() != reflect.Struct {
+	t := reflect.TypeOf(a)
+	if t == nil || t.Kind() != reflect.Struct {
 		return nil
 	}
 
