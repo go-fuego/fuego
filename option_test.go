@@ -1,10 +1,15 @@
 package fuego_test
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -1343,5 +1348,368 @@ func TestOptionTagInfo(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, "hello world", w.Body.String())
+	})
+}
+
+// kvSerDes has custom serialization and deserialization logic for key-value pairs
+// in the format "key1=value1;key2=value2;..."
+type kvSerDes struct {
+	delimiter string
+}
+
+// Serialize custom serialization logic
+func (s kvSerDes) Serialize(v any) ([]byte, error) {
+	v2, ok := v.(map[string]string)
+	if !ok {
+		return nil, errors.New("invalid type; kvSerDes expected map[string]string")
+	}
+	parts := make([]string, 0, len(v2))
+	for k, v := range v2 {
+		parts = append(parts, fmt.Sprintf("%s=%s", k, v))
+	}
+	slices.Sort(parts)
+	joined := strings.Join(parts, s.delimiter)
+	return []byte(joined), nil
+}
+
+// Deserialize custom deserialization logic
+func (s kvSerDes) Deserialize(_ context.Context, input io.Reader) (any, error) {
+	buf, err := io.ReadAll(input)
+	if err != nil {
+		return nil, err
+	}
+	v := map[string]string{}
+	pairs := strings.Split(string(buf), s.delimiter)
+
+	for _, pair := range pairs {
+		kv := strings.Split(pair, "=")
+		if len(kv) != 2 {
+			return nil, errors.New("invalid format; kvSerDes expected key=value pairs separated by " + s.delimiter)
+		}
+		v[kv[0]] = kv[1]
+	}
+	return v, nil
+}
+
+func TestWithCustomEndpointSerDes(t *testing.T) {
+	controller := func(c fuego.ContextWithBody[map[string]string]) (map[string]string, error) {
+		body, err := c.Body()
+		if err != nil {
+			return nil, err
+		}
+		body["foo"] = "bar"
+		return body, nil
+	}
+
+	s := fuego.NewServer()
+	fuego.Post(s, "/keyvalue", controller,
+		option.WithContentTypeSerDes("application/vnd.keyvalue", kvSerDes{delimiter: ";"}),
+	)
+
+	tt := []struct {
+		name         string
+		requestBody  string
+		contentType  string
+		accept       string
+		expectedBody string
+		checkJSON    bool
+	}{
+		{
+			name:         "In kv; out kv",
+			requestBody:  "key1=hello;key2=2",
+			contentType:  "application/vnd.keyvalue",
+			accept:       "application/vnd.keyvalue",
+			expectedBody: "foo=bar;key1=hello;key2=2",
+		},
+		{
+			name:         "In kv; out json",
+			requestBody:  "key1=hello;key2=2",
+			contentType:  "application/vnd.keyvalue",
+			accept:       "application/json",
+			expectedBody: `{"foo":"bar","key1":"hello","key2":"2"}`,
+			checkJSON:    true,
+		},
+		{
+			name:         "In json; out kv",
+			requestBody:  `{"key1":"hello","key2":"2"}`,
+			contentType:  "application/json",
+			accept:       "application/vnd.keyvalue",
+			expectedBody: "foo=bar;key1=hello;key2=2",
+		},
+		{
+			name:         "In json; out json",
+			requestBody:  `{"key1":"hello","key2":"2"}`,
+			contentType:  "application/json",
+			accept:       "application/json",
+			expectedBody: `{"foo":"bar","key1":"hello","key2":"2"}`,
+			checkJSON:    true,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPost, "/keyvalue", strings.NewReader(tc.requestBody))
+			r.Header.Set("Accept", tc.accept)
+			r.Header.Set("Content-Type", tc.contentType)
+			w := httptest.NewRecorder()
+
+			s.Mux.ServeHTTP(w, r)
+
+			require.Equal(t, http.StatusOK, w.Code)
+			if tc.checkJSON {
+				require.JSONEq(t, tc.expectedBody, w.Body.String())
+			} else {
+				require.Equal(t, tc.expectedBody, w.Body.String())
+			}
+		})
+	}
+}
+
+func TestWithCustomGroupSerDes(t *testing.T) {
+	controller := func(c fuego.ContextWithBody[map[string]string]) (map[string]string, error) {
+		body, err := c.Body()
+		if err != nil {
+			return nil, err
+		}
+		body["foo"] = "bar"
+		return body, nil
+	}
+
+	s := fuego.NewServer()
+
+	group := fuego.Group(s, "/keyvalue",
+		option.WithContentTypeSerDes("application/vnd.keyvalue", kvSerDes{delimiter: ";"}),
+	)
+
+	fuego.Post(group, "/foo", controller)
+
+	tt := []struct {
+		name         string
+		requestBody  string
+		contentType  string
+		accept       string
+		expectedBody string
+		checkJSON    bool
+	}{
+		{
+			name:         "In kv; out kv",
+			requestBody:  "key1=hello;key2=2",
+			contentType:  "application/vnd.keyvalue",
+			accept:       "application/vnd.keyvalue",
+			expectedBody: "foo=bar;key1=hello;key2=2",
+		},
+		{
+			name:         "In kv; out json",
+			requestBody:  "key1=hello;key2=2",
+			contentType:  "application/vnd.keyvalue",
+			accept:       "application/json",
+			expectedBody: `{"foo":"bar","key1":"hello","key2":"2"}`,
+			checkJSON:    true,
+		},
+		{
+			name:         "In json; out kv",
+			requestBody:  `{"key1":"hello","key2":"2"}`,
+			contentType:  "application/json",
+			accept:       "application/vnd.keyvalue",
+			expectedBody: "foo=bar;key1=hello;key2=2",
+		},
+		{
+			name:         "In json; out json",
+			requestBody:  `{"key1":"hello","key2":"2"}`,
+			contentType:  "application/json",
+			accept:       "application/json",
+			expectedBody: `{"foo":"bar","key1":"hello","key2":"2"}`,
+			checkJSON:    true,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPost, "/keyvalue/foo", strings.NewReader(tc.requestBody))
+			r.Header.Set("Accept", tc.accept)
+			r.Header.Set("Content-Type", tc.contentType)
+			w := httptest.NewRecorder()
+
+			s.Mux.ServeHTTP(w, r)
+
+			require.Equal(t, http.StatusOK, w.Code)
+			if tc.checkJSON {
+				require.JSONEq(t, tc.expectedBody, w.Body.String())
+			} else {
+				require.Equal(t, tc.expectedBody, w.Body.String())
+			}
+		})
+	}
+}
+
+func TestWithCustomServerSerDes(t *testing.T) {
+	controller := func(c fuego.ContextWithBody[map[string]string]) (map[string]string, error) {
+		body, err := c.Body()
+		if err != nil {
+			return nil, err
+		}
+		body["foo"] = "bar"
+		return body, nil
+	}
+
+	s := fuego.NewServer(
+		fuego.WithRouteOptions(
+			option.WithContentTypeSerDes("application/vnd.keyvalue", kvSerDes{delimiter: ";"}),
+		),
+	)
+
+	fuego.Post(s, "/foo", controller)
+
+	tt := []struct {
+		name         string
+		requestBody  string
+		contentType  string
+		accept       string
+		expectedBody string
+		checkJSON    bool
+	}{
+		{
+			name:         "In kv; out kv",
+			requestBody:  "key1=hello;key2=2",
+			contentType:  "application/vnd.keyvalue",
+			accept:       "application/vnd.keyvalue",
+			expectedBody: "foo=bar;key1=hello;key2=2",
+		},
+		{
+			name:         "In kv; out json",
+			requestBody:  "key1=hello;key2=2",
+			contentType:  "application/vnd.keyvalue",
+			accept:       "application/json",
+			expectedBody: `{"foo":"bar","key1":"hello","key2":"2"}`,
+			checkJSON:    true,
+		},
+		{
+			name:         "In json; out kv",
+			requestBody:  `{"key1":"hello","key2":"2"}`,
+			contentType:  "application/json",
+			accept:       "application/vnd.keyvalue",
+			expectedBody: "foo=bar;key1=hello;key2=2",
+		},
+		{
+			name:         "In json; out json",
+			requestBody:  `{"key1":"hello","key2":"2"}`,
+			contentType:  "application/json",
+			accept:       "application/json",
+			expectedBody: `{"foo":"bar","key1":"hello","key2":"2"}`,
+			checkJSON:    true,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPost, "/foo", strings.NewReader(tc.requestBody))
+			r.Header.Set("Accept", tc.accept)
+			r.Header.Set("Content-Type", tc.contentType)
+			w := httptest.NewRecorder()
+
+			s.Mux.ServeHTTP(w, r)
+
+			require.Equal(t, http.StatusOK, w.Code)
+			if tc.checkJSON {
+				require.JSONEq(t, tc.expectedBody, w.Body.String())
+			} else {
+				require.Equal(t, tc.expectedBody, w.Body.String())
+			}
+		})
+	}
+}
+
+func TestWithCustomSerDesPriority(t *testing.T) {
+	contentType := "application/vnd.keyvalue"
+	controller := func(c fuego.ContextWithBody[map[string]string]) (map[string]string, error) {
+		body, err := c.Body()
+		if err != nil {
+			return nil, err
+		}
+		body["foo"] = "bar"
+		return body, nil
+	}
+
+	// This test uses different delimiters for each route to ensure that the correct one is used
+	// and that the priority order is respected (endpoint > group > server).
+
+	s := fuego.NewServer(
+		fuego.WithRouteOptions(
+			option.WithContentTypeSerDes(contentType, kvSerDes{delimiter: ";"}),
+		),
+	)
+	fuego.Post(s, "/server-serdes", controller)
+
+	group := fuego.Group(s, "/group",
+		option.WithContentTypeSerDes(contentType, kvSerDes{delimiter: "&"}),
+	)
+	fuego.Post(group, "/group-serdes", controller)
+
+	fuego.Post(group, "/endpoint-serdes", controller,
+		option.WithContentTypeSerDes(contentType, kvSerDes{delimiter: "#"}),
+	)
+
+	tt := []struct {
+		name         string
+		requestBody  string
+		expectedBody string
+		endpoint     string
+	}{
+		{
+			name:         "server serdes is used when no group or endpoint serdes is set",
+			requestBody:  "key1=hello;key2=2",
+			expectedBody: "foo=bar;key1=hello;key2=2",
+			endpoint:     "/server-serdes",
+		},
+		{
+			name:         "group serdes takes priority over server serdes when no endpoint serdes is set",
+			requestBody:  "key1=hello&key2=2",
+			expectedBody: "foo=bar&key1=hello&key2=2",
+			endpoint:     "/group/group-serdes",
+		},
+		{
+			name:         "endpoint serdes takes priority over group and server serdes",
+			requestBody:  "key1=hello#key2=2",
+			expectedBody: "foo=bar#key1=hello#key2=2",
+			endpoint:     "/group/endpoint-serdes",
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPost, tc.endpoint, strings.NewReader(tc.requestBody))
+			r.Header.Set("Accept", contentType)
+			r.Header.Set("Content-Type", contentType)
+			w := httptest.NewRecorder()
+
+			s.Mux.ServeHTTP(w, r)
+
+			require.Equal(t, http.StatusOK, w.Code)
+			require.Equal(t, tc.expectedBody, w.Body.String())
+		})
+	}
+}
+
+func TestWithCustomSerDesError(t *testing.T) {
+	controller := func(c fuego.ContextWithBody[[]string]) ([]string, error) {
+		body, err := c.Body()
+		return body, err
+	}
+
+	s := fuego.NewServer()
+	fuego.Post(s, "/bad-deserialize", controller,
+		// intentionally use a serdes that returns the wrong type for the controller
+		option.WithContentTypeSerDes("application/vnd.keyvalue", kvSerDes{}),
+	)
+
+	t.Run("serdes deserialize error", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodPost, "/bad-deserialize", strings.NewReader("key1=hello;key2=2"))
+		r.Header.Set("Accept", "application/vnd.keyvalue")
+		r.Header.Set("Content-Type", "application/vnd.keyvalue")
+		w := httptest.NewRecorder()
+
+		s.Mux.ServeHTTP(w, r)
+
+		require.Equal(t, http.StatusInternalServerError, w.Code)
 	})
 }
