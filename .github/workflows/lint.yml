@@ -12,7 +12,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: markdownlint-cli
         uses: nosborn/github-action-markdown-cli@v3.5.0
@@ -22,4 +22,4 @@ jobs:
           dot: true
 
       - name: typos-action spellchecker
-        uses: crate-ci/typos@v1.35.1
+        uses: crate-ci/typos@v1.35.5
