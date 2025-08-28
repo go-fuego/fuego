@@ -166,7 +166,8 @@ import (
 	"net/http"
 
 	"github.com/go-fuego/fuego"
-	httpSwagger "github.com/swaggo/http-swagger"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
+	// For older OpenAPI versions, use "github.com/swaggerapi/http-swagger" instead.
 )
 
 func openApiHandler(specURL string) http.Handler {
