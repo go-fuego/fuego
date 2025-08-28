@@ -1,0 +1,16 @@
+name: Release Please
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  track-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses:
+          googleapis/release-please-action@v4
+        id: track-release
+        with:
+          manifest-file: .github/.release-please-manifest.json
+          config-file: .github/release-please-config.json
