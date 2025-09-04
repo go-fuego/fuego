@@ -53,6 +53,18 @@ func TestSendWhenError(t *testing.T) {
 	require.JSONEq(t, "{}\n", body)
 }
 
+func TestSendNotAcceptable(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	r.Header.Set("Accept", "text/junk")
+	errorWriter := &errorWriter{}
+	err := Send(errorWriter, r, response{})
+	require.ErrorAs(t, err, &NotAcceptableError{})
+	SendError(w, r, err)
+	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
+	require.Equal(t, http.StatusNotAcceptable, w.Result().StatusCode)
+}
+
 func TestRecursiveJSON(t *testing.T) {
 	type rec struct {
 		Rec *rec `json:"rec"`

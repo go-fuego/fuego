@@ -111,7 +111,10 @@ func Send(w http.ResponseWriter, r *http.Request, ans any) (err error) {
 	if err != nil {
 		return err
 	}
-	return errors.New("no supported Accept header was not provided from: " + r.Header.Get("Accept"))
+
+	return NotAcceptableError{
+		Detail: "no supported Accept header was not provided from: " + r.Header.Get("Accept"),
+	}
 }
 
 // SendYAML sends a YAML response.
