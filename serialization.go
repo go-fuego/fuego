@@ -113,7 +113,7 @@ func Send(w http.ResponseWriter, r *http.Request, ans any) (err error) {
 	}
 
 	return NotAcceptableError{
-		Detail: "no supported Accept header was not provided from: " + r.Header.Get("Accept"),
+		Detail: "no supported Accept header was provided from: " + r.Header.Get("Accept"),
 	}
 }
 
