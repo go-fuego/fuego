@@ -88,7 +88,7 @@ func OptionQueryBool(name, description string, options ...ParamOption) func(*Bas
 // The list of options is in the param package.
 func OptionQueryArray(name, description string, elemKind reflect.Kind, options ...ParamOption) func(*BaseRoute) {
 	return func(r *BaseRoute) {
-		param, openapiParam := buildParam(name, append(options, ParamDescription(description), paramType(QueryParamType))...)
+		param, openapiParam := buildParam(name, append(options, ParamDescription(description), ParamArray(), paramType(QueryParamType))...)
 
 		// Create an array schema
 		arraySchema := openapi3.NewSchema()
@@ -175,19 +175,19 @@ func panicsIfNotCorrectType(openapiParam *openapi3.Parameter, exampleValue any) 
 	if openapiParam.Schema.Value.Type.Is("integer") {
 		_, ok := exampleValue.(int)
 		if !ok {
-			panic("example value must be an integer")
+			panic("example value must be an integer, got " + fmt.Sprintf("%T", exampleValue))
 		}
 	}
 	if openapiParam.Schema.Value.Type.Is("boolean") {
 		_, ok := exampleValue.(bool)
 		if !ok {
-			panic("example value must be a boolean")
+			panic("example value must be a boolean, got " + fmt.Sprintf("%T", exampleValue))
 		}
 	}
 	if openapiParam.Schema.Value.Type.Is("string") {
 		_, ok := exampleValue.(string)
 		if !ok {
-			panic("example value must be a string")
+			panic(fmt.Sprintf("example value must be a string, got %T", exampleValue))
 		}
 	}
 	return exampleValue
@@ -244,6 +244,20 @@ func buildParam(name string, options ...ParamOption) (OpenAPIParam, *openapi3.Pa
 		option(&param)
 	}
 
+	var schema *openapi3.Schema
+	switch param.GoType {
+	case "string":
+		schema = openapi3.NewStringSchema()
+	case "integer":
+		schema = openapi3.NewIntegerSchema()
+	case "boolean":
+		schema = openapi3.NewBoolSchema()
+	case "array":
+		schema = openapi3.NewArraySchema()
+	default:
+		schema = openapi3.NewStringSchema()
+	}
+
 	// Applies [OpenAPIParam] to [openapi3.Parameter]
 	// Why not use openapi3.NewHeaderParameter(name) directly?
 	// Because we might change the openapi3 library in the future,
@@ -252,7 +266,7 @@ func buildParam(name string, options ...ParamOption) (OpenAPIParam, *openapi3.Pa
 		Name:        name,
 		In:          string(param.Type),
 		Description: param.Description,
-		Schema:      openapi3.NewStringSchema().NewRef(),
+		Schema: schema.NewRef(),
 	}
 	if param.GoType != "" {
 		openapiParam.Schema.Value.Type = &openapi3.Types{param.GoType}
