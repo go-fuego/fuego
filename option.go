@@ -266,7 +266,7 @@ func buildParam(name string, options ...ParamOption) (OpenAPIParam, *openapi3.Pa
 		Name:        name,
 		In:          string(param.Type),
 		Description: param.Description,
-		Schema: schema.NewRef(),
+		Schema:      schema.NewRef(),
 	}
 	if param.GoType != "" {
 		openapiParam.Schema.Value.Type = &openapi3.Types{param.GoType}
