@@ -262,9 +262,13 @@ func parseExampleFromTag(s string, elem reflect.Type) (any, error) {
 	switch kind {
 	case reflect.String:
 		res = s
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		res, err = strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		res, err = strconv.ParseUint(s, 10, 64)
 		if err != nil {
 			return nil, err
 		}
@@ -289,6 +293,8 @@ func parseExampleFromTag(s string, elem reflect.Type) (any, error) {
 			slice = append(slice, r)
 		}
 		res = slice
+	default:
+		return nil, fmt.Errorf("unknown type %s", kind)
 	}
 	return res, nil
 }
