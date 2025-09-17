@@ -275,7 +275,7 @@ func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 		for i := range typeOfParams.NumField() {
 			field := typeOfParams.Field(i)
 			var params []ParamOption
-			example, _ := field.Tag.Lookup("description")
+			example, _ := field.Tag.Lookup("example")
 			if example != "" {
 				params = append(params, ParamExample("example", example))
 			}
