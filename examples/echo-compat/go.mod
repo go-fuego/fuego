@@ -10,7 +10,7 @@ require (
 	github.com/go-fuego/fuego v0.18.8
 	github.com/go-fuego/fuego/extra/fuegoecho v0.1.0
 	github.com/labstack/echo/v4 v4.13.4
-	github.com/stretchr/testify v1.11.0
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
@@ -42,7 +42,7 @@ require (
 	golang.org/x/crypto v0.39.0 // indirect
 	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
