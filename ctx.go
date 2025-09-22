@@ -513,18 +513,26 @@ func body[B, P any](c netHttpContext[B, P]) (B, error) {
 
 	timeDeserialize := time.Now()
 
+	contentTypeSplit := strings.Split(c.Req.Header.Get("Content-Type"), ";")
+	var contentTypeBeforeSemicolon string
+	if len(contentTypeSplit) != 0 {
+		contentTypeBeforeSemicolon = contentTypeSplit[0]
+	}
+
 	var body B
 	var err error
-	switch c.Req.Header.Get("Content-Type") {
+	switch contentTypeBeforeSemicolon {
 	case "text/plain":
 		s, errReadingString := readString[string](c.Req.Context(), c.Req.Body, c.readOptions)
 		body = any(s).(B)
 		err = errReadingString
-	case "application/x-www-form-urlencoded", "multipart/form-data":
+	case "application/x-www-form-urlencoded":
 		body, err = readURLEncoded[B](c.Req, c.readOptions)
+	case "multipart/form-data":
+		body, err = readFormData[B](c.Req, c.readOptions)
 	case "application/xml":
 		body, err = readXML[B](c.Req.Context(), c.Req.Body, c.readOptions)
-	case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
+	case "application/x-yaml", "text/yaml", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
 		body, err = readYAML[B](c.Req.Context(), c.Req.Body, c.readOptions)
 	case "application/octet-stream":
 		// Read c.Req Body to bytes
