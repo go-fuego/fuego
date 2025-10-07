@@ -145,6 +145,20 @@ func TestHandleHTTPError(t *testing.T) {
 		require.ErrorContains(t, errResponse, "404")
 		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).StatusCode())
 	})
+
+	t.Run("error is a reference to HTTPError", func(t *testing.T) {
+		err := &HTTPError{
+			Title:  "HTTPError",
+			Errors: []ErrorItem{{Name: "my name"}},
+			Err:    errors.New("my new error"),
+		}
+		errResponse := HandleHTTPError(context.Background(), err)
+		require.ErrorAs(t, errResponse, &HTTPError{})
+		require.ErrorContains(t, err, "my new error")
+		require.ErrorContains(t, errResponse, "HTTPError")
+		require.ErrorContains(t, errResponse, "500")
+		require.Equal(t, http.StatusInternalServerError, errResponse.(HTTPError).StatusCode())
+	})
 }
 
 func TestHTTPError_Error(t *testing.T) {

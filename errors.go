@@ -222,9 +222,8 @@ func HandleHTTPError(ctx context.Context, err error) error {
 		Err: err,
 	}
 
-	var errorInfo HTTPError
-	if errors.As(err, &errorInfo) {
-		errResponse = errorInfo
+	if v := castHTTPError(err); v != nil {
+		errResponse = *v
 	}
 
 	// Check status code
@@ -246,4 +245,16 @@ func HandleHTTPError(ctx context.Context, err error) error {
 	slog.ErrorContext(ctx, "Error "+errResponse.Title, "status", errResponse.StatusCode(), "detail", errResponse.DetailMsg(), "error", errResponse.Err)
 
 	return errResponse
+}
+
+func castHTTPError(err error) *HTTPError {
+	var errorInfo *HTTPError
+	if errors.As(err, &errorInfo) {
+		return errorInfo
+	}
+	var errorInfoValue HTTPError
+	if errors.As(err, &errorInfoValue) {
+		return &errorInfoValue
+	}
+	return nil
 }
