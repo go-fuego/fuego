@@ -45,23 +45,22 @@ func TestErrorHandler(t *testing.T) {
 		err := NotFoundError{
 			Err: errors.New("Not Found :c"),
 		}
-		errResponse := ErrorHandler(context.Background(), err)
-		require.ErrorAs(t, errResponse, &HTTPError{})
+		var errHTTP HTTPError
+		require.ErrorAs(t, ErrorHandler(context.Background(), err), &errHTTP)
 		require.ErrorContains(t, err, "Not Found :c")
-		require.ErrorContains(t, errResponse, "Not Found")
-		require.ErrorContains(t, errResponse, "404")
-		assert.Equal(t, http.StatusNotFound, errResponse.(HTTPError).StatusCode())
+		require.ErrorContains(t, errHTTP, "Not Found")
+		require.ErrorContains(t, errHTTP, "404")
+		assert.Equal(t, http.StatusNotFound, errHTTP.StatusCode())
 	})
 
 	t.Run("not duplicate HTTPError", func(t *testing.T) {
 		err := HTTPError{
 			Err: errors.New("HTTPError"),
 		}
-		errResponse := ErrorHandler(context.Background(), err)
 
-		var httpError HTTPError
-		require.ErrorAs(t, errResponse, &httpError)
-		require.NotErrorAs(t, httpError.Err, &HTTPError{})
+		var errHTTP HTTPError
+		require.ErrorAs(t, ErrorHandler(context.Background(), err), &errHTTP)
+		require.NotErrorAs(t, errHTTP.Err, &HTTPError{})
 		require.ErrorContains(t, err, "Internal Server Error")
 	})
 
@@ -69,59 +68,59 @@ func TestErrorHandler(t *testing.T) {
 		err := myError{
 			status: http.StatusNotFound,
 		}
-		errResponse := ErrorHandler(context.Background(), err)
-		require.ErrorAs(t, errResponse, &HTTPError{})
-		require.ErrorContains(t, errResponse, "Not Found")
-		require.ErrorContains(t, errResponse, "404")
-		require.Equal(t, http.StatusNotFound, errResponse.(HTTPError).StatusCode())
+		var errHTTP HTTPError
+		require.ErrorAs(t, ErrorHandler(context.Background(), err), &errHTTP)
+		require.ErrorContains(t, errHTTP, "Not Found")
+		require.ErrorContains(t, errHTTP, "404")
+		require.Equal(t, http.StatusNotFound, errHTTP.StatusCode())
 	})
 
 	t.Run("error with detail", func(t *testing.T) {
 		err := myError{
 			detail: "my detail",
 		}
-		errResponse := ErrorHandler(context.Background(), err)
-		require.ErrorAs(t, errResponse, &HTTPError{})
-		require.Contains(t, errResponse.Error(), "Internal Server Error")
-		require.Contains(t, errResponse.Error(), "500")
-		require.Contains(t, errResponse.Error(), "my detail")
-		require.Equal(t, http.StatusInternalServerError, errResponse.(HTTPError).StatusCode())
+		var errHTTP HTTPError
+		require.ErrorAs(t, ErrorHandler(context.Background(), err), &errHTTP)
+		require.Contains(t, errHTTP.Error(), "Internal Server Error")
+		require.Contains(t, errHTTP.Error(), "500")
+		require.Contains(t, errHTTP.Error(), "my detail")
+		require.Equal(t, http.StatusInternalServerError, errHTTP.StatusCode())
 	})
 
 	t.Run("conflict error", func(t *testing.T) {
 		err := ConflictError{
 			Err: errors.New("Conflict"),
 		}
-		errResponse := ErrorHandler(context.Background(), err)
-		require.ErrorAs(t, errResponse, &HTTPError{})
+		var errHTTP HTTPError
+		require.ErrorAs(t, ErrorHandler(context.Background(), err), &errHTTP)
 		require.ErrorContains(t, err, "Conflict")
-		require.ErrorContains(t, errResponse, "Conflict")
-		require.ErrorContains(t, errResponse, "409")
-		require.Equal(t, http.StatusConflict, errResponse.(HTTPError).StatusCode())
+		require.ErrorContains(t, errHTTP, "Conflict")
+		require.ErrorContains(t, errHTTP, "409")
+		require.Equal(t, http.StatusConflict, errHTTP.StatusCode())
 	})
 
 	t.Run("unauthorized error", func(t *testing.T) {
 		err := UnauthorizedError{
 			Err: errors.New("coucou"),
 		}
-		errResponse := ErrorHandler(context.Background(), err)
-		require.ErrorAs(t, errResponse, &HTTPError{})
+		var errHTTP HTTPError
+		require.ErrorAs(t, ErrorHandler(context.Background(), err), &errHTTP)
 		require.ErrorContains(t, err, "coucou")
-		require.ErrorContains(t, errResponse, "Unauthorized")
-		require.ErrorContains(t, errResponse, "401")
-		require.Equal(t, http.StatusUnauthorized, errResponse.(HTTPError).StatusCode())
+		require.ErrorContains(t, errHTTP, "Unauthorized")
+		require.ErrorContains(t, errHTTP, "401")
+		require.Equal(t, http.StatusUnauthorized, errHTTP.StatusCode())
 	})
 
 	t.Run("forbidden error", func(t *testing.T) {
 		err := ForbiddenError{
 			Err: errors.New("Forbidden"),
 		}
-		errResponse := ErrorHandler(context.Background(), err)
-		require.ErrorAs(t, errResponse, &HTTPError{})
+		var errHTTP HTTPError
+		require.ErrorAs(t, ErrorHandler(context.Background(), err), &errHTTP)
 		require.ErrorContains(t, err, "Forbidden")
-		require.ErrorContains(t, errResponse, "Forbidden")
-		require.ErrorContains(t, errResponse, "403")
-		require.Equal(t, http.StatusForbidden, errResponse.(HTTPError).StatusCode())
+		require.ErrorContains(t, errHTTP, "Forbidden")
+		require.ErrorContains(t, errHTTP, "403")
+		require.Equal(t, http.StatusForbidden, errHTTP.StatusCode())
 	})
 }
 
