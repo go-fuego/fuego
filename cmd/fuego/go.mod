@@ -6,7 +6,7 @@ require (
 	github.com/go-fuego/fuego v0.18.8
 	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli/v2 v2.27.7
-	golang.org/x/text v0.29.0
+	golang.org/x/text v0.30.0
 )
 
 require (
