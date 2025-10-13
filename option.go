@@ -20,7 +20,7 @@ import (
 //		OptionQueryInt("per_page", "Number of items per page", ParamRequired()),
 //		OptionQueryInt("page", "Page number", ParamDefault(1)),
 //	)
-func GroupOptions(options ...func(*BaseRoute)) func(*BaseRoute) {
+func GroupOptions(options ...RouteOption) RouteOption {
 	return func(r *BaseRoute) {
 		for _, option := range options {
 			option(r)
@@ -28,8 +28,10 @@ func GroupOptions(options ...func(*BaseRoute)) func(*BaseRoute) {
 	}
 }
 
+type RouteOption = func(*BaseRoute)
+
 // OptionMiddleware adds one or more route-scoped middleware.
-func OptionMiddleware(middleware ...func(http.Handler) http.Handler) func(*BaseRoute) {
+func OptionMiddleware(middleware ...func(http.Handler) http.Handler) RouteOption {
 	return func(r *BaseRoute) {
 		r.Middlewares = append(r.Middlewares, middleware...)
 	}
@@ -42,7 +44,7 @@ func OptionMiddleware(middleware ...func(http.Handler) http.Handler) func(*BaseR
 //	OptionQuery("name", "Filter by name", ParamExample("cat name", "felix"), ParamNullable())
 //
 // The list of options is in the param package.
-func OptionQuery(name, description string, options ...ParamOption) func(*BaseRoute) {
+func OptionQuery(name, description string, options ...ParamOption) RouteOption {
 	options = append(options, ParamDescription(description), paramType(QueryParamType), ParamString())
 	return func(r *BaseRoute) {
 		OptionParam(name, options...)(r)
@@ -57,7 +59,7 @@ func OptionQuery(name, description string, options ...ParamOption) func(*BaseRou
 //	OptionQueryInt("age", "Filter by age (in years)", ParamExample("3 years old", 3), ParamNullable())
 //
 // The list of options is in the param package.
-func OptionQueryInt(name, description string, options ...ParamOption) func(*BaseRoute) {
+func OptionQueryInt(name, description string, options ...ParamOption) RouteOption {
 	options = append(options, ParamDescription(description), paramType(QueryParamType), ParamInteger())
 	return func(r *BaseRoute) {
 		OptionParam(name, options...)(r)
@@ -72,7 +74,7 @@ func OptionQueryInt(name, description string, options ...ParamOption) func(*Base
 //	OptionQueryBool("is_active", "Filter by active status", ParamExample("true", true), ParamNullable())
 //
 // The list of options is in the param package.
-func OptionQueryBool(name, description string, options ...ParamOption) func(*BaseRoute) {
+func OptionQueryBool(name, description string, options ...ParamOption) RouteOption {
 	options = append(options, ParamDescription(description), paramType(QueryParamType), ParamBool())
 	return func(r *BaseRoute) {
 		OptionParam(name, options...)(r)
@@ -86,7 +88,7 @@ func OptionQueryBool(name, description string, options ...ParamOption) func(*Bas
 //	OptionQueryArray("tags", "Filter by tags", reflect.Int, ParamExample("tag list", "1,2,3"))
 //
 // The list of options is in the param package.
-func OptionQueryArray(name, description string, elemKind reflect.Kind, options ...ParamOption) func(*BaseRoute) {
+func OptionQueryArray(name, description string, elemKind reflect.Kind, options ...ParamOption) RouteOption {
 	return func(r *BaseRoute) {
 		param, openapiParam := buildParam(name, append(options, ParamDescription(description), paramType(QueryParamType))...)
 
@@ -126,7 +128,7 @@ func OptionQueryArray(name, description string, elemKind reflect.Kind, options .
 //	OptionHeader("Authorization", "Bearer token", ParamRequired())
 //
 // The list of options is in the param package.
-func OptionHeader(name, description string, options ...ParamOption) func(*BaseRoute) {
+func OptionHeader(name, description string, options ...ParamOption) RouteOption {
 	options = append(options, ParamDescription(description), paramType(HeaderParamType))
 	return func(r *BaseRoute) {
 		OptionParam(name, options...)(r)
@@ -140,7 +142,7 @@ func OptionHeader(name, description string, options ...ParamOption) func(*BaseRo
 //	OptionCookie("session_id", "Session ID", ParamRequired())
 //
 // The list of options is in the param package.
-func OptionCookie(name, description string, options ...ParamOption) func(*BaseRoute) {
+func OptionCookie(name, description string, options ...ParamOption) RouteOption {
 	options = append(options, ParamDescription(description), paramType(CookieParamType))
 	return func(r *BaseRoute) {
 		OptionParam(name, options...)(r)
@@ -155,7 +157,7 @@ func OptionCookie(name, description string, options ...ParamOption) func(*BaseRo
 //	OptionPath("id", "ID of the item")
 //
 // The list of options is in the param package.
-func OptionPath(name, description string, options ...ParamOption) func(*BaseRoute) {
+func OptionPath(name, description string, options ...ParamOption) RouteOption {
 	options = append(options, ParamDescription(description), paramType(PathParamType), ParamRequired())
 	return func(r *BaseRoute) {
 		OptionParam(name, options...)(r)
@@ -201,7 +203,7 @@ func panicsIfNotCorrectType(openapiParam *openapi3.Parameter, exampleValue any) 
 //	OptionResponseHeader("Set-Cookie", "Session cookie", ParamExample("session abc123", "session=abc123; Expires=Wed, 09 Jun 2021 10:18:14 GMT"))
 //
 // The list of options is in the param package.
-func OptionResponseHeader(name, description string, options ...ParamOption) func(*BaseRoute) {
+func OptionResponseHeader(name, description string, options ...ParamOption) RouteOption {
 	apiParam, openapiParam := buildParam(name, options...)
 
 	openapiParam.Name = ""
@@ -276,7 +278,7 @@ func buildParam(name string, options ...ParamOption) (OpenAPIParam, *openapi3.Pa
 }
 
 // OptionParam registers a parameter for the route. Prefer using the [OptionQuery], [OptionQueryInt], [OptionHeader], [OptionCookie] shortcuts.
-func OptionParam(name string, options ...ParamOption) func(*BaseRoute) {
+func OptionParam(name string, options ...ParamOption) RouteOption {
 	param, openapiParam := buildParam(name, options...)
 
 	return func(r *BaseRoute) {
@@ -289,7 +291,7 @@ func OptionParam(name string, options ...ParamOption) func(*BaseRoute) {
 }
 
 // OptionTags adds one or more tags to the route.
-func OptionTags(tags ...string) func(*BaseRoute) {
+func OptionTags(tags ...string) RouteOption {
 	return func(r *BaseRoute) {
 		for _, tag := range tags {
 			if slices.Contains(r.Operation.Tags, tag) {
@@ -302,7 +304,7 @@ func OptionTags(tags ...string) func(*BaseRoute) {
 
 // OptionTagInfo adds a tag with name and description to the route and registers it in the global OpenAPI tags.
 // This ensures the tag appears in the OpenAPI spec with its description.
-func OptionTagInfo(name, description string) func(*BaseRoute) {
+func OptionTagInfo(name, description string) RouteOption {
 	return func(r *BaseRoute) {
 		if !slices.Contains(r.Operation.Tags, name) {
 			r.Operation.Tags = append(r.Operation.Tags, name)
@@ -328,7 +330,7 @@ func OptionTagInfo(name, description string) func(*BaseRoute) {
 }
 
 // OptionSummary adds a summary to the route.
-func OptionSummary(summary string) func(*BaseRoute) {
+func OptionSummary(summary string) RouteOption {
 	return func(r *BaseRoute) {
 		r.Operation.Summary = summary
 	}
@@ -337,7 +339,7 @@ func OptionSummary(summary string) func(*BaseRoute) {
 // OptionDescription overrides the default description set by Fuego.
 // By default, the description is set by Fuego with some info,
 // like the controller function name and the package name.
-func OptionDescription(description string) func(*BaseRoute) {
+func OptionDescription(description string) RouteOption {
 	return func(r *BaseRoute) {
 		r.Operation.Description = description
 	}
@@ -346,7 +348,7 @@ func OptionDescription(description string) func(*BaseRoute) {
 // OptionAddDescription appends a description to the route.
 // By default, the description is set by Fuego with some info,
 // like the controller function name and the package name.
-func OptionAddDescription(description string) func(*BaseRoute) {
+func OptionAddDescription(description string) RouteOption {
 	return func(r *BaseRoute) {
 		r.Operation.Description += description
 	}
@@ -355,7 +357,7 @@ func OptionAddDescription(description string) func(*BaseRoute) {
 // OptionOverrideDescription overrides the default description set by Fuego.
 // By default, the description is set by Fuego with some info,
 // like the controller function name and the package name.
-func OptionOverrideDescription(description string) func(*BaseRoute) {
+func OptionOverrideDescription(description string) RouteOption {
 	return func(r *BaseRoute) {
 		r.overrideDescription = true
 		r.Operation.Description = description
@@ -363,14 +365,14 @@ func OptionOverrideDescription(description string) func(*BaseRoute) {
 }
 
 // OptionOperationID adds an operation ID to the route.
-func OptionOperationID(operationID string) func(*BaseRoute) {
+func OptionOperationID(operationID string) RouteOption {
 	return func(r *BaseRoute) {
 		r.Operation.OperationID = operationID
 	}
 }
 
 // OptionDeprecated marks the route as deprecated.
-func OptionDeprecated() func(*BaseRoute) {
+func OptionDeprecated() RouteOption {
 	return func(r *BaseRoute) {
 		r.Operation.Deprecated = true
 	}
@@ -380,7 +382,7 @@ func OptionDeprecated() func(*BaseRoute) {
 // It replaces any existing error previously set with the same code.
 // Required: should only supply one type to `errorType`
 // Deprecated: Use [OptionAddResponse] instead
-func OptionAddError(code int, description string, errorType ...any) func(*BaseRoute) {
+func OptionAddError(code int, description string, errorType ...any) RouteOption {
 	var responseSchema SchemaTag
 	return func(r *BaseRoute) {
 		if len(errorType) > 1 {
@@ -418,7 +420,7 @@ type Response struct {
 // It replaces any existing response set by any status code, this will override 200.
 // Required: Response.Type must be set
 // Optional: Response.ContentTypes will default to `application/json` and `application/xml` if not set
-func OptionAddResponse(code int, description string, response Response) func(*BaseRoute) {
+func OptionAddResponse(code int, description string, response Response) RouteOption {
 	return func(r *BaseRoute) {
 		if r.Operation.Responses == nil {
 			r.Operation.Responses = openapi3.NewResponses()
@@ -446,7 +448,7 @@ type RequestBody struct {
 // what is set in the spec.
 // Required: RequestBody.Type must be set
 // Optional: RequestBody.ContentTypes will default to `application/json` and `application/xml` if not set
-func OptionRequestBody(requestBody RequestBody) func(*BaseRoute) {
+func OptionRequestBody(requestBody RequestBody) RouteOption {
 	return func(r *BaseRoute) {
 		if r.Operation.RequestBody == nil {
 			r.Operation.RequestBody = &openapi3.RequestBodyRef{
@@ -462,7 +464,7 @@ func OptionRequestBody(requestBody RequestBody) func(*BaseRoute) {
 // OptionDefaultResponse adds a default response to a route
 // Required: Response.Type must be set
 // Optional: Response.ContentTypes will default to `application/json` and `application/xml` if not set
-func OptionDefaultResponse(description string, response Response) func(*BaseRoute) {
+func OptionDefaultResponse(description string, response Response) RouteOption {
 	return func(r *BaseRoute) {
 		if r.Operation.Responses == nil {
 			r.Operation.Responses = openapi3.NewResponses()
@@ -478,28 +480,28 @@ func OptionDefaultResponse(description string, response Response) func(*BaseRout
 // OptionRequestContentType sets the accepted content types for the route.
 // By default, the accepted content types is */*.
 // This will override any options set at the server level.
-func OptionRequestContentType(consumes ...string) func(*BaseRoute) {
+func OptionRequestContentType(consumes ...string) RouteOption {
 	return func(r *BaseRoute) {
 		r.RequestContentTypes = consumes
 	}
 }
 
 // OptionHide hides the route from the OpenAPI spec.
-func OptionHide() func(*BaseRoute) {
+func OptionHide() RouteOption {
 	return func(r *BaseRoute) {
 		r.Hidden = true
 	}
 }
 
 // OptionShow shows the route from the OpenAPI spec.
-func OptionShow() func(*BaseRoute) {
+func OptionShow() RouteOption {
 	return func(r *BaseRoute) {
 		r.Hidden = false
 	}
 }
 
 // OptionDefaultStatusCode sets the default status code for the route.
-func OptionDefaultStatusCode(defaultStatusCode int) func(*BaseRoute) {
+func OptionDefaultStatusCode(defaultStatusCode int) RouteOption {
 	return func(r *BaseRoute) {
 		r.DefaultStatusCode = defaultStatusCode
 	}
@@ -535,7 +537,7 @@ func OptionDefaultStatusCode(defaultStatusCode int) func(*BaseRoute) {
 //	  },
 //	  openapi3.SecurityRequirement{"apiKey": []}  // OR alternative with API key
 //	})
-func OptionSecurity(securityRequirements ...openapi3.SecurityRequirement) func(*BaseRoute) {
+func OptionSecurity(securityRequirements ...openapi3.SecurityRequirement) RouteOption {
 	return func(r *BaseRoute) {
 		if r.OpenAPI.Description().Components == nil {
 			panic("zero security schemes have been registered with the server")
@@ -561,7 +563,7 @@ func OptionSecurity(securityRequirements ...openapi3.SecurityRequirement) func(*
 
 // OptionStripTrailingSlash ensure that the route declaration
 // will have its ending trailing slash stripped.
-func OptionStripTrailingSlash() func(*BaseRoute) {
+func OptionStripTrailingSlash() RouteOption {
 	return func(r *BaseRoute) {
 		if len(r.Path) > 1 {
 			r.Path = strings.TrimRight(r.Path, "/")

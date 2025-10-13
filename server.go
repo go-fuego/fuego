@@ -57,7 +57,7 @@ type Server struct {
 
 	// routeOptions is used to store the options
 	// that will be applied of the route.
-	routeOptions []func(*BaseRoute)
+	routeOptions []RouteOption
 
 	middlewares []func(http.Handler) http.Handler
 
@@ -435,7 +435,7 @@ func WithValidator(newValidator *validator.Validate) ServerOption {
 	}
 }
 
-func WithRouteOptions(options ...func(*BaseRoute)) ServerOption {
+func WithRouteOptions(options ...RouteOption) ServerOption {
 	return func(s *Server) {
 		s.routeOptions = append(s.routeOptions, options...)
 	}
