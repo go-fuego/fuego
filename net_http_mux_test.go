@@ -747,6 +747,48 @@ func TestGroupTags(t *testing.T) {
 	})
 }
 
+func Test_GroupRouteMiddleware(t *testing.T) {
+	s := NewServer()
+	groupOne := Group(s, "/one",
+		OptionHeader("X-Header", "header description"),
+		OptionMiddleware(orderMiddleware("group one middleware")),
+	)
+	groupTwo := Group(groupOne, "",
+		OptionMiddleware(orderMiddleware("group two middleware")),
+	)
+
+	Get(groupTwo, "/", func(ctx ContextNoBody) (string, error) {
+		return "just /", nil
+	})
+	Get(groupOne, "/zap", func(ctx ContextNoBody) (string, error) {
+		return "zap", nil
+	})
+	Get(groupTwo, "/foo", func(ctx ContextNoBody) (string, error) {
+		return "foo", nil
+	}, OptionMiddleware(dummyMiddleware))
+
+	t.Run("should have both middlewares", func(t *testing.T) {
+		t.Run("sequential ordering of registration", func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodGet, "/one/", nil)
+			w := httptest.NewRecorder()
+			s.Mux.ServeHTTP(w, r)
+			require.Equal(t, []string{"group one middleware", "group two middleware"}, r.Header["X-Test-Order"])
+		})
+		t.Run("out of order registration", func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodGet, "/one/foo", nil)
+			w := httptest.NewRecorder()
+			s.Mux.ServeHTTP(w, r)
+			require.Equal(t, []string{"group one middleware", "group two middleware"}, r.Header["X-Test-Order"])
+		})
+	})
+	t.Run("should have group one middleware", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/one/zap", nil)
+		w := httptest.NewRecorder()
+		s.Mux.ServeHTTP(w, r)
+		require.Equal(t, []string{"group one middleware"}, r.Header["X-Test-Order"])
+	})
+}
+
 func ExampleContextNoBody_SetCookie() {
 	s := NewServer()
 	Get(s, "/test", func(c ContextNoBody) (string, error) {
