@@ -23,23 +23,23 @@ import (
 //	})
 //	s.Run()
 func Group(s *Server, path string, routeOptions ...func(*BaseRoute)) *Server {
-	if path == "/" {
+	switch cleaned, found := strings.CutSuffix(path, "/"); {
+	case path == "/":
 		path = ""
-	} else if path != "" && path[len(path)-1] == '/' {
-		slog.Warn("Group path should not end with a slash.", "path", path+"/", "new", path)
+	case found:
+		slog.Warn("Group path should not end with a slash.", "path", path, "new", cleaned)
 	}
 
-	ss := *s
-	newServer := &ss
+	newServer := *s
+	newServer.routeOptions = append([]func(*BaseRoute){}, s.routeOptions...)
 	newServer.basePath += path
 
 	if autoTag := strings.TrimLeft(path, "/"); !s.disableAutoGroupTags && autoTag != "" {
 		newServer.routeOptions = append(s.routeOptions, OptionTags(autoTag))
 	}
-
 	newServer.routeOptions = append(newServer.routeOptions, routeOptions...)
 
-	return newServer
+	return &newServer
 }
 
 // All captures all methods (GET, POST, PUT, PATCH, DELETE) and register a controller.
