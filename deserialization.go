@@ -188,6 +188,32 @@ func readURLEncoded[B any](r *http.Request, options readOptions) (B, error) {
 	return TransformAndValidate(r.Context(), body)
 }
 
+func readFormData[B any](r *http.Request, options readOptions) (B, error) {
+	var body B
+
+	err := r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		return body, fmt.Errorf("cannot parse form: %w", err)
+	}
+
+	decoder := newDecoder()
+	decoder.IgnoreUnknownKeys(!options.DisallowUnknownFields)
+
+	err = decoder.Decode(&body, r.PostForm)
+	if err != nil {
+		return body, BadRequestError{
+			Detail: "cannot decode form-data request body: " + err.Error(),
+			Err:    err,
+			Errors: []ErrorItem{
+				{Name: "form", Reason: "check that the form is valid, and that the content-type is correct"},
+			},
+		}
+	}
+	slog.DebugContext(r.Context(), "Decoded body", "body", body)
+
+	return TransformAndValidate(r.Context(), body)
+}
+
 // transforms the input if possible.
 func transform[B any](ctx context.Context, body B) (B, error) {
 	if inTransformerBody, ok := any(&body).(InTransformer); ok {
