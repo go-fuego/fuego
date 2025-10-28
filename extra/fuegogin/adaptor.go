@@ -17,7 +17,7 @@ type OpenAPIHandler struct {
 }
 
 func (o *OpenAPIHandler) SpecHandler(e *fuego.Engine) {
-	Get(e, o.GinEngine, e.OpenAPI.Config.SpecURL, e.SpecHandler(), fuego.OptionHide())
+	Get(e, o.GinEngine, e.OpenAPI.Config.SpecURL, e.SpecHandler(), fuego.OptionHide(), fuego.OptionMiddleware(e.OpenAPI.Config.SwaggerMiddlewares...))
 }
 
 func (o *OpenAPIHandler) UIHandler(e *fuego.Engine) {
@@ -27,6 +27,7 @@ func (o *OpenAPIHandler) UIHandler(e *fuego.Engine) {
 		e.OpenAPI.Config.SwaggerURL,
 		gin.WrapH(e.OpenAPI.Config.UIHandler(e.OpenAPI.Config.SpecURL)),
 		fuego.OptionHide(),
+		fuego.OptionMiddleware(e.OpenAPI.Config.SwaggerMiddlewares...),
 	)
 }
 
