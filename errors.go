@@ -23,6 +23,11 @@ type ErrorWithDetail interface {
 	DetailMsg() string
 }
 
+type ErrorWithTitle interface {
+	error
+	TitleString() string
+}
+
 // HTTPError is the error response used by the serialization part of the framework.
 type HTTPError struct {
 	// Developer readable error message. Not shown to the user to avoid security leaks.
@@ -92,6 +97,8 @@ func (e HTTPError) StatusCode() int {
 func (e HTTPError) DetailMsg() string {
 	return e.Detail
 }
+
+func (e HTTPError) TitleString() string { return e.Title }
 
 func (e HTTPError) Unwrap() error { return e.Err }
 
@@ -236,6 +243,12 @@ func HandleHTTPError(ctx context.Context, err error) error {
 	var errorDetail ErrorWithDetail
 	if errors.As(err, &errorDetail) {
 		errResponse.Detail = errorDetail.DetailMsg()
+	}
+
+	// Check for title
+	var errorTitle ErrorWithTitle
+	if errors.As(err, &errorTitle) {
+		errResponse.Title = errorTitle.TitleString()
 	}
 
 	if errResponse.Title == "" {

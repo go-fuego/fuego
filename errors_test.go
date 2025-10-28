@@ -15,17 +15,20 @@ type myError struct {
 	status int
 	err    HTTPError
 	detail string
+	title  string
 }
 
 var (
 	_ ErrorWithStatus = myError{}
 	_ ErrorWithDetail = myError{}
+	_ ErrorWithTitle  = myError{}
 )
 
-func (e myError) Error() string     { return "test error" }
-func (e myError) StatusCode() int   { return e.status }
-func (e myError) DetailMsg() string { return e.detail }
-func (e myError) Unwrap() error     { return e.err }
+func (e myError) Error() string       { return "test error" }
+func (e myError) StatusCode() int     { return e.status }
+func (e myError) DetailMsg() string   { return e.detail }
+func (e myError) Unwrap() error       { return e.err }
+func (e myError) TitleString() string { return e.title }
 
 func TestErrorHandler(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
@@ -81,10 +84,19 @@ func TestErrorHandler(t *testing.T) {
 		}
 		var errHTTP HTTPError
 		require.ErrorAs(t, ErrorHandler(context.Background(), err), &errHTTP)
-		require.Contains(t, errHTTP.Error(), "Internal Server Error")
-		require.Contains(t, errHTTP.Error(), "500")
-		require.Contains(t, errHTTP.Error(), "my detail")
-		require.Equal(t, http.StatusInternalServerError, errHTTP.StatusCode())
+		require.ErrorContains(t, errHTTP, "Internal Server Error")
+		require.ErrorContains(t, errHTTP, "500")
+		require.ErrorContains(t, errHTTP, "my detail")
+		assert.Equal(t, "my detail", errHTTP.DetailMsg())
+	})
+	t.Run("error with title", func(t *testing.T) {
+		err := myError{
+			title: "my title",
+		}
+		var errHTTP HTTPError
+		require.ErrorAs(t, ErrorHandler(context.Background(), err), &errHTTP)
+		require.ErrorContains(t, errHTTP, "500")
+		assert.Equal(t, "my title", errHTTP.TitleString())
 	})
 
 	t.Run("conflict error", func(t *testing.T) {
