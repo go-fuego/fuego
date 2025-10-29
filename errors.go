@@ -25,7 +25,7 @@ type ErrorWithDetail interface {
 
 type ErrorWithTitle interface {
 	error
-	TitleString() string
+	ErrorTitle() string
 }
 
 // HTTPError is the error response used by the serialization part of the framework.
@@ -98,7 +98,7 @@ func (e HTTPError) DetailMsg() string {
 	return e.Detail
 }
 
-func (e HTTPError) TitleString() string { return e.Title }
+func (e HTTPError) ErrorTitle() string { return e.Title }
 
 func (e HTTPError) Unwrap() error { return e.Err }
 
@@ -234,21 +234,21 @@ func HandleHTTPError(ctx context.Context, err error) error {
 	}
 
 	// Check status code
-	var errorStatus ErrorWithStatus
-	if errors.As(err, &errorStatus) {
-		errResponse.Status = errorStatus.StatusCode()
+	var errWithStatus ErrorWithStatus
+	if errors.As(err, &errWithStatus) {
+		errResponse.Status = errWithStatus.StatusCode()
 	}
 
 	// Check for detail
-	var errorDetail ErrorWithDetail
-	if errors.As(err, &errorDetail) {
-		errResponse.Detail = errorDetail.DetailMsg()
+	var errWithDetail ErrorWithDetail
+	if errors.As(err, &errWithDetail) {
+		errResponse.Detail = errWithDetail.DetailMsg()
 	}
 
 	// Check for title
-	var errorTitle ErrorWithTitle
-	if errors.As(err, &errorTitle) {
-		errResponse.Title = errorTitle.TitleString()
+	var errWithTitle ErrorWithTitle
+	if errors.As(err, &errWithTitle) {
+		errResponse.Title = errWithTitle.ErrorTitle()
 	}
 
 	if errResponse.Title == "" {
