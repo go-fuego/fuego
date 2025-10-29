@@ -24,11 +24,11 @@ var (
 	_ ErrorWithTitle  = myError{}
 )
 
-func (e myError) Error() string       { return "test error" }
-func (e myError) StatusCode() int     { return e.status }
-func (e myError) DetailMsg() string   { return e.detail }
-func (e myError) Unwrap() error       { return e.err }
-func (e myError) TitleString() string { return e.title }
+func (e myError) Error() string      { return "test error" }
+func (e myError) StatusCode() int    { return e.status }
+func (e myError) DetailMsg() string  { return e.detail }
+func (e myError) Unwrap() error      { return e.err }
+func (e myError) ErrorTitle() string { return e.title }
 
 func TestErrorHandler(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
@@ -96,7 +96,7 @@ func TestErrorHandler(t *testing.T) {
 		var errHTTP HTTPError
 		require.ErrorAs(t, ErrorHandler(context.Background(), err), &errHTTP)
 		require.ErrorContains(t, errHTTP, "500")
-		assert.Equal(t, "my title", errHTTP.TitleString())
+		assert.Equal(t, "my title", errHTTP.ErrorTitle())
 	})
 
 	t.Run("conflict error", func(t *testing.T) {
