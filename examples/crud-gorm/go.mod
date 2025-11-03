@@ -6,7 +6,7 @@ require (
 	github.com/go-fuego/fuego v0.18.8
 	github.com/golang/mock v1.6.0
 	gorm.io/driver/sqlite v1.6.0
-	gorm.io/gorm v1.31.0
+	gorm.io/gorm v1.31.1
 )
 
 require (
