@@ -204,7 +204,7 @@ func transform[B any](ctx context.Context, body B) (B, error) {
 		}
 		body = *any(inTransformerBody).(*B)
 
-		slog.DebugContext(ctx, "InTransformd body", "body", body)
+		slog.DebugContext(ctx, "InTransformed body", "body", body)
 	}
 
 	return body, nil
