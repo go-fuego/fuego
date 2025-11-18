@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/gin-compat
 
-go 1.24.4
+go 1.24.10
 
 replace github.com/go-fuego/fuego => ../..
 
