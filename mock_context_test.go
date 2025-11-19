@@ -2,6 +2,7 @@ package fuego_test
 
 import (
 	"errors"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -193,5 +194,26 @@ func TestMockContextNoBody(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Equal(t, "Hello, ", response)
+	})
+}
+
+func Test_SetRequest(t *testing.T) {
+	t.Run("base", func(t *testing.T) {
+		ctx := fuego.NewMockContextNoBody()
+		req, err := http.NewRequest(http.MethodGet, "/test?foo=bar", nil)
+		require.NoError(t, err)
+
+		ctx.SetRequest(req)
+
+		retrievedReq := ctx.Request()
+		require.NotNil(t, retrievedReq)
+		assert.Equal(t, http.MethodGet, retrievedReq.Method)
+		assert.Equal(t, "/test?foo=bar", retrievedReq.URL.String())
+	})
+
+	t.Run("request should be nil", func(t *testing.T) {
+		ctx := fuego.NewMockContextNoBody()
+		r := ctx.Request()
+		require.Nil(t, r)
 	})
 }
