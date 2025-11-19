@@ -19,19 +19,22 @@ import (
 )
 
 type MyStruct struct {
-	A float64 `json:"asking_price" example:"5.99"`
-	B string  `json:"b" validate:"required"`
-	C int     `json:"c" example:"8" validate:"min=3,max=10,required" description:"my description"`
-	D bool    `json:"d" example:"true"`
-	F uint64  `json:"f" example:"10"`
-	G int64   `json:"g,omitempty" example:"-10"`
+	A    float64        `json:"asking_price" example:"5.99"`
+	B    string         `json:"b" validate:"required"`
+	C    int            `json:"c" example:"8" validate:"min=3,max=10,required" description:"my description"`
+	D    bool           `json:"d" example:"true"`
+	F    uint64         `json:"f" example:"10"`
+	G    int64          `json:"g,omitempty" example:"-10"`
+	More map[string]any `json:"more,omitempty"`
 }
 
 type MyStructWithNested struct {
-	E      string   `json:"e" example:"E"`
-	F      int      `json:"f"`
-	G      bool     `json:"g"`
-	Nested MyStruct `json:"nested" description:"my struct"`
+	E                            string     `json:"e" example:"E"`
+	F                            int        `json:"f,omitempty"`
+	G                            bool       `json:"g"`
+	Nested                       MyStruct   `json:"nested" description:"my struct"`
+	NestedArray                  []MyStruct `json:"nestedArray,omitempty" description:"my struct"`
+	OmitEmptyButValidateRequired string     `json:"omitEmptyButValidateRequired,omitempty" validate:"required"`
 }
 
 type MyStructWithEmbedded struct {
@@ -292,19 +295,18 @@ func Test_tagFromType(t *testing.T) {
 
 		tag := SchemaTagFromType(s.OpenAPI, MyStruct{})
 
-		requiredList := tag.Value.Required
-		assert.Equal(t, []string{"b", "c"}, requiredList)
+		assert.Equal(t, []string{"asking_price", "b", "c", "d", "f"}, tag.Value.Required)
 	})
 
-	t.Run("ommitempty values are nullable", func(t *testing.T) {
+	t.Run("omitempty values are not required", func(t *testing.T) {
 		s := NewServer()
 
-		tag := SchemaTagFromType(s.OpenAPI, MyStruct{})
-
-		nullableB := tag.Value.Properties["b"].Value.Nullable
-		nullableG := tag.Value.Properties["g"].Value.Nullable
-		assert.False(t, nullableB)
-		assert.True(t, nullableG)
+		tag := SchemaTagFromType(s.OpenAPI, MyStructWithNested{})
+		assert.NotContains(t, tag.Value.Required, "f")
+		assert.NotContains(t, tag.Value.Required, "nestedArray")
+		assert.Contains(t, tag.Value.Required, "e")
+		assert.Contains(t, tag.Value.Required, "nested")
+		assert.Contains(t, tag.Value.Required, "omitEmptyButValidateRequired")
 	})
 
 	t.Run("ensure warnings", func(t *testing.T) {
