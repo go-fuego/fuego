@@ -107,6 +107,10 @@ func (m *MockContext[B, P]) PathParamInt(name string) int {
 	return 0
 }
 
+func (m *MockContext[B, P]) SetRequest(r *http.Request) {
+	m.request = r
+}
+
 // Request returns the mock request
 func (m *MockContext[B, P]) Request() *http.Request {
 	return m.request
