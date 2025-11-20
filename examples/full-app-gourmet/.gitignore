@@ -5,4 +5,3 @@ tmp
 *.db
 node_modules
 tmp/*
-*_templ.go
