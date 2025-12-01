@@ -22,4 +22,4 @@ jobs:
           dot: true
 
       - name: typos-action spellchecker
-        uses: crate-ci/typos@v1.39.2
+        uses: crate-ci/typos@v1.40.0
