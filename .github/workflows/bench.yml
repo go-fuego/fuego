@@ -18,6 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
+        with:
+          go-version-file: "./go.work"
       - name: Run the benchmarks
         uses: CodSpeedHQ/action@v4
         with:
