@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/middleware/cache
 
-go 1.24.10
+go 1.24.11
 
 require (
 	github.com/go-fuego/fuego v0.15.1
