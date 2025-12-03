@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/custom-errors
 
-go 1.24.10
+go 1.24.11
 
 require (
 	github.com/go-chi/chi/v5 v5.2.3
