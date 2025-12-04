@@ -381,6 +381,7 @@ func OptionDeprecated() RouteOption {
 // OptionAddError adds an error to the route.
 // It replaces any existing error previously set with the same code.
 // Required: should only supply one type to `errorType`
+//
 // Deprecated: Use [OptionAddResponse] instead
 func OptionAddError(code int, description string, errorType ...any) RouteOption {
 	var responseSchema SchemaTag

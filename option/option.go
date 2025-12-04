@@ -171,7 +171,10 @@ var OperationID = fuego.OptionOperationID
 var Deprecated = fuego.OptionDeprecated
 
 // AddError adds an error to the route.
+//
 // Deprecated: Use [AddResponse] instead.
+//
+//nolint:staticcheck // will be removed when the option is removed from the core package
 var AddError = fuego.OptionAddError
 
 // AddResponse adds a response to a route by status code

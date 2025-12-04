@@ -417,7 +417,7 @@ func setParamValue(value reflect.Value, paramValue string, kind reflect.Kind) er
 func (c *netHttpContext[B, P]) Params() (P, error) {
 	p := new(P)
 
-	paramsType := reflect.TypeOf(p).Elem()
+	paramsType := reflect.TypeFor[P]()
 	if paramsType.Kind() != reflect.Struct {
 		return *p, fmt.Errorf("params must be a struct, got %T", *p)
 	}

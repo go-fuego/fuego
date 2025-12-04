@@ -465,7 +465,7 @@ func lineCounter(t *testing.T, r io.Reader) int {
 }
 
 func BenchmarkRoutesRegistration(b *testing.B) {
-	for range b.N {
+	for b.Loop() {
 		s := NewServer(
 			WithoutLogger(),
 		)
@@ -486,7 +486,7 @@ func BenchmarkRoutesRegistration(b *testing.B) {
 }
 
 func BenchmarkServer_generateOpenAPI(b *testing.B) {
-	for range b.N {
+	for b.Loop() {
 		s := NewServer(
 			WithoutLogger(),
 		)

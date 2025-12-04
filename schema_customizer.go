@@ -27,12 +27,12 @@ func parseValidate(tag reflect.StructTag, schema *openapi3.Schema) {
 		return
 	}
 
-	validateTags := strings.Split(validateTag, ",")
-	for _, validateTag := range validateTags {
+	validateTags := strings.SplitSeq(validateTag, ",")
+	for validateTag := range validateTags {
 		// Mark what fields are needed for required. This will be removed later
 		if validateTag == "required" {
 			if schema.Extensions == nil {
-				schema.Extensions = make(map[string]interface{})
+				schema.Extensions = make(map[string]any)
 			}
 			schema.Extensions["x-fuego-required-marker"] = true
 		}
