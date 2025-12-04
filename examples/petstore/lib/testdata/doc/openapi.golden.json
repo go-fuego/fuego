@@ -41,15 +41,17 @@
 										"type": "string"
 									}
 								},
+								"required": [
+									"type",
+									"value"
+								],
 								"type": "object"
 							},
 							"treats": {
 								"items": {
-									"nullable": true,
 									"properties": {
 										"brand": {
 											"description": "The brand of the treat",
-											"nullable": true,
 											"type": "string"
 										},
 										"itemId": {
@@ -68,13 +70,16 @@
 									],
 									"type": "object"
 								},
-								"nullable": true,
 								"type": "array"
 							}
 						},
 						"required": [
+							"age",
+							"birth_date",
 							"id",
-							"name"
+							"is_adopted",
+							"name",
+							"references"
 						],
 						"type": "object"
 					},
@@ -82,6 +87,11 @@
 						"type": "integer"
 					}
 				},
+				"required": [
+					"message",
+					"result",
+					"statusCode"
+				],
 				"type": "object"
 			},
 			"GenericInput_models.Pets": {
@@ -121,15 +131,17 @@
 										"type": "string"
 									}
 								},
+								"required": [
+									"type",
+									"value"
+								],
 								"type": "object"
 							},
 							"treats": {
 								"items": {
-									"nullable": true,
 									"properties": {
 										"brand": {
 											"description": "The brand of the treat",
-											"nullable": true,
 											"type": "string"
 										},
 										"itemId": {
@@ -148,13 +160,16 @@
 									],
 									"type": "object"
 								},
-								"nullable": true,
 								"type": "array"
 							}
 						},
 						"required": [
+							"age",
+							"birth_date",
 							"id",
-							"name"
+							"is_adopted",
+							"name",
+							"references"
 						],
 						"type": "object"
 					},
@@ -162,6 +177,10 @@
 						"type": "string"
 					}
 				},
+				"required": [
+					"data",
+					"thing"
+				],
 				"type": "object"
 			},
 			"HTTPError": {
@@ -169,20 +188,16 @@
 				"properties": {
 					"detail": {
 						"description": "Human readable error message",
-						"nullable": true,
 						"type": "string"
 					},
 					"errors": {
 						"items": {
-							"nullable": true,
 							"properties": {
 								"more": {
 									"additionalProperties": {
-										"description": "Additional information about the error",
-										"nullable": true
+										"description": "Additional information about the error"
 									},
 									"description": "Additional information about the error",
-									"nullable": true,
 									"type": "object"
 								},
 								"name": {
@@ -194,29 +209,28 @@
 									"type": "string"
 								}
 							},
+							"required": [
+								"name",
+								"reason"
+							],
 							"type": "object"
 						},
-						"nullable": true,
 						"type": "array"
 					},
 					"instance": {
-						"nullable": true,
 						"type": "string"
 					},
 					"status": {
 						"description": "HTTP status code",
 						"example": 403,
-						"nullable": true,
 						"type": "integer"
 					},
 					"title": {
 						"description": "Short title of the error",
-						"nullable": true,
 						"type": "string"
 					},
 					"type": {
 						"description": "URL of the error type. Can be used to lookup the error in a documentation",
-						"nullable": true,
 						"type": "string"
 					}
 				},
@@ -260,15 +274,17 @@
 								"type": "string"
 							}
 						},
+						"required": [
+							"type",
+							"value"
+						],
 						"type": "object"
 					},
 					"treats": {
 						"items": {
-							"nullable": true,
 							"properties": {
 								"brand": {
 									"description": "The brand of the treat",
-									"nullable": true,
 									"type": "string"
 								},
 								"itemId": {
@@ -287,13 +303,16 @@
 							],
 							"type": "object"
 						},
-						"nullable": true,
 						"type": "array"
 					}
 				},
 				"required": [
+					"age",
+					"birth_date",
 					"id",
-					"name"
+					"is_adopted",
+					"name",
+					"references"
 				],
 				"type": "object"
 			},
@@ -328,11 +347,18 @@
 								"type": "string"
 							}
 						},
+						"required": [
+							"type",
+							"value"
+						],
 						"type": "object"
 					}
 				},
 				"required": [
-					"name"
+					"age",
+					"is_adopted",
+					"name",
+					"references"
 				],
 				"type": "object"
 			},
@@ -343,6 +369,9 @@
 						"type": "string"
 					}
 				},
+				"required": [
+					"message"
+				],
 				"type": "object"
 			},
 			"PetsUpdate": {
@@ -351,7 +380,6 @@
 					"age": {
 						"example": 2,
 						"maximum": 100,
-						"nullable": true,
 						"type": "integer"
 					},
 					"is_adopted": {
@@ -364,7 +392,6 @@
 						"example": "Napoleon",
 						"maxLength": 100,
 						"minLength": 1,
-						"nullable": true,
 						"type": "string"
 					},
 					"references": {
@@ -378,15 +405,17 @@
 								"type": "string"
 							}
 						},
+						"required": [
+							"type",
+							"value"
+						],
 						"type": "object"
 					},
 					"treats": {
 						"items": {
-							"nullable": true,
 							"properties": {
 								"brand": {
 									"description": "The brand of the treat",
-									"nullable": true,
 									"type": "string"
 								},
 								"itemId": {
@@ -405,10 +434,12 @@
 							],
 							"type": "object"
 						},
-						"nullable": true,
 						"type": "array"
 					}
 				},
+				"required": [
+					"references"
+				],
 				"type": "object"
 			},
 			"unknown-interface": {
