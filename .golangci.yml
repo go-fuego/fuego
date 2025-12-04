@@ -13,6 +13,7 @@ linters:
     - unconvert
     - usestdlibvars
     - whitespace
+    - modernize
   settings:
     gocritic:
       enable-all: true

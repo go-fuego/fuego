@@ -144,7 +144,7 @@ func TestReadString(t *testing.T) {
 }
 
 func BenchmarkReadJSON(b *testing.B) {
-	for range b.N {
+	for b.Loop() {
 		input := strings.NewReader(`{"A":"a","B":1,"C":true}`)
 		_, err := ReadJSON[BodyTest](context.Background(), input)
 		if err != nil {
@@ -154,7 +154,7 @@ func BenchmarkReadJSON(b *testing.B) {
 }
 
 func BenchmarkReadString(b *testing.B) {
-	for range b.N {
+	for b.Loop() {
 		input := strings.NewReader(`string decoded as is`)
 		_, err := ReadString[string](context.Background(), input)
 		if err != nil {

@@ -44,10 +44,7 @@ func SearchUsersController(c fuego.ContextWithBody[UserSearchRequest]) (UserSear
 	}
 
 	// Get pagination parameters from query
-	page := c.QueryParamInt("page")
-	if page < 1 {
-		page = 1
-	}
+	page := max(c.QueryParamInt("page"), 1)
 	perPage := c.QueryParamInt("perPage")
 	if perPage < 1 || perPage > 100 {
 		perPage = 20

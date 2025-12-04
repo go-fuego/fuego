@@ -239,7 +239,7 @@ func BenchmarkHTTPError_PublicError(b *testing.B) {
 		Status: http.StatusNotFound,
 	}
 
-	for range b.N {
+	for b.Loop() {
 		_ = err.PublicError()
 	}
 }
