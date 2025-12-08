@@ -17,7 +17,7 @@ require (
 	github.com/lmittmann/tint v1.1.2
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/text v0.31.0
+	golang.org/x/text v0.32.0
 	modernc.org/sqlite v1.40.1
 )
 
