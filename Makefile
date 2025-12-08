@@ -69,35 +69,6 @@ docs:
 docs-open:
 	go run golang.org/x/pkgsite/cmd/pkgsite@latest -http localhost:8084 -open
 
-# ============================================================================
-# Release Management
-# ============================================================================
-
-# Interactive release workflow
-release:
-	@./scripts/release/release.sh
-
-# Dry-run mode (preview only)
-release-dry-run:
-	@./scripts/release/release.sh --dry-run
-
-# Show current versions for all modules
-release-versions:
-	@./scripts/release/version.sh --show
-
-# Run validation checks only
-release-validate:
-	@./scripts/release/validate.sh
-
-# Check if ready for release (environment and git state only)
-release-check:
-	@./scripts/release/validate.sh --git-only
-
-# Emergency rollback (delete local tags)
-release-rollback:
-	@./scripts/release/tag.sh --rollback
-
 .PHONY: docs-open docs example-watch example lint lint-markdown fmt ci ci-full
 .PHONY: dependencies-analyze build bench cover-web cover test petstore check-all-modules
 .PHONY: golden-update openapi-check
-.PHONY: release release-dry-run release-versions release-validate release-check release-rollback
