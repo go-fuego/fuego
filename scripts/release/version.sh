@@ -30,9 +30,10 @@ get_module_version() {
     fi
 }
 
-# Get the latest version across all modules
+# Get the latest version across all modules (excluding retracted versions)
 get_latest_version() {
     local latest=""
+    local include_retracted="${1:-0}"  # Optional: include retracted versions
 
     for entry in "${RELEASABLE_MODULES[@]}"; do
         local module_path tag_prefix
@@ -42,6 +43,11 @@ get_latest_version() {
         version=$(get_module_version "$tag_prefix")
 
         if [[ -n "$version" ]]; then
+            # Skip retracted versions unless explicitly requested
+            if [[ "$include_retracted" == "0" ]] && is_version_retracted "$version"; then
+                continue
+            fi
+
             if [[ -z "$latest" ]]; then
                 latest="$version"
             else
@@ -150,7 +156,19 @@ show_versions() {
 
     echo ""
     if [[ -n "$max_version" ]]; then
-        log_info "Latest version across all modules: ${COLOR_GREEN}$max_version${COLOR_RESET}"
+        # Check if this is a retracted version
+        if is_version_retracted "$max_version"; then
+            log_info "Latest version (including retracted): ${COLOR_GRAY}$max_version (retracted)${COLOR_RESET}"
+
+            # Show latest non-retracted version
+            local latest_non_retracted
+            latest_non_retracted=$(get_latest_version 0)
+            if [[ -n "$latest_non_retracted" ]]; then
+                log_info "Latest non-retracted version: ${COLOR_GREEN}$latest_non_retracted${COLOR_RESET}"
+            fi
+        else
+            log_info "Latest version across all modules: ${COLOR_GREEN}$max_version${COLOR_RESET}"
+        fi
     fi
 }
 
@@ -166,7 +184,16 @@ interactive_version_select() {
 
     log_section "Version Selection"
 
-    echo "Current latest version: ${COLOR_GREEN}$current_version${COLOR_RESET}"
+    # Check if there are retracted versions
+    local latest_including_retracted
+    latest_including_retracted=$(get_latest_version 1)
+
+    if [[ "$latest_including_retracted" != "$current_version" ]] && [[ -n "$latest_including_retracted" ]]; then
+        echo "Latest non-retracted version: ${COLOR_GREEN}$current_version${COLOR_RESET}"
+        echo "Latest version (including retracted): ${COLOR_GRAY}$latest_including_retracted (retracted)${COLOR_RESET}"
+    else
+        echo "Current latest version: ${COLOR_GREEN}$current_version${COLOR_RESET}"
+    fi
     echo ""
 
     # Get proposed versions
@@ -210,6 +237,12 @@ interactive_version_select() {
                     continue
                 fi
 
+                # Check if version already exists
+                if version_exists "$selected_version"; then
+                    log_error "Version $selected_version already exists"
+                    continue
+                fi
+
                 break
             done
             ;;
@@ -225,6 +258,14 @@ interactive_version_select() {
 
     if version_exists "$selected_version"; then
         die "Version $selected_version already exists. Please choose a different version."
+    fi
+
+    # Warn if version is lower than latest (including retracted)
+    local latest_all
+    latest_all=$(get_latest_version 1)
+    if [[ -n "$latest_all" ]] && [[ $(version_compare "$selected_version" "$latest_all") == "lt" ]]; then
+        log_warning "Selected version $selected_version is lower than existing version $latest_all"
+        log_info "This is OK if $latest_all is retracted and you want to continue the v0.x.x line"
     fi
 
     echo ""

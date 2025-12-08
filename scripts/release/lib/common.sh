@@ -148,26 +148,50 @@ is_branch_up_to_date() {
 }
 
 # Version comparison helpers
-version_to_number() {
-    local version="$1"
-    # Remove 'v' prefix
-    version="${version#v}"
-    # Convert to comparable number: X.Y.Z -> XXXYYYZZZZ (padded)
-    local major minor patch
-    IFS='.' read -r major minor patch <<< "$version"
-    printf "%03d%03d%04d" "$major" "$minor" "$patch"
-}
-
 version_compare() {
     local v1="$1"
     local v2="$2"
-    local n1 n2
-    n1=$(version_to_number "$v1")
-    n2=$(version_to_number "$v2")
 
-    if [[ "$n1" -gt "$n2" ]]; then
+    # Remove 'v' prefix
+    v1="${v1#v}"
+    v2="${v2#v}"
+
+    # Split into components
+    local v1_major v1_minor v1_patch
+    local v2_major v2_minor v2_patch
+    IFS='.' read -r v1_major v1_minor v1_patch <<< "$v1"
+    IFS='.' read -r v2_major v2_minor v2_patch <<< "$v2"
+
+    # Remove leading zeros to avoid octal interpretation
+    v1_major=$((10#${v1_major}))
+    v1_minor=$((10#${v1_minor}))
+    v1_patch=$((10#${v1_patch}))
+    v2_major=$((10#${v2_major}))
+    v2_minor=$((10#${v2_minor}))
+    v2_patch=$((10#${v2_patch}))
+
+    # Compare major version
+    if [[ "$v1_major" -gt "$v2_major" ]]; then
         echo "gt"
-    elif [[ "$n1" -lt "$n2" ]]; then
+        return
+    elif [[ "$v1_major" -lt "$v2_major" ]]; then
+        echo "lt"
+        return
+    fi
+
+    # Major versions equal, compare minor
+    if [[ "$v1_minor" -gt "$v2_minor" ]]; then
+        echo "gt"
+        return
+    elif [[ "$v1_minor" -lt "$v2_minor" ]]; then
+        echo "lt"
+        return
+    fi
+
+    # Major and minor equal, compare patch
+    if [[ "$v1_patch" -gt "$v2_patch" ]]; then
+        echo "gt"
+    elif [[ "$v1_patch" -lt "$v2_patch" ]]; then
         echo "lt"
     else
         echo "eq"
