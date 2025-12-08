@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -30,9 +31,9 @@ func TestUIHandler(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, 200, w.Code)
-		require.Contains(t, w.Body.String(), "OpenAPI specification")
-		require.Empty(t, w.Header().Get("X-Test-Response"))
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Contains(t, w.Body.String(), "OpenAPI specification")
+		assert.Empty(t, w.Header().Get("X-Test-Response"))
 	})
 
 	t.Run("wrap DefaultOpenAPIHandler behind a middleware", func(t *testing.T) {
@@ -54,9 +55,9 @@ func TestUIHandler(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, 200, w.Code)
-		require.Contains(t, w.Body.String(), "OpenAPI specification")
-		require.Equal(t, "response", w.Header().Get("X-Test-Response"))
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Contains(t, w.Body.String(), "OpenAPI specification")
+		assert.Equal(t, "response", w.Header().Get("X-Test-Response"))
 	})
 
 	t.Run("disabling UI", func(t *testing.T) {
@@ -75,8 +76,72 @@ func TestUIHandler(t *testing.T) {
 
 		s.Mux.ServeHTTP(w, r)
 
-		require.Equal(t, 404, w.Code)
-		require.Contains(t, w.Body.String(), "404 page not found")
-		require.Empty(t, w.Header().Get("X-Test-Response"))
+		assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.Contains(t, w.Body.String(), "404 page not found")
+		assert.Empty(t, w.Header().Get("X-Test-Response"))
+	})
+}
+
+func TestSwaggerMiddlewares(t *testing.T) {
+	t.Run("nil passed to SwaggerMiddlewares", func(t *testing.T) {
+		s := NewServer(
+			WithEngineOptions(
+				WithOpenAPIConfig(OpenAPIConfig{
+					SwaggerMiddlewares: nil,
+				}),
+			),
+		)
+
+		s.Engine.RegisterOpenAPIRoutes(s)
+		require.NotNil(t, s.OpenAPI.Config.UIHandler)
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", s.OpenAPI.Config.SwaggerURL+"/", nil)
+
+		s.Mux.ServeHTTP(w, r)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Contains(t, w.Body.String(), "OpenAPI specification")
+		assert.Empty(t, w.Header().Get("X-Test-Response"))
+	})
+
+	t.Run("middleware applied to OpenAPIConfig.SwaggerURL", func(t *testing.T) {
+		s := NewServer(
+			WithEngineOptions(
+				WithOpenAPIConfig(OpenAPIConfig{
+					SwaggerMiddlewares: []func(http.Handler) http.Handler{dummyMiddleware},
+				}),
+			),
+		)
+
+		s.Engine.RegisterOpenAPIRoutes(s)
+		require.NotNil(t, s.OpenAPI.Config.UIHandler)
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", s.OpenAPI.Config.SwaggerURL+"/", nil)
+
+		s.Mux.ServeHTTP(w, r)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Contains(t, w.Body.String(), "OpenAPI specification")
+		assert.Equal(t, "response", w.Header().Get("X-Test-Response"))
+	})
+	t.Run("middleware applied to OpenAPIConfig.SpecURL", func(t *testing.T) {
+		s := NewServer(
+			WithEngineOptions(
+				WithOpenAPIConfig(OpenAPIConfig{
+					SwaggerMiddlewares: []func(http.Handler) http.Handler{dummyMiddleware},
+				}),
+			),
+		)
+
+		s.Engine.RegisterOpenAPIRoutes(s)
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", s.OpenAPI.Config.SpecURL, nil)
+
+		s.Mux.ServeHTTP(w, r)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Contains(t, w.Header().Get("X-Test-Response"), "response")
 	})
 }

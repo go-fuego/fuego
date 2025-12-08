@@ -147,12 +147,12 @@ func NewServer(options ...ServerOption) *Server {
 }
 
 func (s *Server) SpecHandler(_ *Engine) {
-	Get(s, s.OpenAPI.Config.SpecURL, s.Engine.SpecHandler(), OptionHide())
+	Get(s, s.OpenAPI.Config.SpecURL, s.Engine.SpecHandler(), OptionHide(), OptionMiddleware(s.OpenAPI.Config.SwaggerMiddlewares...))
 	s.printOpenAPIMessage(fmt.Sprintf("JSON spec: %s%s", s.url(), s.OpenAPI.Config.SpecURL))
 }
 
 func (s *Server) UIHandler(_ *Engine) {
-	GetStd(s, s.OpenAPI.Config.SwaggerURL+"/", s.OpenAPI.Config.UIHandler(s.OpenAPI.Config.SpecURL).ServeHTTP, OptionHide())
+	GetStd(s, s.OpenAPI.Config.SwaggerURL+"/", s.OpenAPI.Config.UIHandler(s.OpenAPI.Config.SpecURL).ServeHTTP, OptionHide(), OptionMiddleware(s.OpenAPI.Config.SwaggerMiddlewares...))
 	s.printOpenAPIMessage(fmt.Sprintf("OpenAPI UI: %s%s/index.html", s.url(), s.OpenAPI.Config.SwaggerURL))
 }
 

@@ -69,6 +69,9 @@ type OpenAPIConfig struct {
 	UIHandler func(specURL string) http.Handler
 	// URL to serve the swagger UI
 	SwaggerURL string
+	// SwaggerMiddlewares applies desired middleware to routes
+	// associated with [OpenAPIConfig.SpecURL] and [OpenAPIConfig.SwaggerURL]
+	SwaggerMiddlewares []func(http.Handler) http.Handler
 	// If true, the server will not serve the Swagger UI
 	DisableSwaggerUI bool
 	// Middleware configuration for the engine
@@ -149,6 +152,7 @@ func WithOpenAPIConfig(config OpenAPIConfig) EngineOption {
 		e.OpenAPI.Config.PrettyFormatJSON = config.PrettyFormatJSON
 		e.OpenAPI.Config.DisableSwaggerUI = config.DisableSwaggerUI
 		e.OpenAPI.Config.DisableMessages = config.DisableMessages
+		e.OpenAPI.Config.SwaggerMiddlewares = config.SwaggerMiddlewares
 
 		if !validateSpecURL(e.OpenAPI.Config.SpecURL) {
 			slog.Error("Error serving OpenAPI JSON spec. Value of 's.OpenAPIServerConfig.SpecURL' option is not valid", "url", e.OpenAPI.Config.SpecURL)
