@@ -7,7 +7,7 @@ require (
 	github.com/go-fuego/fuego v0.18.8
 	github.com/go-fuego/fuego/middleware/cache v0.0.0-20250205094027-802052722609
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-	golang.org/x/image v0.33.0
+	golang.org/x/image v0.34.0
 )
 
 require (
@@ -33,6 +33,6 @@ require (
 	github.com/woodsbury/decimal128 v1.3.0 // indirect
 	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
-	golang.org/x/text v0.31.0 // indirect
+	golang.org/x/text v0.32.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
