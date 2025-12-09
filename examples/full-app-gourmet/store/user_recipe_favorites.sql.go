@@ -41,7 +41,7 @@ func (q *Queries) GetFavoritesByUser(ctx context.Context, username string) ([]Ge
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetFavoritesByUserRow
+	items := []GetFavoritesByUserRow{}
 	for rows.Next() {
 		var i GetFavoritesByUserRow
 		if err := rows.Scan(

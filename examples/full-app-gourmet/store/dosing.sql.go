@@ -49,7 +49,7 @@ func (q *Queries) GetDosings(ctx context.Context) ([]Dosing, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Dosing
+	items := []Dosing{}
 	for rows.Next() {
 		var i Dosing
 		if err := rows.Scan(

@@ -96,7 +96,7 @@ func (q *Queries) GetRandomRecipes(ctx context.Context) ([]Recipe, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Recipe
+	items := []Recipe{}
 	for rows.Next() {
 		var i Recipe
 		if err := rows.Scan(
@@ -168,7 +168,7 @@ func (q *Queries) GetRecipes(ctx context.Context, limit int64) ([]Recipe, error)
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Recipe
+	items := []Recipe{}
 	for rows.Next() {
 		var i Recipe
 		if err := rows.Scan(
@@ -236,7 +236,7 @@ func (q *Queries) SearchRecipes(ctx context.Context, arg SearchRecipesParams) ([
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Recipe
+	items := []Recipe{}
 	for rows.Next() {
 		var i Recipe
 		if err := rows.Scan(
