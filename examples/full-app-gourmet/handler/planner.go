@@ -6,7 +6,7 @@ import (
 )
 
 func (rs Resource) planner(c fuego.ContextNoBody) (fuego.Templ, error) {
-	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
+	recipes, err := rs.RecipesQueries.GetRecipes(c.Context(), 10)
 	if err != nil {
 		return nil, err
 	}

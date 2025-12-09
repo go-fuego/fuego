@@ -27,7 +27,7 @@ build: css
 # Build for Prod
 docker-build:
 	go generate ./...
-	docker build --platform linux/amd64 -t ewenquim/gourmet .
+	docker build --platform linux/amd64 -t ewenquim/gourmet -f Dockerfile ../..
 
 docker-push:
 	docker push ewenquim/gourmet
