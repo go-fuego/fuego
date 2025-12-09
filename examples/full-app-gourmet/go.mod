@@ -7,10 +7,10 @@ require (
 	github.com/getkin/kin-openapi v0.133.0
 	github.com/go-chi/chi/v5 v5.2.3
 	github.com/go-fuego/fuego v0.19.0
-	github.com/go-fuego/fuego/extra/markdown v0.0.0-20251204201720-8b7a02ed2f89
+	github.com/go-fuego/fuego/extra/markdown v0.19.0
 	github.com/go-fuego/fuego/extra/sql v0.19.0
 	github.com/go-fuego/fuego/middleware/basicauth v0.15.1
-	github.com/go-fuego/fuego/middleware/cache v0.0.0-20251204201720-8b7a02ed2f89
+	github.com/go-fuego/fuego/middleware/cache v0.19.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/uuid v1.6.0
@@ -19,8 +19,7 @@ require (
 	github.com/lmittmann/tint v1.1.2
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.11.1
-	go.uber.org/automaxprocs v1.6.0
-	golang.org/x/text v0.31.0
+	golang.org/x/text v0.32.0
 	modernc.org/sqlite v1.40.1
 )
 
@@ -28,7 +27,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.11 // indirect
-	github.com/go-openapi/jsonpointer v0.22.3 // indirect
+	github.com/go-openapi/jsonpointer v0.22.4 // indirect
 	github.com/go-openapi/swag/jsonname v0.25.4 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -50,7 +49,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/woodsbury/decimal128 v1.4.0 // indirect
-	golang.org/x/crypto v0.45.0 // indirect
+	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
@@ -58,3 +57,5 @@ require (
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 )
+
+replace github.com/go-fuego/fuego => ../..

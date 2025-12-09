@@ -7,7 +7,6 @@ import (
 	"github.com/rs/cors"
 
 	"github.com/go-fuego/fuego"
-
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/handler"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/static"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templates"

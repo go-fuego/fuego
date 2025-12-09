@@ -2,7 +2,7 @@
 SELECT * FROM recipe WHERE id = ?;
 
 -- name: GetRecipes :many
-SELECT * FROM recipe;
+SELECT * FROM recipe LIMIT @limit;
 
 -- name: SearchRecipes :many
 -- Search anything that contains the given string

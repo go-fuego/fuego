@@ -33,7 +33,7 @@ type Resource struct {
 }
 
 func (rs Resource) showRecipesStd(w http.ResponseWriter, r *http.Request) {
-	recipes, err := rs.RecipesQueries.GetRecipes(r.Context())
+	recipes, err := rs.RecipesQueries.GetRecipes(r.Context(), 100)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -58,7 +58,7 @@ func (rs Resource) robots(w http.ResponseWriter, r *http.Request) {
 func (rs Resource) showIndex(c fuego.ContextNoBody) (fuego.Templ, error) {
 	timeDBRequest := time.Now()
 
-	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
+	recipes, err := rs.RecipesQueries.GetRecipes(c.Context(), 10)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (rs Resource) showIndex(c fuego.ContextNoBody) (fuego.Templ, error) {
 }
 
 func (rs Resource) listRecipes(c fuego.ContextNoBody) (*fuego.DataOrTemplate[[]store.Recipe], error) {
-	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
+	recipes, err := rs.RecipesQueries.GetRecipes(c.Context(), int64(c.QueryParamInt("limit")))
 	if err != nil {
 		return nil, err
 	}
@@ -351,7 +351,7 @@ func (rs Resource) addRecipe(c fuego.ContextWithBody[store.CreateRecipeParams]) 
 		return nil, err
 	}
 
-	recipes, err := rs.RecipesQueries.GetRecipes(c.Context())
+	recipes, err := rs.RecipesQueries.GetRecipes(c.Context(), int64(c.QueryParamInt("limit")))
 	if err != nil {
 		return nil, err
 	}
@@ -382,7 +382,7 @@ func (rs Resource) RecipePage(c fuego.ContextNoBody) (fuego.CtxRenderer, error) 
 }
 
 func (rs Resource) getAllRecipesStandardWithHelpers(w http.ResponseWriter, r *http.Request) {
-	recipes, err := rs.RecipesQueries.GetRecipes(r.Context())
+	recipes, err := rs.RecipesQueries.GetRecipes(r.Context(), 100)
 	if err != nil {
 		fuego.SendJSONError(w, r, err)
 		return
@@ -396,7 +396,7 @@ type RecipeRepository interface {
 	DeleteRecipe(ctx context.Context, id string) error
 	GetRecipe(ctx context.Context, id string) (store.Recipe, error)
 	UpdateRecipe(ctx context.Context, arg store.UpdateRecipeParams) (store.Recipe, error)
-	GetRecipes(ctx context.Context) ([]store.Recipe, error)
+	GetRecipes(ctx context.Context, limit int64) ([]store.Recipe, error)
 	GetRandomRecipes(ctx context.Context) ([]store.Recipe, error)
 	SearchRecipes(ctx context.Context, params store.SearchRecipesParams) ([]store.Recipe, error)
 }

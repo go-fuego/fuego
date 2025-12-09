@@ -159,11 +159,11 @@ func (q *Queries) GetRecipe(ctx context.Context, id string) (Recipe, error) {
 }
 
 const getRecipes = `-- name: GetRecipes :many
-SELECT id, created_at, name, description, instructions, category, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer, when_to_eat FROM recipe
+SELECT id, created_at, name, description, instructions, category, published, created_by, calories, cost, prep_time, cook_time, servings, image_url, disclaimer, when_to_eat FROM recipe LIMIT ?1
 `
 
-func (q *Queries) GetRecipes(ctx context.Context) ([]Recipe, error) {
-	rows, err := q.db.QueryContext(ctx, getRecipes)
+func (q *Queries) GetRecipes(ctx context.Context, limit int64) ([]Recipe, error) {
+	rows, err := q.db.QueryContext(ctx, getRecipes, limit)
 	if err != nil {
 		return nil, err
 	}

@@ -10,7 +10,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/lithammer/shortuuid/v4"
 	"github.com/lmittmann/tint"
-	_ "go.uber.org/automaxprocs"
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/handler"
@@ -25,12 +24,12 @@ func main() {
 	err := godotenv.Load(".env.local", ".env")
 	if err != nil {
 		wd, _ := os.Getwd()
-		slog.Error(fmt.Sprintf("Error loading .env files: %s in dir %s", err, wd))
+		slog.Warn(fmt.Sprintf("Error loading .env files: %s in dir %s", err, wd))
 	}
 
 	// Flags
 	port := flag.Int("port", 8083, "port to listen to")
-	dbPath := flag.String("db", "./recipe.db", "path to database file")
+	dbPath := flag.String("db", "data/recipe.db", "path to database file")
 	debug := flag.Bool("debug", false, "debug mode")
 	flag.Parse()
 
@@ -42,7 +41,7 @@ func main() {
 	// Set my custom colored logger
 	slog.SetDefault(slog.New(
 		tint.NewHandler(os.Stderr, &tint.Options{
-			AddSource:  *debug,
+			AddSource:  true,
 			Level:      logLevel,
 			TimeFormat: "15:04:05",
 		}),

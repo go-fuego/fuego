@@ -81,14 +81,14 @@ func Search(props SearchProps) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if props.Filters.MaxTime > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<span class=\"whitespace-nowrap text-sm p-1 px-2 bg-zinc-200 dark:bg-zinc-900 shadow-sm rounded-sm\">Max: ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<span class=\"whitespace-nowrap text-sm p-1 px-2 bg-zinc-200 dark:bg-zinc-900 shadow rounded\">Max: ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(props.Filters.MaxTime))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `search.templ`, Line: 35, Col: 146}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `search.templ`, Line: 35, Col: 140}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -100,14 +100,14 @@ func Search(props SearchProps) templ.Component {
 			}
 		}
 		if props.Filters.MaxCalories > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<span class=\"whitespace-nowrap text-sm p-1 px-2 bg-zinc-200 dark:bg-zinc-900 shadow-sm rounded-sm\">Max: ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<span class=\"whitespace-nowrap text-sm p-1 px-2 bg-zinc-200 dark:bg-zinc-900 shadow rounded\">Max: ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(props.Filters.MaxCalories))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `search.templ`, Line: 38, Col: 150}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `search.templ`, Line: 38, Col: 144}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
