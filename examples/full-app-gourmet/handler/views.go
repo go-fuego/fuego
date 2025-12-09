@@ -49,8 +49,8 @@ func (rs Resource) Routes(s *fuego.Server) {
 	)
 	fuego.Get(s, "/search", rs.searchRecipes,
 		option.Query("q", "Search query", param.Required(), param.Example("example", "Galette des Rois")),
-		option.AddError(http.StatusUnauthorized, "Authorization Error"),
-		option.AddError(500, "My Server Error"),
+		option.AddResponse(http.StatusUnauthorized, "Authorization Error", fuego.Response{Type: fuego.UnauthorizedError{}}),
+		option.AddResponse(http.StatusInternalServerError, "Internal Server Error", fuego.Response{Type: fuego.HTTPError{}}),
 		option.Tags("recipes"),
 	)
 	fuego.Get(s, "/ingredients/preselect-unit", rs.unitPreselected,

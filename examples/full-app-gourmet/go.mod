@@ -6,17 +6,20 @@ require (
 	github.com/a-h/templ v0.3.960
 	github.com/getkin/kin-openapi v0.133.0
 	github.com/go-chi/chi/v5 v5.2.3
-	github.com/go-fuego/fuego v0.18.8
+	github.com/go-fuego/fuego v0.19.0
 	github.com/go-fuego/fuego/extra/markdown v0.0.0-20251204201720-8b7a02ed2f89
+	github.com/go-fuego/fuego/extra/sql v0.19.0
 	github.com/go-fuego/fuego/middleware/basicauth v0.15.1
 	github.com/go-fuego/fuego/middleware/cache v0.0.0-20251204201720-8b7a02ed2f89
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
+	github.com/lithammer/shortuuid/v4 v4.2.0
 	github.com/lmittmann/tint v1.1.2
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.11.1
+	go.uber.org/automaxprocs v1.6.0
 	golang.org/x/text v0.31.0
 	modernc.org/sqlite v1.40.1
 )

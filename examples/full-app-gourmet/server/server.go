@@ -30,7 +30,6 @@ func (rs Resources) Setup(
 	options ...fuego.ServerOption,
 ) *fuego.Server {
 	serverOptions := []fuego.ServerOption{
-		fuego.WithAutoAuth(controller.LoginFunc),
 		fuego.WithTemplateFS(templates.FS),
 		fuego.WithTemplateGlobs("**/*.html", "**/**/*.html"),
 		fuego.WithGlobalMiddlewares(cors.New(cors.Options{

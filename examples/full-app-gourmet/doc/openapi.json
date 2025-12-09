@@ -144,10 +144,10 @@
 					}
 				},
 				"required": [
-					"username",
-					"full_name",
 					"email",
-					"password"
+					"full_name",
+					"password",
+					"username"
 				],
 				"type": "object"
 			},
@@ -226,9 +226,13 @@
 					},
 					"errors": {
 						"items": {
+							"nullable": true,
 							"properties": {
 								"more": {
-									"additionalProperties": {},
+									"additionalProperties": {
+										"description": "Additional information about the error",
+										"nullable": true
+									},
 									"description": "Additional information about the error",
 									"nullable": true,
 									"type": "object"
@@ -345,8 +349,8 @@
 					}
 				},
 				"required": [
-					"username",
-					"password"
+					"password",
+					"username"
 				],
 				"type": "object"
 			},
@@ -521,7 +525,7 @@
 	"paths": {
 		"/admin": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.pageAdmin`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.pageAdmin`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "GET_/admin",
 				"parameters": [
 					{
@@ -643,7 +647,7 @@
 		},
 		"/admin/dosings/new": {
 			"post": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminAddDosing`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminAddDosing`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "POST_/admin/dosings/new",
 				"parameters": [
 					{
@@ -750,7 +754,7 @@
 		},
 		"/admin/ingredients": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminIngredients`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminIngredients`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "GET_/admin/ingredients",
 				"parameters": [
 					{
@@ -880,7 +884,7 @@
 		},
 		"/admin/ingredients/create": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminIngredientCreationPage`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminIngredientCreationPage`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "GET_/admin/ingredients/create",
 				"parameters": [
 					{
@@ -987,7 +991,7 @@
 		},
 		"/admin/ingredients/new": {
 			"post": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminCreateIngredient`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\nCreate a new ingredient",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminCreateIngredient`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\nCreate a new ingredient",
 				"operationId": "POST_/admin/ingredients/new",
 				"parameters": [
 					{
@@ -1094,7 +1098,7 @@
 		},
 		"/admin/recipes": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "GET_/admin/recipes",
 				"parameters": [
 					{
@@ -1222,7 +1226,7 @@
 				]
 			},
 			"post": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.addRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.addRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "POST_/admin/recipes",
 				"parameters": [
 					{
@@ -1329,7 +1333,7 @@
 		},
 		"/admin/recipes/create": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminCreateRecipePage`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminCreateRecipePage`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "GET_/admin/recipes/create",
 				"parameters": [
 					{
@@ -1425,7 +1429,7 @@
 		},
 		"/admin/recipes/edit": {
 			"put": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.editRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.editRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "PUT_/admin/recipes/edit",
 				"parameters": [
 					{
@@ -1532,7 +1536,7 @@
 		},
 		"/admin/recipes/new": {
 			"post": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminAddRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminAddRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "POST_/admin/recipes/new",
 				"parameters": [
 					{
@@ -1639,7 +1643,7 @@
 		},
 		"/admin/recipes/{id}": {
 			"delete": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminDeleteRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminDeleteRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "DELETE_/admin/recipes/:id",
 				"parameters": [
 					{
@@ -1741,7 +1745,7 @@
 				]
 			},
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminOneRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminOneRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "GET_/admin/recipes/:id",
 				"parameters": [
 					{
@@ -1854,7 +1858,7 @@
 				]
 			},
 			"put": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminOneRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminOneRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "PUT_/admin/recipes/:id",
 				"parameters": [
 					{
@@ -1969,7 +1973,7 @@
 		},
 		"/admin/users": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getUsers`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getUsers`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "GET_/admin/users",
 				"parameters": [
 					{
@@ -2069,7 +2073,7 @@
 				]
 			},
 			"post": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.createUser`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.createUser`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
 				"operationId": "POST_/admin/users",
 				"parameters": [
 					{
@@ -2176,7 +2180,7 @@
 		},
 		"/connection": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.connection`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.connection`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/connection",
 				"parameters": [
 					{
@@ -2272,7 +2276,7 @@
 		},
 		"/fast": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.fastRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.fastRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/fast",
 				"parameters": [
 					{
@@ -2368,7 +2372,7 @@
 		},
 		"/favorites": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getMyFavorites`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getMyFavorites`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/favorites",
 				"parameters": [
 					{
@@ -2470,7 +2474,7 @@
 		},
 		"/healthy": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.healthyRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.healthyRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/healthy",
 				"parameters": [
 					{
@@ -2566,7 +2570,7 @@
 		},
 		"/ingredients": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.showIngredients`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.showIngredients`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/ingredients",
 				"parameters": [
 					{
@@ -2668,7 +2672,7 @@
 		},
 		"/ingredients/preselect-unit": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.unitPreselected`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.unitPreselected`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/ingredients/preselect-unit",
 				"parameters": [
 					{
@@ -2779,7 +2783,7 @@
 		},
 		"/login": {
 			"post": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.login`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.login`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "POST_/login",
 				"parameters": [
 					{
@@ -2914,7 +2918,7 @@
 		},
 		"/logout": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.logout`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.logout`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/logout",
 				"responses": {
 					"200": {
@@ -3001,7 +3005,7 @@
 		},
 		"/me": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.me`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.me`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/me",
 				"parameters": [
 					{
@@ -3097,7 +3101,7 @@
 		},
 		"/planner": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.planner`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.planner`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/planner",
 				"parameters": [
 					{
@@ -3190,7 +3194,7 @@
 		},
 		"/recipes": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.listRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.listRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/recipes",
 				"parameters": [
 					{
@@ -3293,7 +3297,7 @@
 		"/recipes-list": {
 			"get": {
 				"deprecated": true,
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.showRecipesList`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\nThis is a demo route, it is not useful for the Gourmet app but showcases Fuego features.",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.showRecipesList`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\nThis is a demo route, it is not useful for the Gourmet app but showcases Fuego features.",
 				"operationId": "GET_/recipes-list",
 				"parameters": [
 					{
@@ -3403,7 +3407,7 @@
 		"/recipes-std": {
 			"get": {
 				"deprecated": true,
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.showRecipesStd`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\nThis is a demo route, it is not useful for the Gourmet app but showcases Fuego features.",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.showRecipesStd`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\nThis is a demo route, it is not useful for the Gourmet app but showcases Fuego features.",
 				"operationId": "GET_/recipes-std",
 				"responses": {
 					"200": {
@@ -3491,7 +3495,7 @@
 		"/recipes-std-json": {
 			"get": {
 				"deprecated": true,
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getAllRecipesStandardWithHelpers`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\nThis is a demo route, it is not useful for the Gourmet app but showcases Fuego features.",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getAllRecipesStandardWithHelpers`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\nThis is a demo route, it is not useful for the Gourmet app but showcases Fuego features.",
 				"operationId": "GET_/recipes-std-json",
 				"responses": {
 					"200": {
@@ -3578,7 +3582,7 @@
 		},
 		"/recipes/{id}": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.singleRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.singleRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/recipes/:id",
 				"parameters": [
 					{
@@ -3682,7 +3686,7 @@
 		},
 		"/recipes/{id}/related": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.relatedRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.relatedRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/recipes/:id/related",
 				"parameters": [
 					{
@@ -3792,7 +3796,7 @@
 		},
 		"/recipes/{id}/stars": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.favoritesCount`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\nGet the realtime number of favorites for a recipe with Server-Sent Events",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.favoritesCount`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\nGet the realtime number of favorites for a recipe with Server-Sent Events",
 				"operationId": "GET_/recipes/:id/stars",
 				"parameters": [
 					{
@@ -3889,7 +3893,7 @@
 		},
 		"/recipes/{id}/stars/fake": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.favoritesCountFake`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\nFake route for testing the realtime number of favorites for a recipe with Server-Sent Events. It sends a random number every second.",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.favoritesCountFake`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\nFake route for testing the realtime number of favorites for a recipe with Server-Sent Events. It sends a random number every second.",
 				"operationId": "GET_/recipes/:id/stars/fake",
 				"parameters": [
 					{
@@ -3984,93 +3988,9 @@
 				]
 			}
 		},
-		"/reload": {
-			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.hotReload.func1`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
-				"operationId": "GET_/reload",
-				"responses": {
-					"200": {
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/unknown-interface"
-								}
-							},
-							"application/xml": {
-								"schema": {
-									"$ref": "#/components/schemas/unknown-interface"
-								}
-							}
-						},
-						"description": "OK"
-					},
-					"400": {
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPError"
-								}
-							},
-							"application/xml": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPError"
-								}
-							}
-						},
-						"description": "Bad Request _(validation or deserialization error)_"
-					},
-					"403": {
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPError"
-								}
-							},
-							"application/xml": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPError"
-								}
-							}
-						},
-						"description": "Forbidden"
-					},
-					"500": {
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPError"
-								}
-							},
-							"application/xml": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPError"
-								}
-							}
-						},
-						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPError"
-								}
-							},
-							"application/xml": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPError"
-								}
-							}
-						},
-						"description": "Forbidden"
-					}
-				},
-				"summary": "func1"
-			}
-		},
 		"/robots.txt": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.robots`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `cache.New.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.robots`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `cache.New.func2`\n\n---\n\n",
 				"operationId": "GET_/robots.txt",
 				"responses": {
 					"200": {
@@ -4154,7 +4074,7 @@
 		},
 		"/search": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.searchRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.searchRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/search",
 				"parameters": [
 					{
@@ -4275,7 +4195,7 @@
 		},
 		"/users/{username}": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getUserByUsername`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getUserByUsername`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/users/:username",
 				"parameters": [
 					{
@@ -4379,7 +4299,7 @@
 		},
 		"/users/{username}/favorites": {
 			"delete": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.removeFavorite`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.removeFavorite`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "DELETE_/users/:username/favorites",
 				"parameters": [
 					{
@@ -4501,7 +4421,7 @@
 				]
 			},
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getFavoritesByUser`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getFavoritesByUser`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/users/:username/favorites",
 				"parameters": [
 					{
@@ -4615,7 +4535,7 @@
 				]
 			},
 			"post": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.addFavorite`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.addFavorite`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "POST_/users/:username/favorites",
 				"parameters": [
 					{
@@ -4739,7 +4659,7 @@
 		},
 		"/users/{username}/favorites/sqlinjection": {
 			"get": {
-				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getFavoritesByUserUnsecureSql`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getFavoritesByUserUnsecureSql`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
 				"operationId": "GET_/users/:username/favorites/sqlinjection",
 				"parameters": [
 					{
