@@ -10,6 +10,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/lithammer/shortuuid/v4"
 	"github.com/lmittmann/tint"
+	"golang.org/x/term"
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/handler"
@@ -31,6 +32,7 @@ func main() {
 	port := flag.Int("port", 8083, "port to listen to")
 	dbPath := flag.String("db", "data/recipe.db", "path to database file")
 	debug := flag.Bool("debug", false, "debug mode")
+	jsonLogs := flag.Bool("json-logs", !term.IsTerminal(int(os.Stderr.Fd())), "use JSON logging format (auto-enabled in non-TTY environments)")
 	flag.Parse()
 
 	logLevel := slog.LevelInfo
@@ -38,14 +40,21 @@ func main() {
 		logLevel = slog.LevelDebug
 	}
 
-	// Set my custom colored logger
-	slog.SetDefault(slog.New(
-		tint.NewHandler(os.Stderr, &tint.Options{
+	// Set logger based on environment
+	var logHandler slog.Handler
+	if *jsonLogs {
+		logHandler = slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+			AddSource: true,
+			Level:     logLevel,
+		})
+	} else {
+		logHandler = tint.NewHandler(os.Stderr, &tint.Options{
 			AddSource:  true,
 			Level:      logLevel,
 			TimeFormat: "15:04:05",
-		}),
-	))
+		})
+	}
+	slog.SetDefault(slog.New(logHandler))
 
 	// Connect to database
 	db := store.InitDB(*dbPath)
