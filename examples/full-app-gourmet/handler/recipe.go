@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"cmp"
 	"context"
 	"database/sql"
 	"fmt"
@@ -114,7 +115,7 @@ func (rs Resource) showIndex(c fuego.ContextNoBody) (fuego.Templ, error) {
 }
 
 type ListRecipeParams struct {
-	Limit int64 `query:"limit" default:"15"`
+	Limit int64 `query:"limit" default:"15" example:"10"`
 }
 
 func (rs Resource) listRecipes(c fuego.ContextWithParams[ListRecipeParams]) (*fuego.DataOrTemplate[[]store.Recipe], error) {
@@ -123,9 +124,11 @@ func (rs Resource) listRecipes(c fuego.ContextWithParams[ListRecipeParams]) (*fu
 		return nil, err
 	}
 
-	slog.Info("requesting", "limit", params.Limit)
+	limits := cmp.Or(params.Limit, 10)
 
-	recipes, err := rs.RecipesQueries.GetRecipes(c.Context(), params.Limit)
+	slog.Info("requesting", "limit", limits)
+
+	recipes, err := rs.RecipesQueries.GetRecipes(c.Context(), limits)
 	if err != nil {
 		return nil, err
 	}
