@@ -31,7 +31,7 @@ type RecipeRepositoryMock struct {
 	handler.RecipeRepository
 }
 
-func (r RecipeRepositoryMock) GetRecipes(ctx context.Context) ([]store.Recipe, error) {
+func (r RecipeRepositoryMock) GetRecipes(ctx context.Context, _ int64) ([]store.Recipe, error) {
 	time.Sleep(1 * time.Millisecond)
 	return []store.Recipe{}, nil
 }

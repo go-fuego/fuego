@@ -1,1 +1,4969 @@
-{"components":{"schemas":{"CreateDosingParams":{"description":"CreateDosingParams schema","properties":{"ingredient_id":{"type":"string"},"quantity":{"format":"int64","type":"integer"},"recipe_id":{"type":"string"},"unit":{"type":"string"}},"required":["quantity","unit"],"type":"object"},"CreateIngredient":{"description":"CreateIngredient schema","properties":{"description":{"type":"string"},"name":{"maxLength":20,"minLength":3,"type":"string"}},"required":["name"],"type":"object"},"CreateIngredientParams":{"description":"CreateIngredientParams schema","properties":{"available_all_year":{"type":"boolean"},"available_apr":{"type":"boolean"},"available_aug":{"type":"boolean"},"available_dec":{"type":"boolean"},"available_feb":{"type":"boolean"},"available_jan":{"type":"boolean"},"available_jul":{"type":"boolean"},"available_jun":{"type":"boolean"},"available_mar":{"type":"boolean"},"available_may":{"type":"boolean"},"available_nov":{"type":"boolean"},"available_oct":{"type":"boolean"},"available_sep":{"type":"boolean"},"category":{"type":"string"},"default_unit":{"type":"string"},"description":{"type":"string"},"id":{"type":"string"},"name":{"type":"string"}},"type":"object"},"CreateRecipeParams":{"description":"CreateRecipeParams schema","properties":{"category":{"type":"string"},"cook_time":{"format":"int64","type":"integer"},"description":{"type":"string"},"id":{"type":"string"},"image_url":{"type":"string"},"instructions":{"type":"string"},"name":{"type":"string"},"prep_time":{"format":"int64","type":"integer"},"published":{"type":"boolean"},"servings":{"format":"int64","type":"integer"},"when_to_eat":{"type":"string"}},"type":"object"},"Dosing":{"description":"Dosing schema","properties":{"ingredient_id":{"type":"string"},"quantity":{"format":"int64","type":"integer"},"recipe_id":{"type":"string"},"unit":{"type":"string"}},"required":["quantity","unit"],"type":"object"},"GetIngredientsOfRecipeRow":{"description":"GetIngredientsOfRecipeRow schema","properties":{"ingredient":{"properties":{"available_all_year":{"type":"boolean"},"available_apr":{"type":"boolean"},"available_aug":{"type":"boolean"},"available_dec":{"type":"boolean"},"available_feb":{"type":"boolean"},"available_jan":{"type":"boolean"},"available_jul":{"type":"boolean"},"available_jun":{"type":"boolean"},"available_mar":{"type":"boolean"},"available_may":{"type":"boolean"},"available_nov":{"type":"boolean"},"available_oct":{"type":"boolean"},"available_sep":{"type":"boolean"},"category":{"type":"string"},"created_at":{"format":"date-time","type":"string"},"default_unit":{"type":"string"},"description":{"type":"string"},"id":{"type":"string"},"name":{"type":"string"}},"type":"object"},"quantity":{"format":"int64","type":"integer"},"unit":{"type":"string"}},"required":["quantity","unit"],"type":"object"},"HTTPError":{"description":"HTTPError schema","properties":{"detail":{"description":"Human readable error message","nullable":true,"type":"string"},"errors":{"items":{"nullable":true,"properties":{"more":{"additionalProperties":{"description":"Additional information about the error","nullable":true},"description":"Additional information about the error","nullable":true,"type":"object"},"name":{"description":"For example, name of the parameter that caused the error","type":"string"},"reason":{"description":"Human readable error message","type":"string"}},"type":"object"},"nullable":true,"type":"array"},"instance":{"nullable":true,"type":"string"},"status":{"description":"HTTP status code","example":403,"nullable":true,"type":"integer"},"title":{"description":"Short title of the error","nullable":true,"type":"string"},"type":{"description":"URL of the error type. Can be used to lookup the error in a documentation","nullable":true,"type":"string"}},"type":"object"},"Ingredient":{"description":"Ingredient schema","properties":{"available_all_year":{"type":"boolean"},"available_apr":{"type":"boolean"},"available_aug":{"type":"boolean"},"available_dec":{"type":"boolean"},"available_feb":{"type":"boolean"},"available_jan":{"type":"boolean"},"available_jul":{"type":"boolean"},"available_jun":{"type":"boolean"},"available_mar":{"type":"boolean"},"available_may":{"type":"boolean"},"available_nov":{"type":"boolean"},"available_oct":{"type":"boolean"},"available_sep":{"type":"boolean"},"category":{"type":"string"},"created_at":{"format":"date-time","type":"string"},"default_unit":{"type":"string"},"description":{"type":"string"},"id":{"type":"string"},"name":{"type":"string"}},"type":"object"},"LoginPayload":{"description":"LoginPayload schema","properties":{"password":{"type":"string"},"user":{"type":"string"}},"required":["password","user"],"type":"object"},"Recipe":{"description":"Recipe schema","properties":{"calories":{"format":"int64","type":"integer"},"category":{"type":"string"},"cook_time":{"format":"int64","type":"integer"},"cost":{"format":"int64","type":"integer"},"created_at":{"format":"date-time","type":"string"},"created_by":{"type":"string"},"description":{"type":"string"},"disclaimer":{"type":"string"},"id":{"type":"string"},"image_url":{"type":"string"},"instructions":{"type":"string"},"name":{"type":"string"},"prep_time":{"format":"int64","type":"integer"},"published":{"type":"boolean"},"servings":{"format":"int64","type":"integer"},"when_to_eat":{"type":"string"}},"type":"object"},"UpdateRecipeParams":{"description":"UpdateRecipeParams schema","properties":{"category":{"type":"string"},"cook_time":{"format":"int64","type":"integer"},"description":{},"id":{"type":"string"},"image_url":{"type":"string"},"instructions":{},"name":{"type":"string"},"prep_time":{"format":"int64","type":"integer"},"published":{"type":"boolean"},"servings":{"format":"int64","type":"integer"},"when_to_eat":{"type":"string"}},"type":"object"},"string":{"description":"string schema","type":"string"},"test":{"description":"test schema","properties":{"name":{"type":"string"}},"type":"object"},"tokenResponse":{"description":"tokenResponse schema","properties":{"token":{"type":"string"}},"type":"object"},"unknown-interface":{"description":"unknown-interface schema"}}},"info":{"description":"\nThis is the autogenerated OpenAPI documentation for your [Fuego](https://github.com/go-fuego/fuego) API.\n\nBelow is a Fuego Cheatsheet to help you get started. Don't hesitate to check the [Fuego documentation](https://go-fuego.dev) for more details.\n\nHappy coding! 🔥\n\n## Usage\n\n### Route registration\n\n```go\nfunc main() {\n\t// Create a new server\n\ts := fuego.NewServer()\n\n\t// Register some routes\n\tfuego.Post(s, \"/hello\", myController)\n\tfuego.Get(s, \"/myPath\", otherController)\n\tfuego.Put(s, \"/hello\", thirdController)\n\n\tadminRoutes := fuego.Group(s, \"/admin\")\n\tfuego.Use(adminRoutes, myMiddleware) // This middleware (for authentication, etc...) will be available for routes starting by /admin/*, \n\tfuego.Get(adminRoutes, \"/hello\", groupController) // This route will be available at /admin/hello\n\n\t// Start the server\n\ts.Start()\n}\n```\n\n### Basic controller\n\n```go\ntype MyBody struct {\n\tName string `json:\"name\" validate:\"required,max=30\"`\n}\n\ntype MyResponse struct {\n\tAnswer string `json:\"answer\"`\n}\n\nfunc hello(ctx fuego.ContextWithBody[MyBody]) (*MyResponse, error) {\n\tbody, err := ctx.Body()\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\n\treturn \u0026MyResponse{Answer: \"Hello \" + body.Name}, nil\n}\n```\n\n### Add openAPI information to the route\n\n```go\nimport (\n\t\"github.com/go-fuego/fuego\"\n\t\"github.com/go-fuego/fuego/option\"\n\t\"github.com/go-fuego/fuego/param\"\n)\n\nfunc main() {\n\ts := fuego.NewServer()\n\n\t// Custom OpenAPI options\n\tfuego.Post(s, \"/\", myController\n\t\toption.Description(\"This route does something...\"),\n\t\toption.Summary(\"This is my summary\"),\n\t\toption.Tags(\"MyTag\"), // A tag is set by default according to the return type (can be deactivated)\n\t\toption.Deprecated(), // Marks the route as deprecated in the OpenAPI spec\n\n\t\toption.Query(\"name\", \"Declares a query parameter with default value\", param.Default(\"Carmack\")),\n\t\toption.Header(\"Authorization\", \"Bearer token\", param.Required()),\n\t\toptionPagination,\n\t\toptionCustomBehavior,\n\t)\n\n\ts.Run()\n}\n\nvar optionPagination = option.Group(\n\toption.QueryInt(\"page\", \"Page number\", param.Default(1), param.Example(\"1st page\", 1), param.Example(\"42nd page\", 42)),\n\toption.QueryInt(\"perPage\", \"Number of items per page\"),\n)\n\nvar optionCustomBehavior = func(r *fuego.BaseRoute) {\n\tr.XXX = \"YYY\"\n}\n```\n\nThen, in the controller\n\n```go\ntype MyResponse struct {\n\tAnswer string `json:\"answer\"`\n}\n\nfunc getAllPets(ctx fuego.ContextNoBody) (*MyResponse, error) {\n\tname := ctx.QueryParam(\"name\")\n\tperPage, _ := ctx.QueryParamIntErr(\"per_page\")\n\n\treturn \u0026MyResponse{Answer: \"Hello \" + name}, nil\n}\n```\n","title":"Gourmet API","version":"0.0.1"},"openapi":"3.1.0","paths":{"/admin":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.pageAdmin`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.Routes.New.func1`\n\n---\n\n","operationId":"GET_/admin","parameters":[{"description":"Page number","examples":{"1st page":{"value":1},"42nd page":{"value":42}},"in":"query","name":"page","schema":{"default":1,"type":"integer"}},{"description":"Number of items per page","in":"query","name":"perPage","schema":{"default":20,"type":"integer"}},{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"page admin","tags":["admin"]}},"/admin/dosings/new":{"post":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.adminAddDosing`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.Routes.New.func1`\n\n---\n\n","operationId":"POST_/admin/dosings/new","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"requestBody":{"content":{"*/*":{"schema":{"$ref":"#/components/schemas/CreateDosingParams"}}},"description":"Request body for store.CreateDosingParams","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"admin add dosing","tags":["admin"]}},"/admin/ingredients":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.adminIngredients`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.Routes.New.func1`\n\n---\n\n","operationId":"GET_/admin/ingredients","parameters":[{"description":"Page number","examples":{"1st page":{"value":1},"42nd page":{"value":42}},"in":"query","name":"page","schema":{"default":1,"type":"integer"}},{"description":"Number of items per page","in":"query","name":"perPage","schema":{"default":20,"type":"integer"}},{"description":"Name to perform LIKE search on","in":"query","name":"name","schema":{"type":"string"}},{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"admin ingredients","tags":["admin"]}},"/admin/ingredients/create":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.adminIngredientCreationPage`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.Routes.New.func1`\n\n---\n\n","operationId":"GET_/admin/ingredients/create","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"requestBody":{"content":{"*/*":{"schema":{"$ref":"#/components/schemas/CreateIngredientParams"}}},"description":"Request body for store.CreateIngredientParams","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"admin ingredient creation page","tags":["admin"]}},"/admin/ingredients/new":{"post":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.adminCreateIngredient`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.Routes.New.func1`\n\n---\n\nCreate a new ingredient","operationId":"POST_/admin/ingredients/new","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"requestBody":{"content":{"*/*":{"schema":{"$ref":"#/components/schemas/CreateIngredientParams"}}},"description":"Request body for store.CreateIngredientParams","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"admin create ingredient","tags":["admin"]}},"/admin/recipes":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.adminRecipes`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.Routes.New.func1`\n\n---\n\n","operationId":"GET_/admin/recipes","parameters":[{"description":"Page number","examples":{"1st page":{"value":1},"42nd page":{"value":42}},"in":"query","name":"page","schema":{"default":1,"type":"integer"}},{"description":"Number of items per page","in":"query","name":"perPage","schema":{"default":20,"type":"integer"}},{"description":"Name to perform LIKE search on","in":"query","name":"name","schema":{"type":"string"}},{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"admin recipes","tags":["admin"]}},"/admin/recipes/create":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.adminCreateRecipePage`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.Routes.New.func1`\n\n---\n\n","operationId":"GET_/admin/recipes/create","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"admin create recipe page","tags":["admin"]}},"/admin/recipes/edit":{"put":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.editRecipe`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.Routes.New.func1`\n\n---\n\n","operationId":"PUT_/admin/recipes/edit","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"requestBody":{"content":{"*/*":{"schema":{"$ref":"#/components/schemas/UpdateRecipeParams"}}},"description":"Request body for store.UpdateRecipeParams","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"edit recipe","tags":["admin"]}},"/admin/recipes/new":{"post":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.adminAddRecipes`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.Routes.New.func1`\n\n---\n\n","operationId":"POST_/admin/recipes/new","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"requestBody":{"content":{"*/*":{"schema":{"$ref":"#/components/schemas/CreateRecipeParams"}}},"description":"Request body for store.CreateRecipeParams","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"admin add recipes","tags":["admin"]}},"/admin/recipes/{id}":{"delete":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.adminDeleteRecipe`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.Routes.New.func1`\n\n---\n\n","operationId":"DELETE_/admin/recipes/:id","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}},{"in":"path","name":"id","required":true,"schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"admin delete recipe","tags":["admin"]},"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.adminOneRecipe`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.Routes.New.func1`\n\n---\n\n","operationId":"GET_/admin/recipes/:id","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}},{"in":"path","name":"id","required":true,"schema":{"type":"string"}}],"requestBody":{"content":{"*/*":{"schema":{"$ref":"#/components/schemas/UpdateRecipeParams"}}},"description":"Request body for store.UpdateRecipeParams","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"admin one recipe","tags":["admin"]},"put":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.adminOneRecipe`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.Routes.New.func1`\n\n---\n\n","operationId":"PUT_/admin/recipes/:id","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}},{"in":"path","name":"id","required":true,"schema":{"type":"string"}}],"requestBody":{"content":{"*/*":{"schema":{"$ref":"#/components/schemas/UpdateRecipeParams"}}},"description":"Request body for store.UpdateRecipeParams","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"admin one recipe","tags":["admin"]}},"/admin/users":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.adminRecipes`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.Routes.New.func1`\n\n---\n\n","operationId":"GET_/admin/users","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"admin recipes","tags":["admin"]}},"/api/dosings/new":{"post":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/controller.dosingResource.newDosing`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/rs/cors.(*Cors).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/controller.Resource.MountRoutes.New.func2`\n\n---\n\n","operationId":"POST_/api/dosings/new","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"requestBody":{"content":{"*/*":{"schema":{"$ref":"#/components/schemas/CreateDosingParams"}}},"description":"Request body for store.CreateDosingParams","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Dosing"}},"application/xml":{"schema":{"$ref":"#/components/schemas/Dosing"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"new dosing","tags":["api","dosings"]}},"/api/ingredients/ingredients":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/controller.ingredientResource.getAllIngredients`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/rs/cors.(*Cors).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/controller.Resource.MountRoutes.New.func2`\n\n---\n\n","operationId":"GET_/api/ingredients/ingredients","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"items":{"$ref":"#/components/schemas/Ingredient"},"type":"array"}},"application/xml":{"schema":{"items":{"$ref":"#/components/schemas/Ingredient"},"type":"array"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"get all ingredients","tags":["api","ingredients"]}},"/api/ingredients/ingredients/new":{"post":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/controller.ingredientResource.newIngredient`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/rs/cors.(*Cors).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/controller.Resource.MountRoutes.New.func2`\n\n---\n\n","operationId":"POST_/api/ingredients/ingredients/new","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"requestBody":{"content":{"*/*":{"schema":{"$ref":"#/components/schemas/CreateIngredient"}}},"description":"Request body for controller.CreateIngredient","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Ingredient"}},"application/xml":{"schema":{"$ref":"#/components/schemas/Ingredient"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"new ingredient","tags":["api","ingredients"]}},"/api/recipes-standard-with-helpers":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/controller.recipeResource.getAllRecipesStandardWithHelpers`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/rs/cors.(*Cors).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/controller.Resource.MountRoutes.New.func2`\n\n---\n\n","operationId":"GET_/api/recipes-standard-with-helpers","responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"get all recipes standard with helpers","tags":["api","recipes"]}},"/api/recipes/":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/controller.recipeResource.getAllRecipes`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/rs/cors.(*Cors).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/controller.Resource.MountRoutes.New.func2`\n\n---\n\nGet all recipes","operationId":"GET_/api/recipes/","parameters":[{"description":"number of recipes to return","in":"query","name":"limit","schema":{"default":"10","type":"string"}},{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"items":{"$ref":"#/components/schemas/Recipe"},"type":"array"}},"application/xml":{"schema":{"items":{"$ref":"#/components/schemas/Recipe"},"type":"array"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"Get all recipes","tags":["api","recipes"]}},"/api/recipes/new":{"post":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/controller.recipeResource.newRecipe`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/rs/cors.(*Cors).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/controller.Resource.MountRoutes.New.func2`\n\n---\n\n","operationId":"POST_/api/recipes/new","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"requestBody":{"content":{"*/*":{"schema":{"$ref":"#/components/schemas/CreateRecipeParams"}}},"description":"Request body for store.CreateRecipeParams","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Recipe"}},"application/xml":{"schema":{"$ref":"#/components/schemas/Recipe"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"new recipe","tags":["api","recipes"]}},"/api/recipes/{id}":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/controller.recipeResource.getRecipeWithIngredients`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/rs/cors.(*Cors).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/controller.Resource.MountRoutes.New.func2`\n\n---\n\n","operationId":"GET_/api/recipes/:id","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}},{"in":"path","name":"id","required":true,"schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"items":{"$ref":"#/components/schemas/GetIngredientsOfRecipeRow"},"type":"array"}},"application/xml":{"schema":{"items":{"$ref":"#/components/schemas/GetIngredientsOfRecipeRow"},"type":"array"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"get recipe with ingredients","tags":["api","recipes"]}},"/api/tests/slow":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/controller.slow`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/rs/cors.(*Cors).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/controller.Resource.MountRoutes.New.func2`\n\n---\n\nThis is a slow route","operationId":"GET_/api/tests/slow","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/test"}},"application/xml":{"schema":{"$ref":"#/components/schemas/test"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"Slow route","tags":["api","tests"]}},"/api/users/me":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/controller.Resource.MountRoutes.func1`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/rs/cors.(*Cors).Handler`\n- `github.com/go-fuego/fuego/examples/full-app-gourmet/controller.Resource.MountRoutes.New.func2`\n\n---\n\n","operationId":"GET_/api/users/me","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/string"}},"application/xml":{"schema":{"$ref":"#/components/schemas/string"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"func1","tags":["api"]}},"/auth/login":{"post":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego.NewServer.Security.LoginHandler.func8`\n\n---\n\n","operationId":"POST_/auth/login","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"requestBody":{"content":{"*/*":{"schema":{"$ref":"#/components/schemas/LoginPayload"}}},"description":"Request body for fuego.LoginPayload","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/tokenResponse"}},"application/xml":{"schema":{"$ref":"#/components/schemas/tokenResponse"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"Login","tags":["Auth"]}},"/auth/logout":{"post":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego.Security.CookieLogoutHandler`\n\n---\n\n","operationId":"POST_/auth/logout","responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"Logout","tags":["Auth"]}},"/auth/refresh":{"post":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego.Security.RefreshHandler`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n\n---\n\n","operationId":"POST_/auth/refresh","responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"Refresh","tags":["Auth"]}},"/fast":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.fastRecipes`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n\n---\n\n","operationId":"GET_/fast","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"fast recipes","tags":["recipes"]}},"/healthy":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.healthyRecipes`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n\n---\n\n","operationId":"GET_/healthy","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"healthy recipes","tags":["recipes"]}},"/ingredients":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.showIngredients`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n\n---\n\n","operationId":"GET_/ingredients","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"show ingredients","tags":["ingredients"]}},"/ingredients/preselect-unit":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.unitPreselected`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n\n---\n\n","operationId":"GET_/ingredients/preselect-unit","parameters":[{"description":"ID","examples":{"example":{"value":"abcde1245"}},"in":"query","name":"id","required":true,"schema":{"default":"1","type":"string"}},{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"unit preselected","tags":["ingredients"]}},"/planner":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.planner`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n\n---\n\n","operationId":"GET_/planner","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"planner"}},"/recipes":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.showRecipes`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n\n---\n\n","operationId":"GET_/recipes","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"items":{"$ref":"#/components/schemas/Recipe"},"type":"array"}},"application/xml":{"schema":{"items":{"$ref":"#/components/schemas/Recipe"},"type":"array"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"show recipes","tags":["recipes"]}},"/recipes-list":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.showRecipesList`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n\n---\n\n","operationId":"GET_/recipes-list","parameters":[{"description":"Search query","examples":{"example":{"value":"Galette des Rois"}},"in":"query","name":"search","schema":{"type":"string"}},{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"show recipes list","tags":["recipes"]}},"/recipes-new":{"post":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.addRecipe`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n\n---\n\n","operationId":"POST_/recipes-new","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}}],"requestBody":{"content":{"*/*":{"schema":{"$ref":"#/components/schemas/CreateRecipeParams"}}},"description":"Request body for store.CreateRecipeParams","required":true},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"add recipe","tags":["recipes"]}},"/recipes-std":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.showRecipesStd`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n\n---\n\n","operationId":"GET_/recipes-std","responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"show recipes std","tags":["recipes"]}},"/recipes/{id}":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.showSingleRecipes2`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n\n---\n\n","operationId":"GET_/recipes/:id","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}},{"in":"path","name":"id","required":true,"schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"show single recipes2","tags":["recipes"]}},"/recipes/{id}/related":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.relatedRecipes`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n\n---\n\n","operationId":"GET_/recipes/:id/related","parameters":[{"in":"header","name":"Accept","schema":{"type":"string"}},{"in":"path","name":"id","required":true,"schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"related recipes","tags":["recipes"]}},"/robots.txt":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.robots`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n- `github.com/go-fuego/fuego/middleware/cache.New.func2`\n\n---\n\n","operationId":"GET_/robots.txt","responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Internal Server Error _(panics)_"},"default":{"description":""}},"summary":"robots"}},"/search":{"get":{"description":"#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/views.Resource.searchRecipes`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.NewServer.Security.TokenToContext.func13`\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n- `github.com/go-chi/chi/v5/middleware.(*Compressor).Handler`\n\n---\n\n","operationId":"GET_/search","parameters":[{"description":"Search query","examples":{"example":{"value":"Galette des Rois"}},"in":"query","name":"q","required":true,"schema":{"type":"string"}},{"in":"header","name":"Accept","schema":{"type":"string"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/unknown-interface"}},"application/xml":{"schema":{"$ref":"#/components/schemas/unknown-interface"}}},"description":"OK"},"400":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Bad Request _(validation or deserialization error)_"},"401":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Authorization Error"},"403":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}},"application/xml":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"Forbidden"},"500":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPError"}}},"description":"My Server Error"},"default":{"description":""}},"summary":"search recipes","tags":["recipes"]}}},"servers":[{"description":"Production server","url":"https://gourmet.quimerch.com"},{"description":"local server","url":"http://:8083"}],"tags":[{"name":"Auth"},{"name":"admin"},{"name":"api"},{"name":"dosings"},{"name":"ingredients"},{"name":"recipes"},{"name":"tests"}]}
+{
+	"components": {
+		"schemas": {
+			"CreateDosingParams": {
+				"description": "CreateDosingParams schema",
+				"properties": {
+					"ingredient_id": {
+						"type": "string"
+					},
+					"quantity": {
+						"format": "int64",
+						"type": "integer"
+					},
+					"recipe_id": {
+						"type": "string"
+					},
+					"unit": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"quantity",
+					"unit"
+				],
+				"type": "object"
+			},
+			"CreateIngredientParams": {
+				"description": "CreateIngredientParams schema",
+				"properties": {
+					"available_all_year": {
+						"type": "boolean"
+					},
+					"available_apr": {
+						"type": "boolean"
+					},
+					"available_aug": {
+						"type": "boolean"
+					},
+					"available_dec": {
+						"type": "boolean"
+					},
+					"available_feb": {
+						"type": "boolean"
+					},
+					"available_jan": {
+						"type": "boolean"
+					},
+					"available_jul": {
+						"type": "boolean"
+					},
+					"available_jun": {
+						"type": "boolean"
+					},
+					"available_mar": {
+						"type": "boolean"
+					},
+					"available_may": {
+						"type": "boolean"
+					},
+					"available_nov": {
+						"type": "boolean"
+					},
+					"available_oct": {
+						"type": "boolean"
+					},
+					"available_sep": {
+						"type": "boolean"
+					},
+					"category": {
+						"type": "string"
+					},
+					"default_unit": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"CreateRecipeParams": {
+				"description": "CreateRecipeParams schema",
+				"properties": {
+					"category": {
+						"type": "string"
+					},
+					"cook_time": {
+						"format": "int64",
+						"type": "integer"
+					},
+					"description": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					},
+					"image_url": {
+						"type": "string"
+					},
+					"instructions": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"prep_time": {
+						"format": "int64",
+						"type": "integer"
+					},
+					"published": {
+						"type": "boolean"
+					},
+					"servings": {
+						"format": "int64",
+						"type": "integer"
+					},
+					"when_to_eat": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"CreateUserPayload": {
+				"description": "CreateUserPayload schema",
+				"properties": {
+					"email": {
+						"type": "string"
+					},
+					"full_name": {
+						"type": "string"
+					},
+					"password": {
+						"minLength": 8,
+						"type": "string"
+					},
+					"username": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"email",
+					"full_name",
+					"password",
+					"username"
+				],
+				"type": "object"
+			},
+			"GetFavoritesByUserRow": {
+				"description": "GetFavoritesByUserRow schema",
+				"properties": {
+					"recipe": {
+						"properties": {
+							"calories": {
+								"format": "int64",
+								"type": "integer"
+							},
+							"category": {
+								"type": "string"
+							},
+							"cook_time": {
+								"format": "int64",
+								"type": "integer"
+							},
+							"cost": {
+								"format": "int64",
+								"type": "integer"
+							},
+							"created_at": {
+								"format": "date-time",
+								"type": "string"
+							},
+							"created_by": {
+								"type": "string"
+							},
+							"description": {
+								"type": "string"
+							},
+							"disclaimer": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							},
+							"image_url": {
+								"type": "string"
+							},
+							"instructions": {
+								"type": "string"
+							},
+							"name": {
+								"type": "string"
+							},
+							"prep_time": {
+								"format": "int64",
+								"type": "integer"
+							},
+							"published": {
+								"type": "boolean"
+							},
+							"servings": {
+								"format": "int64",
+								"type": "integer"
+							},
+							"when_to_eat": {
+								"type": "string"
+							}
+						},
+						"type": "object"
+					}
+				},
+				"type": "object"
+			},
+			"HTTPError": {
+				"description": "HTTPError schema",
+				"properties": {
+					"detail": {
+						"description": "Human readable error message",
+						"nullable": true,
+						"type": "string"
+					},
+					"errors": {
+						"items": {
+							"nullable": true,
+							"properties": {
+								"more": {
+									"additionalProperties": {
+										"description": "Additional information about the error",
+										"nullable": true
+									},
+									"description": "Additional information about the error",
+									"nullable": true,
+									"type": "object"
+								},
+								"name": {
+									"description": "For example, name of the parameter that caused the error",
+									"type": "string"
+								},
+								"reason": {
+									"description": "Human readable error message",
+									"type": "string"
+								}
+							},
+							"type": "object"
+						},
+						"nullable": true,
+						"type": "array"
+					},
+					"instance": {
+						"nullable": true,
+						"type": "string"
+					},
+					"status": {
+						"description": "HTTP status code",
+						"example": 403,
+						"nullable": true,
+						"type": "integer"
+					},
+					"title": {
+						"description": "Short title of the error",
+						"nullable": true,
+						"type": "string"
+					},
+					"type": {
+						"description": "URL of the error type. Can be used to lookup the error in a documentation",
+						"nullable": true,
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"Ingredient": {
+				"description": "Ingredient schema",
+				"properties": {
+					"available_all_year": {
+						"type": "boolean"
+					},
+					"available_apr": {
+						"type": "boolean"
+					},
+					"available_aug": {
+						"type": "boolean"
+					},
+					"available_dec": {
+						"type": "boolean"
+					},
+					"available_feb": {
+						"type": "boolean"
+					},
+					"available_jan": {
+						"type": "boolean"
+					},
+					"available_jul": {
+						"type": "boolean"
+					},
+					"available_jun": {
+						"type": "boolean"
+					},
+					"available_mar": {
+						"type": "boolean"
+					},
+					"available_may": {
+						"type": "boolean"
+					},
+					"available_nov": {
+						"type": "boolean"
+					},
+					"available_oct": {
+						"type": "boolean"
+					},
+					"available_sep": {
+						"type": "boolean"
+					},
+					"category": {
+						"type": "string"
+					},
+					"created_at": {
+						"format": "date-time",
+						"type": "string"
+					},
+					"default_unit": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"LoginPayload": {
+				"description": "LoginPayload schema",
+				"properties": {
+					"password": {
+						"type": "string"
+					},
+					"username": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"password",
+					"username"
+				],
+				"type": "object"
+			},
+			"Recipe": {
+				"description": "Recipe schema",
+				"properties": {
+					"calories": {
+						"format": "int64",
+						"type": "integer"
+					},
+					"category": {
+						"type": "string"
+					},
+					"cook_time": {
+						"format": "int64",
+						"type": "integer"
+					},
+					"cost": {
+						"format": "int64",
+						"type": "integer"
+					},
+					"created_at": {
+						"format": "date-time",
+						"type": "string"
+					},
+					"created_by": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"disclaimer": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					},
+					"image_url": {
+						"type": "string"
+					},
+					"instructions": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"prep_time": {
+						"format": "int64",
+						"type": "integer"
+					},
+					"published": {
+						"type": "boolean"
+					},
+					"servings": {
+						"format": "int64",
+						"type": "integer"
+					},
+					"when_to_eat": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"TokenResponse": {
+				"description": "TokenResponse schema",
+				"properties": {
+					"token": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"UnauthorizedError": {
+				"description": "UnauthorizedError schema",
+				"properties": {
+					"detail": {
+						"description": "Human readable error message",
+						"nullable": true,
+						"type": "string"
+					},
+					"errors": {
+						"items": {
+							"nullable": true,
+							"properties": {
+								"more": {
+									"additionalProperties": {
+										"description": "Additional information about the error",
+										"nullable": true
+									},
+									"description": "Additional information about the error",
+									"nullable": true,
+									"type": "object"
+								},
+								"name": {
+									"description": "For example, name of the parameter that caused the error",
+									"type": "string"
+								},
+								"reason": {
+									"description": "Human readable error message",
+									"type": "string"
+								}
+							},
+							"type": "object"
+						},
+						"nullable": true,
+						"type": "array"
+					},
+					"instance": {
+						"nullable": true,
+						"type": "string"
+					},
+					"status": {
+						"description": "HTTP status code",
+						"example": 403,
+						"nullable": true,
+						"type": "integer"
+					},
+					"title": {
+						"description": "Short title of the error",
+						"nullable": true,
+						"type": "string"
+					},
+					"type": {
+						"description": "URL of the error type. Can be used to lookup the error in a documentation",
+						"nullable": true,
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"UpdateRecipeParams": {
+				"description": "UpdateRecipeParams schema",
+				"properties": {
+					"category": {
+						"type": "string"
+					},
+					"cook_time": {
+						"format": "int64",
+						"type": "integer"
+					},
+					"description": {},
+					"id": {
+						"type": "string"
+					},
+					"image_url": {
+						"type": "string"
+					},
+					"instructions": {},
+					"name": {
+						"type": "string"
+					},
+					"prep_time": {
+						"format": "int64",
+						"type": "integer"
+					},
+					"published": {
+						"type": "boolean"
+					},
+					"servings": {
+						"format": "int64",
+						"type": "integer"
+					},
+					"when_to_eat": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"User": {
+				"description": "User schema",
+				"properties": {
+					"created_at": {
+						"format": "date-time",
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"encrypted_password": {
+						"type": "string"
+					},
+					"full_name": {
+						"type": "string"
+					},
+					"username": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"UserFavorite": {
+				"description": "UserFavorite schema",
+				"properties": {
+					"recipe_id": {
+						"type": "string"
+					},
+					"username": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"UsersRecipesFavorite": {
+				"description": "UsersRecipesFavorite schema",
+				"properties": {
+					"created_at": {
+						"format": "date-time",
+						"type": "string"
+					},
+					"recipe_id": {
+						"type": "string"
+					},
+					"username": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"unknown-interface": {
+				"description": "unknown-interface schema"
+			}
+		}
+	},
+	"info": {
+		"description": "\nThis is the autogenerated OpenAPI documentation for your [Fuego](https://github.com/go-fuego/fuego) API.\n\nBelow is a Fuego Cheatsheet to help you get started. Don't hesitate to check the [Fuego documentation](https://go-fuego.dev) for more details.\n\nHappy coding! 🔥\n\n## Usage\n\n### Route registration\n\n```go\nfunc main() {\n\t// Create a new server\n\ts := fuego.NewServer()\n\n\t// Register some routes\n\tfuego.Post(s, \"/hello\", myController)\n\tfuego.Get(s, \"/myPath\", otherController)\n\tfuego.Put(s, \"/hello\", thirdController)\n\n\tadminRoutes := fuego.Group(s, \"/admin\")\n\tfuego.Use(adminRoutes, myMiddleware) // This middleware (for authentication, etc...) will be available for routes starting by /admin/*, \n\tfuego.Get(adminRoutes, \"/hello\", groupController) // This route will be available at /admin/hello\n\n\t// Start the server\n\ts.Start()\n}\n```\n\n### Basic controller\n\n```go\ntype MyBody struct {\n\tName string `json:\"name\" validate:\"required,max=30\"`\n}\n\ntype MyResponse struct {\n\tAnswer string `json:\"answer\"`\n}\n\nfunc hello(ctx fuego.ContextWithBody[MyBody]) (*MyResponse, error) {\n\tbody, err := ctx.Body()\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\n\treturn \u0026MyResponse{Answer: \"Hello \" + body.Name}, nil\n}\n```\n\n### Add openAPI information to the route\n\n```go\nimport (\n\t\"github.com/go-fuego/fuego\"\n\t\"github.com/go-fuego/fuego/option\"\n\t\"github.com/go-fuego/fuego/param\"\n)\n\nfunc main() {\n\ts := fuego.NewServer()\n\n\t// Custom OpenAPI options\n\tfuego.Post(s, \"/\", myController\n\t\toption.Description(\"This route does something...\"),\n\t\toption.Summary(\"This is my summary\"),\n\t\toption.Tags(\"MyTag\"), // A tag is set by default according to the return type (can be deactivated)\n\t\toption.Deprecated(), // Marks the route as deprecated in the OpenAPI spec\n\n\t\toption.Query(\"name\", \"Declares a query parameter with default value\", param.Default(\"Carmack\")),\n\t\toption.Header(\"Authorization\", \"Bearer token\", param.Required()),\n\t\toptionPagination,\n\t\toptionCustomBehavior,\n\t)\n\n\ts.Run()\n}\n\nvar optionPagination = option.Group(\n\toption.QueryInt(\"page\", \"Page number\", param.Default(1), param.Example(\"1st page\", 1), param.Example(\"42nd page\", 42)),\n\toption.QueryInt(\"perPage\", \"Number of items per page\"),\n)\n\nvar optionCustomBehavior = func(r *fuego.BaseRoute) {\n\tr.XXX = \"YYY\"\n}\n```\n\nThen, in the controller\n\n```go\ntype MyResponse struct {\n\tAnswer string `json:\"answer\"`\n}\n\nfunc getAllPets(ctx fuego.ContextNoBody) (*MyResponse, error) {\n\tname := ctx.QueryParam(\"name\")\n\tperPage, _ := ctx.QueryParamIntErr(\"per_page\")\n\n\treturn \u0026MyResponse{Answer: \"Hello \" + name}, nil\n}\n```\n",
+		"title": "Gourmet API",
+		"version": "0.0.1"
+	},
+	"openapi": "3.1.0",
+	"paths": {
+		"/admin": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.pageAdmin`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "GET_/admin",
+				"parameters": [
+					{
+						"description": "Page number",
+						"examples": {
+							"1st page": {
+								"value": 1
+							},
+							"42nd page": {
+								"value": 42
+							}
+						},
+						"in": "query",
+						"name": "page",
+						"schema": {
+							"default": 1,
+							"type": "integer"
+						}
+					},
+					{
+						"description": "Number of items per page",
+						"in": "query",
+						"name": "perPage",
+						"schema": {
+							"default": 20,
+							"type": "integer"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "page admin",
+				"tags": [
+					"admin"
+				]
+			}
+		},
+		"/admin/dosings/new": {
+			"post": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminAddDosing`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "POST_/admin/dosings/new",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"*/*": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateDosingParams"
+							}
+						}
+					},
+					"description": "Request body for store.CreateDosingParams",
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "admin add dosing",
+				"tags": [
+					"admin"
+				]
+			}
+		},
+		"/admin/ingredients": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminIngredients`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "GET_/admin/ingredients",
+				"parameters": [
+					{
+						"description": "Page number",
+						"examples": {
+							"1st page": {
+								"value": 1
+							},
+							"42nd page": {
+								"value": 42
+							}
+						},
+						"in": "query",
+						"name": "page",
+						"schema": {
+							"default": 1,
+							"type": "integer"
+						}
+					},
+					{
+						"description": "Number of items per page",
+						"in": "query",
+						"name": "perPage",
+						"schema": {
+							"default": 20,
+							"type": "integer"
+						}
+					},
+					{
+						"description": "Name to perform LIKE search on",
+						"in": "query",
+						"name": "name",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "admin ingredients",
+				"tags": [
+					"admin"
+				]
+			}
+		},
+		"/admin/ingredients/create": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminIngredientCreationPage`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "GET_/admin/ingredients/create",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"*/*": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateIngredientParams"
+							}
+						}
+					},
+					"description": "Request body for store.CreateIngredientParams",
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "admin ingredient creation page",
+				"tags": [
+					"admin"
+				]
+			}
+		},
+		"/admin/ingredients/new": {
+			"post": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminCreateIngredient`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\nCreate a new ingredient",
+				"operationId": "POST_/admin/ingredients/new",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"*/*": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateIngredientParams"
+							}
+						}
+					},
+					"description": "Request body for store.CreateIngredientParams",
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "admin create ingredient",
+				"tags": [
+					"admin"
+				]
+			}
+		},
+		"/admin/recipes": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "GET_/admin/recipes",
+				"parameters": [
+					{
+						"description": "Page number",
+						"examples": {
+							"1st page": {
+								"value": 1
+							},
+							"42nd page": {
+								"value": 42
+							}
+						},
+						"in": "query",
+						"name": "page",
+						"schema": {
+							"default": 1,
+							"type": "integer"
+						}
+					},
+					{
+						"description": "Number of items per page",
+						"in": "query",
+						"name": "perPage",
+						"schema": {
+							"default": 20,
+							"type": "integer"
+						}
+					},
+					{
+						"description": "Name to perform LIKE search on",
+						"in": "query",
+						"name": "name",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "admin recipes",
+				"tags": [
+					"admin"
+				]
+			},
+			"post": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.addRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "POST_/admin/recipes",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"*/*": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateRecipeParams"
+							}
+						}
+					},
+					"description": "Request body for store.CreateRecipeParams",
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "add recipe",
+				"tags": [
+					"admin"
+				]
+			}
+		},
+		"/admin/recipes/create": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminCreateRecipePage`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "GET_/admin/recipes/create",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "admin create recipe page",
+				"tags": [
+					"admin"
+				]
+			}
+		},
+		"/admin/recipes/edit": {
+			"put": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.editRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "PUT_/admin/recipes/edit",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"*/*": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateRecipeParams"
+							}
+						}
+					},
+					"description": "Request body for store.UpdateRecipeParams",
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "edit recipe",
+				"tags": [
+					"admin"
+				]
+			}
+		},
+		"/admin/recipes/new": {
+			"post": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminAddRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "POST_/admin/recipes/new",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"*/*": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateRecipeParams"
+							}
+						}
+					},
+					"description": "Request body for store.CreateRecipeParams",
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "admin add recipes",
+				"tags": [
+					"admin"
+				]
+			}
+		},
+		"/admin/recipes/{id}": {
+			"delete": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminDeleteRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "DELETE_/admin/recipes/:id",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "admin delete recipe",
+				"tags": [
+					"admin"
+				]
+			},
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminOneRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "GET_/admin/recipes/:id",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"*/*": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateRecipeParams"
+							}
+						}
+					},
+					"description": "Request body for store.UpdateRecipeParams",
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "admin one recipe",
+				"tags": [
+					"admin"
+				]
+			},
+			"put": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.adminOneRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "PUT_/admin/recipes/:id",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"*/*": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateRecipeParams"
+							}
+						}
+					},
+					"description": "Request body for store.UpdateRecipeParams",
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "admin one recipe",
+				"tags": [
+					"admin"
+				]
+			}
+		},
+		"/admin/users": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getUsers`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "GET_/admin/users",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/User"
+									},
+									"type": "array"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/User"
+									},
+									"type": "array"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "get users",
+				"tags": [
+					"admin"
+				]
+			},
+			"post": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.createUser`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `handler.Resource.Routes.New.func1`\n\n---\n\n",
+				"operationId": "POST_/admin/users",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"*/*": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateUserPayload"
+							}
+						}
+					},
+					"description": "Request body for handler.CreateUserPayload",
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "create user",
+				"tags": [
+					"admin"
+				]
+			}
+		},
+		"/connection": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.connection`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/connection",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "connection",
+				"tags": [
+					"recipes"
+				]
+			}
+		},
+		"/fast": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.fastRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/fast",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "fast recipes",
+				"tags": [
+					"recipes"
+				]
+			}
+		},
+		"/favorites": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getMyFavorites`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/favorites",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/GetFavoritesByUserRow"
+									},
+									"type": "array"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/GetFavoritesByUserRow"
+									},
+									"type": "array"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "get my favorites",
+				"tags": [
+					"favorites"
+				]
+			}
+		},
+		"/healthy": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.healthyRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/healthy",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "healthy recipes",
+				"tags": [
+					"recipes"
+				]
+			}
+		},
+		"/ingredients": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.showIngredients`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/ingredients",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Ingredient"
+									},
+									"type": "array"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Ingredient"
+									},
+									"type": "array"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "show ingredients",
+				"tags": [
+					"ingredients"
+				]
+			}
+		},
+		"/ingredients/preselect-unit": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.unitPreselected`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/ingredients/preselect-unit",
+				"parameters": [
+					{
+						"description": "ID",
+						"examples": {
+							"example": {
+								"value": "abcde1245"
+							}
+						},
+						"in": "query",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"default": "1",
+							"type": "string"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "unit preselected",
+				"tags": [
+					"ingredients"
+				]
+			}
+		},
+		"/login": {
+			"post": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.login`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "POST_/login",
+				"parameters": [
+					{
+						"description": "Redirect URL",
+						"examples": {
+							"example": {
+								"value": "/favorites"
+							}
+						},
+						"in": "query",
+						"name": "redirect",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"*/*": {
+							"schema": {
+								"$ref": "#/components/schemas/LoginPayload"
+							}
+						}
+					},
+					"description": "Request body for handler.LoginPayload",
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TokenResponse"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/TokenResponse"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"401": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Unauthorized"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "login",
+				"tags": [
+					"auth"
+				]
+			}
+		},
+		"/logout": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.logout`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/logout",
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "logout",
+				"tags": [
+					"auth"
+				]
+			}
+		},
+		"/me": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.me`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/me",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "me",
+				"tags": [
+					"auth"
+				]
+			}
+		},
+		"/planner": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.planner`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/planner",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "planner"
+			}
+		},
+		"/recipes": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.listRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/recipes",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"schema": {
+							"type": "integer"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Recipe"
+									},
+									"type": "array"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Recipe"
+									},
+									"type": "array"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "list recipes",
+				"tags": [
+					"recipes"
+				]
+			}
+		},
+		"/recipes-list": {
+			"get": {
+				"deprecated": true,
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.showRecipesList`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\nThis is a demo route, it is not useful for the Gourmet app but showcases Fuego features.",
+				"operationId": "GET_/recipes-list",
+				"parameters": [
+					{
+						"description": "Search query",
+						"examples": {
+							"example": {
+								"value": "Galette des Rois"
+							}
+						},
+						"in": "query",
+						"name": "search",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "show recipes list",
+				"tags": [
+					"fuego-demo"
+				]
+			}
+		},
+		"/recipes-std": {
+			"get": {
+				"deprecated": true,
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.showRecipesStd`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\nThis is a demo route, it is not useful for the Gourmet app but showcases Fuego features.",
+				"operationId": "GET_/recipes-std",
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "show recipes std",
+				"tags": [
+					"fuego-demo"
+				]
+			}
+		},
+		"/recipes-std-json": {
+			"get": {
+				"deprecated": true,
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getAllRecipesStandardWithHelpers`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\nThis is a demo route, it is not useful for the Gourmet app but showcases Fuego features.",
+				"operationId": "GET_/recipes-std-json",
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "get all recipes standard with helpers",
+				"tags": [
+					"fuego-demo"
+				]
+			}
+		},
+		"/recipes/{id}": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.singleRecipe`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/recipes/:id",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Recipe"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/Recipe"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "single recipe",
+				"tags": [
+					"recipes"
+				]
+			}
+		},
+		"/recipes/{id}/related": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.relatedRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/recipes/:id/related",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Recipe"
+									},
+									"type": "array"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Recipe"
+									},
+									"type": "array"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "related recipes",
+				"tags": [
+					"recipes"
+				]
+			}
+		},
+		"/recipes/{id}/stars": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.favoritesCount`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\nGet the realtime number of favorites for a recipe with Server-Sent Events",
+				"operationId": "GET_/recipes/:id/stars",
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "favorites count",
+				"tags": [
+					"favorites"
+				]
+			}
+		},
+		"/recipes/{id}/stars/fake": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.favoritesCountFake`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\nFake route for testing the realtime number of favorites for a recipe with Server-Sent Events. It sends a random number every second.",
+				"operationId": "GET_/recipes/:id/stars/fake",
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "favorites count fake",
+				"tags": [
+					"favorites"
+				]
+			}
+		},
+		"/reload": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.hotReload.func1`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n\n---\n\n",
+				"operationId": "GET_/reload",
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "func1"
+			}
+		},
+		"/robots.txt": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.robots`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n- `cache.New.func2`\n\n---\n\n",
+				"operationId": "GET_/robots.txt",
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "robots"
+			}
+		},
+		"/search": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.searchRecipes`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/search",
+				"parameters": [
+					{
+						"description": "Search query",
+						"examples": {
+							"example": {
+								"value": "Galette des Rois"
+							}
+						},
+						"in": "query",
+						"name": "q",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Recipe"
+									},
+									"type": "array"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Recipe"
+									},
+									"type": "array"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"401": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UnauthorizedError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/UnauthorizedError"
+								}
+							}
+						},
+						"description": "Authorization Error"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "search recipes",
+				"tags": [
+					"recipes"
+				]
+			}
+		},
+		"/users/{username}": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getUserByUsername`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/users/:username",
+				"parameters": [
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "username",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "get user by username",
+				"tags": [
+					"users"
+				]
+			}
+		},
+		"/users/{username}/favorites": {
+			"delete": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.removeFavorite`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "DELETE_/users/:username/favorites",
+				"parameters": [
+					{
+						"description": "Username",
+						"examples": {
+							"example": {
+								"value": "omega"
+							}
+						},
+						"in": "path",
+						"name": "username",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Recipe ID",
+						"examples": {
+							"example": {
+								"value": "abcde1245"
+							}
+						},
+						"in": "query",
+						"name": "recipeID",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/unknown-interface"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "remove favorite",
+				"tags": [
+					"favorites"
+				]
+			},
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getFavoritesByUser`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/users/:username/favorites",
+				"parameters": [
+					{
+						"description": "Username",
+						"examples": {
+							"example": {
+								"value": "omega"
+							}
+						},
+						"in": "path",
+						"name": "username",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/GetFavoritesByUserRow"
+									},
+									"type": "array"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/GetFavoritesByUserRow"
+									},
+									"type": "array"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "get favorites by user",
+				"tags": [
+					"favorites"
+				]
+			},
+			"post": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.addFavorite`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "POST_/users/:username/favorites",
+				"parameters": [
+					{
+						"description": "Username",
+						"examples": {
+							"example": {
+								"value": "omega"
+							}
+						},
+						"in": "path",
+						"name": "username",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Recipe ID",
+						"examples": {
+							"example": {
+								"value": "abcde1245"
+							}
+						},
+						"in": "query",
+						"name": "recipeID",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UsersRecipesFavorite"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/UsersRecipesFavorite"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "add favorite",
+				"tags": [
+					"favorites"
+				]
+			}
+		},
+		"/users/{username}/favorites/sqlinjection": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/full-app-gourmet/handler.Resource.getFavoritesByUserUnsecureSql`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `middleware.(*Compressor).Handler`\n- `server.Resources.Setup.TokenToContext.func11`\n- `handler.hotReload.func2`\n\n---\n\n",
+				"operationId": "GET_/users/:username/favorites/sqlinjection",
+				"parameters": [
+					{
+						"description": "Username",
+						"examples": {
+							"example": {
+								"value": "omega"
+							}
+						},
+						"in": "path",
+						"name": "username",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/UserFavorite"
+									},
+									"type": "array"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/UserFavorite"
+									},
+									"type": "array"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"403": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Forbidden"
+					}
+				},
+				"summary": "get favorites by user unsecure sql",
+				"tags": [
+					"favorites"
+				]
+			}
+		}
+	},
+	"servers": [
+		{
+			"description": "Production server",
+			"url": "https://gourmet.quimerch.com"
+		},
+		{
+			"description": "local server",
+			"url": "http://localhost:8083"
+		}
+	],
+	"tags": [
+		{
+			"name": "admin"
+		},
+		{
+			"name": "auth"
+		},
+		{
+			"name": "favorites"
+		},
+		{
+			"name": "fuego-demo"
+		},
+		{
+			"name": "ingredients"
+		},
+		{
+			"name": "recipes"
+		},
+		{
+			"name": "users"
+		}
+	]
+}

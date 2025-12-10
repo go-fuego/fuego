@@ -113,8 +113,19 @@ func (rs Resource) showIndex(c fuego.ContextNoBody) (fuego.Templ, error) {
 	}), nil
 }
 
-func (rs Resource) listRecipes(c fuego.ContextNoBody) (*fuego.DataOrTemplate[[]store.Recipe], error) {
-	recipes, err := rs.RecipesQueries.GetRecipes(c.Context(), int64(c.QueryParamInt("limit")))
+type ListRecipeParams struct {
+	Limit int64 `query:"limit" default:"15"`
+}
+
+func (rs Resource) listRecipes(c fuego.ContextWithParams[ListRecipeParams]) (*fuego.DataOrTemplate[[]store.Recipe], error) {
+	params, err := c.Params()
+	if err != nil {
+		return nil, err
+	}
+
+	slog.Info("requesting", "limit", params.Limit)
+
+	recipes, err := rs.RecipesQueries.GetRecipes(c.Context(), params.Limit)
 	if err != nil {
 		return nil, err
 	}

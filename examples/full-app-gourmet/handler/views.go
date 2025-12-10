@@ -33,9 +33,7 @@ func (rs Resource) Routes(s *fuego.Server) {
 	fuego.GetStd(s, "/recipes-std-json", rs.getAllRecipesStandardWithHelpers, optionDemo)
 	fuego.All(s, "/", rs.showIndex, option.Middleware(cache.New()))
 	fuego.GetStd(s, "/robots.txt", rs.robots, option.Middleware(cache.New()))
-	fuego.Get(s, "/recipes", rs.listRecipes, option.Tags("recipes"),
-		option.Query("limit", "number of recipes", param.Default("10")),
-	)
+	fuego.Get(s, "/recipes", rs.listRecipes, option.Tags("recipes"))
 	fuego.Get(s, "/connection", rs.connection, option.Tags("recipes"))
 	fuego.Get(s, "/planner", rs.planner)
 	fuego.Get(s, "/recipes/{id}", rs.singleRecipe, option.Tags("recipes"))
