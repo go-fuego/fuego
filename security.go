@@ -46,6 +46,9 @@ type Security struct {
 	key             *ecdsa.PrivateKey
 	Now             func() time.Time
 	ExpiresInterval time.Duration
+
+	// CookieFunc allows custom properties to be set on the JWT cookie
+	CookieFunc func(http.Cookie) http.Cookie
 }
 
 func NewSecurity() Security {
@@ -54,6 +57,10 @@ func NewSecurity() Security {
 		panic(err)
 	}
 
+	return NewSecurityWithKey(key)
+}
+
+func NewSecurityWithKey(key *ecdsa.PrivateKey) Security {
 	return Security{
 		key:             key,
 		Now:             time.Now,
@@ -80,7 +87,7 @@ func (security Security) GenerateTokenToCookies(claims jwt.Claims, w http.Respon
 		return "", err
 	}
 
-	http.SetCookie(w, &http.Cookie{
+	cookie := http.Cookie{
 		Name:     JWTCookieName,
 		Value:    token,
 		Expires:  security.Now().Add(security.ExpiresInterval),
@@ -88,7 +95,13 @@ func (security Security) GenerateTokenToCookies(claims jwt.Claims, w http.Respon
 		// SameSite: http.SameSiteStrictMode,
 		// Secure:   true,
 		MaxAge: int(security.ExpiresInterval.Seconds()),
-	})
+	}
+
+	if security.CookieFunc != nil {
+		cookie = security.CookieFunc(cookie)
+	}
+
+	http.SetCookie(w, &cookie)
 
 	return token, nil
 }

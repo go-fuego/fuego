@@ -2,6 +2,9 @@ package fuego
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -31,6 +34,24 @@ func TestSecurity(t *testing.T) {
 
 		security.Now = func() time.Time { return now }
 		security.ExpiresInterval = 10 * time.Minute
+
+		s, err := security.GenerateToken(me)
+		require.NoError(t, err)
+		require.NotEmpty(t, s)
+
+		security.Now = func() time.Time { return now.Add(5 * time.Minute) }
+		decoded, err := security.ValidateToken(s)
+		require.NoError(t, err)
+		require.NotEmpty(t, decoded)
+	})
+
+	t.Run("can initialize with custom key", func(t *testing.T) {
+		key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+		require.NoError(t, err)
+		require.NotEmpty(t, key)
+
+		security := NewSecurityWithKey(key)
+		require.NotEmpty(t, security)
 
 		s, err := security.GenerateToken(me)
 		require.NoError(t, err)
