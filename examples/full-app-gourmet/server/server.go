@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/handler"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/otel"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/static"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/templates"
 	"github.com/go-fuego/fuego/option"
@@ -62,6 +63,10 @@ func (rs Resources) Setup(
 
 	// Register middlewares (functions that will be executed before AND after the controllers, in the order they are registered)
 	// With fuego, you can use any existing middleware that relies on `net/http`, or create your own
+
+	// Add OpenTelemetry observability middleware first to capture all requests with metrics and traces
+	fuego.Use(app, otel.HTTPObservabilityMiddleware)
+
 	fuego.Use(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
 	fuego.Handle(app, "/static/", http.StripPrefix("/static", static.Handler()), option.Middleware(cache))

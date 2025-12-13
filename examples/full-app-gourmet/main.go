@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/joho/godotenv"
@@ -14,6 +18,7 @@ import (
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/handler"
+	"github.com/go-fuego/fuego/examples/full-app-gourmet/otel"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/server"
 	"github.com/go-fuego/fuego/examples/full-app-gourmet/store"
 )
@@ -90,9 +95,64 @@ func main() {
 		Description: "Production server",
 	})
 
-	// Run the server!
-	err = app.Run()
+	// Initialize OpenTelemetry
+	ctx := context.Background()
+
+	// Initialize metrics
+	shutdownMetrics, err := otel.InitMetrics(ctx)
 	if err != nil {
-		slog.Error("Error running server: %s", "err", err)
+		slog.Error("Failed to initialize OpenTelemetry metrics", "error", err)
+		// Continue without metrics if initialization fails
+	} else {
+		defer func() {
+			// Give metrics time to flush on shutdown
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if err := shutdownMetrics(shutdownCtx); err != nil {
+				slog.Error("Failed to shutdown metrics provider", "error", err)
+			} else {
+				slog.Info("Metrics provider shutdown successfully")
+			}
+		}()
+	}
+
+	// Initialize traces
+	shutdownTraces, err := otel.InitTraces(ctx)
+	if err != nil {
+		slog.Error("Failed to initialize OpenTelemetry traces", "error", err)
+		// Continue without traces if initialization fails
+	} else {
+		defer func() {
+			// Give traces time to flush on shutdown
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if err := shutdownTraces(shutdownCtx); err != nil {
+				slog.Error("Failed to shutdown trace provider", "error", err)
+			} else {
+				slog.Info("Trace provider shutdown successfully")
+			}
+		}()
+	}
+
+	// Setup graceful shutdown
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+
+	// Run server in a goroutine
+	errCh := make(chan error, 1)
+	go func() {
+		slog.Info("Starting server", "addr", app.Server.Addr)
+		if err := app.Run(); err != nil {
+			errCh <- err
+		}
+	}()
+
+	// Wait for shutdown signal or error
+	select {
+	case err := <-errCh:
+		slog.Error("Server error", "error", err)
+		os.Exit(1)
+	case sig := <-sigCh:
+		slog.Info("Received shutdown signal", "signal", sig)
 	}
 }

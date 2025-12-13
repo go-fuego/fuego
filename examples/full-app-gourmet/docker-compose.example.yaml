@@ -1,0 +1,95 @@
+# Example Docker Compose configuration with OpenTelemetry
+# This file demonstrates how to run the Gourmet app with OTEL collector, metrics, and traces
+
+version: '3.8'
+
+services:
+  # Gourmet Application
+  gourmet-app:
+    build:
+      context: ../..
+      dockerfile: examples/full-app-gourmet/Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      # Application settings
+      - HOST=0.0.0.0
+
+      # OpenTelemetry configuration
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4318
+      - OTEL_SERVICE_NAME=gourmet-app
+      - OTEL_SERVICE_VERSION=1.0.0
+    networks:
+      - app-network
+    depends_on:
+      - otel-collector
+    volumes:
+      - ./data:/app/data
+
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4318:4318"   # OTLP HTTP receiver
+      - "4317:4317"   # OTLP gRPC receiver
+      - "8889:8889"   # Prometheus exporter metrics
+      - "8888:8888"   # Collector's own metrics
+    networks:
+      - app-network
+
+  # Optional: Prometheus for storing and querying metrics
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - app-network
+    depends_on:
+      - otel-collector
+
+  # Optional: Grafana for visualizing metrics and traces
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - app-network
+    depends_on:
+      - prometheus
+      - jaeger
+
+  # Optional: Jaeger for visualizing distributed traces
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "4317:4317"    # OTLP gRPC receiver
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:

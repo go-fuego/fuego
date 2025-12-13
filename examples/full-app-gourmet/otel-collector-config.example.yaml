@@ -1,0 +1,80 @@
+# OpenTelemetry Collector Configuration Example
+# This is a sample configuration for the OTEL collector
+
+receivers:
+  # OTLP receiver for receiving telemetry data from applications
+  otlp:
+    protocols:
+      # HTTP protocol on port 4318
+      http:
+        endpoint: 0.0.0.0:4318
+      # gRPC protocol on port 4317 (optional)
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  # Batch processor to batch telemetry data before export
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+  # Memory limiter to prevent the collector from running out of memory
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+
+exporters:
+  # Export metrics to Prometheus
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: gourmet
+
+  # Log telemetry to console (useful for debugging)
+  logging:
+    loglevel: info
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+  # Export traces to Jaeger
+  otlp/jaeger:
+    endpoint: "jaeger:4317"
+    tls:
+      insecure: true
+
+  # Alternatively, export traces to Zipkin
+  # zipkin:
+  #   endpoint: "http://zipkin:9411/api/v2/spans"
+
+  # Export to Prometheus Remote Write (e.g., Grafana Cloud, Thanos)
+  # prometheusremotewrite:
+  #   endpoint: "https://your-prometheus-endpoint.com/api/v1/write"
+  #   headers:
+  #     Authorization: "Bearer YOUR_API_KEY"
+
+  # Export to Grafana Tempo for traces
+  # otlp/tempo:
+  #   endpoint: "tempo:4317"
+  #   tls:
+  #     insecure: true
+
+service:
+  # Configure the telemetry pipelines
+  pipelines:
+    # Metrics pipeline
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [prometheus, logging]
+
+    # Traces pipeline
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp/jaeger, logging]
+
+  # Configure collector's own telemetry
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: :8888
