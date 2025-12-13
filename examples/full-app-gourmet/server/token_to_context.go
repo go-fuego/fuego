@@ -43,7 +43,9 @@ func TokenToContext(security fuego.Security, searchFunc ...func(*http.Request) s
 					Value:  "",
 					MaxAge: -1,
 				})
-				fuego.SendError(w, r, fuego.UnauthorizedError{Title: "Unauthorized", Detail: "Invalid token", Err: err})
+				// Continue as unlogged user instead of returning error
+				slog.Warn("Invalid token, continuing as unlogged user", "error", err)
+				next.ServeHTTP(w, r)
 				return
 			}
 

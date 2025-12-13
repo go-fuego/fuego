@@ -193,8 +193,8 @@ func (rs Resource) favoritesCount(w http.ResponseWriter, r *http.Request) {
 		}
 		oldCount = count
 
-		w.Write([]byte(fmt.Sprintf("event: count\n")))
-		w.Write([]byte(fmt.Sprintf("data: %d\n\n", count)))
+		fmt.Fprintln(w, "event: count")
+		fmt.Fprintf(w, "data: %d\n\n", count)
 		w.(http.Flusher).Flush()
 	}
 }
@@ -213,8 +213,8 @@ func (rs Resource) favoritesCountFake(w http.ResponseWriter, r *http.Request) {
 			time.Sleep(1 * time.Second)
 		}
 
-		w.Write([]byte(fmt.Sprintf("event: count\n")))
-		w.Write([]byte(fmt.Sprintf("data: %d\n\n", rand.IntN(100))))
+		fmt.Fprintf(w, "event: count\n")
+		fmt.Fprintf(w, "data: %d\n\n", rand.IntN(100))
 		w.(http.Flusher).Flush()
 	}
 }

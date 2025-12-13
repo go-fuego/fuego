@@ -49,8 +49,7 @@ func main() {
 	var logHandler slog.Handler
 	if *jsonLogs {
 		logHandler = slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-			AddSource: true,
-			Level:     logLevel,
+			Level: logLevel,
 		})
 	} else {
 		logHandler = tint.NewHandler(os.Stderr, &tint.Options{
