@@ -167,35 +167,69 @@ func (rs Resource) relatedRecipes(c fuego.ContextNoBody) (*fuego.DataOrTemplate[
 }
 
 func (rs Resource) favoritesCount(w http.ResponseWriter, r *http.Request) {
+	recipeID := r.PathValue("id")
+
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	oldCount := int64(-1)
+	// For SSE, use background context for DB queries to avoid cancellation from middleware
+	dbCtx := context.Background()
+
+	// Send initial event immediately to establish SSE connection
+	count, err := rs.FavoritesQueries.GetNumberOfFavorite(dbCtx, recipeID)
+	if err != nil {
+		slog.Error("Error getting initial favorite count", "error", err, "recipeID", recipeID)
+		http.Error(w, "Failed to get initial count", http.StatusInternalServerError)
+		return
+	}
+
+	// Check if ResponseWriter supports flushing (required for SSE)
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		slog.Error("ResponseWriter does not support flushing", "recipeID", recipeID)
+		http.Error(w, "SSE not supported", http.StatusInternalServerError)
+		return
+	}
+
+	// Send initial count
+	fmt.Fprintln(w, "event: count")
+	fmt.Fprintf(w, "data: %d\n\n", count)
+	flusher.Flush()
+
+	oldCount := count
 
 	for {
-		select {
-		case <-r.Context().Done():
-			slog.Info("client disconnected, closing its events channel")
-			return
-		default:
-			time.Sleep(3 * time.Second)
-		}
+		// Sleep before each check (can't use r.Context().Done() as it's already canceled by middleware)
+		time.Sleep(3 * time.Second)
 
-		recipeID := r.PathValue("id")
-		count, err := rs.FavoritesQueries.GetNumberOfFavorite(r.Context(), recipeID)
+		count, err := rs.FavoritesQueries.GetNumberOfFavorite(dbCtx, recipeID)
 		if err != nil {
-			slog.Error("Error getting number of favorites", "error", err)
+			slog.Error("Error getting number of favorites",
+				"error", err,
+				"recipeID", recipeID)
 			return
 		}
-		if count == oldCount {
-			continue // no need to send updates
-		}
-		oldCount = count
 
-		fmt.Fprintln(w, "event: count")
-		fmt.Fprintf(w, "data: %d\n\n", count)
-		w.(http.Flusher).Flush()
+		// Always send something to keep connection alive (even if count unchanged)
+		if count == oldCount {
+			// Send keepalive comment to prevent connection timeout
+			if _, err := fmt.Fprintln(w, ": keepalive"); err != nil {
+				return
+			}
+		} else {
+			// Count changed - send actual event
+			oldCount = count
+			if _, err := fmt.Fprintln(w, "event: count"); err != nil {
+				return
+			}
+			if _, err := fmt.Fprintf(w, "data: %d\n\n", count); err != nil {
+				return
+			}
+		}
+
+		// Flush to send data immediately
+		flusher.Flush()
 	}
 }
 

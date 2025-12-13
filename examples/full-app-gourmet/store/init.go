@@ -19,14 +19,46 @@ import (
 // InitDB initialize the database.
 // SchemaPath is imported from schema.sql
 func InitDB(path string) *sql.DB {
-	db, err := sql.Open("sqlite", path)
+	// Open database with busy timeout parameter
+	connectionString := path + "?_busy_timeout=5000"
+
+	db, err := sql.Open("sqlite", connectionString)
 	if err != nil {
 		slog.Error("cannot open db connection", "err", err)
 	}
 
+	// Configure connection pool for better concurrency
+	db.SetMaxOpenConns(25)   // Limit total connections
+	db.SetMaxIdleConns(5)    // Keep some connections ready
+	db.SetConnMaxLifetime(0) // Connections live forever (SQLite is local file)
+
 	err = db.Ping()
 	if err != nil {
 		slog.Error("cannot ping db", "err", err)
+	}
+
+	// Explicitly enable WAL mode via PRAGMA (more reliable than connection string)
+	// WAL mode allows concurrent readers and one writer without blocking
+	_, err = db.Exec("PRAGMA journal_mode=WAL;")
+	if err != nil {
+		slog.Error("failed to enable WAL mode", "err", err)
+	} else {
+		slog.Info("WAL mode enabled for database")
+	}
+
+	// Set synchronous mode for better performance while maintaining safety
+	_, err = db.Exec("PRAGMA synchronous=NORMAL;")
+	if err != nil {
+		slog.Error("failed to set synchronous mode", "err", err)
+	}
+
+	// Verify WAL mode is actually enabled
+	var journalMode string
+	err = db.QueryRow("PRAGMA journal_mode;").Scan(&journalMode)
+	if err != nil {
+		slog.Error("failed to query journal mode", "err", err)
+	} else {
+		slog.Info("Database journal mode", "mode", journalMode)
 	}
 
 	d, err := iofs.New(migrations.FS, ".")

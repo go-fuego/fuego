@@ -102,6 +102,13 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 	return rw.ResponseWriter.Write(b)
 }
 
+// Flush implements http.Flusher to support SSE
+func (rw *responseWriter) Flush() {
+	if flusher, ok := rw.ResponseWriter.(http.Flusher); ok {
+		flusher.Flush()
+	}
+}
+
 // RecordCustomMetric is a helper function to record custom metrics
 func RecordCustomMetric(ctx context.Context, name string, value int64, attrs ...attribute.KeyValue) {
 	meter := otel.Meter("gourmet-custom")
@@ -197,13 +204,16 @@ func HTTPObservabilityMiddleware(next http.Handler) http.Handler {
 		activeRequests.Add(ctx, 1)
 		defer activeRequests.Add(ctx, -1)
 
-		// Wrap response writer to capture status code
-		wrapped := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+		// Wrap response writer to capture status code and support SSE
+		wrapped := &sseAwareResponseWriter{
+			responseWriter: responseWriter{ResponseWriter: w, statusCode: http.StatusOK},
+		}
 
 		// Call next handler with traced context
 		next.ServeHTTP(wrapped, r.WithContext(ctx))
 
-		// Record metrics and span attributes
+		// For SSE connections, don't record duration until connection actually closes
+		// as it could be hours/days
 		duration := time.Since(start).Milliseconds()
 		attrs := []attribute.KeyValue{
 			attribute.String("http.method", r.Method),
@@ -211,18 +221,48 @@ func HTTPObservabilityMiddleware(next http.Handler) http.Handler {
 			attribute.Int("http.status_code", wrapped.statusCode),
 		}
 
-		// Record metrics
-		requestCounter.Add(ctx, 1, metric.WithAttributes(attrs...))
-		requestDuration.Record(ctx, float64(duration), metric.WithAttributes(attrs...))
+		// Only record duration metrics for non-SSE or short-lived requests
+		isSSE := wrapped.isSSE
+		if !isSSE || duration < 1000 {
+			requestCounter.Add(ctx, 1, metric.WithAttributes(attrs...))
+			requestDuration.Record(ctx, float64(duration), metric.WithAttributes(attrs...))
+		}
 
 		// Update span
-		span.SetAttributes(attribute.Int("http.status_code", wrapped.statusCode))
+		span.SetAttributes(
+			attribute.Int("http.status_code", wrapped.statusCode),
+			attribute.Bool("http.is_sse", isSSE),
+		)
 		if wrapped.statusCode >= 400 {
 			span.SetStatus(codes.Error, http.StatusText(wrapped.statusCode))
 		} else {
 			span.SetStatus(codes.Ok, "")
 		}
 	})
+}
+
+// sseAwareResponseWriter wraps responseWriter and detects SSE connections
+type sseAwareResponseWriter struct {
+	responseWriter
+	isSSE bool
+}
+
+func (rw *sseAwareResponseWriter) WriteHeader(code int) {
+	// Detect SSE by Content-Type header
+	contentType := rw.responseWriter.Header().Get("Content-Type")
+	if contentType == "text/event-stream" {
+		rw.isSSE = true
+	}
+	rw.responseWriter.WriteHeader(code)
+}
+
+func (rw *sseAwareResponseWriter) Write(b []byte) (int, error) {
+	return rw.responseWriter.Write(b)
+}
+
+// Flush implements http.Flusher to support SSE
+func (rw *sseAwareResponseWriter) Flush() {
+	rw.responseWriter.Flush()
 }
 
 // StartSpan is a helper function to start a custom span

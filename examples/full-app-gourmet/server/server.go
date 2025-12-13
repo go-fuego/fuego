@@ -3,7 +3,6 @@ package server
 import (
 	"net/http"
 
-	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/cors"
 
 	"github.com/go-fuego/fuego"
@@ -66,8 +65,6 @@ func (rs Resources) Setup(
 
 	// Add OpenTelemetry observability middleware first to capture all requests with metrics and traces
 	fuego.Use(app, otel.HTTPObservabilityMiddleware)
-
-	fuego.Use(app, chiMiddleware.Compress(5, "text/html", "text/css", "application/json"))
 
 	fuego.Handle(app, "/static/", http.StripPrefix("/static", static.Handler()), option.Middleware(cache))
 
