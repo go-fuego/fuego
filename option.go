@@ -92,6 +92,12 @@ func OptionQueryArray(name, description string, elemKind reflect.Kind, options .
 	return func(r *BaseRoute) {
 		param, openapiParam := buildParam(name, append(options, ParamDescription(description), paramType(QueryParamType))...)
 
+		// Preserve the default value from the original schema before replacement
+		var preservedDefault any
+		if openapiParam.Schema != nil && openapiParam.Schema.Value != nil {
+			preservedDefault = openapiParam.Schema.Value.Default
+		}
+
 		// Create an array schema
 		arraySchema := openapi3.NewSchema()
 		arraySchema.Type = &openapi3.Types{openapi3.TypeArray}
@@ -111,6 +117,8 @@ func OptionQueryArray(name, description string, elemKind reflect.Kind, options .
 		}
 
 		arraySchema.Items = &openapi3.SchemaRef{Value: itemsSchema}
+		// Restore the preserved default value
+		arraySchema.Default = preservedDefault
 		openapiParam.Schema = &openapi3.SchemaRef{Value: arraySchema}
 
 		r.Operation.AddParameter(openapiParam)
@@ -174,6 +182,13 @@ func panicsIfNotCorrectType(openapiParam *openapi3.Parameter, exampleValue any) 
 	if exampleValue == nil {
 		return nil
 	}
+
+	// Check if the value is a slice (array default) - skip type validation
+	// Arrays will be validated later when the schema is properly set
+	if reflect.TypeOf(exampleValue).Kind() == reflect.Slice {
+		return exampleValue
+	}
+
 	if openapiParam.Schema.Value.Type.Is("integer") {
 		_, ok := exampleValue.(int)
 		if !ok {

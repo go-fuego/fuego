@@ -1444,6 +1444,7 @@
 						"in": "query",
 						"name": "name",
 						"schema": {
+							"default": "Felix",
 							"type": "string"
 						}
 					},
@@ -1451,6 +1452,7 @@
 						"in": "query",
 						"name": "younger_than",
 						"schema": {
+							"default": 5,
 							"type": "integer"
 						}
 					},
@@ -1458,6 +1460,11 @@
 						"in": "query",
 						"name": "just_an_array",
 						"schema": {
+							"default": [
+								4,
+								5,
+								6
+							],
 							"items": {
 								"type": "integer"
 							},

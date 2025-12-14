@@ -138,9 +138,9 @@ func (rs PetsResources) filterPets(c fuego.ContextNoBody) ([]models.Pets, error)
 }
 
 type FilterParams struct {
-	Name        string `query:"name" description:"Filter by name" example:"cat name"`
-	YoungerThan int    `query:"younger_than"`
-	JustAnArray []int  `query:"just_an_array" example:"1,2,3"`
+	Name        string `query:"name" description:"Filter by name" example:"cat name" default:"Felix"`
+	YoungerThan int    `query:"younger_than" default:"5"`
+	JustAnArray []int  `query:"just_an_array" example:"1,2,3" default:"4,5,6"`
 }
 
 func (rs PetsResources) filterPetsStronglyTyped(c fuego.ContextWithParams[FilterParams]) ([]models.Pets, error) {
