@@ -269,7 +269,7 @@ func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 	if typeOfParams == nil {
 		return nil
 	}
-	if typeOfParams.Kind() == reflect.Ptr {
+	if typeOfParams.Kind() == reflect.Pointer {
 		typeOfParams = typeOfParams.Elem()
 	}
 
@@ -280,6 +280,25 @@ func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 			example, _ := field.Tag.Lookup("description")
 			if example != "" {
 				params = append(params, ParamExample("example", example))
+			}
+
+			// Parse default tag
+			if defaultValue, ok := field.Tag.Lookup("default"); ok && defaultValue != "" {
+				var parsedDefault any
+				var err error
+
+				// Handle array/slice types
+				if field.Type.Kind() == reflect.Slice || field.Type.Kind() == reflect.Array {
+					parsedDefault, err = parseDefaultValueArray(defaultValue, field.Type.Elem().Kind())
+				} else {
+					parsedDefault, err = parseDefaultValue(defaultValue, field.Type.Kind())
+				}
+
+				if err != nil {
+					return fmt.Errorf("invalid default value for field %s: %w", field.Name, err)
+				}
+
+				params = append(params, ParamDefault(parsedDefault))
 			}
 
 			description, _ := field.Tag.Lookup("description")
@@ -308,6 +327,65 @@ func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 	}
 
 	return nil
+}
+
+// parseDefaultValue converts a string default value to the appropriate Go type
+// based on the field's kind. Returns an error if conversion fails.
+// For OpenAPI parameters, all integer types are normalized to int for validation.
+func parseDefaultValue(defaultStr string, kind reflect.Kind) (any, error) {
+	switch kind {
+	case reflect.String:
+		return defaultStr, nil
+
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		intValue, err := strconv.ParseInt(defaultStr, 10, bitSize(kind))
+		if err != nil {
+			return nil, fmt.Errorf("cannot convert %s to %s: %w", defaultStr, kind, err)
+		}
+		// OpenAPI validation expects int type for all integer parameters
+		return int(intValue), nil
+
+	case reflect.Float32, reflect.Float64:
+		floatValue, err := strconv.ParseFloat(defaultStr, bitSize(kind))
+		if err != nil {
+			return nil, fmt.Errorf("cannot convert %s to %s: %w", defaultStr, kind, err)
+		}
+		// Return as float64 for OpenAPI
+		return floatValue, nil
+
+	case reflect.Bool:
+		boolValue, err := strconv.ParseBool(defaultStr)
+		if err != nil {
+			return nil, fmt.Errorf("cannot convert %s to bool: %w", defaultStr, err)
+		}
+		return boolValue, nil
+
+	default:
+		return nil, fmt.Errorf("unsupported type %s for default value", kind)
+	}
+}
+
+// parseDefaultValueArray validates and returns an array default for array parameters.
+// For OpenAPI compliance, array defaults must be actual arrays, not comma-separated strings.
+func parseDefaultValueArray(defaultStr string, elemKind reflect.Kind) (any, error) {
+	if defaultStr == "" {
+		return []any{}, nil
+	}
+
+	// Parse each element and build an array
+	parts := strings.Split(defaultStr, ",")
+	result := make([]any, 0, len(parts))
+
+	for i, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		parsed, err := parseDefaultValue(trimmed, elemKind)
+		if err != nil {
+			return nil, fmt.Errorf("invalid array element at index %d: %w", i, err)
+		}
+		result = append(result, parsed)
+	}
+
+	return result, nil
 }
 
 func newRequestBody[RequestBody any](tag SchemaTag, consumes []string) *openapi3.RequestBody {

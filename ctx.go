@@ -56,13 +56,9 @@ type Context[B, P any] interface {
 	// Params returns the typed parameters of the request.
 	// It returns an error if the parameters are not valid.
 	// Please do not use a pointer type as parameters.
-	//
-	// Deprecated: Not defined yet, incoming in future Fuego versions.
 	Params() (P, error)
 
 	// MustParams works like Params, but panics if there is an error.
-	//
-	// Deprecated: Not defined yet, incoming in future Fuego versions.
 	MustParams() P
 
 	// PathParam returns the path parameter with the given name.
@@ -434,14 +430,27 @@ func (c *netHttpContext[B, P]) Params() (P, error) {
 			case reflect.Slice, reflect.Array:
 				paramValues := c.QueryParamArr(tag)
 				if len(paramValues) == 0 {
-					continue
+					// Check for default value in OpenAPI params
+					if defaultVal := c.OpenAPIParams[tag].Default; defaultVal != nil {
+						// Default for arrays is stored as []any
+						if defaultArray, ok := defaultVal.([]any); ok && len(defaultArray) > 0 {
+							paramValues = make([]string, len(defaultArray))
+							for i, v := range defaultArray {
+								paramValues[i] = fmt.Sprintf("%v", v)
+							}
+						}
+					}
+					if len(paramValues) == 0 {
+						continue
+					}
 				}
 
 				sliceType := field.Type.Elem()
 				slice := reflect.MakeSlice(field.Type, len(paramValues), len(paramValues))
 
 				for j, paramValue := range paramValues {
-					if err := setParamValue(slice.Index(j), paramValue, sliceType.Kind()); err != nil {
+					trimmed := strings.TrimSpace(paramValue)
+					if err := setParamValue(slice.Index(j), trimmed, sliceType.Kind()); err != nil {
 						return *p, err
 					}
 				}
@@ -450,22 +459,32 @@ func (c *netHttpContext[B, P]) Params() (P, error) {
 				// Handle single value
 				paramValue := c.QueryParam(tag)
 				if paramValue == "" {
-					continue
+					// Check for default value in OpenAPI params
+					if defaultVal := c.OpenAPIParams[tag].Default; defaultVal != nil {
+						// Convert default value to string for setParamValue
+						paramValue = fmt.Sprintf("%v", defaultVal)
+					}
 				}
-				err := setParamValue(fieldValue, paramValue, field.Type.Kind())
-				if err != nil {
-					return *p, err
+				if paramValue != "" {
+					err := setParamValue(fieldValue, paramValue, field.Type.Kind())
+					if err != nil {
+						return *p, err
+					}
 				}
 			}
 		} else if tag := field.Tag.Get("header"); tag != "" {
 			// Process header parameters
 			paramValue := c.Header(tag)
 			if paramValue == "" {
-				continue
+				if defaultVal := c.OpenAPIParams[tag].Default; defaultVal != nil {
+					paramValue = fmt.Sprintf("%v", defaultVal)
+				}
 			}
-			err := setParamValue(fieldValue, paramValue, field.Type.Kind())
-			if err != nil {
-				return *p, err
+			if paramValue != "" {
+				err := setParamValue(fieldValue, paramValue, field.Type.Kind())
+				if err != nil {
+					return *p, err
+				}
 			}
 		}
 	}
