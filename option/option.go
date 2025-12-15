@@ -120,13 +120,6 @@ var Summary = fuego.OptionSummary
 // If you want to add a description, please use [AddDescription] instead.
 var Description = fuego.OptionDescription
 
-// AddDescription adds a description to the route.
-// By default, the description is set by Fuego with some info,
-// like the controller function name and the package name.
-//
-// Deprecated: Use [Description] instead.
-var AddDescription = fuego.OptionAddDescription
-
 // OverrideDescription overrides the default description set by Fuego.
 // By default, the description is set by Fuego with some info,
 // like the controller function name and the package name.
