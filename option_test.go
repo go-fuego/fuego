@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -1343,5 +1344,67 @@ func TestOptionTagInfo(t *testing.T) {
 		s.Mux.ServeHTTP(w, r)
 
 		require.Equal(t, "hello world", w.Body.String())
+	})
+}
+
+func TestOptionQueryArray(t *testing.T) {
+	t.Run("ints", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionQueryArray("ids", "", reflect.Int),
+		)
+
+		p := route.Operation.Parameters.GetByInAndName("query", "ids")
+		require.NotNil(t, p)
+		require.NotNil(t, p.Schema)
+		require.True(t, p.Schema.Value.Type.Is("array"))
+		require.NotNil(t, p.Schema.Value.Items)
+		require.True(t, p.Schema.Value.Items.Value.Type.Is("integer"))
+	})
+
+	t.Run("floats", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionQueryArray("ids", "", reflect.Float32),
+		)
+
+		p := route.Operation.Parameters.GetByInAndName("query", "ids")
+		require.NotNil(t, p)
+		require.NotNil(t, p.Schema)
+		require.True(t, p.Schema.Value.Type.Is("array"))
+		require.NotNil(t, p.Schema.Value.Items)
+		require.True(t, p.Schema.Value.Items.Value.Type.Is("number"))
+	})
+
+	t.Run("bools", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionQueryArray("bools", "", reflect.Bool),
+		)
+
+		p := route.Operation.Parameters.GetByInAndName("query", "bools")
+		require.NotNil(t, p)
+		require.NotNil(t, p.Schema)
+		require.True(t, p.Schema.Value.Type.Is("array"))
+		require.NotNil(t, p.Schema.Value.Items)
+		require.True(t, p.Schema.Value.Items.Value.Type.Is("boolean"))
+	})
+
+	t.Run("strings", func(t *testing.T) {
+		s := fuego.NewServer()
+
+		route := fuego.Get(s, "/test", helloWorld,
+			fuego.OptionQueryArray("ids", "List of tags", reflect.String),
+		)
+
+		p := route.Operation.Parameters.GetByInAndName("query", "ids")
+		require.NotNil(t, p)
+		require.NotNil(t, p.Schema)
+		require.True(t, p.Schema.Value.Type.Is("array"))
+		require.NotNil(t, p.Schema.Value.Items)
+		require.True(t, p.Schema.Value.Items.Value.Type.Is("string"))
 	})
 }
