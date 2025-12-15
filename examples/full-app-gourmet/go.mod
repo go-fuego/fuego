@@ -6,10 +6,10 @@ require (
 	github.com/a-h/templ v0.3.960
 	github.com/getkin/kin-openapi v0.133.0
 	github.com/go-chi/chi/v5 v5.2.3
-	github.com/go-fuego/fuego v0.18.8
-	github.com/go-fuego/fuego/extra/markdown v0.0.0-20251204201720-8b7a02ed2f89
-	github.com/go-fuego/fuego/middleware/basicauth v0.15.1
-	github.com/go-fuego/fuego/middleware/cache v0.0.0-20251204201720-8b7a02ed2f89
+	github.com/go-fuego/fuego v0.19.0
+	github.com/go-fuego/fuego/extra/markdown v0.19.0
+	github.com/go-fuego/fuego/middleware/basicauth v0.19.0
+	github.com/go-fuego/fuego/middleware/cache v0.19.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/uuid v1.6.0
@@ -29,7 +29,7 @@ require (
 	github.com/go-openapi/swag/jsonname v0.25.4 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.28.0 // indirect
+	github.com/go-playground/validator/v10 v10.29.0 // indirect
 	github.com/gomarkdown/markdown v0.0.0-20250810172220-2e2c11897d1a // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/gorilla/schema v1.4.1 // indirect
