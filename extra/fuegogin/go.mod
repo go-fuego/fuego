@@ -4,7 +4,7 @@ go 1.24.11
 
 require (
 	github.com/gin-gonic/gin v1.11.0
-	github.com/go-fuego/fuego v0.18.8
+	github.com/go-fuego/fuego v0.19.0
 	github.com/stretchr/testify v1.11.1
 	gotest.tools/v3 v3.5.2
 )
@@ -22,7 +22,7 @@ require (
 	github.com/go-openapi/swag/jsonname v0.25.4 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.28.0 // indirect
+	github.com/go-playground/validator/v10 v10.29.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.19.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
