@@ -523,6 +523,14 @@ func OptionDefaultStatusCode(defaultStatusCode int) RouteOption {
 	}
 }
 
+// OptionWithContentTypeSerDes sets a custom serializer and deserializer for a content type.
+// This option is currently only applicable to the [fuego.Server]. Other adaptors are not affected by this option.
+func OptionWithContentTypeSerDes(contentType string, serdes SerDes) func(*BaseRoute) {
+	return func(r *BaseRoute) {
+		r.contentTypeSerDes[contentType] = serdes
+	}
+}
+
 // OptionSecurity configures security requirements to the route.
 //
 // Single Scheme (AND Logic):

@@ -30,6 +30,7 @@ func NewBaseRoute(method, path string, handler any, e *Engine, options ...RouteO
 		OpenAPI:              e.OpenAPI,
 		RequestContentTypes:  e.requestContentTypes,
 		ResponseContentTypes: e.responseContentTypes,
+		contentTypeSerDes:    make(map[string]SerDes),
 	}
 
 	for _, o := range options {
@@ -81,6 +82,9 @@ type BaseRoute struct {
 
 	// Middleware configuration for the route
 	MiddlewareConfig *MiddlewareConfig
+
+	// Serialization/deserialization for various content types for this route
+	contentTypeSerDes map[string]SerDes
 }
 
 func (r *BaseRoute) GenerateDefaultDescription() {

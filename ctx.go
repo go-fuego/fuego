@@ -143,6 +143,7 @@ func NewNetHTTPContext[B, P any](route BaseRoute, w http.ResponseWriter, r *http
 		Req:         r,
 		Res:         w,
 		readOptions: options,
+		route:       route,
 	}
 
 	return c
@@ -167,6 +168,8 @@ type netHttpContext[Body, Params any] struct {
 	internal.CommonContext[Body]
 
 	readOptions readOptions
+
+	route BaseRoute
 }
 
 var (
@@ -502,6 +505,22 @@ func (c *netHttpContext[B, P]) MustParams() P {
 
 // Serialize serializes the given data to the response. It uses the Content-Type header to determine the serialization format.
 func (c netHttpContext[B, P]) Serialize(data any) error {
+	// facilitate user-defined content type serialization
+	for _, contentType := range parseAcceptHeader(c.Req.Header) {
+		serdes, ok := c.route.contentTypeSerDes[contentType]
+		if !ok {
+			continue
+		}
+
+		bytes, err := serdes.Serialize(data)
+		if err != nil {
+			return err
+		}
+		c.Res.Header().Set("Content-Type", contentType)
+		_, err = c.Res.Write(bytes)
+		return err
+	}
+
 	if c.serializer == nil {
 		return Send(c.Res, c.Req, data)
 	}
@@ -534,7 +553,22 @@ func body[B, P any](c netHttpContext[B, P]) (B, error) {
 
 	var body B
 	var err error
-	switch c.Req.Header.Get("Content-Type") {
+	contentType := c.Req.Header.Get("Content-Type")
+
+	// facilitate user-defined content type deserialization
+	if serdes, ok := c.route.contentTypeSerDes[contentType]; ok {
+		bodyDeserialized, err := serdes.Deserialize(c.Req.Context(), c.Req.Body)
+		if err != nil {
+			return body, err
+		}
+		body, ok := bodyDeserialized.(B)
+		if !ok {
+			err = fmt.Errorf("serdes %#v returned %T; expected %T", serdes, bodyDeserialized, body)
+		}
+		return body, err
+	}
+
+	switch contentType {
 	case "text/plain":
 		s, errReadingString := readString[string](c.Req.Context(), c.Req.Body, c.readOptions)
 		body = any(s).(B)
