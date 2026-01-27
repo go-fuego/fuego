@@ -41,15 +41,18 @@ func (openAPI *OpenAPI) Generator() *openapi3gen.Generator {
 }
 
 // Sets the openapi generator with a custom schema customizer function.
-func (openAPI *OpenAPI) SetGeneratorSchemaCustomizer(sc openapi3gen.SchemaCustomizerFn) {
+func (openAPI *OpenAPI) SetGeneratorSchemaCustomizer(sc openapi3gen.SchemaCustomizerFn, options ...openapi3gen.Option) {
 	// Create a function with the default schema customizer, and one with the provided, thereby merging the two.
 	customizerFn := func(name string, t reflect.Type, tag reflect.StructTag, schema *openapi3.Schema) error {
 		if err := SchemaCustomizer(name, t, tag, schema); err != nil {
 			return err
 		}
+		if sc == nil {
+			return nil
+		}
 		return sc(name, t, tag, schema)
 	}
-	openAPI.generator = openapi3gen.NewGenerator(openapi3gen.SchemaCustomizer(customizerFn))
+	openAPI.generator = openapi3gen.NewGenerator(append(options, openapi3gen.SchemaCustomizer(customizerFn))...)
 }
 
 func (openAPI *OpenAPI) mergeInfo(info *openapi3.Info) {
