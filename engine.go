@@ -164,9 +164,9 @@ func WithOpenAPIConfig(config OpenAPIConfig) EngineOption {
 }
 
 // WithOpenAPIGeneratorConfig sets the options for the generator.
-func WithOpenAPIGeneratorSchemaCustomizer(sc openapi3gen.SchemaCustomizerFn) EngineOption {
+func WithOpenAPIGeneratorSchemaCustomizer(sc openapi3gen.SchemaCustomizerFn, options ...openapi3gen.Option) EngineOption {
 	return func(e *Engine) {
-		e.OpenAPI.SetGeneratorSchemaCustomizer(sc)
+		e.OpenAPI.SetGeneratorSchemaCustomizer(sc, options...)
 	}
 }
 
