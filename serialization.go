@@ -143,7 +143,7 @@ var SendYAML = func(w http.ResponseWriter, r *http.Request, ans any) (err error)
 
 // SendYAMLError sends a YAML error response.
 // If the error implements ErrorWithStatus, the status code will be set.
-func SendYAMLError(w http.ResponseWriter, _ *http.Request, err error) {
+func SendYAMLError(w http.ResponseWriter, r *http.Request, err error) {
 	status := http.StatusInternalServerError
 	var errorStatus ErrorWithStatus
 	if errors.As(err, &errorStatus) {
@@ -151,7 +151,7 @@ func SendYAMLError(w http.ResponseWriter, _ *http.Request, err error) {
 	}
 
 	w.WriteHeader(status)
-	_ = SendYAML(w, nil, err)
+	_ = SendYAML(w, r, err)
 }
 
 // SendJSON sends a JSON response.
@@ -181,15 +181,15 @@ var SendError = func(w http.ResponseWriter, r *http.Request, err error) {
 	for _, header := range parseAcceptHeader(r.Header) {
 		switch inferAcceptHeader(header, nil) {
 		case "application/xml":
-			SendXMLError(w, nil, err)
+			SendXMLError(w, r, err)
 		case "text/html":
-			SendHTMLError(w, nil, err)
+			SendHTMLError(w, r, err)
 		case "text/plain":
 			SendTextError(w, r, err)
 		case "application/json":
-			SendJSONError(w, nil, err)
+			SendJSONError(w, r, err)
 		case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
-			SendYAMLError(w, nil, err)
+			SendYAMLError(w, r, err)
 		default:
 			continue
 		}
@@ -200,7 +200,7 @@ var SendError = func(w http.ResponseWriter, r *http.Request, err error) {
 
 // SendJSONError sends a JSON error response.
 // If the error implements ErrorWithStatus, the status code will be set.
-func SendJSONError(w http.ResponseWriter, _ *http.Request, err error) {
+func SendJSONError(w http.ResponseWriter, r *http.Request, err error) {
 	status := http.StatusInternalServerError
 	var errorStatus ErrorWithStatus
 	if errors.As(err, &errorStatus) {
@@ -215,7 +215,7 @@ func SendJSONError(w http.ResponseWriter, _ *http.Request, err error) {
 	}
 
 	w.WriteHeader(status)
-	_ = SendJSON(w, nil, err)
+	_ = SendJSON(w, r, err)
 }
 
 // SendXML sends a XML response.
@@ -248,7 +248,7 @@ func SendXMLError(w http.ResponseWriter, r *http.Request, err error) {
 	}
 
 	w.WriteHeader(status)
-	err = SendXML(w, nil, err)
+	err = SendXML(w, r, err)
 	if err != nil {
 		slog.ErrorContext(r.Context(), "Cannot serialize returned response to XML", "error", err)
 		_, _ = w.Write([]byte(`{"error":"Cannot serialize returned response to XML"}`))
@@ -294,7 +294,7 @@ var SendHTML = func(w http.ResponseWriter, r *http.Request, ans any) error {
 
 // SendHTMLError sends a HTML response.
 // If the error implements ErrorWithStatus, the status code will be set.
-func SendHTMLError(w http.ResponseWriter, _ *http.Request, err error) {
+func SendHTMLError(w http.ResponseWriter, r *http.Request, err error) {
 	status := http.StatusInternalServerError
 	var errorStatus ErrorWithStatus
 	if errors.As(err, &errorStatus) {
@@ -313,7 +313,7 @@ func SendHTMLError(w http.ResponseWriter, _ *http.Request, err error) {
 
 // SendText sends a HTML response.
 // Declared as a variable to be able to override it for clients that need to customize serialization.
-func SendText(w http.ResponseWriter, _ *http.Request, ans any) error {
+func SendText(w http.ResponseWriter, r *http.Request, ans any) error {
 	var err error
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	stringToWrite, ok := ans.(string)
@@ -332,7 +332,7 @@ func SendText(w http.ResponseWriter, _ *http.Request, ans any) error {
 
 // SendTextError sends a Text response.
 // If the error implements ErrorWithStatus, the status code will be set.
-func SendTextError(w http.ResponseWriter, _ *http.Request, err error) {
+func SendTextError(w http.ResponseWriter, r *http.Request, err error) {
 	status := http.StatusInternalServerError
 	var errorStatus ErrorWithStatus
 	if errors.As(err, &errorStatus) {
@@ -343,10 +343,10 @@ func SendTextError(w http.ResponseWriter, _ *http.Request, err error) {
 	var httpError HTTPError
 	if errors.As(err, &httpError) {
 		httpError.Status = status
-		_ = SendText(w, nil, httpError.PublicError())
+		_ = SendText(w, r, httpError.PublicError())
 		return
 	}
-	_ = SendText(w, nil, err.Error())
+	_ = SendText(w, r, err.Error())
 }
 
 func InferAcceptHeaderFromType(ans any) string {

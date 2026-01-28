@@ -233,7 +233,7 @@ func TestJSONError(t *testing.T) {
 	err := validate(me)
 	w := httptest.NewRecorder()
 	err = ErrorHandler(context.Background(), err)
-	SendJSONError(w, nil, err)
+	SendJSONError(w, httptest.NewRequest("", "/", nil), err)
 	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 
 	require.JSONEq(t, `
@@ -304,7 +304,7 @@ func TestJSONError(t *testing.T) {
 
 func TestSendText(t *testing.T) {
 	w := httptest.NewRecorder()
-	SendText(w, nil, "Hello World")
+	SendText(w, httptest.NewRequest("", "/", nil), "Hello World")
 
 	require.Equal(t, "Hello World", w.Body.String())
 }
@@ -312,7 +312,7 @@ func TestSendText(t *testing.T) {
 func TestSendTextError(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendTextError(w, nil, errors.New("Hello World"))
+		SendTextError(w, httptest.NewRequest("", "/", nil), errors.New("Hello World"))
 
 		assert.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
 		assert.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
@@ -320,7 +320,7 @@ func TestSendTextError(t *testing.T) {
 	})
 	t.Run("error with status", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendTextError(w, nil, BadRequestError{Err: errors.New("Hello World")})
+		SendTextError(w, httptest.NewRequest("", "/", nil), BadRequestError{Err: errors.New("Hello World")})
 		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
 		assert.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
 		assert.Equal(t, "400 Bad Request", w.Body.String())
@@ -360,7 +360,7 @@ func TestSendYAML(t *testing.T) {
 func TestSendYAMLError(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendYAMLError(w, nil, errors.New("Hello World"))
+		SendYAMLError(w, httptest.NewRequest("", "/", nil), errors.New("Hello World"))
 
 		require.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
 		require.Equal(t, "application/x-yaml", w.Header().Get("Content-Type"))
@@ -375,14 +375,14 @@ func TestSendYAMLError(t *testing.T) {
 	})
 	t.Run("error with status and detail", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendYAMLError(w, nil, BadRequestError{Err: errors.New("Hello World"), Detail: "World, Hello"})
+		SendYAMLError(w, httptest.NewRequest("", "/", nil), BadRequestError{Err: errors.New("Hello World"), Detail: "World, Hello"})
 		require.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
 		require.Equal(t, "application/x-yaml", w.Header().Get("Content-Type"))
 		require.Equal(t, crlf(`detail: World, Hello`), w.Body.String())
 	})
 	t.Run("error with multiple fields", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendYAMLError(w, nil, BadRequestError{
+		SendYAMLError(w, httptest.NewRequest("", "/", nil), BadRequestError{
 			Err:    errors.New("Hello World"),
 			Detail: "World, Hello",
 			Title:  "Error: Hello, World",
@@ -448,7 +448,7 @@ func TestSendHTML(t *testing.T) {
 
 	t.Run("Renderer", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		err := SendHTML(w, nil, &testRenderer{})
+		err := SendHTML(w, httptest.NewRequest("", "/", nil), &testRenderer{})
 		require.NoError(t, err)
 		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
 		require.Equal(t, "hello", w.Body.String())
@@ -456,7 +456,7 @@ func TestSendHTML(t *testing.T) {
 
 	t.Run("HTML", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		err := SendHTML(w, nil, HTML("hello"))
+		err := SendHTML(w, httptest.NewRequest("", "/", nil), HTML("hello"))
 		require.NoError(t, err)
 		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
 		require.Equal(t, "hello", w.Body.String())
@@ -464,7 +464,7 @@ func TestSendHTML(t *testing.T) {
 
 	t.Run("string", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		err := SendHTML(w, nil, "hello")
+		err := SendHTML(w, httptest.NewRequest("", "/", nil), "hello")
 		require.NoError(t, err)
 		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
 		require.Equal(t, "hello", w.Body.String())
@@ -472,7 +472,7 @@ func TestSendHTML(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		err := SendHTML(w, nil, struct{}{})
+		err := SendHTML(w, httptest.NewRequest("", "/", nil), struct{}{})
 		require.Error(t, err)
 		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
 	})
@@ -481,7 +481,7 @@ func TestSendHTML(t *testing.T) {
 func TestSendHTMLError(t *testing.T) {
 	t.Run("base", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendHTMLError(w, nil, errors.New("Hello World"))
+		SendHTMLError(w, httptest.NewRequest("", "/", nil), errors.New("Hello World"))
 
 		require.Equal(t, http.StatusInternalServerError, w.Result().StatusCode)
 		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
@@ -489,7 +489,7 @@ func TestSendHTMLError(t *testing.T) {
 	})
 	t.Run("error with status", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		SendHTMLError(w, nil, BadRequestError{Title: "My Error", Detail: "Greeting the world didn't work", Err: errors.New("Hello World failed")})
+		SendHTMLError(w, httptest.NewRequest("", "/", nil), BadRequestError{Title: "My Error", Detail: "Greeting the world didn't work", Err: errors.New("Hello World failed")})
 		require.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
 		require.Equal(t, "text/html; charset=utf-8", w.Header().Get("Content-Type"))
 		require.Equal(t, "400 My Error (Greeting the world didn't work)", w.Body.String())
