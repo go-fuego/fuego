@@ -230,7 +230,7 @@ func (security Security) TokenToContext(searchFunc ...func(*http.Request) string
 			// Validate the token
 			t, err := security.ValidateToken(token)
 			if err != nil {
-				SendJSONError(w, nil, err)
+				SendJSONError(w, r, err)
 				return
 			}
 
@@ -318,20 +318,20 @@ func authWall(authorizeFunc func(userRoles ...string) bool) func(next http.Handl
 			// Get the authorizationHeader from the context (set by TokenToContext)
 			claims, err := TokenFromContext(r.Context())
 			if err != nil {
-				SendJSONError(w, nil, UnauthorizedError{Title: "Unauthorized"})
+				SendJSONError(w, r, UnauthorizedError{Title: "Unauthorized"})
 				return
 			}
 
 			// Get the subject and userRoles from the claims
 			userRoles, ok := claims.(jwt.MapClaims)["roles"].([]string)
 			if !ok {
-				SendJSONError(w, nil, UnauthorizedError{Title: "Could not find roles in token"})
+				SendJSONError(w, r, UnauthorizedError{Title: "Could not find roles in token"})
 				return
 			}
 
 			// Check if the user is authorized
 			if !authorizeFunc(userRoles...) {
-				SendJSONError(w, nil, ForbiddenError{Title: "Access denied"})
+				SendJSONError(w, r, ForbiddenError{Title: "Access denied"})
 				return
 			}
 
@@ -381,14 +381,14 @@ func (security Security) StdLoginHandler(verifyUserInfo func(r *http.Request) (j
 	return func(w http.ResponseWriter, r *http.Request) {
 		claims, err := verifyUserInfo(r)
 		if err != nil {
-			SendJSONError(w, nil, err)
+			SendJSONError(w, r, err)
 			return
 		}
 
 		// Send the token to the cookies
 		token, err := security.GenerateTokenToCookies(claims, w)
 		if err != nil {
-			SendJSONError(w, nil, err)
+			SendJSONError(w, r, err)
 			return
 		}
 
@@ -476,14 +476,14 @@ func (security Security) LoginHandler(verifyUserInfo func(user, password string)
 func (security Security) RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	claims, err := TokenFromContext(r.Context())
 	if err != nil {
-		SendJSONError(w, nil, UnauthorizedError{Title: "Could not find token in context"})
+		SendJSONError(w, r, UnauthorizedError{Title: "Could not find token in context"})
 		return
 	}
 
 	// Send the token to the cookies
 	token, err := security.GenerateTokenToCookies(claims, w)
 	if err != nil {
-		SendJSONError(w, nil, err)
+		SendJSONError(w, r, err)
 		return
 	}
 
