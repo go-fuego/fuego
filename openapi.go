@@ -260,6 +260,50 @@ func RegisterOpenAPIOperation[T, B, P any](openapi *OpenAPI, route Route[T, B, P
 	return route.Operation, nil
 }
 
+func parseExampleFromTag(s string, elem reflect.Type) (any, error) {
+	kind := elem.Kind()
+	var res any
+	var err error
+	switch kind {
+	case reflect.String:
+		res = s
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		res, err = strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		res, err = strconv.ParseUint(s, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+	case reflect.Float32, reflect.Float64:
+		res, err = strconv.ParseFloat(s, 64)
+		if err != nil {
+			return nil, err
+		}
+	case reflect.Bool:
+		res, err = strconv.ParseBool(s)
+		if err != nil {
+			return nil, err
+		}
+	case reflect.Slice, reflect.Array:
+		var slice []any
+		elemKind := elem.Elem()
+		for v := range strings.SplitSeq(s, ",") {
+			r, err := parseExampleFromTag(v, elemKind)
+			if err != nil {
+				return nil, err
+			}
+			slice = append(slice, r)
+		}
+		res = slice
+	default:
+		return nil, fmt.Errorf("unknown type %s", kind)
+	}
+	return res, nil
+}
+
 // RegisterParams registers the parameters of a given type to an OpenAPI operation.
 // It inspects the fields of the provided struct, looking for "header" tags, and creates
 // OpenAPI parameters for each tagged field.
@@ -280,9 +324,13 @@ func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 		for i := range typeOfParams.NumField() {
 			field := typeOfParams.Field(i)
 			var params []ParamOption
-			example, _ := field.Tag.Lookup("description")
+			example, _ := field.Tag.Lookup("example")
 			if example != "" {
-				params = append(params, ParamExample("example", example))
+				parsedValue, err := parseExampleFromTag(example, field.Type)
+				if err != nil {
+					return fmt.Errorf("parsing example tag: %s", err)
+				}
+				params = append(params, ParamExample("example", parsedValue))
 			}
 
 			// Parse default tag

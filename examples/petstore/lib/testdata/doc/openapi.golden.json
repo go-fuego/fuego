@@ -1438,7 +1438,7 @@
 						"description": "Filter by name",
 						"examples": {
 							"example": {
-								"value": "Filter by name"
+								"value": "cat name"
 							}
 						},
 						"in": "query",
@@ -1457,6 +1457,15 @@
 						}
 					},
 					{
+						"examples": {
+							"example": {
+								"value": [
+									1,
+									2,
+									3
+								]
+							}
+						},
 						"in": "query",
 						"name": "just_an_array",
 						"schema": {
