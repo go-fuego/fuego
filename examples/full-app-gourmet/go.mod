@@ -5,7 +5,7 @@ go 1.24.12
 require (
 	github.com/a-h/templ v0.3.977
 	github.com/getkin/kin-openapi v0.133.0
-	github.com/go-chi/chi/v5 v5.2.4
+	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-fuego/fuego v0.19.0
 	github.com/go-fuego/fuego/extra/markdown v0.19.0
 	github.com/go-fuego/fuego/middleware/basicauth v0.19.0
@@ -14,11 +14,11 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
-	github.com/lmittmann/tint v1.1.2
+	github.com/lmittmann/tint v1.1.3
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/text v0.33.0
-	modernc.org/sqlite v1.44.3
+	golang.org/x/text v0.34.0
+	modernc.org/sqlite v1.45.0
 )
 
 require (
