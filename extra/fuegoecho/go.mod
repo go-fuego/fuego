@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/extra/fuegoecho
 
-go 1.24.13
+go 1.25.7
 
 require (
 	github.com/go-fuego/fuego v0.19.0
