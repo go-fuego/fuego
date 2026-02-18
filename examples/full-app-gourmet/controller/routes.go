@@ -1,10 +1,12 @@
 package controller
 
 import (
+	"log"
+	"net/http"
 	"os"
 	"time"
 
-	"github.com/rs/cors"
+	"github.com/jub0bs/cors"
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/middleware/basicauth"
@@ -25,7 +27,15 @@ type Resource struct {
 }
 
 func (rs Resource) MountRoutes(s *fuego.Server) {
-	fuego.Use(s, cors.Default().Handler)
+	cors, err := cors.NewMiddleware(cors.Config{
+		Origins:        []string{"*"},
+		Methods:        []string{http.MethodGet, http.MethodHead, http.MethodPost},
+		RequestHeaders: []string{"Accept", "Content-Type", "X-Requested-With"},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fuego.Use(s, cors.Wrap)
 	fuego.UseStd(s, basicauth.New(basicauth.Config{
 		Username: os.Getenv("ADMIN_USER"),
 		Password: os.Getenv("ADMIN_PASSWORD"),

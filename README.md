@@ -221,7 +221,7 @@ import (
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-fuego/fuego"
-	"github.com/rs/cors"
+	"github.com/jub0bs/cors"
 )
 
 type Received struct {
@@ -238,7 +238,14 @@ func main() {
 		fuego.WithAddr("localhost:8088"),
 	)
 
-	fuego.Use(s, cors.Default().Handler)
+	// For CORS, either rely on github.com/rs/cors: fuego.Use(s, cors.Default().Handler)
+	// Alternatively, you can rely on github.com/jub0bs/cors:
+	cors, err := cors.NewMiddleware(cors.Config{Origins: []string{"*"}})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fuego.Use(s, cors.Wrap)
+
 	fuego.Use(s, chiMiddleware.Compress(5, "text/html", "text/css"))
 
 	// Fuego 🔥 handler with automatic OpenAPI generation, validation, (de)serialization and error handling
