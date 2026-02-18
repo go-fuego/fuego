@@ -16,6 +16,12 @@ func ParamNullable() ParamOption {
 	}
 }
 
+func ParamArray() ParamOption {
+	return func(param *OpenAPIParam) {
+		param.GoType = "array"
+	}
+}
+
 func ParamString() ParamOption {
 	return func(param *OpenAPIParam) {
 		param.GoType = "string"
