@@ -320,6 +320,35 @@ curl http://localhost:8088 -X POST -d '{"name": "Fuego"}' -H 'Content-Type: appl
 
 </details>
 
+## Release Management
+
+Fuego uses an automated release system that handles tagging all modules in the workspace. See the [Release Guide](docs/RELEASE.md) for details.
+
+### Quick Release
+
+**GitHub Actions (Recommended)**:
+
+1. Go to Actions → Release → Run workflow
+2. Enter version (e.g., `v1.2.3`)
+3. Approve when tests pass
+
+**Local Script**:
+
+```bash
+# Preview release
+./scripts/release.sh --dry-run v1.2.3
+
+# Create release
+./scripts/release.sh v1.2.3
+```
+
+The system automatically:
+
+- ✅ Validates version and runs tests
+- 🏷️ Creates tags for all modules (`v1.2.3`, `extra/fuegoecho/v1.2.3`, etc.)
+- 📝 Generates changelogs
+- 🚀 Creates GitHub releases
+
 ## Contributing
 
 See the [contributing guide](CONTRIBUTING.md).
