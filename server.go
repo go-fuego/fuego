@@ -179,15 +179,18 @@ func WithTemplateFS(fsys fs.FS) ServerOption {
 //
 // For example, to add CORS middleware:
 //
-//	import "github.com/rs/cors"
+//	import "github.com/jub0bs/cors"
 //
+//	cors, err := cors.NewMiddleware(cors.Config{
+//		Origins:        []string{"*"},
+//		Methods:        []string{"GET", "POST", "PUT", "DELETE"},
+//		RequestHeaders: []string{"*"},
+//	})
+//	if err != nil {
+//		log.Fatal(err)
+//	}
 //	s := fuego.NewServer(
-//		WithGlobalMiddlewares(cors.New(cors.Options{
-//			AllowedOrigins:   []string{"*"},
-//			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-//			AllowedHeaders:   []string{"*"},
-//			AllowCredentials: true,
-//		}).Handler),
+//		WithGlobalMiddlewares(cors.Wrap),
 //	)
 func WithGlobalMiddlewares(middlewares ...func(http.Handler) http.Handler) ServerOption {
 	return func(c *Server) {

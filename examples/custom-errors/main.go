@@ -2,11 +2,12 @@ package main
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
-	"github.com/rs/cors"
+	"github.com/jub0bs/cors"
 
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/option"
@@ -35,7 +36,16 @@ func main() {
 		fuego.WithAddr("localhost:8088"),
 	)
 
-	fuego.Use(s, cors.Default().Handler)
+	cors, err := cors.NewMiddleware(cors.Config{
+		Origins:        []string{"*"},
+		Methods:        []string{http.MethodGet, http.MethodHead, http.MethodPost},
+		RequestHeaders: []string{"Accept", "Content-Type", "X-Requested-With"},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fuego.Use(s, cors.Wrap)
+
 	fuego.Use(s, chiMiddleware.Compress(5, "text/html", "text/css"))
 
 	fuego.Get(s, "/custom-err", func(c fuego.ContextNoBody) (string, error) {
