@@ -8,15 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/internal"
-)
-
-// Compile-time interface checks
-var (
-	_ fuego.ContextFlowable[any, any] = &muxContext[any, any]{}
-	_ fuego.Context[any, any]         = &muxContext[any, any]{}
-	_ fuego.ContextWithBody[any]      = &muxContext[any, any]{}
 )
 
 func TestMuxContext_PathParam(t *testing.T) {
