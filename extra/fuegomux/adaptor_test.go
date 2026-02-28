@@ -2,6 +2,8 @@ package fuegomux
 
 import (
 	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gorilla/mux"
@@ -98,4 +100,57 @@ func TestMuxHandlerRegistration(t *testing.T) {
 
 	spec := e.OutputOpenAPISpec()
 	assert.NotNil(t, spec.Paths.Find("/native"))
+}
+
+func TestFuegoHandler_Integration(t *testing.T) {
+	e := fuego.NewEngine()
+	r := mux.NewRouter()
+
+	type Response struct {
+		ID      string `json:"id"`
+		Message string `json:"message"`
+	}
+
+	Get(e, r, "/users/{id:[0-9]+}", func(c fuego.ContextNoBody) (Response, error) {
+		return Response{
+			ID:      c.PathParam("id"),
+			Message: "hello",
+		}, nil
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/users/42", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), `"id":"42"`)
+	assert.Contains(t, w.Body.String(), `"message":"hello"`)
+}
+
+func TestFuegoHandler_PostBody(t *testing.T) {
+	e := fuego.NewEngine()
+	r := mux.NewRouter()
+
+	type Request struct {
+		Name string `json:"name" validate:"required"`
+	}
+	type Response struct {
+		Greeting string `json:"greeting"`
+	}
+
+	Post(e, r, "/greet", func(c fuego.ContextWithBody[Request]) (Response, error) {
+		body, err := c.Body()
+		if err != nil {
+			return Response{}, err
+		}
+		return Response{Greeting: "Hello " + body.Name}, nil
+	})
+
+	req := httptest.NewRequest(http.MethodPost, "/greet", strings.NewReader(`{"name":"World"}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), `"greeting":"Hello World"`)
 }
