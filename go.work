@@ -13,6 +13,7 @@ use (
 	./examples/generate-opengraph-image
 	./examples/gin-compat
 	./examples/hello-world
+	./examples/mux-compat
 	./examples/openapi
 	./examples/petstore
 	./examples/with-listener
