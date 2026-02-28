@@ -5,6 +5,7 @@ go 1.25.7
 require (
 	github.com/go-fuego/fuego v0.19.0
 	github.com/gorilla/mux v1.8.1
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
