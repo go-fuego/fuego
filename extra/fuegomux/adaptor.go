@@ -21,6 +21,7 @@ func muxToFuegoRoute(path string) string {
 
 // extractPathParamPatterns extracts regex patterns from path params.
 // Returns a map of param name -> regex pattern for params that have constraints.
+// TODO: Wire extracted patterns into OpenAPI parameter schemas as the "pattern" field.
 func extractPathParamPatterns(path string) map[string]string {
 	patterns := make(map[string]string)
 	matches := pathRegex.FindAllStringSubmatch(path, -1)
@@ -30,9 +31,15 @@ func extractPathParamPatterns(path string) map[string]string {
 	return patterns
 }
 
+// MuxRouter is the interface that gorilla/mux routers must satisfy.
+// Both *mux.Router and subrouters from PathPrefix().Subrouter() satisfy this.
+type MuxRouter interface {
+	HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) *mux.Route
+}
+
 // OpenAPIHandler implements fuego.OpenAPIServable for gorilla/mux routers.
 type OpenAPIHandler struct {
-	Router *mux.Router
+	Router MuxRouter
 }
 
 func (o *OpenAPIHandler) SpecHandler(e *fuego.Engine) {
@@ -52,59 +59,59 @@ func (o *OpenAPIHandler) UIHandler(e *fuego.Engine) {
 
 // --- Native mux handler registration (Level 1 & 2) ---
 
-func GetMux(engine *fuego.Engine, muxRouter *mux.Router, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
+func GetMux(engine *fuego.Engine, muxRouter MuxRouter, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
 	return handleMux(engine, muxRouter, http.MethodGet, path, handler, options...)
 }
 
-func PostMux(engine *fuego.Engine, muxRouter *mux.Router, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
+func PostMux(engine *fuego.Engine, muxRouter MuxRouter, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
 	return handleMux(engine, muxRouter, http.MethodPost, path, handler, options...)
 }
 
-func PutMux(engine *fuego.Engine, muxRouter *mux.Router, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
+func PutMux(engine *fuego.Engine, muxRouter MuxRouter, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
 	return handleMux(engine, muxRouter, http.MethodPut, path, handler, options...)
 }
 
-func DeleteMux(engine *fuego.Engine, muxRouter *mux.Router, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
+func DeleteMux(engine *fuego.Engine, muxRouter MuxRouter, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
 	return handleMux(engine, muxRouter, http.MethodDelete, path, handler, options...)
 }
 
-func PatchMux(engine *fuego.Engine, muxRouter *mux.Router, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
+func PatchMux(engine *fuego.Engine, muxRouter MuxRouter, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
 	return handleMux(engine, muxRouter, http.MethodPatch, path, handler, options...)
 }
 
-func OptionsMux(engine *fuego.Engine, muxRouter *mux.Router, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
+func OptionsMux(engine *fuego.Engine, muxRouter MuxRouter, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
 	return handleMux(engine, muxRouter, http.MethodOptions, path, handler, options...)
 }
 
 // --- Fuego typed handler registration (Level 3 & 4) ---
 
-func Get[T, B, P any](engine *fuego.Engine, muxRouter *mux.Router, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
+func Get[T, B, P any](engine *fuego.Engine, muxRouter MuxRouter, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
 	return handleFuego(engine, muxRouter, http.MethodGet, path, handler, options...)
 }
 
-func Post[T, B, P any](engine *fuego.Engine, muxRouter *mux.Router, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
+func Post[T, B, P any](engine *fuego.Engine, muxRouter MuxRouter, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
 	return handleFuego(engine, muxRouter, http.MethodPost, path, handler, options...)
 }
 
-func Put[T, B, P any](engine *fuego.Engine, muxRouter *mux.Router, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
+func Put[T, B, P any](engine *fuego.Engine, muxRouter MuxRouter, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
 	return handleFuego(engine, muxRouter, http.MethodPut, path, handler, options...)
 }
 
-func Delete[T, B, P any](engine *fuego.Engine, muxRouter *mux.Router, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
+func Delete[T, B, P any](engine *fuego.Engine, muxRouter MuxRouter, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
 	return handleFuego(engine, muxRouter, http.MethodDelete, path, handler, options...)
 }
 
-func Patch[T, B, P any](engine *fuego.Engine, muxRouter *mux.Router, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
+func Patch[T, B, P any](engine *fuego.Engine, muxRouter MuxRouter, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
 	return handleFuego(engine, muxRouter, http.MethodPatch, path, handler, options...)
 }
 
-func Options[T, B, P any](engine *fuego.Engine, muxRouter *mux.Router, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
+func Options[T, B, P any](engine *fuego.Engine, muxRouter MuxRouter, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
 	return handleFuego(engine, muxRouter, http.MethodOptions, path, handler, options...)
 }
 
 // --- Internal registration ---
 
-func handleFuego[T, B, P any](engine *fuego.Engine, muxRouter *mux.Router, method, path string, fuegoHandler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
+func handleFuego[T, B, P any](engine *fuego.Engine, muxRouter MuxRouter, method, path string, fuegoHandler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
 	baseRoute := fuego.NewBaseRoute(method, muxToFuegoRoute(path), fuegoHandler, engine, options...)
 	return fuego.Registers(engine, muxRouteRegisterer[T, B, P]{
 		muxRouter:    muxRouter,
@@ -114,7 +121,7 @@ func handleFuego[T, B, P any](engine *fuego.Engine, muxRouter *mux.Router, metho
 	})
 }
 
-func handleMux(engine *fuego.Engine, muxRouter *mux.Router, method, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
+func handleMux(engine *fuego.Engine, muxRouter MuxRouter, method, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
 	baseRoute := fuego.NewBaseRoute(method, muxToFuegoRoute(path), handler, engine, options...)
 	return fuego.Registers(engine, muxRouteRegisterer[any, any, any]{
 		muxRouter:    muxRouter,
@@ -127,7 +134,7 @@ func handleMux(engine *fuego.Engine, muxRouter *mux.Router, method, path string,
 // --- Route registerer ---
 
 type muxRouteRegisterer[T, B, P any] struct {
-	muxRouter    *mux.Router
+	muxRouter    MuxRouter
 	httpHandler  http.HandlerFunc
 	route        fuego.Route[T, B, P]
 	originalPath string
@@ -136,7 +143,9 @@ type muxRouteRegisterer[T, B, P any] struct {
 func (a muxRouteRegisterer[T, B, P]) Register() fuego.Route[T, B, P] {
 	muxRoute := a.muxRouter.HandleFunc(a.originalPath, a.httpHandler).Methods(a.route.Method)
 
-	// Get the full path template including any subrouter prefix
+	// Get the full path template including any subrouter prefix.
+	// If GetPathTemplate fails (which shouldn't happen for properly registered routes),
+	// fall back to the pre-converted path already set on the route.
 	if tpl, err := muxRoute.GetPathTemplate(); err == nil {
 		a.route.Path = muxToFuegoRoute(tpl)
 	}
