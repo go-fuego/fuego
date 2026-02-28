@@ -1,9 +1,9 @@
+// Package fuegomux provides a gorilla/mux adapter for the Fuego web framework.
 package fuegomux
 
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strings"
 
@@ -132,19 +132,11 @@ func (c *muxContext[B, P]) Serialize(data any) error {
 }
 
 func (c *muxContext[B, P]) SerializeError(err error) {
-	statusCode := http.StatusInternalServerError
-	var errorWithStatusCode fuego.ErrorWithStatus
-	if errors.As(err, &errorWithStatusCode) {
-		statusCode = errorWithStatusCode.StatusCode()
-	}
-	c.res.Header().Set("Content-Type", "application/json")
-	c.res.WriteHeader(statusCode)
-	json.NewEncoder(c.res).Encode(err)
+	fuego.SendError(c.res, c.req, err)
 }
 
 func (c *muxContext[B, P]) SetDefaultStatusCode() {
-	if c.DefaultStatusCode == 0 {
-		c.DefaultStatusCode = http.StatusOK
+	if c.DefaultStatusCode != 0 {
+		c.SetStatus(c.DefaultStatusCode)
 	}
-	c.SetStatus(c.DefaultStatusCode)
 }
