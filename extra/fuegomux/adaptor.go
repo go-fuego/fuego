@@ -31,7 +31,7 @@ type OpenAPIHandler struct {
 }
 
 func (o *OpenAPIHandler) SpecHandler(e *fuego.Engine) {
-	Get(e, o.Router, e.OpenAPI.Config.SpecURL, e.SpecHandler(), fuego.OptionHide(), fuego.OptionMiddleware(e.OpenAPI.Config.SwaggerMiddlewares...))
+	Get(e, o.Router, e.OpenAPI.Config.SpecURL, e.SpecHandler(), fuego.OptionHide())
 }
 
 func (o *OpenAPIHandler) UIHandler(e *fuego.Engine) {
@@ -41,7 +41,6 @@ func (o *OpenAPIHandler) UIHandler(e *fuego.Engine) {
 		e.OpenAPI.Config.SwaggerURL,
 		e.OpenAPI.Config.UIHandler(e.OpenAPI.Config.SpecURL).ServeHTTP,
 		fuego.OptionHide(),
-		fuego.OptionMiddleware(e.OpenAPI.Config.SwaggerMiddlewares...),
 	)
 }
 
