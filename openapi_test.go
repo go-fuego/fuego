@@ -751,3 +751,44 @@ func TestSetGeneratorSchemaCustomizer(t *testing.T) {
 		num_wordsValue.Description,
 	)
 }
+
+func Test_transformTypeName(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "simple generic type",
+			input:    "Response[model.User]",
+			expected: "Response_model.User",
+		},
+		{
+			name:     "no generic brackets",
+			input:    "PlainType",
+			expected: "PlainType",
+		},
+		{
+			name:     "generic with package path",
+			input:    "Response[github.com/org/repo/model.User]",
+			expected: "Response_model.User",
+		},
+		{
+			name:     "slice type parameter",
+			input:    "Response[[]model.QuotaData]",
+			expected: "Response_[]model.QuotaData",
+		},
+		{
+			name:     "different slice type parameters produce different names",
+			input:    "Response[[]model.OtherData]",
+			expected: "Response_[]model.OtherData",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := transformTypeName(tt.input)
+			require.Equal(t, tt.expected, result)
+		})
+	}
+}
