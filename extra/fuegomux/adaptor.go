@@ -47,6 +47,10 @@ func (o *OpenAPIHandler) UIHandler(e *fuego.Engine) {
 
 // --- Native mux handler registration (Level 1 & 2) ---
 
+func AddMux(engine *fuego.Engine, muxRouter MuxRouter, method, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
+	return handleMux(engine, muxRouter, method, path, handler, options...)
+}
+
 func GetMux(engine *fuego.Engine, muxRouter MuxRouter, path string, handler http.HandlerFunc, options ...func(*fuego.BaseRoute)) *fuego.Route[any, any, any] {
 	return handleMux(engine, muxRouter, http.MethodGet, path, handler, options...)
 }
@@ -72,6 +76,10 @@ func OptionsMux(engine *fuego.Engine, muxRouter MuxRouter, path string, handler 
 }
 
 // --- Fuego typed handler registration (Level 3 & 4) ---
+
+func Add[T, B, P any](engine *fuego.Engine, muxRouter MuxRouter, method, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
+	return handleFuego(engine, muxRouter, method, path, handler, options...)
+}
 
 func Get[T, B, P any](engine *fuego.Engine, muxRouter MuxRouter, path string, handler func(c fuego.Context[B, P]) (T, error), options ...func(*fuego.BaseRoute)) *fuego.Route[T, B, P] {
 	return handleFuego(engine, muxRouter, http.MethodGet, path, handler, options...)
