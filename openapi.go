@@ -503,7 +503,7 @@ func transformTypeName(s string) string {
 	if start == -1 {
 		return s
 	}
-	end := strings.Index(s, "]")
+	end := strings.LastIndex(s, "]")
 	if end == -1 {
 		return s
 	}
