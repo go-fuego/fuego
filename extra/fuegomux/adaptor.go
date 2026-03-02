@@ -19,18 +19,6 @@ func muxToFuegoRoute(path string) string {
 	return pathRegex.ReplaceAllString(path, `{$1}`)
 }
 
-// extractPathParamPatterns extracts regex patterns from path params.
-// Returns a map of param name -> regex pattern for params that have constraints.
-// TODO: Wire extracted patterns into OpenAPI parameter schemas as the "pattern" field.
-func extractPathParamPatterns(path string) map[string]string {
-	patterns := make(map[string]string)
-	matches := pathRegex.FindAllStringSubmatch(path, -1)
-	for _, m := range matches {
-		patterns[m[1]] = m[2]
-	}
-	return patterns
-}
-
 // MuxRouter is the interface that gorilla/mux routers must satisfy.
 // Both *mux.Router and subrouters from PathPrefix().Subrouter() satisfy this.
 type MuxRouter interface {

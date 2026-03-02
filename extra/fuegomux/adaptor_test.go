@@ -31,23 +31,6 @@ func TestMuxToFuegoRoute(t *testing.T) {
 	}
 }
 
-func TestExtractPathParamPatterns(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected map[string]string
-	}{
-		{"/users/{id:[0-9]+}", map[string]string{"id": "[0-9]+"}},
-		{"/users/{id}", map[string]string{}},
-		{"/articles/{cat}/{id:[0-9]+}", map[string]string{"id": "[0-9]+"}},
-		{"/no-params", map[string]string{}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.input, func(t *testing.T) {
-			assert.Equal(t, tt.expected, extractPathParamPatterns(tt.input))
-		})
-	}
-}
-
 func TestFuegoRouteRegistration(t *testing.T) {
 	e := fuego.NewEngine()
 	r := mux.NewRouter()
