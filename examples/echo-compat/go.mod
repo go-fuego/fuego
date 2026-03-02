@@ -9,7 +9,7 @@ replace github.com/go-fuego/fuego/extra/fuegoecho => ../../extra/fuegoecho
 require (
 	github.com/go-fuego/fuego v1.0.1
 	github.com/go-fuego/fuego/extra/fuegoecho v0.5.0
-	github.com/labstack/echo/v4 v4.15.0
+	github.com/labstack/echo/v4 v4.15.1
 	github.com/stretchr/testify v1.11.1
 )
 
