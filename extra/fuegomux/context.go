@@ -27,8 +27,9 @@ var (
 
 func (c muxContext[B, P]) Body() (B, error) {
 	var body B
-	err := json.NewDecoder(c.req.Body).Decode(&body)
-	if err != nil {
+	dec := json.NewDecoder(c.req.Body)
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&body); err != nil {
 		return body, err
 	}
 	return fuego.TransformAndValidate(c, body)
@@ -136,8 +137,7 @@ func (c muxContext[B, P]) SerializeError(err error) {
 }
 
 func (c muxContext[B, P]) SetDefaultStatusCode() {
-	if c.DefaultStatusCode == 0 {
-		c.DefaultStatusCode = http.StatusOK
+	if c.DefaultStatusCode != 0 {
+		c.SetStatus(c.DefaultStatusCode)
 	}
-	c.SetStatus(c.DefaultStatusCode)
 }

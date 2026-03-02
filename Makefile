@@ -7,7 +7,8 @@ ci-full: ci dependencies-analyze openapi-check check-all-modules lint-markdown b
 PATHS := ./... ./examples/petstore/... $\
 	./extra/fuegogin/... ./examples/gin-compat/... $\
 	./extra/sql/... ./extra/sqlite3/... $\
-	./extra/fuegoecho/... ./examples/echo-compat/...
+	./extra/fuegoecho/... ./examples/echo-compat/... $\
+	./extra/fuegomux/... ./examples/mux-compat/...
 test: 
 	go test $(PATHS)
 

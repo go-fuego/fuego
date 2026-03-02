@@ -137,7 +137,10 @@ type muxRouteRegisterer[T, B, P any] struct {
 }
 
 func (a muxRouteRegisterer[T, B, P]) Register() fuego.Route[T, B, P] {
-	muxRoute := a.muxRouter.HandleFunc(a.originalPath, a.httpHandler).Methods(a.route.Method)
+	// Apply route-level middlewares (e.g. from fuego.OptionMiddleware).
+	// Global/group middlewares are handled by gorilla/mux's router.Use().
+	handler := applyMiddlewares(http.HandlerFunc(a.httpHandler), a.route.Middlewares...)
+	muxRoute := a.muxRouter.HandleFunc(a.originalPath, handler.ServeHTTP).Methods(a.route.Method)
 
 	// Get the full path template including any subrouter prefix.
 	// If GetPathTemplate fails (which shouldn't happen for properly registered routes),
@@ -147,6 +150,15 @@ func (a muxRouteRegisterer[T, B, P]) Register() fuego.Route[T, B, P] {
 	}
 
 	return a.route
+}
+
+// applyMiddlewares wraps an http.Handler with middlewares in the correct order
+// (last middleware is innermost, first is outermost).
+func applyMiddlewares(handler http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
+	for i := len(middlewares) - 1; i >= 0; i-- {
+		handler = middlewares[i](handler)
+	}
+	return handler
 }
 
 // MuxHandler converts a Fuego handler to an http.HandlerFunc.

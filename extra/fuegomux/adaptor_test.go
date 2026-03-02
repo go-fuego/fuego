@@ -137,3 +137,185 @@ func TestFuegoHandler_PostBody(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Body.String(), `"greeting":"Hello World"`)
 }
+
+func TestOptionMiddleware_Applied(t *testing.T) {
+	e := fuego.NewEngine()
+	r := mux.NewRouter()
+
+	middlewareCalled := false
+	testMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			middlewareCalled = true
+			next.ServeHTTP(w, r)
+		})
+	}
+
+	Get(e, r, "/protected", func(c fuego.ContextNoBody) (string, error) {
+		return "ok", nil
+	}, fuego.OptionMiddleware(testMiddleware))
+
+	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.True(t, middlewareCalled, "OptionMiddleware should be applied to the handler")
+}
+
+func TestOptionMiddleware_CanBlockRequest(t *testing.T) {
+	e := fuego.NewEngine()
+	r := mux.NewRouter()
+
+	authMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Header.Get("Authorization") == "" {
+				http.Error(w, "unauthorized", http.StatusForbidden)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+
+	handlerCalled := false
+	Get(e, r, "/secret", func(c fuego.ContextNoBody) (string, error) {
+		handlerCalled = true
+		return "secret data", nil
+	}, fuego.OptionMiddleware(authMiddleware))
+
+	// Request without auth header — should be blocked
+	req := httptest.NewRequest(http.MethodGet, "/secret", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
+	assert.False(t, handlerCalled, "handler should not be called when middleware blocks")
+
+	// Request with auth header — should pass
+	handlerCalled = false
+	req = httptest.NewRequest(http.MethodGet, "/secret", nil)
+	req.Header.Set("Authorization", "Bearer token")
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.True(t, handlerCalled, "handler should be called when middleware passes")
+}
+
+func TestOptionMiddleware_AppliedToMuxHandler(t *testing.T) {
+	e := fuego.NewEngine()
+	r := mux.NewRouter()
+
+	middlewareCalled := false
+	testMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			middlewareCalled = true
+			next.ServeHTTP(w, r)
+		})
+	}
+
+	GetMux(e, r, "/native-protected", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}, fuego.OptionMiddleware(testMiddleware))
+
+	req := httptest.NewRequest(http.MethodGet, "/native-protected", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.True(t, middlewareCalled, "OptionMiddleware should be applied to native mux handlers too")
+}
+
+func TestOptionMiddleware_MultipleMiddlewares_Order(t *testing.T) {
+	e := fuego.NewEngine()
+	r := mux.NewRouter()
+
+	var order []string
+	mw1 := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			order = append(order, "mw1-before")
+			next.ServeHTTP(w, r)
+			order = append(order, "mw1-after")
+		})
+	}
+	mw2 := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			order = append(order, "mw2-before")
+			next.ServeHTTP(w, r)
+			order = append(order, "mw2-after")
+		})
+	}
+
+	Get(e, r, "/ordered", func(c fuego.ContextNoBody) (string, error) {
+		order = append(order, "handler")
+		return "ok", nil
+	}, fuego.OptionMiddleware(mw1, mw2))
+
+	req := httptest.NewRequest(http.MethodGet, "/ordered", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, []string{"mw1-before", "mw2-before", "handler", "mw2-after", "mw1-after"}, order)
+}
+
+func TestBody_DisallowUnknownFields(t *testing.T) {
+	e := fuego.NewEngine()
+	r := mux.NewRouter()
+
+	type Request struct {
+		Name string `json:"name"`
+	}
+
+	Post(e, r, "/strict", func(c fuego.ContextWithBody[Request]) (string, error) {
+		_, err := c.Body()
+		if err != nil {
+			return "", err
+		}
+		return "ok", nil
+	})
+
+	// Request with unknown field — should be rejected
+	req := httptest.NewRequest(http.MethodPost, "/strict", strings.NewReader(`{"name":"test","unknown":"field"}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.NotEqual(t, http.StatusOK, w.Code, "unknown fields should be rejected")
+}
+
+func TestSubrouterMiddleware_WithOptionMiddleware(t *testing.T) {
+	e := fuego.NewEngine()
+	r := mux.NewRouter()
+
+	var order []string
+
+	// Subrouter with group-level middleware (like PortalSessionRequiredHandler)
+	protected := r.PathPrefix("").Subrouter()
+	protected.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			order = append(order, "group-middleware")
+			next.ServeHTTP(w, r)
+		})
+	})
+
+	// Route with per-route middleware (like PortalAuthHandler)
+	routeMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			order = append(order, "route-middleware")
+			next.ServeHTTP(w, r)
+		})
+	}
+
+	Get(e, protected, "/resource", func(c fuego.ContextNoBody) (string, error) {
+		order = append(order, "handler")
+		return "ok", nil
+	}, fuego.OptionMiddleware(routeMiddleware))
+
+	req := httptest.NewRequest(http.MethodGet, "/resource", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	// Group middleware runs first (applied by gorilla/mux subrouter),
+	// then route-level middleware (applied by fuegomux), then handler
+	assert.Equal(t, []string{"group-middleware", "route-middleware", "handler"}, order)
+}
