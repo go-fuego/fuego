@@ -10,3 +10,4 @@ bin
 go.work.sum
 /cmd/fuego/fuego
 *.db
+examples/mux-compat/mux-compat
