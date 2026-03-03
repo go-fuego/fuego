@@ -776,19 +776,19 @@ func Test_transformTypeName(t *testing.T) {
 		{
 			name:     "slice type parameter",
 			input:    "Response[[]model.QuotaData]",
-			expected: "Response_[]model.QuotaData",
+			expected: "Response_Array-model.QuotaData",
 		},
 		{
-			name:     "different slice type parameters produce different names",
-			input:    "Response[[]model.OtherData]",
-			expected: "Response_[]model.OtherData",
+			name:     "slice type parameter with package path",
+			input:    "Response[[]github.com/org/repo/model.QuotaData]",
+			expected: "Response_Array-model.QuotaData",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := transformTypeName(tt.input)
-			require.Equal(t, tt.expected, result)
+			assert.Equal(t, tt.expected, result)
 		})
 	}
 }

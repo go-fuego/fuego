@@ -56,6 +56,10 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		option.Description("Generic request and response. Showcase Fuego's support for generic input & output."),
 	)
 
+	fuego.Get(petsGroup, "/all-wrapped", rs.getAllPetsWrapped,
+		option.Description("Get all pets in a generic wrapped response with a slice type parameter"),
+	)
+
 	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge,
 		option.Description("Returns an array of pets grouped by age"),
 		option.Middleware(dummyMiddleware),
@@ -126,6 +130,19 @@ func (rs PetsResources) genericRequestAndResponse(c fuego.ContextWithBody[Generi
 	return &models.BareSuccessResponse[models.Pets]{
 		StatusCode: 200,
 		Result:     models.Pets{ID: "john", Name: body.Data.Name},
+		Message:    "success",
+	}, nil
+}
+
+func (rs PetsResources) getAllPetsWrapped(c fuego.ContextNoBody) (*models.BareSuccessResponse[[]models.Pets], error) {
+	pets, err := rs.PetsService.GetAllPets()
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.BareSuccessResponse[[]models.Pets]{
+		StatusCode: 200,
+		Result:     pets,
 		Message:    "success",
 	}, nil
 }
