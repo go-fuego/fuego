@@ -60,6 +60,10 @@ func (rs PetsResources) Routes(s *fuego.Server) {
 		option.Description("Get all pets in a generic wrapped response with a slice type parameter"),
 	)
 
+	fuego.Get(petsGroup, "/nested-wrapped", rs.getNestedWrapped,
+		option.Description("Get a pet in a nested generic response"),
+	)
+
 	fuego.Get(petsGroup, "/by-age", rs.getAllPetsByAge,
 		option.Description("Returns an array of pets grouped by age"),
 		option.Middleware(dummyMiddleware),
@@ -144,6 +148,23 @@ func (rs PetsResources) getAllPetsWrapped(c fuego.ContextNoBody) (*models.BareSu
 		StatusCode: 200,
 		Result:     pets,
 		Message:    "success",
+	}, nil
+}
+
+func (rs PetsResources) getNestedWrapped(c fuego.ContextNoBody) (*models.BareSuccessResponse[models.BareSuccessResponse[models.Pets]], error) {
+	pet, err := rs.PetsService.GetPets("1")
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.BareSuccessResponse[models.BareSuccessResponse[models.Pets]]{
+		StatusCode: 200,
+		Result: models.BareSuccessResponse[models.Pets]{
+			StatusCode: 200,
+			Result:     pet,
+			Message:    "inner",
+		},
+		Message: "outer",
 	}, nil
 }
 

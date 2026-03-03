@@ -783,6 +783,36 @@ func Test_transformTypeName(t *testing.T) {
 			input:    "Response[[]github.com/org/repo/model.QuotaData]",
 			expected: "Response_Array-model.QuotaData",
 		},
+		{
+			name:     "pointer type parameter",
+			input:    "Response[*model.User]",
+			expected: "Response_model.User",
+		},
+		{
+			name:     "pointer type parameter with package path",
+			input:    "Response[*github.com/org/repo/model.User]",
+			expected: "Response_model.User",
+		},
+		{
+			name:     "map type parameter",
+			input:    "Response[map[string]model.User]",
+			expected: "Response_map-string-model.User",
+		},
+		{
+			name:     "map type parameter with package path",
+			input:    "Response[map[string]github.com/org/repo/model.User]",
+			expected: "Response_map-string-model.User",
+		},
+		{
+			name:     "nested generic",
+			input:    "Outer[Inner[model.User]]",
+			expected: "Outer_Inner-model.User",
+		},
+		{
+			name:     "nested generic with package path",
+			input:    "Outer[Inner[github.com/org/repo/model.User]]",
+			expected: "Outer_Inner-model.User",
+		},
 	}
 
 	for _, tt := range tests {

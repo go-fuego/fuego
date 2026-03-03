@@ -9,7 +9,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"unicode"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3gen"
@@ -525,17 +524,16 @@ func transformTypeName(s string) string {
 	prefix := s[:start]
 	inside := s[start+1 : end]
 
-	// Strip the package import path while preserving type modifiers like "[]" or "*".
-	// Go package paths start with a letter (e.g. "github.com/..."), while type modifiers
-	// are symbols (e.g. "[]", "*"). We keep everything before the first letter (the
-	// modifiers) and everything after the last "/" (the final "package.Type" segment).
-	if lastSlash := strings.LastIndex(inside, "/"); lastSlash != -1 {
-		pathStart := strings.IndexFunc(inside, unicode.IsLetter)
-		inside = inside[:pathStart] + inside[lastSlash+1:]
-	}
+	// Strip Go import path prefixes (e.g. "github.com/org/repo/" -> "").
+	// Import paths match: word(.word)* followed by one or more /word/ segments.
+	inside = importPathRe.ReplaceAllString(inside, "")
 
-	// Replace characters not allowed in OpenAPI 3 identifiers (valid: a-zA-Z0-9._-)
-	inside = strings.ReplaceAll(inside, "[]", "Array-")
+	// Sanitize Go type syntax into valid OpenAPI 3 identifiers (a-zA-Z0-9._-).
+	// Order matters: "[]" must be replaced before "[" so slices become "Array-" not "-".
+	inside = strings.NewReplacer("[]", "Array-", "[", "-", "]", "-", "*", "").Replace(inside)
+	inside = strings.TrimRight(inside, "-")
 
 	return prefix + "_" + inside
 }
+
+var importPathRe = regexp.MustCompile(`\w+(?:\.\w+)*/(?:\w[\w.-]*/)*`)
