@@ -280,9 +280,22 @@ func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 		for i := range typeOfParams.NumField() {
 			field := typeOfParams.Field(i)
 			var params []ParamOption
-			example, _ := field.Tag.Lookup("description")
+			example, _ := field.Tag.Lookup("example")
 			if example != "" {
-				params = append(params, ParamExample("example", example))
+				var parsedExample any
+				var err error
+
+				if field.Type.Kind() == reflect.Slice || field.Type.Kind() == reflect.Array {
+					parsedExample, err = parseDefaultValueArray(example, field.Type.Elem().Kind())
+				} else {
+					parsedExample, err = parseDefaultValue(example, field.Type.Kind())
+				}
+
+				if err != nil {
+					return fmt.Errorf("invalid example value for field %s: %w", field.Name, err)
+				}
+
+				params = append(params, ParamExample("example", parsedExample))
 			}
 
 			// Parse default tag

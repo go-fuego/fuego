@@ -192,19 +192,19 @@ func panicsIfNotCorrectType(openapiParam *openapi3.Parameter, exampleValue any) 
 	if openapiParam.Schema.Value.Type.Is("integer") {
 		_, ok := exampleValue.(int)
 		if !ok {
-			panic("example value must be an integer")
+			panic(fmt.Sprintf("example value must be an integer, got %T", exampleValue))
 		}
 	}
 	if openapiParam.Schema.Value.Type.Is("boolean") {
 		_, ok := exampleValue.(bool)
 		if !ok {
-			panic("example value must be a boolean")
+			panic(fmt.Sprintf("example value must be a boolean, got %T", exampleValue))
 		}
 	}
 	if openapiParam.Schema.Value.Type.Is("string") {
 		_, ok := exampleValue.(string)
 		if !ok {
-			panic("example value must be a string")
+			panic(fmt.Sprintf("example value must be a string, got %T", exampleValue))
 		}
 	}
 	return exampleValue

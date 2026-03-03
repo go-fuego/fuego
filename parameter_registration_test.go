@@ -337,3 +337,114 @@ func TestRegisterParams_DefaultTag(t *testing.T) {
 		assert.Equal(t, "test", nameParam.Schema.Value.Default)
 	})
 }
+
+func TestRegisterParams_ExampleTag(t *testing.T) {
+	handler := func(w http.ResponseWriter, r *http.Request) {}
+	s := NewServer()
+
+	t.Run("String example", func(t *testing.T) {
+		route := NewRoute[struct{}, struct{}, struct {
+			Name string `query:"name" example:"felix"`
+		}](
+			http.MethodGet,
+			"/test",
+			handler,
+			s.Engine,
+		)
+		err := route.RegisterParams()
+		require.NoError(t, err)
+
+		param := route.Operation.Parameters.GetByInAndName("query", "name")
+		require.NotNil(t, param)
+		require.NotNil(t, param.Examples)
+		assert.Equal(t, "felix", param.Examples["example"].Value.Value)
+	})
+
+	t.Run("Int example", func(t *testing.T) {
+		route := NewRoute[struct{}, struct{}, struct {
+			Age int `query:"age" example:"3"`
+		}](
+			http.MethodGet,
+			"/test",
+			handler,
+			s.Engine,
+		)
+		err := route.RegisterParams()
+		require.NoError(t, err)
+
+		param := route.Operation.Parameters.GetByInAndName("query", "age")
+		require.NotNil(t, param)
+		require.NotNil(t, param.Examples)
+		assert.Equal(t, 3, param.Examples["example"].Value.Value)
+	})
+
+	t.Run("Bool example", func(t *testing.T) {
+		route := NewRoute[struct{}, struct{}, struct {
+			Active bool `query:"active" example:"true"`
+		}](
+			http.MethodGet,
+			"/test",
+			handler,
+			s.Engine,
+		)
+		err := route.RegisterParams()
+		require.NoError(t, err)
+
+		param := route.Operation.Parameters.GetByInAndName("query", "active")
+		require.NotNil(t, param)
+		require.NotNil(t, param.Examples)
+		assert.Equal(t, true, param.Examples["example"].Value.Value)
+	})
+
+	t.Run("Int slice example", func(t *testing.T) {
+		route := NewRoute[struct{}, struct{}, struct {
+			Tags []int `query:"tags" example:"1,2,3"`
+		}](
+			http.MethodGet,
+			"/test",
+			handler,
+			s.Engine,
+		)
+		err := route.RegisterParams()
+		require.NoError(t, err)
+
+		param := route.Operation.Parameters.GetByInAndName("query", "tags")
+		require.NotNil(t, param)
+		require.NotNil(t, param.Examples)
+		assert.Equal(t, []any{1, 2, 3}, param.Examples["example"].Value.Value)
+	})
+
+	t.Run("Invalid int example", func(t *testing.T) {
+		route := NewRoute[struct{}, struct{}, struct {
+			Age int `query:"age" example:"not-a-number"`
+		}](
+			http.MethodGet,
+			"/test",
+			handler,
+			s.Engine,
+		)
+		err := route.RegisterParams()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "invalid example value for field Age")
+	})
+
+	t.Run("Example with default and description", func(t *testing.T) {
+		route := NewRoute[struct{}, struct{}, struct {
+			Name string `query:"name" description:"Filter by name" example:"felix" default:"all"`
+		}](
+			http.MethodGet,
+			"/test",
+			handler,
+			s.Engine,
+		)
+		err := route.RegisterParams()
+		require.NoError(t, err)
+
+		param := route.Operation.Parameters.GetByInAndName("query", "name")
+		require.NotNil(t, param)
+		assert.Equal(t, "Filter by name", param.Description)
+		assert.Equal(t, "all", param.Schema.Value.Default)
+		require.NotNil(t, param.Examples)
+		assert.Equal(t, "felix", param.Examples["example"].Value.Value)
+	})
+}
