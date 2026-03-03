@@ -1,6 +1,102 @@
 {
 	"components": {
 		"schemas": {
+			"BareSuccessResponse_Array-models.Pets": {
+				"description": "BareSuccessResponse_Array-models.Pets schema",
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"items": {
+							"properties": {
+								"age": {
+									"description": "Age of the pet, in years",
+									"example": 2,
+									"type": "integer"
+								},
+								"birth_date": {
+									"format": "date-time",
+									"type": "string"
+								},
+								"id": {
+									"example": "pet-123456",
+									"type": "string"
+								},
+								"is_adopted": {
+									"description": "Is the pet adopted",
+									"type": "boolean"
+								},
+								"name": {
+									"example": "Napoleon",
+									"type": "string"
+								},
+								"references": {
+									"properties": {
+										"type": {
+											"description": "type of reference",
+											"example": "pet-123456",
+											"type": "string"
+										},
+										"value": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"type",
+										"value"
+									],
+									"type": "object"
+								},
+								"treats": {
+									"items": {
+										"properties": {
+											"brand": {
+												"description": "The brand of the treat",
+												"type": "string"
+											},
+											"itemId": {
+												"description": "The unique id of the treat",
+												"format": "uuid",
+												"type": "string"
+											},
+											"name": {
+												"description": "the name of a treat",
+												"type": "string"
+											}
+										},
+										"required": [
+											"itemId",
+											"name"
+										],
+										"type": "object"
+									},
+									"type": "array"
+								}
+							},
+							"required": [
+								"age",
+								"birth_date",
+								"id",
+								"is_adopted",
+								"name",
+								"references"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"statusCode": {
+						"type": "integer"
+					}
+				},
+				"required": [
+					"message",
+					"result",
+					"statusCode"
+				],
+				"type": "object"
+			},
 			"BareSuccessResponse_models.Pets": {
 				"description": "BareSuccessResponse_models.Pets schema",
 				"properties": {
@@ -909,6 +1005,98 @@
 				"tags": [
 					"pets",
 					"my-tag"
+				]
+			}
+		},
+		"/pets/all-wrapped": {
+			"get": {
+				"description": "#### Controller: \n\n`github.com/go-fuego/fuego/examples/petstore/controllers.PetsResources.getAllPetsWrapped`\n\n#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\nGet all pets in a generic wrapped response with a slice type parameter",
+				"operationId": "GET_/pets/all-wrapped",
+				"parameters": [
+					{
+						"description": "header description",
+						"in": "header",
+						"name": "X-Header",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Accept",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BareSuccessResponse_Array-models.Pets"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/BareSuccessResponse_Array-models.Pets"
+								}
+							}
+						},
+						"description": "OK"
+					},
+					"204": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NoContent"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/NoContent"
+								}
+							}
+						},
+						"description": "No Content"
+					},
+					"400": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Bad Request _(validation or deserialization error)_"
+					},
+					"500": {
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							},
+							"application/xml": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPError"
+								}
+							}
+						},
+						"description": "Internal Server Error _(panics)_"
+					},
+					"default": {
+						"description": ""
+					}
+				},
+				"summary": "get all pets wrapped",
+				"tags": [
+					"pets"
 				]
 			}
 		},

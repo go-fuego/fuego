@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3gen"
@@ -497,8 +498,8 @@ type OpenAPIDescriptioner interface {
 // Transform the type name to a more readable & valid OpenAPI 3 format.
 // Useful for generics.
 // Example: "BareSuccessResponse[github.com/go-fuego/fuego/examples/petstore/models.Pets]" -> "BareSuccessResponse_models.Pets"
+// Example: "BareSuccessResponse[[]github.com/go-fuego/fuego/examples/petstore/models.Pets]" -> "BareSuccessResponse_Array-models.Pets"
 func transformTypeName(s string) string {
-	// Find the positions of the '[' and ']'
 	start := strings.Index(s, "[")
 	if start == -1 {
 		return s
@@ -509,13 +510,19 @@ func transformTypeName(s string) string {
 	}
 
 	prefix := s[:start]
-
 	inside := s[start+1 : end]
 
-	lastSlash := strings.LastIndex(inside, "/")
-	if lastSlash != -1 {
-		inside = inside[lastSlash+1:]
+	// Strip the package import path while preserving type modifiers like "[]" or "*".
+	// Go package paths start with a letter (e.g. "github.com/..."), while type modifiers
+	// are symbols (e.g. "[]", "*"). We keep everything before the first letter (the
+	// modifiers) and everything after the last "/" (the final "package.Type" segment).
+	if lastSlash := strings.LastIndex(inside, "/"); lastSlash != -1 {
+		pathStart := strings.IndexFunc(inside, unicode.IsLetter)
+		inside = inside[:pathStart] + inside[lastSlash+1:]
 	}
+
+	// Replace characters not allowed in OpenAPI 3 identifiers (valid: a-zA-Z0-9._-)
+	inside = strings.ReplaceAll(inside, "[]", "Array-")
 
 	return prefix + "_" + inside
 }
