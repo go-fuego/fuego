@@ -3,7 +3,8 @@ package fuegomux
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -25,14 +26,41 @@ var (
 	_ fuego.ContextFlowable[any, any] = &muxContext[any, any]{}
 )
 
+// Body reads and validates the request body based on the Content-Type header.
+// Supported content types: JSON (default), XML, YAML, URL-encoded forms,
+// plain text (B must be ~string), and octet-stream (B must be []byte).
+// Unknown-field rejection is controlled by [fuego.ReadOptions].DisallowUnknownFields
+// (default: true).
 func (c muxContext[B, P]) Body() (B, error) {
-	var body B
-	dec := json.NewDecoder(c.req.Body)
-	dec.DisallowUnknownFields()
-	if err := dec.Decode(&body); err != nil {
-		return body, err
+	switch c.req.Header.Get("Content-Type") {
+	case "text/plain":
+		s, err := fuego.ReadString[string](c.req.Context(), c.req.Body)
+		if err != nil {
+			var body B
+			return body, err
+		}
+		return any(s).(B), nil
+	case "application/x-www-form-urlencoded", "multipart/form-data":
+		return fuego.ReadURLEncoded[B](c.req)
+	case "application/xml":
+		return fuego.ReadXML[B](c.req.Context(), c.req.Body)
+	case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml":
+		return fuego.ReadYAML[B](c.req.Context(), c.req.Body)
+	case "application/octet-stream":
+		bytes, err := io.ReadAll(c.req.Body)
+		if err != nil {
+			var body B
+			return body, err
+		}
+		respBytes, ok := any(bytes).(B)
+		if !ok {
+			var body B
+			return body, fmt.Errorf("could not convert bytes to %T. To read binary data from the request, use []byte as the body type", body)
+		}
+		return respBytes, nil
+	default:
+		return fuego.ReadJSON[B](c.req.Context(), c.req.Body)
 	}
-	return fuego.TransformAndValidate(c, body)
 }
 
 func (c muxContext[B, P]) MustBody() B {
@@ -136,8 +164,11 @@ func (c muxContext[B, P]) SerializeError(err error) {
 	fuego.SendError(c.res, c.req, err)
 }
 
+// SetDefaultStatusCode is a no-op for gorilla/mux.
+// gorilla/mux uses a raw http.ResponseWriter where WriteHeader immediately
+// writes to the response — there is no way to delay it until serialization.
+// As a result, [option.DefaultStatusCode] is not supported.
+// See https://github.com/go-fuego/fuego/pull/376 for background.
 func (c muxContext[B, P]) SetDefaultStatusCode() {
-	if c.DefaultStatusCode != 0 {
-		c.SetStatus(c.DefaultStatusCode)
-	}
+	// no-op: see doc comment above.
 }

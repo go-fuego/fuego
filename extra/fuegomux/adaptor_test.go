@@ -282,6 +282,83 @@ func TestBody_DisallowUnknownFields(t *testing.T) {
 	assert.NotEqual(t, http.StatusOK, w.Code, "unknown fields should be rejected")
 }
 
+func TestBody_XML(t *testing.T) {
+	e := fuego.NewEngine()
+	r := mux.NewRouter()
+
+	type Request struct {
+		Name string `xml:"name"`
+	}
+	type Response struct {
+		Greeting string `json:"greeting"`
+	}
+
+	Post(e, r, "/greet", func(c fuego.ContextWithBody[Request]) (Response, error) {
+		body, err := c.Body()
+		if err != nil {
+			return Response{}, err
+		}
+		return Response{Greeting: "Hello " + body.Name}, nil
+	})
+
+	req := httptest.NewRequest(http.MethodPost, "/greet", strings.NewReader(`<Request><name>World</name></Request>`))
+	req.Header.Set("Content-Type", "application/xml")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), `"greeting":"Hello World"`)
+}
+
+func TestBody_URLEncoded(t *testing.T) {
+	e := fuego.NewEngine()
+	r := mux.NewRouter()
+
+	type Request struct {
+		Name string `schema:"name"`
+	}
+	type Response struct {
+		Greeting string `json:"greeting"`
+	}
+
+	Post(e, r, "/greet", func(c fuego.ContextWithBody[Request]) (Response, error) {
+		body, err := c.Body()
+		if err != nil {
+			return Response{}, err
+		}
+		return Response{Greeting: "Hello " + body.Name}, nil
+	})
+
+	req := httptest.NewRequest(http.MethodPost, "/greet", strings.NewReader("name=World"))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), `"greeting":"Hello World"`)
+}
+
+func TestBody_DefaultsToJSON(t *testing.T) {
+	e := fuego.NewEngine()
+	r := mux.NewRouter()
+
+	type Request struct {
+		Name string `json:"name"`
+	}
+
+	Post(e, r, "/test", func(c fuego.ContextWithBody[Request]) (Request, error) {
+		return c.Body()
+	})
+
+	// No Content-Type header — should default to JSON
+	req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(`{"name":"test"}`))
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), `"name":"test"`)
+}
+
 func TestSubrouterMiddleware_WithOptionMiddleware(t *testing.T) {
 	e := fuego.NewEngine()
 	r := mux.NewRouter()
