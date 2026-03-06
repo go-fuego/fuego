@@ -461,3 +461,41 @@ func WithStripTrailingSlash() ServerOption {
 		s.globalMiddlewares = append(s.globalMiddlewares, stripTrailingSlashMiddleware)
 	}
 }
+
+type ServerTimeouts struct {
+	Read       time.Duration
+	ReadHeader time.Duration
+	Write      time.Duration
+	Idle       time.Duration
+}
+
+// WithTimeouts sets the server's timeouts. It sets the
+// ReadTimeout, ReadHeaderTimeout, WriteTimeout, and IdleTimeout of the server.
+// Example:
+//
+//	app := fuego.NewServer(
+//		fuego.WithTimeouts(fuego.ServerTimeouts{
+//			Read:       10 * time.Second,
+//			ReadHeader: 5 * time.Second,
+//			Write:      10 * time.Second,
+//			Idle:       120 * time.Second,
+//		}),
+//	)
+//
+// The default value is 30s for Read, ReadHeader, Write, and Idle.
+func WithTimeouts(timeouts ServerTimeouts) ServerOption {
+	return func(s *Server) {
+		if timeouts.Read > 0 {
+			s.ReadTimeout = timeouts.Read
+		}
+		if timeouts.ReadHeader > 0 {
+			s.ReadHeaderTimeout = timeouts.ReadHeader
+		}
+		if timeouts.Write > 0 {
+			s.WriteTimeout = timeouts.Write
+		}
+		if timeouts.Idle > 0 {
+			s.IdleTimeout = timeouts.Idle
+		}
+	}
+}

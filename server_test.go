@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-playground/validator/v10"
@@ -918,5 +919,48 @@ func TestWithStripTrailingSlash(t *testing.T) {
 			t.Log(res.Body.String())
 			require.Equal(t, 200, res.Code)
 		})
+	})
+}
+
+func TestWithTimeouts(t *testing.T) {
+	t.Run("all timeouts are set", func(t *testing.T) {
+		s := NewServer(
+			WithTimeouts(ServerTimeouts{
+				Read:       5 * time.Second,
+				ReadHeader: 3 * time.Second,
+				Write:      10 * time.Second,
+				Idle:       30 * time.Second,
+			}),
+		)
+
+		assert.Equal(t, 5*time.Second, s.Server.ReadTimeout)
+		assert.Equal(t, 3*time.Second, s.Server.ReadHeaderTimeout)
+		assert.Equal(t, 10*time.Second, s.Server.WriteTimeout)
+		assert.Equal(t, 30*time.Second, s.Server.IdleTimeout)
+	})
+
+	t.Run("partial timeouts only set provided values", func(t *testing.T) {
+		s := NewServer(
+			WithTimeouts(ServerTimeouts{
+				Read:  5 * time.Second,
+				Write: 10 * time.Second,
+			}),
+		)
+
+		assert.Equal(t, 5*time.Second, s.Server.ReadTimeout)
+		assert.Equal(t, 30*time.Second, s.Server.ReadHeaderTimeout, "default should be preserved")
+		assert.Equal(t, 10*time.Second, s.Server.WriteTimeout)
+		assert.Equal(t, 30*time.Second, s.Server.IdleTimeout, "default should be preserved")
+	})
+
+	t.Run("zero value timeouts do not override defaults", func(t *testing.T) {
+		s := NewServer(
+			WithTimeouts(ServerTimeouts{}),
+		)
+
+		assert.Equal(t, 30*time.Second, s.Server.ReadTimeout)
+		assert.Equal(t, 30*time.Second, s.Server.ReadHeaderTimeout)
+		assert.Equal(t, 30*time.Second, s.Server.WriteTimeout)
+		assert.Equal(t, 30*time.Second, s.Server.IdleTimeout)
 	})
 }
