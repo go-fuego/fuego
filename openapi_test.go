@@ -654,15 +654,19 @@ func TestEmbeddedStructHandling(t *testing.T) {
 
 	// Check if embedded struct fields are included
 	require.NotNil(t, outerSchema.Properties["field_a"])
-	require.Equal(t, &openapi3.Types{"string"}, outerSchema.Properties["field_a"].Value.Type)
-	require.Equal(t, "Value A", outerSchema.Properties["field_a"].Value.Example)
-	require.Equal(t, "A field in the inner struct", outerSchema.Properties["field_a"].Value.Description)
+	assert.Equal(t, &openapi3.Types{"string"}, outerSchema.Properties["field_a"].Value.Type)
+	assert.Equal(t, "Value A", outerSchema.Properties["field_a"].Value.Example)
+	assert.Equal(t, "A field in the inner struct", outerSchema.Properties["field_a"].Value.Description)
 
 	// Check if non-embedded struct fields are included
 	require.NotNil(t, outerSchema.Properties["field_b"])
-	require.Equal(t, &openapi3.Types{"integer"}, outerSchema.Properties["field_b"].Value.Type)
-	require.Equal(t, 100, outerSchema.Properties["field_b"].Value.Example)
-	require.Equal(t, "B field in the outer struct", outerSchema.Properties["field_b"].Value.Description)
+	assert.Equal(t, &openapi3.Types{"integer"}, outerSchema.Properties["field_b"].Value.Type)
+	assert.Equal(t, 100, outerSchema.Properties["field_b"].Value.Example)
+	assert.Equal(t, "B field in the outer struct", outerSchema.Properties["field_b"].Value.Description)
+
+	// Both fields should be required (no omitempty tag)
+	assert.Contains(t, outerSchema.Required, "field_a", "embedded struct fields without omitempty should be required")
+	assert.Contains(t, outerSchema.Required, "field_b", "outer struct fields without omitempty should be required")
 }
 
 func TestDeclareCustom200Response(t *testing.T) {
