@@ -70,6 +70,19 @@ func determineRequired(t reflect.Type, schema *openapi3.Schema) {
 	}
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
+
+		// Recurse into embedded struct fields
+		if f.Anonymous {
+			ft := f.Type
+			if ft.Kind() == reflect.Pointer {
+				ft = ft.Elem()
+			}
+			if ft.Kind() == reflect.Struct {
+				determineRequired(ft, schema)
+				continue
+			}
+		}
+
 		name := f.Name
 		// skip if it's a private field
 		firstRune, _ := utf8.DecodeRuneInString(name)

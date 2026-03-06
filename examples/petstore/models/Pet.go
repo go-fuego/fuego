@@ -16,6 +16,8 @@ type BareSuccessResponse[Res any] struct {
 }
 
 type Pets struct {
+	Traits
+
 	ID         string     `json:"id" validate:"required" example:"pet-123456"`
 	Name       string     `json:"name" validate:"required" example:"Napoleon"`
 	Age        int        `json:"age" example:"2" description:"Age of the pet, in years"`
@@ -23,6 +25,11 @@ type Pets struct {
 	References References `json:"references"`
 	BirthDate  time.Time  `json:"birth_date"`
 	FavTreats  []Treat    `json:"treats,omitempty" validate:"dive"`
+}
+
+type Traits struct {
+	Breed string `json:"breed" example:"Golden Retriever"`
+	Size  string `json:"size" example:"Small"`
 }
 
 type PetsCreate struct {

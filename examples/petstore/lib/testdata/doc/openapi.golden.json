@@ -19,6 +19,10 @@
 									"format": "date-time",
 									"type": "string"
 								},
+								"breed": {
+									"example": "Golden Retriever",
+									"type": "string"
+								},
 								"id": {
 									"example": "pet-123456",
 									"type": "string"
@@ -47,6 +51,10 @@
 										"value"
 									],
 									"type": "object"
+								},
+								"size": {
+									"example": "Small",
+									"type": "string"
 								},
 								"treats": {
 									"items": {
@@ -77,10 +85,12 @@
 							"required": [
 								"age",
 								"birth_date",
+								"breed",
 								"id",
 								"is_adopted",
 								"name",
-								"references"
+								"references",
+								"size"
 							],
 							"type": "object"
 						},
@@ -119,6 +129,10 @@
 										"format": "date-time",
 										"type": "string"
 									},
+									"breed": {
+										"example": "Golden Retriever",
+										"type": "string"
+									},
 									"id": {
 										"example": "pet-123456",
 										"type": "string"
@@ -147,6 +161,10 @@
 											"value"
 										],
 										"type": "object"
+									},
+									"size": {
+										"example": "Small",
+										"type": "string"
 									},
 									"treats": {
 										"items": {
@@ -177,10 +195,12 @@
 								"required": [
 									"age",
 									"birth_date",
+									"breed",
 									"id",
 									"is_adopted",
 									"name",
-									"references"
+									"references",
+									"size"
 								],
 								"type": "object"
 							},
@@ -223,6 +243,10 @@
 								"format": "date-time",
 								"type": "string"
 							},
+							"breed": {
+								"example": "Golden Retriever",
+								"type": "string"
+							},
 							"id": {
 								"example": "pet-123456",
 								"type": "string"
@@ -251,6 +275,10 @@
 									"value"
 								],
 								"type": "object"
+							},
+							"size": {
+								"example": "Small",
+								"type": "string"
 							},
 							"treats": {
 								"items": {
@@ -281,10 +309,12 @@
 						"required": [
 							"age",
 							"birth_date",
+							"breed",
 							"id",
 							"is_adopted",
 							"name",
-							"references"
+							"references",
+							"size"
 						],
 						"type": "object"
 					},
@@ -313,6 +343,10 @@
 								"format": "date-time",
 								"type": "string"
 							},
+							"breed": {
+								"example": "Golden Retriever",
+								"type": "string"
+							},
 							"id": {
 								"example": "pet-123456",
 								"type": "string"
@@ -341,6 +375,10 @@
 									"value"
 								],
 								"type": "object"
+							},
+							"size": {
+								"example": "Small",
+								"type": "string"
 							},
 							"treats": {
 								"items": {
@@ -371,10 +409,12 @@
 						"required": [
 							"age",
 							"birth_date",
+							"breed",
 							"id",
 							"is_adopted",
 							"name",
-							"references"
+							"references",
+							"size"
 						],
 						"type": "object"
 					},
@@ -456,6 +496,10 @@
 						"format": "date-time",
 						"type": "string"
 					},
+					"breed": {
+						"example": "Golden Retriever",
+						"type": "string"
+					},
 					"id": {
 						"example": "pet-123456",
 						"type": "string"
@@ -484,6 +528,10 @@
 							"value"
 						],
 						"type": "object"
+					},
+					"size": {
+						"example": "Small",
+						"type": "string"
 					},
 					"treats": {
 						"items": {
@@ -514,10 +562,12 @@
 				"required": [
 					"age",
 					"birth_date",
+					"breed",
 					"id",
 					"is_adopted",
 					"name",
-					"references"
+					"references",
+					"size"
 				],
 				"type": "object"
 			},
