@@ -9,90 +9,7 @@
 					},
 					"result": {
 						"items": {
-							"properties": {
-								"age": {
-									"description": "Age of the pet, in years",
-									"example": 2,
-									"type": "integer"
-								},
-								"birth_date": {
-									"format": "date-time",
-									"type": "string"
-								},
-								"breed": {
-									"example": "Golden Retriever",
-									"type": "string"
-								},
-								"id": {
-									"example": "pet-123456",
-									"type": "string"
-								},
-								"is_adopted": {
-									"description": "Is the pet adopted",
-									"type": "boolean"
-								},
-								"name": {
-									"example": "Napoleon",
-									"type": "string"
-								},
-								"references": {
-									"properties": {
-										"type": {
-											"description": "type of reference",
-											"example": "pet-123456",
-											"type": "string"
-										},
-										"value": {
-											"type": "string"
-										}
-									},
-									"required": [
-										"type",
-										"value"
-									],
-									"type": "object"
-								},
-								"size": {
-									"example": "Small",
-									"type": "string"
-								},
-								"treats": {
-									"items": {
-										"properties": {
-											"brand": {
-												"description": "The brand of the treat",
-												"type": "string"
-											},
-											"itemId": {
-												"description": "The unique id of the treat",
-												"format": "uuid",
-												"type": "string"
-											},
-											"name": {
-												"description": "the name of a treat",
-												"type": "string"
-											}
-										},
-										"required": [
-											"itemId",
-											"name"
-										],
-										"type": "object"
-									},
-									"type": "array"
-								}
-							},
-							"required": [
-								"age",
-								"birth_date",
-								"breed",
-								"id",
-								"is_adopted",
-								"name",
-								"references",
-								"size"
-							],
-							"type": "object"
+							"$ref": "#/components/schemas/Pets"
 						},
 						"type": "array"
 					},
@@ -119,90 +36,7 @@
 								"type": "string"
 							},
 							"result": {
-								"properties": {
-									"age": {
-										"description": "Age of the pet, in years",
-										"example": 2,
-										"type": "integer"
-									},
-									"birth_date": {
-										"format": "date-time",
-										"type": "string"
-									},
-									"breed": {
-										"example": "Golden Retriever",
-										"type": "string"
-									},
-									"id": {
-										"example": "pet-123456",
-										"type": "string"
-									},
-									"is_adopted": {
-										"description": "Is the pet adopted",
-										"type": "boolean"
-									},
-									"name": {
-										"example": "Napoleon",
-										"type": "string"
-									},
-									"references": {
-										"properties": {
-											"type": {
-												"description": "type of reference",
-												"example": "pet-123456",
-												"type": "string"
-											},
-											"value": {
-												"type": "string"
-											}
-										},
-										"required": [
-											"type",
-											"value"
-										],
-										"type": "object"
-									},
-									"size": {
-										"example": "Small",
-										"type": "string"
-									},
-									"treats": {
-										"items": {
-											"properties": {
-												"brand": {
-													"description": "The brand of the treat",
-													"type": "string"
-												},
-												"itemId": {
-													"description": "The unique id of the treat",
-													"format": "uuid",
-													"type": "string"
-												},
-												"name": {
-													"description": "the name of a treat",
-													"type": "string"
-												}
-											},
-											"required": [
-												"itemId",
-												"name"
-											],
-											"type": "object"
-										},
-										"type": "array"
-									}
-								},
-								"required": [
-									"age",
-									"birth_date",
-									"breed",
-									"id",
-									"is_adopted",
-									"name",
-									"references",
-									"size"
-								],
-								"type": "object"
+								"$ref": "#/components/schemas/Pets"
 							},
 							"statusCode": {
 								"type": "integer"
@@ -233,90 +67,7 @@
 						"type": "string"
 					},
 					"result": {
-						"properties": {
-							"age": {
-								"description": "Age of the pet, in years",
-								"example": 2,
-								"type": "integer"
-							},
-							"birth_date": {
-								"format": "date-time",
-								"type": "string"
-							},
-							"breed": {
-								"example": "Golden Retriever",
-								"type": "string"
-							},
-							"id": {
-								"example": "pet-123456",
-								"type": "string"
-							},
-							"is_adopted": {
-								"description": "Is the pet adopted",
-								"type": "boolean"
-							},
-							"name": {
-								"example": "Napoleon",
-								"type": "string"
-							},
-							"references": {
-								"properties": {
-									"type": {
-										"description": "type of reference",
-										"example": "pet-123456",
-										"type": "string"
-									},
-									"value": {
-										"type": "string"
-									}
-								},
-								"required": [
-									"type",
-									"value"
-								],
-								"type": "object"
-							},
-							"size": {
-								"example": "Small",
-								"type": "string"
-							},
-							"treats": {
-								"items": {
-									"properties": {
-										"brand": {
-											"description": "The brand of the treat",
-											"type": "string"
-										},
-										"itemId": {
-											"description": "The unique id of the treat",
-											"format": "uuid",
-											"type": "string"
-										},
-										"name": {
-											"description": "the name of a treat",
-											"type": "string"
-										}
-									},
-									"required": [
-										"itemId",
-										"name"
-									],
-									"type": "object"
-								},
-								"type": "array"
-							}
-						},
-						"required": [
-							"age",
-							"birth_date",
-							"breed",
-							"id",
-							"is_adopted",
-							"name",
-							"references",
-							"size"
-						],
-						"type": "object"
+						"$ref": "#/components/schemas/Pets"
 					},
 					"statusCode": {
 						"type": "integer"
@@ -329,94 +80,35 @@
 				],
 				"type": "object"
 			},
+			"ErrorItem": {
+				"properties": {
+					"more": {
+						"additionalProperties": {
+							"description": "Additional information about the error"
+						},
+						"description": "Additional information about the error",
+						"type": "object"
+					},
+					"name": {
+						"description": "For example, name of the parameter that caused the error",
+						"type": "string"
+					},
+					"reason": {
+						"description": "Human readable error message",
+						"type": "string"
+					}
+				},
+				"required": [
+					"name",
+					"reason"
+				],
+				"type": "object"
+			},
 			"GenericInput_models.Pets": {
 				"description": "GenericInput_models.Pets schema",
 				"properties": {
 					"data": {
-						"properties": {
-							"age": {
-								"description": "Age of the pet, in years",
-								"example": 2,
-								"type": "integer"
-							},
-							"birth_date": {
-								"format": "date-time",
-								"type": "string"
-							},
-							"breed": {
-								"example": "Golden Retriever",
-								"type": "string"
-							},
-							"id": {
-								"example": "pet-123456",
-								"type": "string"
-							},
-							"is_adopted": {
-								"description": "Is the pet adopted",
-								"type": "boolean"
-							},
-							"name": {
-								"example": "Napoleon",
-								"type": "string"
-							},
-							"references": {
-								"properties": {
-									"type": {
-										"description": "type of reference",
-										"example": "pet-123456",
-										"type": "string"
-									},
-									"value": {
-										"type": "string"
-									}
-								},
-								"required": [
-									"type",
-									"value"
-								],
-								"type": "object"
-							},
-							"size": {
-								"example": "Small",
-								"type": "string"
-							},
-							"treats": {
-								"items": {
-									"properties": {
-										"brand": {
-											"description": "The brand of the treat",
-											"type": "string"
-										},
-										"itemId": {
-											"description": "The unique id of the treat",
-											"format": "uuid",
-											"type": "string"
-										},
-										"name": {
-											"description": "the name of a treat",
-											"type": "string"
-										}
-									},
-									"required": [
-										"itemId",
-										"name"
-									],
-									"type": "object"
-								},
-								"type": "array"
-							}
-						},
-						"required": [
-							"age",
-							"birth_date",
-							"breed",
-							"id",
-							"is_adopted",
-							"name",
-							"references",
-							"size"
-						],
-						"type": "object"
+						"$ref": "#/components/schemas/Pets"
 					},
 					"thing": {
 						"type": "string"
@@ -437,28 +129,7 @@
 					},
 					"errors": {
 						"items": {
-							"properties": {
-								"more": {
-									"additionalProperties": {
-										"description": "Additional information about the error"
-									},
-									"description": "Additional information about the error",
-									"type": "object"
-								},
-								"name": {
-									"description": "For example, name of the parameter that caused the error",
-									"type": "string"
-								},
-								"reason": {
-									"description": "Human readable error message",
-									"type": "string"
-								}
-							},
-							"required": [
-								"name",
-								"reason"
-							],
-							"type": "object"
+							"$ref": "#/components/schemas/ErrorItem"
 						},
 						"type": "array"
 					},
@@ -485,7 +156,6 @@
 				"description": "NoContent schema"
 			},
 			"Pets": {
-				"description": "Pets schema",
 				"properties": {
 					"age": {
 						"description": "Age of the pet, in years",
@@ -513,21 +183,7 @@
 						"type": "string"
 					},
 					"references": {
-						"properties": {
-							"type": {
-								"description": "type of reference",
-								"example": "pet-123456",
-								"type": "string"
-							},
-							"value": {
-								"type": "string"
-							}
-						},
-						"required": [
-							"type",
-							"value"
-						],
-						"type": "object"
+						"$ref": "#/components/schemas/References"
 					},
 					"size": {
 						"example": "Small",
@@ -535,26 +191,7 @@
 					},
 					"treats": {
 						"items": {
-							"properties": {
-								"brand": {
-									"description": "The brand of the treat",
-									"type": "string"
-								},
-								"itemId": {
-									"description": "The unique id of the treat",
-									"format": "uuid",
-									"type": "string"
-								},
-								"name": {
-									"description": "the name of a treat",
-									"type": "string"
-								}
-							},
-							"required": [
-								"itemId",
-								"name"
-							],
-							"type": "object"
+							"$ref": "#/components/schemas/Treat"
 						},
 						"type": "array"
 					}
@@ -592,21 +229,7 @@
 						"type": "string"
 					},
 					"references": {
-						"properties": {
-							"type": {
-								"description": "type of reference",
-								"example": "pet-123456",
-								"type": "string"
-							},
-							"value": {
-								"type": "string"
-							}
-						},
-						"required": [
-							"type",
-							"value"
-						],
-						"type": "object"
+						"$ref": "#/components/schemas/References"
 					}
 				},
 				"required": [
@@ -650,50 +273,56 @@
 						"type": "string"
 					},
 					"references": {
-						"properties": {
-							"type": {
-								"description": "type of reference",
-								"example": "pet-123456",
-								"type": "string"
-							},
-							"value": {
-								"type": "string"
-							}
-						},
-						"required": [
-							"type",
-							"value"
-						],
-						"type": "object"
+						"$ref": "#/components/schemas/References"
 					},
 					"treats": {
 						"items": {
-							"properties": {
-								"brand": {
-									"description": "The brand of the treat",
-									"type": "string"
-								},
-								"itemId": {
-									"description": "The unique id of the treat",
-									"format": "uuid",
-									"type": "string"
-								},
-								"name": {
-									"description": "the name of a treat",
-									"type": "string"
-								}
-							},
-							"required": [
-								"itemId",
-								"name"
-							],
-							"type": "object"
+							"$ref": "#/components/schemas/Treat"
 						},
 						"type": "array"
 					}
 				},
 				"required": [
 					"references"
+				],
+				"type": "object"
+			},
+			"References": {
+				"properties": {
+					"type": {
+						"description": "type of reference",
+						"example": "pet-123456",
+						"type": "string"
+					},
+					"value": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"type",
+					"value"
+				],
+				"type": "object"
+			},
+			"Treat": {
+				"properties": {
+					"brand": {
+						"description": "The brand of the treat",
+						"type": "string"
+					},
+					"itemId": {
+						"description": "The unique id of the treat",
+						"format": "uuid",
+						"type": "string"
+					},
+					"name": {
+						"description": "the name of a treat",
+						"type": "string"
+					}
+				},
+				"required": [
+					"itemId",
+					"name"
 				],
 				"type": "object"
 			},

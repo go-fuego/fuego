@@ -17,8 +17,13 @@ import (
 func NewOpenAPI() *OpenAPI {
 	desc := NewOpenApiSpec()
 	return &OpenAPI{
-		description:            &desc,
-		generator:              openapi3gen.NewGenerator(openapi3gen.SchemaCustomizer(SchemaCustomizer)),
+		description: &desc,
+		generator: openapi3gen.NewGenerator(
+			openapi3gen.SchemaCustomizer(SchemaCustomizer),
+			openapi3gen.CreateComponentSchemas(openapi3gen.ExportComponentSchemasOptions{
+				ExportComponentSchemas: true,
+			}),
+		),
 		globalOpenAPIResponses: []openAPIResponse{},
 		Config:                 defaultOpenAPIConfig,
 	}
@@ -52,7 +57,12 @@ func (openAPI *OpenAPI) SetGeneratorSchemaCustomizer(sc openapi3gen.SchemaCustom
 		}
 		return sc(name, t, tag, schema)
 	}
-	openAPI.generator = openapi3gen.NewGenerator(append(options, openapi3gen.SchemaCustomizer(customizerFn))...)
+	openAPI.generator = openapi3gen.NewGenerator(append(options,
+		openapi3gen.SchemaCustomizer(customizerFn),
+		openapi3gen.CreateComponentSchemas(openapi3gen.ExportComponentSchemasOptions{
+			ExportComponentSchemas: true,
+		}),
+	)...)
 }
 
 func (openAPI *OpenAPI) mergeInfo(info *openapi3.Info) {
@@ -505,6 +515,87 @@ func (openAPI *OpenAPI) createSchema(key string, v any) *openapi3.SchemaRef {
 
 type OpenAPIDescriptioner interface {
 	Description() string
+}
+
+// resolveSchemaRefs walks through all component schemas and path operation schemas,
+// resolving any $ref that points to a component schema by setting the Value field.
+// This is needed because openapi3gen.NewSchemaRefForValue sets Value to nil for
+// component refs, which causes validation errors.
+func (openAPI *OpenAPI) resolveSchemaRefs() {
+	schemas := openAPI.Description().Components.Schemas
+	prefix := "#/components/schemas/"
+
+	for _, schemaRef := range schemas {
+		if schemaRef == nil || schemaRef.Value == nil {
+			continue
+		}
+		resolveRefsInSchema(schemaRef.Value, schemas, prefix)
+	}
+
+	// Also resolve refs in path operation schemas (request/response bodies)
+	if openAPI.Description().Paths != nil {
+		for _, pathItem := range openAPI.Description().Paths.Map() {
+			for _, op := range pathItem.Operations() {
+				// RequestBody
+				if op.RequestBody != nil && op.RequestBody.Value != nil {
+					for _, t := range op.RequestBody.Value.Content {
+						if t.Schema != nil {
+							resolveRef(t.Schema, schemas, prefix)
+						}
+					}
+				}
+
+				// Response
+				for _, resp := range op.Responses.Map() {
+					if resp.Value == nil {
+						continue
+					}
+					for _, t := range resp.Value.Content {
+						if t.Schema != nil {
+							resolveRef(t.Schema, schemas, prefix)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+func resolveRefsInSchema(schema *openapi3.Schema, schemas openapi3.Schemas, prefix string) {
+	for _, propRef := range schema.Properties {
+		resolveRef(propRef, schemas, prefix)
+	}
+
+	if schema.Items != nil {
+		resolveRef(schema.Items, schemas, prefix)
+	}
+	if schema.AdditionalProperties.Schema != nil {
+		resolveRef(schema.AdditionalProperties.Schema, schemas, prefix)
+	}
+}
+
+func resolveRef(ref *openapi3.SchemaRef, schemas openapi3.Schemas, prefix string) {
+	if ref == nil {
+		return
+	}
+	if strings.HasPrefix(ref.Ref, prefix) && ref.Value == nil {
+		name := strings.TrimPrefix(ref.Ref, prefix)
+		if s, ok := schemas[name]; ok {
+			ref.Value = s.Value
+		} else {
+			// When a schema reference cannot be resolved,
+			// create an empty schema. This occurs in when a nested struct
+			// contains no properties such a nested struct with one field of
+			// `json:"-"`. In this case kin-openapi will still create reference
+			// #/components/schemas/mySchema. We simply 0 it out as nothing
+			// will marshal anyways.
+			ref.Ref = ""
+			ref.Value = &openapi3.Schema{}
+		}
+	}
+	if ref.Value != nil {
+		resolveRefsInSchema(ref.Value, schemas, prefix)
+	}
 }
 
 // Transform the type name to a more readable & valid OpenAPI 3 format.

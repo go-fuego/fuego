@@ -280,8 +280,14 @@ func Test_tagFromType(t *testing.T) {
 		tag := SchemaTagFromType(s.OpenAPI, MyStructWithNested{})
 		nestedProperty := tag.Value.Properties["nested"]
 		require.NotNil(t, nestedProperty)
-		assert.Equal(t, "my struct", nestedProperty.Value.Description)
-		c := nestedProperty.Value.Properties["c"]
+		// Nested struct should be a $ref to a component schema
+		assert.Equal(t, "#/components/schemas/MyStruct", nestedProperty.Ref)
+		// Look up the nested schema from components
+		nestedSchema, ok := s.OpenAPI.Description().Components.Schemas["MyStruct"]
+		require.True(t, ok)
+		require.NotNil(t, nestedSchema)
+		require.NotNil(t, nestedSchema.Value)
+		c := nestedSchema.Value.Properties["c"]
 		require.NotNil(t, c)
 		require.NotNil(t, c.Value)
 		assert.Equal(t, "my description", c.Value.Description)
@@ -722,11 +728,20 @@ func TestSetGeneratorSchemaCustomizer(t *testing.T) {
 		schema.Description = fmt.Sprintf("Custom tag for %s with tag value: %s", name, myTag)
 		return nil
 	}
+
 	type Page struct {
 		NumberWords int32 `json:"num_words" my-tag:"The number of words on my page" description:"This should be overwritten"`
 	}
+	type Cover struct {
+		Hardback bool `json:"hardback"`
+	}
+	type Empty struct {
+		Raw []byte `json:"-"`
+	}
 	type Book struct {
 		Pages []Page `json:"pages" my-tag:"This should not appear in spec"`
+		Cover Cover  `json:"cover"`
+		Empty Empty  `json:"empty"`
 	}
 
 	s := NewServer(WithEngineOptions(WithOpenAPIGeneratorSchemaCustomizer(customTagParser)))
@@ -739,14 +754,24 @@ func TestSetGeneratorSchemaCustomizer(t *testing.T) {
 	require.NotNil(t, openApiSpec)
 	bookValue := openApiSpec.Components.Schemas["Book"].Value
 
+	// Make sure cover is a reference
+	require.NotEmpty(t, bookValue.Properties["cover"])
+	require.Equal(t, "#/components/schemas/Cover", bookValue.Properties["cover"].Ref)
+
+	require.NotEmpty(t, bookValue.Properties["empty"])
+	require.Empty(t, bookValue.Properties["empty"].Ref)
+
 	// Make sure that the pages description is not set because it is a slice
 	pagesValue := bookValue.Properties["pages"].Value
+	s.OpenAPI.resolveSchemaRefs()
 	require.Empty(t, pagesValue.Description)
 
-	// Make sure that the page description is not set because it is a struct
-	pageValue := pagesValue.Items.Value
-	require.Empty(t, pageValue.Description)
+	// Page should be a separate component schema referenced via $ref
+	pageSchemaRef, ok := openApiSpec.Components.Schemas["Page"]
+	require.True(t, ok, "Page should be a separate component schema")
+	require.NotNil(t, pageSchemaRef.Value)
 
+	pageValue := pageSchemaRef.Value
 	// Now the num_words should have the custom tag
 	num_wordsValue := pageValue.Properties["num_words"].Value
 	require.NotEmpty(t, num_wordsValue.Description)
