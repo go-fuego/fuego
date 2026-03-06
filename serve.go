@@ -126,13 +126,13 @@ type ContextFlowable[B, P any] interface {
 // Flow is generic handler for Fuego controllers.
 func Flow[B, T, P any](s *Engine, ctx ContextFlowable[B, P], controller func(c Context[B, P]) (T, error)) {
 	ctx.SetHeader("X-Powered-By", "Fuego")
-	ctx.SetHeader("Trailer", "Server-Timing")
 
 	timeCtxInit := time.Now()
 
 	// PARAMS VALIDATION
 	err := ValidateParams(ctx)
 	if err != nil {
+		ctx.SetHeader("Trailer", "Server-Timing")
 		err = s.ErrorHandler(ctx, err)
 		ctx.SerializeError(err)
 		return
@@ -144,6 +144,7 @@ func Flow[B, T, P any](s *Engine, ctx ContextFlowable[B, P], controller func(c C
 	// CONTROLLER
 	ans, err := controller(ctx)
 	if err != nil {
+		ctx.SetHeader("Trailer", "Server-Timing")
 		err = s.ErrorHandler(ctx, err)
 		ctx.SerializeError(err)
 		return
@@ -155,6 +156,8 @@ func Flow[B, T, P any](s *Engine, ctx ContextFlowable[B, P], controller func(c C
 	if reflect.TypeOf(ans) == nil {
 		return
 	}
+
+	ctx.SetHeader("Trailer", "Server-Timing")
 
 	// TRANSFORM OUT
 	timeTransformOut := time.Now()
