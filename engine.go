@@ -201,6 +201,9 @@ func (e *Engine) SpecHandler() func(c ContextNoBody) (openapi3.T, error) {
 // OutputOpenAPISpec takes the OpenAPI spec and outputs it to a JSON file
 func (e *Engine) OutputOpenAPISpec() *openapi3.T {
 	e.OpenAPI.computeTags()
+	// resolve schema refs after initial
+	// spec generation
+	e.OpenAPI.resolveSchemaRefs()
 
 	// Validate
 	err := e.OpenAPI.Description().Validate(context.Background())

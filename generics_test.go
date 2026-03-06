@@ -48,17 +48,21 @@ func TestGenericReturnType(t *testing.T) {
 	requestType := route.Operation.RequestBody.Value.Content["*/*"].Schema.Value
 	require.Equal(t, &openapi3.Types{"object"}, requestType.Type)
 	require.Equal(t, &openapi3.Types{"string"}, requestType.Properties["thing"].Value.Type)
-	require.Equal(t, &openapi3.Types{"object"}, requestType.Properties["data"].Value.Type)
-	require.Equal(t, &openapi3.Types{"integer"}, requestType.Properties["data"].Value.Properties["id"].Value.Type)
+	// "data" is a User struct, now a $ref to a component schema
+	require.Equal(t, "#/components/schemas/User", requestType.Properties["data"].Ref)
+	userSchema := s.OpenAPI.Description().Components.Schemas["User"].Value
+	require.Equal(t, &openapi3.Types{"object"}, userSchema.Type)
+	require.Equal(t, &openapi3.Types{"integer"}, userSchema.Properties["id"].Value.Type)
 
 	// Response OpenAPI
 	responseType := route.Operation.Responses.Value("200").Value.Content["application/json"].Schema.Value
 	require.Equal(t, &openapi3.Types{"integer"}, responseType.Properties["statusCode"].Value.Type)
 
-	resultResponseType := responseType.Properties["result"].Value
-	require.Equal(t, &openapi3.Types{"object"}, resultResponseType.Type)
-	require.Equal(t, &openapi3.Types{"integer"}, resultResponseType.Properties["id"].Value.Type)
-	require.Equal(t, &openapi3.Types{"string"}, resultResponseType.Properties["name"].Value.Type)
+	// "result" is a User struct, now a $ref to a component schema
+	require.Equal(t, "#/components/schemas/User", responseType.Properties["result"].Ref)
+	require.Equal(t, &openapi3.Types{"object"}, userSchema.Type)
+	require.Equal(t, &openapi3.Types{"integer"}, userSchema.Properties["id"].Value.Type)
+	require.Equal(t, &openapi3.Types{"string"}, userSchema.Properties["name"].Value.Type)
 
 	// Behavior at runtime
 
