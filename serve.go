@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"context"
 	"html/template"
 	"log/slog"
 	"net"
@@ -16,22 +17,51 @@ import (
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) Run() error {
+	return s.RunContext(context.Background())
+}
+
+// RunContext runs [Run] but with Context.
+// When context is canceled the server is shutdown.
+func (s *Server) RunContext(ctx context.Context) error {
 	if err := s.setup(); err != nil {
 		return err
 	}
-	return s.Serve(s.listener)
+	return s.serveWithContext(ctx, func() error {
+		return s.Serve(s.listener)
+	})
 }
 
-// RunTLS starts the server with a TLS listener
+// RunTLS starts the server with a TLS listener.
 // It is blocking.
 // It returns an error if the server could not start (it could not bind to the port for example).
 // It also generates the OpenAPI spec and outputs it to a file, the UI, and a handler (if enabled).
 func (s *Server) RunTLS(certFile, keyFile string) error {
+	return s.RunTLSContext(context.Background(), certFile, keyFile)
+}
+
+// RunTLSContext runs [RunTLS] but with Context.
+// When context is canceled the server is shutdown.
+func (s *Server) RunTLSContext(ctx context.Context, certFile, keyFile string) error {
 	s.isTLS = true
 	if err := s.setup(); err != nil {
 		return err
 	}
-	return s.ServeTLS(s.listener, certFile, keyFile)
+	return s.serveWithContext(ctx, func() error {
+		return s.ServeTLS(s.listener, certFile, keyFile)
+	})
+}
+
+// serveWithContext runs the server and shuts it down when the context is canceled.
+func (s *Server) serveWithContext(ctx context.Context, serve func() error) error {
+	errCh := make(chan error, 1)
+	go func() { errCh <- serve() }()
+
+	select {
+	case err := <-errCh:
+		return err
+	case <-ctx.Done():
+		return s.Shutdown(context.WithoutCancel(ctx))
+	}
 }
 
 func (s *Server) setup() error {
