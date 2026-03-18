@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/acme-tls
 
-go 1.25.7
+go 1.25.8
 
 require (
 	github.com/caddyserver/certmagic v0.25.2
@@ -42,7 +42,7 @@ require (
 	go.uber.org/zap/exp v0.3.0 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/mod v0.33.0 // indirect
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
