@@ -538,6 +538,30 @@ func TestServer_Run(t *testing.T) {
 	})
 }
 
+func TestServer_RunContext(t *testing.T) {
+	t.Run("can run server", func(t *testing.T) {
+		s := NewServer(WithoutLogger())
+		Get(s, "/test", func(ctx ContextNoBody) (string, error) {
+			return "OK", nil
+		})
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		go s.RunContext(ctx)
+
+		require.Eventually(t, func() bool {
+			req := httptest.NewRequest("GET", "/test", nil)
+			w := httptest.NewRecorder()
+			s.Mux.ServeHTTP(w, req)
+
+			return w.Body.String() == `OK`
+		}, 5*time.Second, 500*time.Millisecond)
+
+		cancel()
+	})
+}
+
 func TestServer_RunTLS(t *testing.T) {
 	// This is not a standard test, it is here to ensure that the server can run.
 	// Please do not run this kind of test for your controllers, it is NOT unit testing.
