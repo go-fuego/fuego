@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/extra/fuegogin
 
-go 1.25.7
+go 1.25.8
 
 require (
 	github.com/gin-gonic/gin v1.12.0
