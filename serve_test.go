@@ -25,6 +25,15 @@ import (
 	"github.com/thejerf/slogassert"
 )
 
+type customErr struct {
+	kind int
+	msg  string
+}
+
+func (e customErr) Error() string { return e.msg }
+
+func getNilCustomErr() *customErr { return nil }
+
 type ans struct {
 	Ans string `json:"ans"`
 }
@@ -35,6 +44,14 @@ func testController(c ContextNoBody) (ans, error) {
 
 func testControllerWithError(c ContextNoBody) (ans, error) {
 	return ans{}, HTTPError{Err: errors.New("error happened!")}
+}
+
+func testControllerWithCustomErr(c ContextNoBody) (ans, error) {
+	return ans{}, &customErr{kind: 0, msg: "custom err"}
+}
+
+func testControllerWithCustomNilErr(c ContextNoBody) (ans, error) {
+	return ans{Ans: "Hello World"}, getNilCustomErr()
 }
 
 type testOutTransformer struct {
@@ -135,6 +152,34 @@ func TestHttpHandler(t *testing.T) {
 
 		body := w.Body.String()
 		require.Equal(t, crlf(`{"title":"Internal Server Error","status":500}`), body)
+	})
+
+	t.Run("can handle pointers to custom errors in http handler from fuego controller", func(t *testing.T) {
+		handler := HTTPHandler(s, testControllerWithCustomErr, BaseRoute{})
+		if handler == nil {
+			t.Error("handler is nil")
+		}
+
+		req := httptest.NewRequest("GET", "/testing", nil)
+		w := httptest.NewRecorder()
+		handler(w, req)
+
+		body := w.Body.String()
+		require.Equal(t, crlf(`{}`), body)
+	})
+
+	t.Run("can handle nil pointers to custom errors in http handler from fuego controller", func(t *testing.T) {
+		handler := HTTPHandler(s, testControllerWithCustomNilErr, BaseRoute{})
+		if handler == nil {
+			t.Error("handler is nil")
+		}
+
+		req := httptest.NewRequest("GET", "/testing", nil)
+		w := httptest.NewRecorder()
+		handler(w, req)
+
+		body := w.Body.String()
+		require.Equal(t, crlf(`{"ans":"Hello World"}`), body)
 	})
 
 	t.Run("can outTransform before serializing a value", func(t *testing.T) {
