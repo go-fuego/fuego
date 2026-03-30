@@ -173,7 +173,9 @@ func Flow[B, T, P any](s *Engine, ctx ContextFlowable[B, P], controller func(c C
 
 	// CONTROLLER
 	ans, err := controller(ctx)
-	if err != nil {
+	errV := reflect.ValueOf(err)
+
+	if errV.IsValid() && !errV.IsZero() {
 		ctx.SetHeader("Trailer", "Server-Timing")
 		err = s.ErrorHandler(ctx, err)
 		ctx.SerializeError(err)
