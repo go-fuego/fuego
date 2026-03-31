@@ -173,9 +173,8 @@ func Flow[B, T, P any](s *Engine, ctx ContextFlowable[B, P], controller func(c C
 
 	// CONTROLLER
 	ans, err := controller(ctx)
-	errV := reflect.ValueOf(err)
 
-	if errV.IsValid() && !errV.IsZero() {
+	if !isNilError(err) {
 		ctx.SetHeader("Trailer", "Server-Timing")
 		err = s.ErrorHandler(ctx, err)
 		ctx.SerializeError(err)
@@ -209,4 +208,17 @@ func Flow[B, T, P any](s *Engine, ctx ContextFlowable[B, P], controller func(c C
 		ctx.SerializeError(err)
 	}
 	ctx.SetHeader("Server-Timing", Timing{"serialize", "", time.Since(timeAfterTransformOut)}.String())
+}
+
+// check if err isNil. If error is of kind pointer
+// check if that is nil.
+func isNilError(err error) bool {
+	if err == nil {
+		return true
+	}
+	v := reflect.ValueOf(err)
+	if v.Kind() == reflect.Ptr {
+		return v.IsNil()
+	}
+	return false
 }

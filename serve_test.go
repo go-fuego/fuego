@@ -54,6 +54,16 @@ func testControllerWithCustomNilErr(c ContextNoBody) (ans, error) {
 	return ans{Ans: "Hello World"}, getNilCustomErr()
 }
 
+type zeroValueErr struct{}
+
+func (e zeroValueErr) Error() string     { return "zero value error" }
+func (e zeroValueErr) StatusCode() int   { return http.StatusUnprocessableEntity }
+func (e zeroValueErr) DetailMsg() string { return "zero value error" }
+
+func testControllerWithZeroValueErr(c ContextNoBody) (ans, error) {
+	return ans{}, zeroValueErr{}
+}
+
 type testOutTransformer struct {
 	Name     string `json:"name"`
 	Password string `json:"ans"`
@@ -180,6 +190,18 @@ func TestHttpHandler(t *testing.T) {
 
 		body := w.Body.String()
 		require.Equal(t, crlf(`{"ans":"Hello World"}`), body)
+	})
+
+	t.Run("can handle zero-value struct errors in http handler from fuego controller", func(t *testing.T) {
+		handler := HTTPHandler(s, testControllerWithZeroValueErr, BaseRoute{})
+
+		req := httptest.NewRequest("GET", "/testing", nil)
+		w := httptest.NewRecorder()
+		handler(w, req)
+
+		require.Equal(t, 422, w.Code)
+		body := w.Body.String()
+		require.Contains(t, body, "zero value error")
 	})
 
 	t.Run("can outTransform before serializing a value", func(t *testing.T) {
