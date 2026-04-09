@@ -408,7 +408,7 @@ func OptionAddError(code int, description string, errorType ...any) RouteOption 
 			WithContent(content)
 
 		if r.Operation.Responses == nil {
-			r.Operation.Responses = openapi3.NewResponses()
+			r.Operation.Responses = openapi3.NewResponsesWithCapacity(1)
 		}
 		r.Operation.Responses.Set(strconv.Itoa(code), &openapi3.ResponseRef{Value: response})
 	}
@@ -430,7 +430,7 @@ type Response struct {
 func OptionAddResponse(code int, description string, response Response) RouteOption {
 	return func(r *BaseRoute) {
 		if r.Operation.Responses == nil {
-			r.Operation.Responses = openapi3.NewResponses()
+			r.Operation.Responses = openapi3.NewResponsesWithCapacity(1)
 		}
 		r.Operation.Responses.Set(
 			strconv.Itoa(code), &openapi3.ResponseRef{
@@ -474,7 +474,7 @@ func OptionRequestBody(requestBody RequestBody) RouteOption {
 func OptionDefaultResponse(description string, response Response) RouteOption {
 	return func(r *BaseRoute) {
 		if r.Operation.Responses == nil {
-			r.Operation.Responses = openapi3.NewResponses()
+			r.Operation.Responses = openapi3.NewResponsesWithCapacity(1)
 		}
 		r.Operation.Responses.Set(
 			"default", &openapi3.ResponseRef{

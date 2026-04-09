@@ -180,6 +180,11 @@ func RegisterOpenAPIOperation[T, B, P any](openapi *OpenAPI, route Route[T, B, P
 	if route.Operation == nil {
 		route.Operation = openapi3.NewOperation()
 	}
+	// Pre-initialize Responses to avoid kin-openapi's NewResponses() injecting
+	// a phantom contentless "default" response when AddResponse hits a nil check.
+	if route.Operation.Responses == nil {
+		route.Operation.Responses = openapi3.NewResponsesWithCapacity(4)
+	}
 
 	if route.FullName == "" {
 		route.FullName = route.Path
@@ -276,6 +281,9 @@ func RegisterOpenAPIOperation[T, B, P any](openapi *OpenAPI, route Route[T, B, P
 func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 	if route.Operation == nil {
 		route.Operation = openapi3.NewOperation()
+	}
+	if route.Operation.Responses == nil {
+		route.Operation.Responses = openapi3.NewResponsesWithCapacity(4)
 	}
 	params := *new(Params)
 	typeOfParams := reflect.TypeOf(params)

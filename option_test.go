@@ -409,7 +409,7 @@ func TestAddError(t *testing.T) {
 		route := fuego.Get(s, "/test", helloWorld, fuego.OptionAddError(http.StatusConflict, "Conflict: Pet with the same name already exists"))
 
 		t.Log("route.Operation.Responses", route.Operation.Responses)
-		require.Equal(t, 5, route.Operation.Responses.Len()) // 200, 400, 409, 500, default
+		require.Equal(t, 4, route.Operation.Responses.Len()) // 200, 400, 409, 500
 		resp := route.Operation.Responses.Value("409")
 		require.NotNil(t, resp)
 		require.Equal(t, "Conflict: Pet with the same name already exists", *route.Operation.Responses.Value("409").Value.Description)
@@ -435,7 +435,7 @@ func TestAddResponse(t *testing.T) {
 				Type:         fuego.HTTPError{},
 			},
 		))
-		require.Equal(t, 5, route.Operation.Responses.Len()) // 200, 400, 409, 500, default
+		require.Equal(t, 4, route.Operation.Responses.Len()) // 200, 400, 409, 500
 		resp := route.Operation.Responses.Value("409")
 		require.NotNil(t, resp)
 		require.NotNil(t, resp.Value.Content.Get("application/json"))
@@ -452,7 +452,7 @@ func TestAddResponse(t *testing.T) {
 				Type: fuego.HTTPError{},
 			},
 		))
-		require.Equal(t, 5, route.Operation.Responses.Len()) // 200, 400, 409, 500, default
+		require.Equal(t, 4, route.Operation.Responses.Len()) // 200, 400, 409, 500
 		resp := route.Operation.Responses.Value("409")
 		require.NotNil(t, resp)
 		require.NotNil(t, resp.Value.Content.Get("application/json"))
@@ -470,7 +470,7 @@ func TestAddResponse(t *testing.T) {
 				ContentTypes: []string{"application/x-yaml"},
 			},
 		))
-		require.Equal(t, 4, route.Operation.Responses.Len()) // 200, 400, 500, default
+		require.Equal(t, 3, route.Operation.Responses.Len()) // 200, 400, 500
 		resp := route.Operation.Responses.Value("200")
 		require.NotNil(t, resp)
 		require.Nil(t, resp.Value.Content.Get("application/json"))
