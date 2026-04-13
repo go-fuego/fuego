@@ -43,7 +43,7 @@ jobs:
         working-directory: ./documentation
 
       - name: Upload artifact for deployment
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./documentation/build
 
