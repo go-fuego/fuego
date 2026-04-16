@@ -11,6 +11,7 @@
 						"items": {
 							"$ref": "#/components/schemas/Pets"
 						},
+						"nullable": true,
 						"type": "array"
 					},
 					"statusCode": {
@@ -87,6 +88,7 @@
 							"description": "Additional information about the error"
 						},
 						"description": "Additional information about the error",
+						"nullable": true,
 						"type": "object"
 					},
 					"name": {
@@ -131,6 +133,7 @@
 						"items": {
 							"$ref": "#/components/schemas/ErrorItem"
 						},
+						"nullable": true,
 						"type": "array"
 					},
 					"instance": {
@@ -193,6 +196,7 @@
 						"items": {
 							"$ref": "#/components/schemas/Treat"
 						},
+						"nullable": true,
 						"type": "array"
 					}
 				},
@@ -279,6 +283,7 @@
 						"items": {
 							"$ref": "#/components/schemas/Treat"
 						},
+						"nullable": true,
 						"type": "array"
 					}
 				},

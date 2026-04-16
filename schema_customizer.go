@@ -59,12 +59,13 @@ func parseValidate(tag reflect.StructTag, schema *openapi3.Schema) {
 	}
 }
 
-// determineRequired takes a reflect.Type and a schema,
-// and determines which fields should be marked as required.
-// It checks for fields that either:
-// - Don't have the `omitempty` JSON tag
-// - Have the `required` validation tag
-func determineRequired(t reflect.Type, schema *openapi3.Schema) {
+// determineFieldConstraints takes a reflect.Type and a schema,
+// and determines which fields should be marked as required and nullable.
+// It checks for fields that:
+// - Don't have the `omitempty` JSON tag marking it as required
+// - Are slices, maps, or pointers setting nullable to true
+// - Have the `required` validation tag setting nullable to true and required
+func determineFieldConstraints(t reflect.Type, schema *openapi3.Schema) {
 	if t.Kind() != reflect.Struct {
 		return
 	}
@@ -78,7 +79,7 @@ func determineRequired(t reflect.Type, schema *openapi3.Schema) {
 				ft = ft.Elem()
 			}
 			if ft.Kind() == reflect.Struct {
-				determineRequired(ft, schema)
+				determineFieldConstraints(ft, schema)
 				continue
 			}
 		}
@@ -99,11 +100,26 @@ func determineRequired(t reflect.Type, schema *openapi3.Schema) {
 			continue
 		}
 
-		if !strings.Contains(jsonTag, ",omitempty") || slices.Contains(strings.Split(f.Tag.Get("validate"), ","), "required") {
+		hasRequired := slices.Contains(strings.Split(f.Tag.Get("validate"), ","), "required")
+		if !strings.Contains(jsonTag, ",omitempty") || hasRequired {
 			schema.Required = append(schema.Required, name)
+		}
+
+		prop, ok := schema.Properties[name]
+		if !ok {
+			// skip if properties is nil or
+			// no property for field. Common in xml parsing
+			continue
+		}
+		if isReferenceType(f.Type.Kind()) && !hasRequired {
+			prop.Value.Nullable = true
 		}
 	}
 	sort.Strings(schema.Required)
+}
+
+func isReferenceType(t reflect.Kind) bool {
+	return t == reflect.Slice || t == reflect.Map
 }
 
 // parseExample parses the "example" tag and sets the schema example.
@@ -169,7 +185,7 @@ func SchemaCustomizer(name string, t reflect.Type, tag reflect.StructTag, schema
 	parseDescription(tag, schema)
 
 	// After we are done parsing tags, get the required tags
-	determineRequired(t, schema)
+	determineFieldConstraints(t, schema)
 
 	return nil
 }
