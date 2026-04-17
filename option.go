@@ -280,6 +280,13 @@ func buildParam(name string, options ...ParamOption) (OpenAPIParam, *openapi3.Pa
 	if param.Required {
 		openapiParam.Required = param.Required
 	}
+
+	// construct enum
+	for _, enumValue := range param.Enum {
+		panicsIfNotCorrectType(openapiParam, enumValue)
+	}
+	openapiParam.Schema.Value.Enum = param.Enum
+
 	for name, exampleValue := range param.Examples {
 		if openapiParam.Examples == nil {
 			openapiParam.Examples = make(openapi3.Examples)
