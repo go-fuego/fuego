@@ -216,7 +216,7 @@ func TransformAndValidate[B any](ctx context.Context, body B) (B, error) {
 		return body, err
 	}
 
-	err = validate(body)
+	err = validate(ctx, body)
 	if err != nil {
 		return body, err
 	}

@@ -1,6 +1,7 @@
 package fuego
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -8,6 +9,10 @@ import (
 
 	"github.com/go-playground/validator/v10"
 )
+
+type ValidationTranslator interface {
+	TranslateValidationError(ctx context.Context, errs validator.ValidationErrors) validator.ValidationErrors
+}
 
 // explainError translates a validator error into a human readable string.
 func explainError(err validator.FieldError) string {
@@ -31,7 +36,7 @@ func explainError(err validator.FieldError) string {
 
 var v = validator.New()
 
-func validate(a any) error {
+func validate[B any](ctx context.Context, a B) error {
 	t := reflect.TypeOf(a)
 	if t == nil || t.Kind() != reflect.Struct {
 		return nil
@@ -48,15 +53,20 @@ func validate(a any) error {
 		return fmt.Errorf("validation error: %w", err)
 	}
 
-	validationError := HTTPError{
+	validationErrors := err.(validator.ValidationErrors)
+	if translator, ok := any(&a).(ValidationTranslator); ok {
+		validationErrors = translator.TranslateValidationError(ctx, validationErrors)
+	}
+
+	httpError := HTTPError{
 		Err:    err,
 		Status: http.StatusBadRequest,
 		Title:  "Validation Error",
 	}
 	var errorsSummary []string
-	for _, err := range err.(validator.ValidationErrors) {
+	for _, err := range validationErrors {
 		errorsSummary = append(errorsSummary, explainError(err))
-		validationError.Errors = append(validationError.Errors, ErrorItem{
+		httpError.Errors = append(httpError.Errors, ErrorItem{
 			Name:   err.StructNamespace(),
 			Reason: err.Error(),
 			More: map[string]any{
@@ -69,7 +79,7 @@ func validate(a any) error {
 		})
 	}
 
-	validationError.Detail = strings.Join(errorsSummary, ", ")
+	httpError.Detail = strings.Join(errorsSummary, ", ")
 
-	return validationError
+	return httpError
 }
