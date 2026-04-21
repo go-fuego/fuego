@@ -49,9 +49,10 @@ func NewMockContextNoBody() *MockContext[any, any] {
 
 var _ ContextWithBody[string] = &MockContext[string, any]{}
 
-// Body returns the previously set body value
+// Body returns the body after running transform and validation,
+// matching the behavior of the real context.
 func (m *MockContext[B, P]) Body() (B, error) {
-	return m.RequestBody, nil
+	return TransformAndValidate(m.Context(), m.RequestBody)
 }
 
 // MustBody returns the body or panics if there's an error

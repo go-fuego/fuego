@@ -13,5 +13,5 @@ func TestFuegoControllerPost(t *testing.T) {
 
 	response, err := fuegoControllerPost(testCtx)
 	require.NoError(t, err)
-	require.Equal(t, "Hello World, Ewen", response.Message)
+	require.Equal(t, "Hello world, Ewen", response.Message)
 }
