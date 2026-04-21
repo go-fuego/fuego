@@ -158,6 +158,20 @@ func TestSearchUsersController(t *testing.T) {
 	}
 }
 
+func TestMockContextBody(t *testing.T) {
+	t.Run("returns validation error for invalid body", func(t *testing.T) {
+		ctx := fuego.NewMockContext(UserSearchRequest{
+			MinAge: 20,
+			MaxAge: 35,
+			// NameQuery is required but missing
+		}, any(nil))
+
+		_, err := ctx.Body()
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "NameQuery")
+	})
+}
+
 func TestMockContextNoBody(t *testing.T) {
 	myController := func(c fuego.ContextNoBody) (string, error) {
 		return "Hello, " + c.QueryParam("name"), nil
