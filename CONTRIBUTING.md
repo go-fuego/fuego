@@ -22,6 +22,16 @@ or writing code which can be incorporated into the project itself.
 6. If everything is fine, **commit** your changes and push them to your fork
 7. Open a **pull request**!
 
+## Releasing
+
+Maintainers only. Tag and push all modules at once:
+
+```bash
+make release VERSION=vX.Y.Z
+```
+
+This creates annotated tags for the root module and all submodules under `extra/` and `middleware/`, checks that none already exist, then prompts before pushing.
+
 ## Contributors
 
 Thanks to [everyone who have contributed][contributors-url] to this project!
