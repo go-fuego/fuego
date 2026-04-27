@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/openapi
 
-go 1.25.9
+go 1.26.2
 
 require github.com/go-fuego/fuego v0.19.0
 

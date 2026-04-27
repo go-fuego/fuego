@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/echo-compat
 
-go 1.25.9
+go 1.26.2
 
 replace github.com/go-fuego/fuego => ../..
 
@@ -41,7 +41,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/woodsbury/decimal128 v1.4.0 // indirect
 	golang.org/x/crypto v0.49.0 // indirect
-	golang.org/x/net v0.51.0 // indirect
+	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
