@@ -274,7 +274,6 @@ func buildParam(name string, options ...ParamOption) (OpenAPIParam, *openapi3.Pa
 	if param.GoType != "" {
 		openapiParam.Schema.Value.Type = &openapi3.Types{param.GoType}
 	}
-	openapiParam.Schema.Value.Nullable = param.Nullable
 	openapiParam.Schema.Value.Default = panicsIfNotCorrectType(openapiParam, param.Default)
 
 	if param.Required {
@@ -287,6 +286,13 @@ func buildParam(name string, options ...ParamOption) (OpenAPIParam, *openapi3.Pa
 		exampleOpenAPI := openapi3.NewExample(name)
 		exampleOpenAPI.Value = panicsIfNotCorrectType(openapiParam, exampleValue)
 		openapiParam.Examples[name] = &openapi3.ExampleRef{Value: exampleOpenAPI}
+	}
+
+	if param.Nullable {
+		if !openapiParam.Schema.Value.Type.Includes("null") {
+			types := openapi3.Types(append(openapiParam.Schema.Value.Type.Slice(), "null"))
+			openapiParam.Schema.Value.Type = &types
+		}
 	}
 
 	return param, openapiParam
