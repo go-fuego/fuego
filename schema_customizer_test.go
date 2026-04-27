@@ -73,7 +73,7 @@ func TestDetermineFieldConstraints(t *testing.T) {
 		}
 		determineFieldConstraints(reflect.TypeFor[S](), schema)
 		assert.Contains(t, schema.Required, "name")
-		assert.False(t, schema.Properties["name"].Value.Nullable)
+		assert.False(t, schema.Properties["name"].Value.Type.Includes("null"))
 	})
 
 	t.Run("slice field is nullable", func(t *testing.T) {
@@ -86,7 +86,7 @@ func TestDetermineFieldConstraints(t *testing.T) {
 			},
 		}
 		determineFieldConstraints(reflect.TypeFor[S](), schema)
-		assert.True(t, schema.Properties["items"].Value.Nullable)
+		assert.True(t, schema.Properties["items"].Value.Type.Includes("null"))
 	})
 
 	t.Run("map field is nullable", func(t *testing.T) {
@@ -99,7 +99,7 @@ func TestDetermineFieldConstraints(t *testing.T) {
 			},
 		}
 		determineFieldConstraints(reflect.TypeFor[S](), schema)
-		assert.True(t, schema.Properties["meta"].Value.Nullable)
+		assert.True(t, schema.Properties["meta"].Value.Type.Includes("null"))
 	})
 
 	t.Run("string field is not nullable", func(t *testing.T) {
@@ -112,7 +112,7 @@ func TestDetermineFieldConstraints(t *testing.T) {
 			},
 		}
 		determineFieldConstraints(reflect.TypeFor[S](), schema)
-		assert.False(t, schema.Properties["name"].Value.Nullable)
+		assert.False(t, schema.Properties["name"].Value.Type.Includes("null"))
 	})
 
 	t.Run("required fields are sorted", func(t *testing.T) {

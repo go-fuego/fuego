@@ -11,8 +11,10 @@
 						"items": {
 							"$ref": "#/components/schemas/Pets"
 						},
-						"nullable": true,
-						"type": "array"
+						"type": [
+							"array",
+							"null"
+						]
 					},
 					"statusCode": {
 						"type": "integer"
@@ -88,8 +90,10 @@
 							"description": "Additional information about the error"
 						},
 						"description": "Additional information about the error",
-						"nullable": true,
-						"type": "object"
+						"type": [
+							"object",
+							"null"
+						]
 					},
 					"name": {
 						"description": "For example, name of the parameter that caused the error",
@@ -133,8 +137,10 @@
 						"items": {
 							"$ref": "#/components/schemas/ErrorItem"
 						},
-						"nullable": true,
-						"type": "array"
+						"type": [
+							"array",
+							"null"
+						]
 					},
 					"instance": {
 						"type": "string"
@@ -196,8 +202,10 @@
 						"items": {
 							"$ref": "#/components/schemas/Treat"
 						},
-						"nullable": true,
-						"type": "array"
+						"type": [
+							"array",
+							"null"
+						]
 					}
 				},
 				"required": [
@@ -283,8 +291,10 @@
 						"items": {
 							"$ref": "#/components/schemas/Treat"
 						},
-						"nullable": true,
-						"type": "array"
+						"type": [
+							"array",
+							"null"
+						]
 					}
 				},
 				"required": [
@@ -395,8 +405,10 @@
 						"in": "query",
 						"name": "name",
 						"schema": {
-							"nullable": true,
-							"type": "string"
+							"type": [
+								"string",
+								"null"
+							]
 						}
 					},
 					{
@@ -509,9 +521,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "filter pets",
@@ -635,9 +644,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "post pets",
@@ -789,9 +795,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "get all pets",
@@ -882,9 +885,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "get all pets wrapped",
@@ -986,9 +986,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "get all pets by age",
@@ -1086,9 +1083,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "get pet by name",
@@ -1189,9 +1183,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "generic request and response",
@@ -1300,9 +1291,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "Update a pet with JSON-only body",
@@ -1392,9 +1380,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "get nested wrapped",
@@ -1475,9 +1460,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "func1",
@@ -1620,9 +1602,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "filter pets strongly typed",
@@ -1720,9 +1699,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "delete pets",
@@ -1824,9 +1800,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "get pets",
@@ -1933,9 +1906,6 @@
 							}
 						},
 						"description": "Internal Server Error _(panics)_"
-					},
-					"default": {
-						"description": ""
 					}
 				},
 				"summary": "put pets",
