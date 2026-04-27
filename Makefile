@@ -70,6 +70,12 @@ docs:
 docs-open:
 	go run golang.org/x/pkgsite/cmd/pkgsite@latest -http localhost:8084 -open
 
+release:
+ifndef VERSION
+	$(error VERSION is required. Usage: make release VERSION=vX.Y.Z)
+endif
+	./scripts/tag-release.sh $(VERSION)
+
 .PHONY: docs-open docs example-watch example lint lint-markdown fmt ci ci-full
 .PHONY: dependencies-analyze build bench cover-web cover test petstore check-all-modules
-.PHONY: golden-update openapi-check
+.PHONY: golden-update openapi-check release

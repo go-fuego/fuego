@@ -106,7 +106,7 @@ func (rw *responseWriter) Push(target string, opts *http.PushOptions) error {
 }
 
 func logRequest(requestID string, r *http.Request) {
-	slog.Debug("incoming request",
+	slog.Debug("incoming request", //nolint:gosec // G706: Path might be sensible to injection depending on the slog handler. Not the case for slog.JSONHandler.
 		"method", r.Method,
 		"path", r.URL.Path,
 		"request_id", requestID,
@@ -116,7 +116,7 @@ func logRequest(requestID string, r *http.Request) {
 }
 
 func logResponse(r *http.Request, rw *responseWriter, requestID string, duration time.Duration) {
-	slog.Info("outgoing response",
+	slog.Info("outgoing response", //nolint:gosec // G706: Path might be sensible to injection depending on the slog handler. Not the case for slog.JSONHandler.
 		"status_code", rw.status,
 		"method", r.Method,
 		"path", r.URL.Path,

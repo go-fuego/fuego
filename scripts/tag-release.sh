@@ -5,9 +5,13 @@
 
 set -euo pipefail
 
-VERSION="$1"
+VERSION="${1:-}"
 
-# Validate version format
+if [[ -z "$VERSION" ]]; then
+    echo "Usage: $0 vX.Y.Z"
+    exit 1
+fi
+
 if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "Error: Invalid version format. Use vX.Y.Z (e.g., v0.19.0)"
     exit 1
@@ -19,6 +23,7 @@ MODULES=(
     "cmd/fuego"                # cmd/fuego/v0.19.0
     "extra/fuegoecho"
     "extra/fuegogin"
+    "extra/fuegomux"
     "extra/markdown"
     "extra/sql"
     "extra/sqlite3"
@@ -26,44 +31,55 @@ MODULES=(
     "middleware/cache"
 )
 
-echo "Creating release $VERSION for all modules..."
-echo ""
-
-# Create all tags
+# Build tag list
+tags=()
 for module in "${MODULES[@]}"; do
     if [[ "$module" == "." ]]; then
-        tag="$VERSION"
+        tags+=("$VERSION")
     else
-        tag="$module/$VERSION"
+        tags+=("$module/$VERSION")
     fi
+done
 
-    echo "Creating tag: $tag"
+echo "Tags to create for $VERSION:"
+for tag in "${tags[@]}"; do
+    echo "  $tag"
+done
+echo ""
+
+# Check none already exist locally or remotely
+echo "Checking for existing tags..."
+conflicts=()
+for tag in "${tags[@]}"; do
+    if git rev-parse "refs/tags/$tag" &>/dev/null; then
+        conflicts+=("$tag (local)")
+    elif git ls-remote --tags origin "refs/tags/$tag" | grep -q .; then
+        conflicts+=("$tag (remote)")
+    fi
+done
+
+if [[ ${#conflicts[@]} -gt 0 ]]; then
+    echo "Error: the following tags already exist:"
+    for c in "${conflicts[@]}"; do
+        echo "  $c"
+    done
+    exit 1
+fi
+
+# Create annotated tags
+for tag in "${tags[@]}"; do
     git tag -a "$tag" -m "Release $VERSION"
+    echo "  created $tag"
 done
 
 echo ""
-echo "✓ All tags created locally"
-echo ""
-echo "Push to remote? [y/N] "
-read -r response
-
+read -r -p "Push all tags to origin? [y/N] " response
 if [[ "$response" =~ ^[Yy]$ ]]; then
-    # Push all tags
-    for module in "${MODULES[@]}"; do
-        if [[ "$module" == "." ]]; then
-            tag="$VERSION"
-        else
-            tag="$module/$VERSION"
-        fi
+    for tag in "${tags[@]}"; do
         git push origin "$tag"
     done
-
     echo ""
-    echo "✓ All tags pushed to origin"
-    echo ""
-    echo "View releases: https://github.com/go-fuego/fuego/tags"
+    echo "Done. View at: https://github.com/go-fuego/fuego/tags"
 else
-    echo ""
-    echo "Tags created locally but not pushed."
-    echo "To push later: git push origin --tags"
+    echo "Tags created locally only. Push with: git push origin --tags"
 fi
