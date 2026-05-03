@@ -113,6 +113,7 @@ func WithResponseContentType(consumes ...string) func(*Engine) {
 }
 
 type MiddlewareConfig struct {
+	DisableControllerSection bool
 	DisableMiddlewareSection bool
 	MaxNumberOfMiddlewares   int
 	ShortMiddlewaresPaths    bool
@@ -120,6 +121,7 @@ type MiddlewareConfig struct {
 
 func WithMiddlewareConfig(cfg MiddlewareConfig) EngineOption {
 	return func(e *Engine) {
+		e.OpenAPI.Config.MiddlewareConfig.DisableControllerSection = cfg.DisableControllerSection
 		e.OpenAPI.Config.MiddlewareConfig.DisableMiddlewareSection = cfg.DisableMiddlewareSection
 		e.OpenAPI.Config.MiddlewareConfig.ShortMiddlewaresPaths = cfg.ShortMiddlewaresPaths
 		if cfg.MaxNumberOfMiddlewares != 0 {

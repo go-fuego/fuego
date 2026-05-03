@@ -206,16 +206,30 @@ func camelToHuman(s string) string {
 
 // DefaultDescription returns a default .md description for a controller
 func DefaultDescription[T any](handler string, middlewares []T, middlewareConfig *MiddlewareConfig) string {
-	// Start with the controller info
-	description := "#### Controller: \n\n`" + handler + "`"
+	middlewaresDisabled := middlewareConfig.DisableMiddlewareSection || len(middlewares) == 0
+
+	// If both sections are disabled, emit nothing so the route's own
+	// description flows through without a leading separator.
+	if middlewareConfig.DisableControllerSection && middlewaresDisabled {
+		return ""
+	}
+
+	// Start with the controller info (unless disabled)
+	var description string
+	if !middlewareConfig.DisableControllerSection {
+		description = "#### Controller: \n\n`" + handler + "`"
+	}
 
 	// If middlewares are disabled, or there aren't any, skip the block entirely
-	if middlewareConfig.DisableMiddlewareSection || len(middlewares) == 0 {
+	if middlewaresDisabled {
 		return description + "\n\n---\n\n"
 	}
 
 	// Add the middlewares section
-	description += "\n\n#### Middlewares:\n"
+	if description != "" {
+		description += "\n\n"
+	}
+	description += "#### Middlewares:\n"
 
 	for i, fn := range middlewares {
 		// If we've reached the maximum configured to display, show a summary and stop
