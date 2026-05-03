@@ -1040,6 +1040,57 @@ func TestOptionDescription(t *testing.T) {
 
 		require.Equal(t, "#### Controller: \n\n`github.com/go-fuego/fuego_test.helloWorld`\n\n#### Middlewares:\n\n- `fuego.defaultLogger.middleware`\n- `fuego_test.dummyMiddleware`\n- `fuego_test.dummyMiddleware`\n- more middleware…\n\n---\n\ntest description", route.Operation.Description)
 	})
+	t.Run("Disable controller section", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithEngineOptions(
+				fuego.WithMiddlewareConfig(
+					fuego.MiddlewareConfig{
+						DisableControllerSection: true,
+					},
+				),
+			),
+		)
+
+		route := fuego.Get(s, "/test", helloWorld,
+			option.Description("test description"),
+		)
+
+		require.Equal(t, "#### Middlewares:\n\n- `github.com/go-fuego/fuego.defaultLogger.middleware`\n\n---\n\ntest description", route.Operation.Description)
+	})
+	t.Run("Disable controller and middleware sections", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithEngineOptions(
+				fuego.WithMiddlewareConfig(
+					fuego.MiddlewareConfig{
+						DisableControllerSection: true,
+						DisableMiddlewareSection: true,
+					},
+				),
+			),
+		)
+
+		route := fuego.Get(s, "/test", helloWorld,
+			option.Description("test description"),
+		)
+
+		require.Equal(t, "test description", route.Operation.Description)
+	})
+	t.Run("Disable controller and middleware sections, no description", func(t *testing.T) {
+		s := fuego.NewServer(
+			fuego.WithEngineOptions(
+				fuego.WithMiddlewareConfig(
+					fuego.MiddlewareConfig{
+						DisableControllerSection: true,
+						DisableMiddlewareSection: true,
+					},
+				),
+			),
+		)
+
+		route := fuego.Get(s, "/test", helloWorld)
+
+		require.Empty(t, route.Operation.Description)
+	})
 }
 
 func TestDefaultStatusCode(t *testing.T) {
