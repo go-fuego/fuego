@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/mux-compat
 
-go 1.26.2
+go 1.26.3
 
 replace github.com/go-fuego/fuego => ../..
 

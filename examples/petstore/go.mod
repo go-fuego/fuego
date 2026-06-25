@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/petstore
 
-go 1.26.2
+go 1.26.3
 
 require (
 	github.com/getkin/kin-openapi v0.136.0

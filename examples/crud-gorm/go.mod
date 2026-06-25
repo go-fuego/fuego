@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/crud-gorm
 
-go 1.26.2
+go 1.26.3
 
 require (
 	github.com/go-fuego/fuego v0.19.0
