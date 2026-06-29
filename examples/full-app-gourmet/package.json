@@ -1,7 +1,7 @@
 {
   "devDependencies": {
-    "prettier": "^3.8.3",
+    "prettier": "^3.9.3",
     "prettier-plugin-go-template": "^0.0.15",
-    "prettier-plugin-tailwindcss": "^0.7.2"
+    "prettier-plugin-tailwindcss": "^0.8.0"
   }
 }
