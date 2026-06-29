@@ -56,6 +56,13 @@ func ParamExample(exampleName string, value any) ParamOption {
 	}
 }
 
+// ParamEnum sets the allowed values for the parameter.
+func ParamEnum(values ...any) ParamOption {
+	return func(param *OpenAPIParam) {
+		param.Enum = values
+	}
+}
+
 // ParamStatusCodes sets the status codes for which this parameter is required.
 // Only used for response parameters.
 // If empty, it is required for 200 status codes.
