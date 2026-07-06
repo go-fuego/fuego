@@ -5,7 +5,7 @@ go 1.26.4
 require (
 	github.com/a-h/templ v0.3.1020
 	github.com/getkin/kin-openapi v0.140.0
-	github.com/go-chi/chi/v5 v5.3.0
+	github.com/go-chi/chi/v5 v5.3.1
 	github.com/go-fuego/fuego v0.19.0
 	github.com/go-fuego/fuego/extra/markdown v0.19.0
 	github.com/go-fuego/fuego/middleware/basicauth v0.19.0
@@ -17,7 +17,7 @@ require (
 	github.com/lmittmann/tint v1.1.3
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/text v0.37.0
+	golang.org/x/text v0.39.0
 	modernc.org/sqlite v1.53.0
 )
 
