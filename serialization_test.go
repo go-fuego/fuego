@@ -667,3 +667,25 @@ func TestSendError(t *testing.T) {
 		})
 	}
 }
+
+func TestSend_NilRequest_WriteError_NoPanic(t *testing.T) {
+	cases := map[string]func(http.ResponseWriter, *http.Request, any) error{
+		"json": SendJSON,
+		"xml":  SendXML,
+		"yaml": SendYAML,
+	}
+	for name, send := range cases {
+		t.Run(name, func(t *testing.T) {
+			require.NotPanics(t, func() {
+				err := send(&errorWriter{}, nil, response{Message: "Hello World", Code: http.StatusOK})
+				require.Error(t, err, "expected the underlying write error to be returned")
+			})
+		})
+	}
+
+	t.Run("html CtxRenderer", func(t *testing.T) {
+		require.NotPanics(t, func() {
+			_ = SendHTML(httptest.NewRecorder(), nil, RenderString("Hello World"))
+		})
+	})
+}

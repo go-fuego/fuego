@@ -79,6 +79,13 @@ func transformOut[T any](ctx context.Context, ans T) (T, error) {
 	return ans, nil
 }
 
+func requestContext(r *http.Request) context.Context {
+	if r == nil {
+		return context.Background()
+	}
+	return r.Context()
+}
+
 type Sender func(http.ResponseWriter, *http.Request, any) error
 
 // Send sends a response.
@@ -135,7 +142,7 @@ var SendYAML = func(w http.ResponseWriter, r *http.Request, ans any) (err error)
 	err = yaml.NewEncoder(w).Encode(ans)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		slog.ErrorContext(r.Context(), "Cannot serialize returned response to YAML", "error", err)
+		slog.ErrorContext(requestContext(r), "Cannot serialize returned response to YAML", "error", err)
 		_, _ = w.Write([]byte(`{"error":"Cannot serialize returned response to YAML"}`))
 	}
 	return err
@@ -161,7 +168,7 @@ var SendJSON = func(w http.ResponseWriter, r *http.Request, ans any) error {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(ans)
 	if err != nil {
-		slog.ErrorContext(r.Context(), "Cannot serialize returned response to JSON", "error", err, "errtype", fmt.Sprintf("%T", err))
+		slog.ErrorContext(requestContext(r), "Cannot serialize returned response to JSON", "error", err, "errtype", fmt.Sprintf("%T", err))
 		var unsupportedType *json.UnsupportedTypeError
 		if errors.As(err, &unsupportedType) {
 			return NotAcceptableError{
@@ -225,7 +232,7 @@ var SendXML = func(w http.ResponseWriter, r *http.Request, ans any) error {
 	w.Header().Set("Content-Type", "application/xml")
 	err := xml.NewEncoder(w).Encode(ans)
 	if err != nil {
-		slog.ErrorContext(r.Context(), "Cannot serialize returned response to XML", "error", err, "errtype", fmt.Sprintf("%T", err))
+		slog.ErrorContext(requestContext(r), "Cannot serialize returned response to XML", "error", err, "errtype", fmt.Sprintf("%T", err))
 		var unsupportedType *xml.UnsupportedTypeError
 		if errors.As(err, &unsupportedType) {
 			return NotAcceptableError{
@@ -250,7 +257,7 @@ func SendXMLError(w http.ResponseWriter, r *http.Request, err error) {
 	w.WriteHeader(status)
 	err = SendXML(w, r, err)
 	if err != nil {
-		slog.ErrorContext(r.Context(), "Cannot serialize returned response to XML", "error", err)
+		slog.ErrorContext(requestContext(r), "Cannot serialize returned response to XML", "error", err)
 		_, _ = w.Write([]byte(`{"error":"Cannot serialize returned response to XML"}`))
 	}
 }
@@ -262,7 +269,7 @@ var SendHTML = func(w http.ResponseWriter, r *http.Request, ans any) error {
 
 	ctxRenderer, ok := ans.(CtxRenderer)
 	if ok {
-		return ctxRenderer.Render(r.Context(), w)
+		return ctxRenderer.Render(requestContext(r), w)
 	}
 
 	renderer, ok := ans.(Renderer)
