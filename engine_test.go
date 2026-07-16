@@ -92,10 +92,10 @@ func TestWithRequestContentType(t *testing.T) {
 
 		content := route.Operation.RequestBody.Value.Content
 		require.NotNil(t, content["application/json"])
-		assert.Equal(t, "#/components/schemas/ReqBody", content["application/json"].Schema.Ref)
+		assert.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_ReqBody", content["application/json"].Schema.Ref)
 
 		require.NotNil(t, content["application/xml"])
-		assert.Equal(t, "#/components/schemas/ReqBody", content["application/xml"].Schema.Ref)
+		assert.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_ReqBody", content["application/xml"].Schema.Ref)
 
 		require.Nil(t, content["application/x-yaml"])
 
@@ -125,7 +125,7 @@ func TestWithResponseContentType(t *testing.T) {
 		require.NotNil(t, response)
 		content := response.Value.Content
 		require.Contains(t, content, "application/yml")
-		assert.Equal(t, "#/components/schemas/Resp", content["application/yml"].Schema.Ref)
+		assert.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_Resp", content["application/yml"].Schema.Ref)
 
 		require.NotContains(t, content, "application/xml")
 

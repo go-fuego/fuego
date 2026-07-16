@@ -49,8 +49,8 @@ func TestGenericReturnType(t *testing.T) {
 	require.Equal(t, &openapi3.Types{"object"}, requestType.Type)
 	require.Equal(t, &openapi3.Types{"string"}, requestType.Properties["thing"].Value.Type)
 	// "data" is a User struct, now a $ref to a component schema
-	require.Equal(t, "#/components/schemas/User", requestType.Properties["data"].Ref)
-	userSchema := s.OpenAPI.Description().Components.Schemas["User"].Value
+	require.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_test_User", requestType.Properties["data"].Ref)
+	userSchema := s.OpenAPI.Description().Components.Schemas["github.com_go-fuego_fuego_test_User"].Value
 	require.Equal(t, &openapi3.Types{"object"}, userSchema.Type)
 	require.Equal(t, &openapi3.Types{"integer"}, userSchema.Properties["id"].Value.Type)
 
@@ -59,7 +59,7 @@ func TestGenericReturnType(t *testing.T) {
 	require.Equal(t, &openapi3.Types{"integer"}, responseType.Properties["statusCode"].Value.Type)
 
 	// "result" is a User struct, now a $ref to a component schema
-	require.Equal(t, "#/components/schemas/User", responseType.Properties["result"].Ref)
+	require.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_test_User", responseType.Properties["result"].Ref)
 	require.Equal(t, &openapi3.Types{"object"}, userSchema.Type)
 	require.Equal(t, &openapi3.Types{"integer"}, userSchema.Properties["id"].Value.Type)
 	require.Equal(t, &openapi3.Types{"string"}, userSchema.Properties["name"].Value.Type)

@@ -155,17 +155,17 @@ func TestWithGlobalResponseType(t *testing.T) {
 		t.Run("routeGlobal", func(t *testing.T) {
 			routeGlobal := Get(s, "/test-global", testController)
 			require.Equal(t,
-				"#/components/schemas/ans",
+				"#/components/schemas/github.com_go-fuego_fuego_ans",
 				routeGlobal.Operation.Responses.Value("200").Value.Content.Get("application/json").Schema.Ref,
 			)
 			require.Equal(t,
-				"#/components/schemas/ans",
+				"#/components/schemas/github.com_go-fuego_fuego_ans",
 				routeGlobal.Operation.Responses.Value("200").Value.Content.Get("application/xml").Schema.Ref,
 			)
 			require.Equal(t, "A Global Response", *routeGlobal.Operation.Responses.Value("201").Value.Description)
 			require.Equal(t, "My 202 response with content", *routeGlobal.Operation.Responses.Value("202").Value.Description)
 			require.Equal(t,
-				"#/components/schemas/MyGlobalResponse",
+				"#/components/schemas/github.com_go-fuego_fuego_MyGlobalResponse",
 				routeGlobal.Operation.Responses.Value("202").Value.Content.Get("application/x-yaml").Schema.Ref,
 			)
 		})
@@ -176,17 +176,17 @@ func TestWithGlobalResponseType(t *testing.T) {
 				OptionAddResponse(http.StatusNoContent, "My No Content", Response{Type: struct{}{}}),
 			)
 			require.Equal(t,
-				"#/components/schemas/MyLocalResponse",
+				"#/components/schemas/github.com_go-fuego_fuego_MyLocalResponse",
 				routeCustom.Operation.Responses.Value("200").Value.Content.Get("application/json").Schema.Ref,
 			)
 			require.Equal(t,
-				"#/components/schemas/MyLocalResponse",
+				"#/components/schemas/github.com_go-fuego_fuego_MyLocalResponse",
 				routeCustom.Operation.Responses.Value("200").Value.Content.Get("application/xml").Schema.Ref,
 			)
 			require.Equal(t, "My No Content", *routeCustom.Operation.Responses.Value("204").Value.Description)
 			require.Equal(t, "My 202 response with content", *routeCustom.Operation.Responses.Value("202").Value.Description)
 			require.Equal(t,
-				"#/components/schemas/MyGlobalResponse",
+				"#/components/schemas/github.com_go-fuego_fuego_MyGlobalResponse",
 				routeCustom.Operation.Responses.Value("202").Value.Content.Get("application/x-yaml").Schema.Ref,
 			)
 		})
@@ -196,7 +196,7 @@ func TestWithGlobalResponseType(t *testing.T) {
 				OptionDefaultResponse("Default response", Response{Type: HTTPError{}}),
 			)
 			assert.Equal(t, "Default response", *route.Operation.Responses.Value("default").Value.Description)
-			assert.Equal(t, "#/components/schemas/HTTPError", route.Operation.Responses.Value("default").Value.Content.Get("application/json").Schema.Ref)
+			assert.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_HTTPError", route.Operation.Responses.Value("default").Value.Content.Get("application/json").Schema.Ref)
 		})
 	})
 
