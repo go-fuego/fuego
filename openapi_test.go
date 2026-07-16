@@ -605,7 +605,7 @@ func TestValidationTags(t *testing.T) {
 		Name string `json:"name" validate:"required,min=3,max=10" description:"Name of the user" example:"John"`
 		Age  int    `json:"age" validate:"min=18,max=100" description:"Age of the user" example:"25"`
 	}
-	typeOfMyType := reflect.TypeOf(MyType{})
+	typeOfMyType := reflect.TypeFor[MyType]()
 
 	s := NewServer()
 	Get(s, "/data", func(ContextNoBody) (MyType, error) {
@@ -648,7 +648,7 @@ func TestEmbeddedStructHandling(t *testing.T) {
 		InnerStruct
 		FieldB int `json:"field_b" example:"100" description:"B field in the outer struct"`
 	}
-	typeOfOuterStruct := reflect.TypeOf(OuterStruct{})
+	typeOfOuterStruct := reflect.TypeFor[OuterStruct]()
 
 	// Register a route that returns OuterStruct
 	Get(s, "/embedded", func(ContextNoBody) (OuterStruct, error) {
@@ -750,8 +750,8 @@ func TestSetGeneratorSchemaCustomizer(t *testing.T) {
 		Cover Cover  `json:"cover"`
 		Empty Empty  `json:"empty"`
 	}
-	typeOfPage := reflect.TypeOf(Page{})
-	typeOfBook := reflect.TypeOf(Book{})
+	typeOfPage := reflect.TypeFor[Page]()
+	typeOfBook := reflect.TypeFor[Book]()
 
 	s := NewServer(WithEngineOptions(WithOpenAPIGeneratorSchemaCustomizer(customTagParser)))
 	Get(s, "/book", func(ContextNoBody) (Book, error) {
@@ -802,32 +802,32 @@ func TestOpenAPITypeNameGenerator(t *testing.T) {
 	}{
 		{
 			name:     "plain struct type from this package",
-			input:    reflect.TypeOf(MyStruct{}),
+			input:    reflect.TypeFor[MyStruct](),
 			expected: "github.com_go-fuego_fuego_MyStruct",
 		},
 		{
 			name:     "standard library type",
-			input:    reflect.TypeOf(http.Request{}),
+			input:    reflect.TypeFor[http.Request](),
 			expected: "net_http_Request",
 		},
 		{
 			name:     "external package type",
-			input:    reflect.TypeOf(openapi3.Schema{}),
+			input:    reflect.TypeFor[openapi3.Schema](),
 			expected: "github.com_getkin_kin-openapi_openapi3_Schema",
 		},
 		{
 			name:     "primitive type string",
-			input:    reflect.TypeOf(""),
+			input:    reflect.TypeFor[string](),
 			expected: "string",
 		},
 		{
 			name:     "primitive type int",
-			input:    reflect.TypeOf(0),
+			input:    reflect.TypeFor[int](),
 			expected: "int",
 		},
 		{
 			name:     "generic struct type",
-			input:    reflect.TypeOf(DataOrTemplate[MyStruct]{}),
+			input:    reflect.TypeFor[DataOrTemplate[MyStruct]](),
 			expected: "github.com_go-fuego_fuego_DataOrTemplate-github.com_go-fuego_fuego.MyStruct",
 		},
 	}

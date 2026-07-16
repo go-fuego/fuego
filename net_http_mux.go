@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"reflect"
 	"runtime"
+	"slices"
 	"strings"
 )
 
@@ -162,8 +163,8 @@ func registerStdController(s *Server, method, path string, controller func(http.
 }
 
 func withMiddlewares(controller http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
-	for i := len(middlewares) - 1; i >= 0; i-- {
-		controller = middlewares[i](controller)
+	for _, v := range slices.Backward(middlewares) {
+		controller = v(controller)
 	}
 	return controller
 }

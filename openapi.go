@@ -290,8 +290,8 @@ func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 	}
 
 	if typeOfParams.Kind() == reflect.Struct {
-		for i := range typeOfParams.NumField() {
-			field := typeOfParams.Field(i)
+		for field := range typeOfParams.Fields() {
+			field := field
 			var params []ParamOption
 			example, _ := field.Tag.Lookup("example")
 			if example != "" {
@@ -465,7 +465,7 @@ func dive(openapi *OpenAPI, t reflect.Type, tag SchemaTag, maxDepth int) SchemaT
 	}
 
 	switch t.Kind() {
-	case reflect.Ptr, reflect.Map, reflect.Chan, reflect.Func, reflect.UnsafePointer:
+	case reflect.Pointer, reflect.Map, reflect.Chan, reflect.Func, reflect.UnsafePointer:
 		return dive(openapi, t.Elem(), tag, maxDepth-1)
 
 	case reflect.Slice, reflect.Array:

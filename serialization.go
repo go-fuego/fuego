@@ -37,7 +37,7 @@ type OutTransformer interface {
 }
 
 func transformOut[T any](ctx context.Context, ans T) (T, error) {
-	if reflect.TypeOf(ans).Kind() == reflect.Ptr {
+	if reflect.TypeOf(ans).Kind() == reflect.Pointer {
 		// If ans is a nil pointer, we do not want to transform it.
 		if reflect.ValueOf(ans).IsNil() {
 			return ans, nil

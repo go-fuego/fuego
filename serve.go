@@ -217,7 +217,7 @@ func isNilError(err error) bool {
 		return true
 	}
 	v := reflect.ValueOf(err)
-	if v.Kind() == reflect.Ptr {
+	if v.Kind() == reflect.Pointer {
 		return v.IsNil()
 	}
 	return false
