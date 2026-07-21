@@ -375,7 +375,7 @@ func TestRequestContentType(t *testing.T) {
 		content := route.Operation.RequestBody.Value.Content
 		require.NotNil(t, content.Get("application/json"))
 		require.Nil(t, content.Get("application/xml"))
-		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/json").Schema.Ref)
+		require.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_test_ReqBody", content.Get("application/json").Schema.Ref)
 		_, ok := s.OpenAPI.Description().Components.RequestBodies["ReqBody"]
 		require.False(t, ok)
 	})
@@ -390,8 +390,8 @@ func TestRequestContentType(t *testing.T) {
 		require.NotNil(t, content.Get("application/json"))
 		require.NotNil(t, content.Get("my/content-type"))
 		require.Nil(t, content.Get("application/xml"))
-		require.Equal(t, "#/components/schemas/ReqBody", content.Get("application/json").Schema.Ref)
-		require.Equal(t, "#/components/schemas/ReqBody", content.Get("my/content-type").Schema.Ref)
+		require.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_test_ReqBody", content.Get("application/json").Schema.Ref)
+		require.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_test_ReqBody", content.Get("my/content-type").Schema.Ref)
 		_, ok := s.OpenAPI.Description().Components.RequestBodies["ReqBody"]
 		require.False(t, ok)
 	})
@@ -409,7 +409,7 @@ func TestRequestContentType(t *testing.T) {
 		require.Nil(t, content.Get("application/json"))
 		require.Nil(t, content.Get("application/xml"))
 		require.NotNil(t, content.Get("my/content-type"))
-		require.Equal(t, "#/components/schemas/ReqBody", content.Get("my/content-type").Schema.Ref)
+		require.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_test_ReqBody", content.Get("my/content-type").Schema.Ref)
 		_, ok := s.OpenAPI.Description().Components.RequestBodies["ReqBody"]
 		require.False(t, ok)
 	})
@@ -489,7 +489,7 @@ func TestAddResponse(t *testing.T) {
 		require.Nil(t, resp.Value.Content.Get("application/json"))
 		require.Nil(t, resp.Value.Content.Get("application/xml"))
 		require.NotNil(t, resp.Value.Content.Get("application/x-yaml"))
-		require.Equal(t, "#/components/schemas/HTTPError", resp.Value.Content.Get("application/x-yaml").Schema.Ref)
+		require.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_HTTPError", resp.Value.Content.Get("application/x-yaml").Schema.Ref)
 		require.Equal(t, "set 200", *route.Operation.Responses.Value("200").Value.Description)
 	})
 
@@ -523,8 +523,8 @@ func TestRequestBody(t *testing.T) {
 		require.NotNil(t, req)
 		assert.NotContains(t, req.Value.Content, "application/xml")
 		require.Contains(t, req.Value.Content, "application/json")
-		assert.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
-		assert.NotNil(t, s.OpenAPI.Description().Components.Schemas["TestModel"])
+		assert.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_test_TestModel", req.Value.Content.Get("application/json").Schema.Ref)
+		assert.NotNil(t, s.OpenAPI.Description().Components.Schemas["github.com_go-fuego_fuego_test_TestModel"])
 	})
 
 	t.Run("no content types provided", func(t *testing.T) {
@@ -538,8 +538,8 @@ func TestRequestBody(t *testing.T) {
 		require.NotNil(t, req)
 		require.Contains(t, req.Value.Content, "application/json")
 		assert.Contains(t, req.Value.Content, "application/xml")
-		assert.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
-		assert.Contains(t, s.OpenAPI.Description().Components.Schemas, "TestModel")
+		assert.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_test_TestModel", req.Value.Content.Get("application/json").Schema.Ref)
+		assert.Contains(t, s.OpenAPI.Description().Components.Schemas, "github.com_go-fuego_fuego_test_TestModel")
 	})
 
 	t.Run("multiple inputs", func(t *testing.T) {
@@ -560,9 +560,9 @@ func TestRequestBody(t *testing.T) {
 		require.Len(t, req.Value.Content, 2)
 		assert.NotContains(t, req.Value.Content, "application/xml")
 		require.Contains(t, req.Value.Content, "application/json")
-		assert.Equal(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
+		assert.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_test_TestModel", req.Value.Content.Get("application/json").Schema.Ref)
 		require.Contains(t, req.Value.Content, "custom-type")
-		assert.Equal(t, "#/components/schemas/AnotherTestModel", req.Value.Content.Get("custom-type").Schema.Ref)
+		assert.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_test_AnotherTestModel", req.Value.Content.Get("custom-type").Schema.Ref)
 	})
 
 	t.Run("override previous input", func(t *testing.T) {
@@ -582,8 +582,8 @@ func TestRequestBody(t *testing.T) {
 		require.NotNil(t, req)
 		require.Len(t, req.Value.Content, 1)
 		require.Contains(t, req.Value.Content, "application/json")
-		assert.NotEqual(t, "#/components/schemas/TestModel", req.Value.Content.Get("application/json").Schema.Ref)
-		assert.Equal(t, "#/components/schemas/AnotherTestModel", req.Value.Content.Get("application/json").Schema.Ref)
+		assert.NotEqual(t, "#/components/schemas/github.com_go-fuego_fuego_test_TestModel", req.Value.Content.Get("application/json").Schema.Ref)
+		assert.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_test_AnotherTestModel", req.Value.Content.Get("application/json").Schema.Ref)
 	})
 
 	t.Run("should be fatal", func(t *testing.T) {

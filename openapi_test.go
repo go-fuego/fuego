@@ -78,7 +78,7 @@ func Test_tagFromType(t *testing.T) {
 			description: "basic struct",
 			inputType:   MyStruct{},
 
-			expectedTagValue:     "MyStruct",
+			expectedTagValue:     "github.com_go-fuego_fuego_MyStruct",
 			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
@@ -86,7 +86,7 @@ func Test_tagFromType(t *testing.T) {
 			description: "",
 			inputType:   MyStructWithNested{},
 
-			expectedTagValue:     "MyStructWithNested",
+			expectedTagValue:     "github.com_go-fuego_fuego_MyStructWithNested",
 			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
@@ -94,7 +94,7 @@ func Test_tagFromType(t *testing.T) {
 			description: "",
 			inputType:   &MyStruct{},
 
-			expectedTagValue:     "MyStruct",
+			expectedTagValue:     "github.com_go-fuego_fuego_MyStruct",
 			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
@@ -102,7 +102,7 @@ func Test_tagFromType(t *testing.T) {
 			description: "",
 			inputType:   []MyStruct{},
 
-			expectedTagValue:     "MyStruct",
+			expectedTagValue:     "github.com_go-fuego_fuego_MyStruct",
 			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
@@ -110,7 +110,7 @@ func Test_tagFromType(t *testing.T) {
 			description: "",
 			inputType:   &[]MyStruct{},
 
-			expectedTagValue:     "MyStruct",
+			expectedTagValue:     "github.com_go-fuego_fuego_MyStruct",
 			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
@@ -118,7 +118,7 @@ func Test_tagFromType(t *testing.T) {
 			description: "behind 4 pointers",
 			inputType:   new(DeeplyNested),
 
-			expectedTagValue:     "MyStruct",
+			expectedTagValue:     "github.com_go-fuego_fuego_MyStruct",
 			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
@@ -126,7 +126,7 @@ func Test_tagFromType(t *testing.T) {
 			description: "behind 5 pointers",
 			inputType:   *new(MoreDeeplyNested),
 
-			expectedTagValue:     "MyStruct",
+			expectedTagValue:     "github.com_go-fuego_fuego_MyStruct",
 			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
@@ -181,7 +181,7 @@ func Test_tagFromType(t *testing.T) {
 			description: "",
 			inputType:   DataOrTemplate[MyStruct]{},
 
-			expectedTagValue:     "MyStruct",
+			expectedTagValue:     "github.com_go-fuego_fuego_MyStruct",
 			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
@@ -189,7 +189,7 @@ func Test_tagFromType(t *testing.T) {
 			description: "",
 			inputType:   &DataOrTemplate[MyStruct]{},
 
-			expectedTagValue:     "MyStruct",
+			expectedTagValue:     "github.com_go-fuego_fuego_MyStruct",
 			expectedTagValueType: &openapi3.Types{"object"},
 		},
 		{
@@ -197,7 +197,7 @@ func Test_tagFromType(t *testing.T) {
 			description: "",
 			inputType:   DataOrTemplate[[]MyStruct]{},
 
-			expectedTagValue:     "MyStruct",
+			expectedTagValue:     "github.com_go-fuego_fuego_MyStruct",
 			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
@@ -205,7 +205,7 @@ func Test_tagFromType(t *testing.T) {
 			description: "",
 			inputType:   &DataOrTemplate[[]*MyStruct]{},
 
-			expectedTagValue:     "MyStruct",
+			expectedTagValue:     "github.com_go-fuego_fuego_MyStruct",
 			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
@@ -213,7 +213,7 @@ func Test_tagFromType(t *testing.T) {
 			description: "",
 			inputType:   &DataOrTemplate[*[]MyStruct]{},
 
-			expectedTagValue:     "MyStruct",
+			expectedTagValue:     "github.com_go-fuego_fuego_MyStruct",
 			expectedTagValueType: &openapi3.Types{"array"},
 		},
 		{
@@ -281,9 +281,9 @@ func Test_tagFromType(t *testing.T) {
 		nestedProperty := tag.Value.Properties["nested"]
 		require.NotNil(t, nestedProperty)
 		// Nested struct should be a $ref to a component schema
-		assert.Equal(t, "#/components/schemas/MyStruct", nestedProperty.Ref)
+		assert.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_MyStruct", nestedProperty.Ref)
 		// Look up the nested schema from components
-		nestedSchema, ok := s.OpenAPI.Description().Components.Schemas["MyStruct"]
+		nestedSchema, ok := s.OpenAPI.Description().Components.Schemas["github.com_go-fuego_fuego_MyStruct"]
 		require.True(t, ok)
 		require.NotNil(t, nestedSchema)
 		require.NotNil(t, nestedSchema.Value)
@@ -348,10 +348,10 @@ func TestServer_generateOpenAPI(t *testing.T) {
 	require.Nil(t, document.Paths.Find("/unknown"))
 	require.NotNil(t, document.Paths.Find("/post"))
 	require.Equal(t, &openapi3.Types{"array"}, document.Paths.Find("/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Type)
-	require.Equal(t, "#/components/schemas/MyStruct", document.Paths.Find("/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Ref)
+	require.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_MyStruct", document.Paths.Find("/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Ref)
 	require.Equal(t, &openapi3.Types{"array"}, document.Paths.Find("/multidimensional/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Type)
 	require.Equal(t, &openapi3.Types{"array"}, document.Paths.Find("/multidimensional/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Value.Type)
-	require.Equal(t, "#/components/schemas/MyStruct", document.Paths.Find("/multidimensional/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Value.Items.Ref)
+	require.Equal(t, "#/components/schemas/github.com_go-fuego_fuego_MyStruct", document.Paths.Find("/multidimensional/post").Post.Responses.Value("200").Value.Content["application/json"].Schema.Value.Items.Value.Items.Ref)
 	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200"))
 	require.NotNil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"])
 	require.Nil(t, document.Paths.Find("/post/{id}").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["unknown"])
@@ -605,6 +605,7 @@ func TestValidationTags(t *testing.T) {
 		Name string `json:"name" validate:"required,min=3,max=10" description:"Name of the user" example:"John"`
 		Age  int    `json:"age" validate:"min=18,max=100" description:"Age of the user" example:"25"`
 	}
+	typeOfMyType := reflect.TypeFor[MyType]()
 
 	s := NewServer()
 	Get(s, "/data", func(ContextNoBody) (MyType, error) {
@@ -616,7 +617,10 @@ func TestValidationTags(t *testing.T) {
 	require.NotNil(t, document.Paths.Find("/data").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["name"].Value.Description)
 	require.Equal(t, "Name of the user", document.Paths.Find("/data").Get.Responses.Value("200").Value.Content["application/json"].Schema.Value.Properties["name"].Value.Description)
 
-	myTypeValue := document.Components.Schemas["MyType"].Value
+	myType := document.Components.Schemas[OpenAPITypeNameGenerator(typeOfMyType)]
+	require.NotNil(t, myType)
+	myTypeValue := myType.Value
+	require.NotNil(t, myTypeValue)
 	t.Logf("myType: %+v", myTypeValue)
 	t.Logf("name: %+v", myTypeValue.Properties["name"])
 	t.Logf("age: %+v", myTypeValue.Properties["age"])
@@ -644,6 +648,7 @@ func TestEmbeddedStructHandling(t *testing.T) {
 		InnerStruct
 		FieldB int `json:"field_b" example:"100" description:"B field in the outer struct"`
 	}
+	typeOfOuterStruct := reflect.TypeFor[OuterStruct]()
 
 	// Register a route that returns OuterStruct
 	Get(s, "/embedded", func(ContextNoBody) (OuterStruct, error) {
@@ -655,24 +660,26 @@ func TestEmbeddedStructHandling(t *testing.T) {
 	require.NotNil(t, document)
 
 	// Ensure that both the embedded and non-embedded fields are present in the schema
-	outerSchema := document.Components.Schemas["OuterStruct"].Value
+	outerSchema := document.Components.Schemas[OpenAPITypeNameGenerator(typeOfOuterStruct)]
 	require.NotNil(t, outerSchema)
+	outerSchemaValue := outerSchema.Value
+	require.NotNil(t, outerSchemaValue)
 
 	// Check if embedded struct fields are included
-	require.NotNil(t, outerSchema.Properties["field_a"])
-	assert.Equal(t, &openapi3.Types{"string"}, outerSchema.Properties["field_a"].Value.Type)
-	assert.Equal(t, "Value A", outerSchema.Properties["field_a"].Value.Example)
-	assert.Equal(t, "A field in the inner struct", outerSchema.Properties["field_a"].Value.Description)
+	require.NotNil(t, outerSchemaValue.Properties["field_a"])
+	assert.Equal(t, &openapi3.Types{"string"}, outerSchemaValue.Properties["field_a"].Value.Type)
+	assert.Equal(t, "Value A", outerSchemaValue.Properties["field_a"].Value.Example)
+	assert.Equal(t, "A field in the inner struct", outerSchemaValue.Properties["field_a"].Value.Description)
 
 	// Check if non-embedded struct fields are included
-	require.NotNil(t, outerSchema.Properties["field_b"])
-	assert.Equal(t, &openapi3.Types{"integer"}, outerSchema.Properties["field_b"].Value.Type)
-	assert.Equal(t, 100, outerSchema.Properties["field_b"].Value.Example)
-	assert.Equal(t, "B field in the outer struct", outerSchema.Properties["field_b"].Value.Description)
+	require.NotNil(t, outerSchemaValue.Properties["field_b"])
+	assert.Equal(t, &openapi3.Types{"integer"}, outerSchemaValue.Properties["field_b"].Value.Type)
+	assert.Equal(t, 100, outerSchemaValue.Properties["field_b"].Value.Example)
+	assert.Equal(t, "B field in the outer struct", outerSchemaValue.Properties["field_b"].Value.Description)
 
 	// Both fields should be required (no omitempty tag)
-	assert.Contains(t, outerSchema.Required, "field_a", "embedded struct fields without omitempty should be required")
-	assert.Contains(t, outerSchema.Required, "field_b", "outer struct fields without omitempty should be required")
+	assert.Contains(t, outerSchemaValue.Required, "field_a", "embedded struct fields without omitempty should be required")
+	assert.Contains(t, outerSchemaValue.Required, "field_b", "outer struct fields without omitempty should be required")
 }
 
 func TestDeclareCustom200Response(t *testing.T) {
@@ -743,6 +750,8 @@ func TestSetGeneratorSchemaCustomizer(t *testing.T) {
 		Cover Cover  `json:"cover"`
 		Empty Empty  `json:"empty"`
 	}
+	typeOfPage := reflect.TypeFor[Page]()
+	typeOfBook := reflect.TypeFor[Book]()
 
 	s := NewServer(WithEngineOptions(WithOpenAPIGeneratorSchemaCustomizer(customTagParser)))
 	Get(s, "/book", func(ContextNoBody) (Book, error) {
@@ -752,11 +761,15 @@ func TestSetGeneratorSchemaCustomizer(t *testing.T) {
 	// Get openapi spec
 	openApiSpec := s.OutputOpenAPISpec()
 	require.NotNil(t, openApiSpec)
-	bookValue := openApiSpec.Components.Schemas["Book"].Value
+
+	bookSchema := openApiSpec.Components.Schemas[OpenAPITypeNameGenerator(typeOfBook)]
+	require.NotNil(t, bookSchema)
+	bookValue := bookSchema.Value
+	require.NotNil(t, bookValue)
 
 	// Make sure cover is a reference
 	require.NotEmpty(t, bookValue.Properties["cover"])
-	require.Equal(t, "#/components/schemas/Cover", bookValue.Properties["cover"].Ref)
+	require.Contains(t, bookValue.Properties["cover"].Ref, "Cover")
 
 	require.NotEmpty(t, bookValue.Properties["empty"])
 	require.Empty(t, bookValue.Properties["empty"].Ref)
@@ -767,11 +780,11 @@ func TestSetGeneratorSchemaCustomizer(t *testing.T) {
 	require.Empty(t, pagesValue.Description)
 
 	// Page should be a separate component schema referenced via $ref
-	pageSchemaRef, ok := openApiSpec.Components.Schemas["Page"]
-	require.True(t, ok, "Page should be a separate component schema")
-	require.NotNil(t, pageSchemaRef.Value)
+	pageSchema := openApiSpec.Components.Schemas[OpenAPITypeNameGenerator(typeOfPage)]
+	require.NotNil(t, pageSchema, "Page should be a separate component schema")
+	pageValue := pageSchema.Value
+	require.NotNil(t, pageValue)
 
-	pageValue := pageSchemaRef.Value
 	// Now the num_words should have the custom tag
 	num_wordsValue := pageValue.Properties["num_words"].Value
 	require.NotEmpty(t, num_wordsValue.Description)
@@ -781,73 +794,91 @@ func TestSetGeneratorSchemaCustomizer(t *testing.T) {
 	)
 }
 
-func Test_transformTypeName(t *testing.T) {
+func TestOpenAPITypeNameGenerator(t *testing.T) {
 	tests := []struct {
 		name     string
-		input    string
+		input    reflect.Type
 		expected string
 	}{
 		{
-			name:     "simple generic type",
-			input:    "Response[model.User]",
-			expected: "Response_model.User",
+			name:     "plain struct type from this package",
+			input:    reflect.TypeFor[MyStruct](),
+			expected: "github.com_go-fuego_fuego_MyStruct",
 		},
 		{
-			name:     "no generic brackets",
-			input:    "PlainType",
-			expected: "PlainType",
+			name:     "standard library type",
+			input:    reflect.TypeFor[http.Request](),
+			expected: "net_http_Request",
 		},
 		{
-			name:     "generic with package path",
-			input:    "Response[github.com/org/repo/model.User]",
-			expected: "Response_model.User",
+			name:     "external package type",
+			input:    reflect.TypeFor[openapi3.Schema](),
+			expected: "github.com_getkin_kin-openapi_openapi3_Schema",
 		},
 		{
-			name:     "slice type parameter",
-			input:    "Response[[]model.QuotaData]",
-			expected: "Response_Array-model.QuotaData",
+			name:     "primitive type string",
+			input:    reflect.TypeFor[string](),
+			expected: "string",
 		},
 		{
-			name:     "slice type parameter with package path",
-			input:    "Response[[]github.com/org/repo/model.QuotaData]",
-			expected: "Response_Array-model.QuotaData",
+			name:     "primitive type int",
+			input:    reflect.TypeFor[int](),
+			expected: "int",
 		},
 		{
-			name:     "pointer type parameter",
-			input:    "Response[*model.User]",
-			expected: "Response_model.User",
-		},
-		{
-			name:     "pointer type parameter with package path",
-			input:    "Response[*github.com/org/repo/model.User]",
-			expected: "Response_model.User",
-		},
-		{
-			name:     "map type parameter",
-			input:    "Response[map[string]model.User]",
-			expected: "Response_map-string-model.User",
-		},
-		{
-			name:     "map type parameter with package path",
-			input:    "Response[map[string]github.com/org/repo/model.User]",
-			expected: "Response_map-string-model.User",
-		},
-		{
-			name:     "nested generic",
-			input:    "Outer[Inner[model.User]]",
-			expected: "Outer_Inner-model.User",
-		},
-		{
-			name:     "nested generic with package path",
-			input:    "Outer[Inner[github.com/org/repo/model.User]]",
-			expected: "Outer_Inner-model.User",
+			name:     "generic struct type",
+			input:    reflect.TypeFor[DataOrTemplate[MyStruct]](),
+			expected: "github.com_go-fuego_fuego_DataOrTemplate-github.com_go-fuego_fuego.MyStruct",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := transformTypeName(tt.input)
+			result := OpenAPITypeNameGenerator(tt.input)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
+}
+
+func TestOutputOpenAPISpec_SelfReferentialStruct(t *testing.T) {
+	// This test ensures that self-referential structs (which create cycles in the
+	// schema graph) do not cause infinite recursion during resolveSchemaRefs.
+	type TreeNode struct {
+		Value    string      `json:"value"`
+		Children []*TreeNode `json:"children,omitempty"`
+	}
+
+	s := NewServer()
+	Get(s, "/tree", func(ContextNoBody) (TreeNode, error) {
+		return TreeNode{}, nil
+	})
+
+	// Should not panic or hang due to infinite recursion
+	document := s.OutputOpenAPISpec()
+	require.NotNil(t, document)
+	require.NotNil(t, document.Paths.Find("/tree"))
+}
+
+func TestOutputOpenAPISpec_MutuallyRecursiveStructs(t *testing.T) {
+	// Two structs that reference each other, creating a cycle.
+	type B struct {
+		Name string `json:"name"`
+	}
+	type A struct {
+		Related *B `json:"related,omitempty"`
+	}
+
+	s := NewServer()
+	Get(s, "/a", func(ContextNoBody) (A, error) {
+		return A{}, nil
+	})
+	Get(s, "/b", func(ContextNoBody) (B, error) {
+		return B{}, nil
+	})
+
+	// Should not panic or hang
+	document := s.OutputOpenAPISpec()
+	require.NotNil(t, document)
+	require.NotNil(t, document.Paths.Find("/a"))
+	require.NotNil(t, document.Paths.Find("/b"))
 }

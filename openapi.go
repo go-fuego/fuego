@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"path"
 	"reflect"
 	"regexp"
 	"slices"
@@ -23,6 +24,7 @@ func NewOpenAPI() *OpenAPI {
 			openapi3gen.CreateComponentSchemas(openapi3gen.ExportComponentSchemasOptions{
 				ExportComponentSchemas: true,
 			}),
+			openapi3gen.CreateTypeNameGenerator(OpenAPITypeNameGenerator),
 		),
 		globalOpenAPIResponses: []openAPIResponse{},
 		Config:                 defaultOpenAPIConfig,
@@ -62,6 +64,7 @@ func (openAPI *OpenAPI) SetGeneratorSchemaCustomizer(sc openapi3gen.SchemaCustom
 		openapi3gen.CreateComponentSchemas(openapi3gen.ExportComponentSchemasOptions{
 			ExportComponentSchemas: true,
 		}),
+		openapi3gen.CreateTypeNameGenerator(OpenAPITypeNameGenerator),
 	)...)
 }
 
@@ -287,8 +290,8 @@ func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 	}
 
 	if typeOfParams.Kind() == reflect.Struct {
-		for i := range typeOfParams.NumField() {
-			field := typeOfParams.Field(i)
+		for field := range typeOfParams.Fields() {
+			field := field
 			var params []ParamOption
 			example, _ := field.Tag.Lookup("example")
 			if example != "" {
@@ -462,7 +465,7 @@ func dive(openapi *OpenAPI, t reflect.Type, tag SchemaTag, maxDepth int) SchemaT
 	}
 
 	switch t.Kind() {
-	case reflect.Ptr, reflect.Map, reflect.Chan, reflect.Func, reflect.UnsafePointer:
+	case reflect.Pointer, reflect.Map, reflect.Chan, reflect.Func, reflect.UnsafePointer:
 		return dive(openapi, t.Elem(), tag, maxDepth-1)
 
 	case reflect.Slice, reflect.Array:
@@ -473,8 +476,8 @@ func dive(openapi *OpenAPI, t reflect.Type, tag SchemaTag, maxDepth int) SchemaT
 		return tag
 
 	default:
-		tag.Name = transformTypeName(t.Name())
-		if t.Kind() == reflect.Struct && strings.HasPrefix(tag.Name, "DataOrTemplate") {
+		tag.Name = OpenAPITypeNameGenerator(t)
+		if t.Kind() == reflect.Struct && strings.HasPrefix(t.Name(), "DataOrTemplate[") {
 			return dive(openapi, t.Field(0).Type, tag, maxDepth-1)
 		}
 		tag.Ref = "#/components/schemas/" + tag.Name
@@ -501,6 +504,9 @@ func (openAPI *OpenAPI) createSchema(key string, v any) *openapi3.SchemaRef {
 	if err != nil {
 		slog.Error("Error generating schema", "key", key, "error", err)
 	}
+	if schemaRef.Value == nil {
+		panic("SchemaRef Value should not be nil, openapi schema key mismatch for " + key)
+	}
 	schemaRef.Value.Description = key + " schema"
 
 	descriptionable, ok := v.(OpenAPIDescriptioner)
@@ -524,12 +530,13 @@ type OpenAPIDescriptioner interface {
 func (openAPI *OpenAPI) resolveSchemaRefs() {
 	schemas := openAPI.Description().Components.Schemas
 	prefix := "#/components/schemas/"
+	visited := make(map[*openapi3.Schema]bool)
 
 	for _, schemaRef := range schemas {
 		if schemaRef == nil || schemaRef.Value == nil {
 			continue
 		}
-		resolveRefsInSchema(schemaRef.Value, schemas, prefix)
+		resolveRefsInSchema(schemaRef.Value, schemas, prefix, visited)
 	}
 
 	// Also resolve refs in path operation schemas (request/response bodies)
@@ -540,7 +547,7 @@ func (openAPI *OpenAPI) resolveSchemaRefs() {
 				if op.RequestBody != nil && op.RequestBody.Value != nil {
 					for _, t := range op.RequestBody.Value.Content {
 						if t.Schema != nil {
-							resolveRef(t.Schema, schemas, prefix)
+							resolveRef(t.Schema, schemas, prefix, visited)
 						}
 					}
 				}
@@ -552,7 +559,7 @@ func (openAPI *OpenAPI) resolveSchemaRefs() {
 					}
 					for _, t := range resp.Value.Content {
 						if t.Schema != nil {
-							resolveRef(t.Schema, schemas, prefix)
+							resolveRef(t.Schema, schemas, prefix, visited)
 						}
 					}
 				}
@@ -561,20 +568,25 @@ func (openAPI *OpenAPI) resolveSchemaRefs() {
 	}
 }
 
-func resolveRefsInSchema(schema *openapi3.Schema, schemas openapi3.Schemas, prefix string) {
+func resolveRefsInSchema(schema *openapi3.Schema, schemas openapi3.Schemas, prefix string, visited map[*openapi3.Schema]bool) {
+	if visited[schema] {
+		return
+	}
+	visited[schema] = true
+
 	for _, propRef := range schema.Properties {
-		resolveRef(propRef, schemas, prefix)
+		resolveRef(propRef, schemas, prefix, visited)
 	}
 
 	if schema.Items != nil {
-		resolveRef(schema.Items, schemas, prefix)
+		resolveRef(schema.Items, schemas, prefix, visited)
 	}
 	if schema.AdditionalProperties.Schema != nil {
-		resolveRef(schema.AdditionalProperties.Schema, schemas, prefix)
+		resolveRef(schema.AdditionalProperties.Schema, schemas, prefix, visited)
 	}
 }
 
-func resolveRef(ref *openapi3.SchemaRef, schemas openapi3.Schemas, prefix string) {
+func resolveRef(ref *openapi3.SchemaRef, schemas openapi3.Schemas, prefix string, visited map[*openapi3.Schema]bool) {
 	if ref == nil {
 		return
 	}
@@ -594,37 +606,25 @@ func resolveRef(ref *openapi3.SchemaRef, schemas openapi3.Schemas, prefix string
 		}
 	}
 	if ref.Value != nil {
-		resolveRefsInSchema(ref.Value, schemas, prefix)
+		resolveRefsInSchema(ref.Value, schemas, prefix, visited)
 	}
 }
 
-// Transform the type name to a more readable & valid OpenAPI 3 format.
-// Useful for generics.
-// Example: "BareSuccessResponse[github.com/go-fuego/fuego/examples/petstore/models.Pets]" -> "BareSuccessResponse_models.Pets"
-// Example: "BareSuccessResponse[[]github.com/go-fuego/fuego/examples/petstore/models.Pets]" -> "BareSuccessResponse_Array-models.Pets"
-func transformTypeName(s string) string {
-	start := strings.Index(s, "[")
-	if start == -1 {
-		return s
-	}
-	end := strings.LastIndex(s, "]")
-	if end == -1 {
-		return s
-	}
-
-	prefix := s[:start]
-	inside := s[start+1 : end]
-
-	// Strip Go import path prefixes (e.g. "github.com/org/repo/" -> "").
-	// Import paths match: word(.word)* followed by one or more /word/ segments.
-	inside = importPathRe.ReplaceAllString(inside, "")
+// OpenAPITypeNameGenerator implements openapi3gen.TypeNameGenerator
+// It outputs an unique schema ID from a combination of package name and type name
+func OpenAPITypeNameGenerator(t reflect.Type) string {
+	schemaName := path.Join(t.PkgPath(), t.Name())
 
 	// Sanitize Go type syntax into valid OpenAPI 3 identifiers (a-zA-Z0-9._-).
 	// Order matters: "[]" must be replaced before "[" so slices become "Array-" not "-".
-	inside = strings.NewReplacer("[]", "Array-", "[", "-", "]", "-", "*", "").Replace(inside)
-	inside = strings.TrimRight(inside, "-")
+	schemaName = strings.NewReplacer(
+		"[]", "Array-",
+		"[", "-",
+		"]", "-",
+		"*", "",
+		"/", "_",
+	).Replace(schemaName)
+	schemaName = strings.TrimRight(schemaName, "-")
 
-	return prefix + "_" + inside
+	return schemaName
 }
-
-var importPathRe = regexp.MustCompile(`\w+(?:\.\w+)*/(?:\w[\w.-]*/)*`)
