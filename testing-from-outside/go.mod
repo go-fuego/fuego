@@ -1,6 +1,6 @@
 module testing-from-outside
 
-go 1.26.4
+go 1.26.5
 
 require (
 	github.com/go-fuego/fuego v0.13.4
