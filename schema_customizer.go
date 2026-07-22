@@ -98,7 +98,6 @@ func determineFieldConstraints(t reflect.Type, schema *openapi3.Schema) {
 		return
 	}
 	for f := range t.Fields() {
-		f := f
 
 		// Recurse into embedded struct fields
 		if f.Anonymous {
