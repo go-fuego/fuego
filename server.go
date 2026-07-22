@@ -105,6 +105,7 @@ func NewServer(options ...ServerOption) *Server {
 	defaultOptions := [...]ServerOption{
 		WithAddr("localhost:9999"),
 		WithDisallowUnknownFields(true),
+		WithMaxBodySize(maxBodySize),
 		WithSerializer(Send),
 		WithErrorSerializer(SendError),
 		WithRouteOptions(

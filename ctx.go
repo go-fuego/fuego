@@ -546,7 +546,7 @@ func (c netHttpContext[B, P]) SetDefaultStatusCode() {
 func body[B, P any](c netHttpContext[B, P]) (B, error) {
 	// Limit the size of the request body.
 	if c.readOptions.MaxBodySize != 0 {
-		c.Req.Body = http.MaxBytesReader(nil, c.Req.Body, c.readOptions.MaxBodySize)
+		c.Req.Body = http.MaxBytesReader(c.Res, c.Req.Body, c.readOptions.MaxBodySize)
 	}
 
 	timeDeserialize := time.Now()

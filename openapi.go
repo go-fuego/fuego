@@ -287,8 +287,8 @@ func (route *Route[ResponseBody, RequestBody, Params]) RegisterParams() error {
 	}
 
 	if typeOfParams.Kind() == reflect.Struct {
-		for i := range typeOfParams.NumField() {
-			field := typeOfParams.Field(i)
+		for field := range typeOfParams.Fields() {
+			field := field
 			var params []ParamOption
 			example, _ := field.Tag.Lookup("example")
 			if example != "" {
