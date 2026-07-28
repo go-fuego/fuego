@@ -176,6 +176,17 @@ func WithOpenAPIGeneratorSchemaCustomizer(sc openapi3gen.SchemaCustomizerFn, opt
 	}
 }
 
+// WithWalkSchemas registers a function that will be called on every schema
+// in the OpenAPI document during [Engine.OutputOpenAPISpec]. The callback may
+// modify schemas in place, making it useful for post-processing transformations
+// like converting nullable representations or normalizing types.
+// Multiple calls append additional walk functions; they run in registration order.
+func WithWalkSchemas(fn openapi3.WalkSchemasFunc) EngineOption {
+	return func(e *Engine) {
+		e.OpenAPI.walkSchemasFns = append(e.OpenAPI.walkSchemasFns, fn)
+	}
+}
+
 // WithErrorHandler sets a customer error handler for the server
 func WithErrorHandler(errorHandler func(ctx context.Context, err error) error) EngineOption {
 	return func(e *Engine) {
@@ -206,6 +217,10 @@ func (e *Engine) OutputOpenAPISpec() *openapi3.T {
 	// resolve schema refs after initial
 	// spec generation
 	e.OpenAPI.resolveSchemaRefs()
+
+	for _, fn := range e.OpenAPI.walkSchemasFns {
+		e.OpenAPI.Description().WalkSchemas(fn)
+	}
 
 	// Validate
 	err := e.OpenAPI.Description().Validate(context.Background())
