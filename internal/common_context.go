@@ -36,6 +36,7 @@ type OpenAPIParam struct {
 
 	Required bool
 	Nullable bool
+	Enum     []any
 }
 
 // CommonContext is a base context shared by all adaptors (net/http, gin, echo, etc...)

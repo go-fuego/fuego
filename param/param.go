@@ -31,6 +31,9 @@ var Default = fuego.ParamDefault
 // Example adds an example to the parameter. As per the OpenAPI 3.0 standard, the example must be given a name.
 var Example = fuego.ParamExample
 
+// Enum sets the allowed values for the parameter.
+var Enum = fuego.ParamEnum
+
 // StatusCodes sets the status codes for which this parameter is required.
 // Only used for response parameters.
 // If empty, it is required for 200 status codes.
