@@ -3,7 +3,7 @@ module github.com/go-fuego/fuego/examples/generate-opengraph-image
 go 1.26.5
 
 require (
-	github.com/getkin/kin-openapi v0.145.0
+	github.com/getkin/kin-openapi v0.146.0
 	github.com/go-fuego/fuego v0.20.0
 	github.com/go-fuego/fuego/middleware/cache v0.20.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0

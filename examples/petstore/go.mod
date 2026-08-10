@@ -3,7 +3,7 @@ module github.com/go-fuego/fuego/examples/petstore
 go 1.26.5
 
 require (
-	github.com/getkin/kin-openapi v0.145.0
+	github.com/getkin/kin-openapi v0.146.0
 	github.com/go-fuego/fuego v0.20.0
 	github.com/stretchr/testify v1.11.1
 	gotest.tools/v3 v3.5.2
