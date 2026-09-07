@@ -153,34 +153,41 @@ type ContextFlowable[B, P any] interface {
 	SerializeError(err error)
 }
 
+func setFlowHeader[B, P any](e *Engine, ctx ContextFlowable[B, P], k, v string) {
+	if e.disableFlowHeaders {
+		return
+	}
+	ctx.SetHeader(k, v)
+}
+
 // Flow is generic handler for Fuego controllers.
-func Flow[B, T, P any](s *Engine, ctx ContextFlowable[B, P], controller func(c Context[B, P]) (T, error)) {
-	ctx.SetHeader("X-Powered-By", "Fuego")
+func Flow[B, T, P any](e *Engine, ctx ContextFlowable[B, P], controller func(c Context[B, P]) (T, error)) {
+	setFlowHeader(e, ctx, "X-Powered-By", "Fuego")
 
 	timeCtxInit := time.Now()
 
 	// PARAMS VALIDATION
 	err := ValidateParams(ctx)
 	if err != nil {
-		ctx.SetHeader("Trailer", "Server-Timing")
-		err = s.ErrorHandler(ctx, err)
+		setFlowHeader(e, ctx, "Trailer", "Server-Timing")
+		err = e.ErrorHandler(ctx, err)
 		ctx.SerializeError(err)
 		return
 	}
 
 	timeController := time.Now()
-	ctx.SetHeader("Server-Timing", Timing{"fuegoReqInit", "", timeController.Sub(timeCtxInit)}.String())
+	setFlowHeader(e, ctx, "Server-Timing", Timing{"fuegoReqInit", "", timeController.Sub(timeCtxInit)}.String())
 
 	// CONTROLLER
 	ans, err := controller(ctx)
 
 	if !isNilError(err) {
-		ctx.SetHeader("Trailer", "Server-Timing")
-		err = s.ErrorHandler(ctx, err)
+		setFlowHeader(e, ctx, "Trailer", "Server-Timing")
+		err = e.ErrorHandler(ctx, err)
 		ctx.SerializeError(err)
 		return
 	}
-	ctx.SetHeader("Server-Timing", Timing{"controller", "", time.Since(timeController)}.String())
+	setFlowHeader(e, ctx, "Server-Timing", Timing{"controller", "", time.Since(timeController)}.String())
 
 	ctx.SetDefaultStatusCode()
 
@@ -188,26 +195,26 @@ func Flow[B, T, P any](s *Engine, ctx ContextFlowable[B, P], controller func(c C
 		return
 	}
 
-	ctx.SetHeader("Trailer", "Server-Timing")
+	setFlowHeader(e, ctx, "Trailer", "Server-Timing")
 
 	// TRANSFORM OUT
 	timeTransformOut := time.Now()
 	ans, err = transformOut(ctx.Context(), ans)
 	if err != nil {
-		err = s.ErrorHandler(ctx, err)
+		err = e.ErrorHandler(ctx, err)
 		ctx.SerializeError(err)
 		return
 	}
 	timeAfterTransformOut := time.Now()
-	ctx.SetHeader("Server-Timing", Timing{"transformOut", "transformOut", timeAfterTransformOut.Sub(timeTransformOut)}.String())
+	setFlowHeader(e, ctx, "Server-Timing", Timing{"transformOut", "transformOut", timeAfterTransformOut.Sub(timeTransformOut)}.String())
 
 	// SERIALIZATION
 	err = ctx.Serialize(ans)
 	if err != nil {
-		err = s.ErrorHandler(ctx, err)
+		err = e.ErrorHandler(ctx, err)
 		ctx.SerializeError(err)
 	}
-	ctx.SetHeader("Server-Timing", Timing{"serialize", "", time.Since(timeAfterTransformOut)}.String())
+	setFlowHeader(e, ctx, "Server-Timing", Timing{"serialize", "", time.Since(timeAfterTransformOut)}.String())
 }
 
 // check if err isNil. If error is of kind pointer

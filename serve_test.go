@@ -854,4 +854,25 @@ func TestFlow(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("default headers are set", func(t *testing.T) {
+		e := NewEngine()
+		w := httptest.NewRecorder()
+		ctx := newTestCtx(w, httptest.NewRequest("GET", "/", nil))
+		Flow(e, ctx, testController)
+		assert.Equal(t, "Fuego", w.Header().Get("X-Powered-By"))
+		assert.NotEmpty(t, w.Header().Values("Server-Timing"))
+	})
+
+	t.Run("headers disabled with WithoutHeaders", func(t *testing.T) {
+		e := NewEngine(WithoutFlowHeaders())
+		w := httptest.NewRecorder()
+		ctx := newTestCtx(w, httptest.NewRequest("GET", "/", nil))
+		Flow(e, ctx, testController)
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, crlf(`{"ans":"Hello World"}`), w.Body.String())
+		assert.Empty(t, w.Header().Get("X-Powered-By"))
+		assert.Empty(t, w.Header().Values("Server-Timing"))
+		assert.Empty(t, w.Header().Get("Trailer"))
+	})
 }
