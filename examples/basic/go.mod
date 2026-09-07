@@ -3,7 +3,7 @@ module github.com/go-fuego/fuego/examples/basic
 go 1.26.6
 
 require (
-	github.com/go-chi/chi/v5 v5.3.1
+	github.com/go-chi/chi/v5 v5.3.2
 	github.com/go-fuego/fuego v0.20.0
 	github.com/rs/cors v1.11.1
 )
