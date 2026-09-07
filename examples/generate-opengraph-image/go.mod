@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/generate-opengraph-image
 
-go 1.26.5
+go 1.26.6
 
 require (
 	github.com/getkin/kin-openapi v0.145.0
