@@ -4,7 +4,7 @@ go 1.26.6
 
 require (
 	github.com/go-fuego/fuego v0.20.0
-	github.com/mattn/go-sqlite3 v1.14.49
+	github.com/mattn/go-sqlite3 v1.14.50
 	github.com/stretchr/testify v1.12.1
 )
 
