@@ -312,6 +312,14 @@ func TestWithoutStartupMessages(t *testing.T) {
 	require.True(t, s.Engine.OpenAPI.Config.DisableMessages)
 }
 
+func TestWithoutHeaders(t *testing.T) {
+	s := NewServer(
+		WithEngineOptions(WithoutFlowHeaders()),
+	)
+
+	require.True(t, s.Engine.disableFlowHeaders)
+}
+
 func TestWithoutAutoGroupTags(t *testing.T) {
 	s := NewServer(
 		WithoutAutoGroupTags(),

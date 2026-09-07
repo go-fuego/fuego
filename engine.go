@@ -47,6 +47,7 @@ type Engine struct {
 
 	requestContentTypes  []string
 	responseContentTypes []string
+	disableFlowHeaders   bool
 }
 
 type OpenAPIConfig struct {
@@ -185,6 +186,12 @@ func WithErrorHandler(errorHandler func(ctx context.Context, err error) error) E
 
 		e.ErrorHandler = errorHandler
 	}
+}
+
+// WithoutFlowHeaders disables the default headers added by Fuego in the Flow
+// (e.g. X-Powered-By, Server-Timing).
+func WithoutFlowHeaders() EngineOption {
+	return func(e *Engine) { e.disableFlowHeaders = true }
 }
 
 // DisableErrorHandler overrides ErrorHandler with a simple pass-through
