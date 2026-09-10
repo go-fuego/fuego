@@ -102,6 +102,22 @@ func TestDetermineFieldConstraints(t *testing.T) {
 		assert.True(t, schema.Properties["meta"].Value.Type.Includes("null"))
 	})
 
+	t.Run("pointer field is not handled by determineFieldConstraints", func(t *testing.T) {
+		type S struct {
+			Name *string `json:"name"`
+		}
+		schema := &openapi3.Schema{
+			Properties: openapi3.Schemas{
+				"name": &openapi3.SchemaRef{Value: &openapi3.Schema{
+					Type:     &openapi3.Types{"string"},
+					Nullable: true,
+				}},
+			},
+		}
+		determineFieldConstraints(reflect.TypeFor[S](), schema)
+		assert.True(t, schema.Properties["name"].Value.Nullable)
+	})
+
 	t.Run("string field is not nullable", func(t *testing.T) {
 		type S struct {
 			Name string `json:"name"`
