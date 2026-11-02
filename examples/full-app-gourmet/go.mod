@@ -5,7 +5,7 @@ go 1.26.9
 require (
 	github.com/a-h/templ v0.3.1020
 	github.com/getkin/kin-openapi v0.149.0
-	github.com/go-chi/chi/v5 v5.3.2
+	github.com/go-chi/chi/v5 v5.4.0
 	github.com/go-fuego/fuego v0.20.0
 	github.com/go-fuego/fuego/extra/markdown v0.20.0
 	github.com/go-fuego/fuego/middleware/basicauth v0.20.0
