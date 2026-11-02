@@ -3,19 +3,19 @@ module github.com/go-fuego/fuego/examples/crud-gorm
 go 1.26.9
 
 require (
-	github.com/go-fuego/fuego v0.20.0
+	github.com/go-fuego/fuego v0.21.0
 	github.com/golang/mock v1.6.0
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.2
 )
 
 require (
-	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
-	github.com/getkin/kin-openapi v0.149.0 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.16 // indirect
+	github.com/getkin/kin-openapi v0.152.0 // indirect
 	github.com/go-openapi/jsonpointer v1.0.1 // indirect
-	github.com/go-playground/locales v0.14.1 // indirect
-	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.30.5 // indirect
+	github.com/go-playground/locales v0.14.2 // indirect
+	github.com/go-playground/universal-translator v0.18.2 // indirect
+	github.com/go-playground/validator/v10 v10.30.6 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/schema v1.4.1 // indirect
@@ -25,11 +25,9 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.52 // indirect
 	github.com/oasdiff/yaml v0.1.1 // indirect
 	github.com/oasdiff/yaml3 v0.0.14 // indirect
-	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3 // indirect
-	github.com/stretchr/testify v1.12.1 // indirect
-	golang.org/x/crypto v0.57.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
