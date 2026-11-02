@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/extra/fuegogin
 
-go 1.26.9
+go 1.26.10
 
 require (
 	github.com/gin-gonic/gin v1.12.0
@@ -14,6 +14,7 @@ require (
 	github.com/bytedance/sonic v1.15.0 // indirect
 	github.com/bytedance/sonic/loader v0.5.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/gabriel-vasile/mimetype v1.4.16 // indirect
 	github.com/getkin/kin-openapi v0.152.0 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect

@@ -1,13 +1,13 @@
 module github.com/go-fuego/fuego/examples/mux-compat
 
-go 1.26.9
+go 1.26.10
 
 replace github.com/go-fuego/fuego => ../..
 
 replace github.com/go-fuego/fuego/extra/fuegomux => ../../extra/fuegomux
 
 require (
-	github.com/go-fuego/fuego v0.20.0
+	github.com/go-fuego/fuego v0.21.0
 	github.com/go-fuego/fuego/extra/fuegomux v0.0.0
 	github.com/gorilla/mux v1.8.1
 	github.com/stretchr/testify v1.12.1
