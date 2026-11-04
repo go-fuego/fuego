@@ -138,7 +138,7 @@ func determineFieldConstraints(t reflect.Type, schema *openapi3.Schema) {
 			continue
 		}
 		if isReferenceType(f.Type.Kind()) && !hasRequired {
-			if !prop.Value.Type.Includes("null") {
+			if prop.Value != nil && !prop.Value.Type.Includes("null") {
 				types := openapi3.Types(append(prop.Value.Type.Slice(), "null"))
 				prop.Value.Type = &types
 			}
