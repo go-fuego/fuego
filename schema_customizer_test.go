@@ -76,6 +76,90 @@ func TestDetermineFieldConstraints(t *testing.T) {
 		assert.False(t, schema.Properties["name"].Value.Type.Includes("null"))
 	})
 
+	t.Run("field with omitzero is not required", func(t *testing.T) {
+		type Nested struct {
+			A string `json:"a"`
+		}
+		type S struct {
+			Origin Nested `json:"origin,omitzero"`
+		}
+		schema := &openapi3.Schema{
+			Properties: openapi3.Schemas{
+				"origin": &openapi3.SchemaRef{Value: &openapi3.Schema{}},
+			},
+		}
+		determineFieldConstraints(reflect.TypeFor[S](), schema)
+		assert.NotContains(t, schema.Required, "origin")
+	})
+
+	t.Run("field with omitzero and validate:\"required\" is required", func(t *testing.T) {
+		type Nested struct {
+			A string `json:"a"`
+		}
+		type S struct {
+			Origin Nested `json:"origin,omitzero" validate:"required"`
+		}
+		schema := &openapi3.Schema{
+			Properties: openapi3.Schemas{
+				"origin": &openapi3.SchemaRef{Value: &openapi3.Schema{}},
+			},
+		}
+		determineFieldConstraints(reflect.TypeFor[S](), schema)
+		assert.Contains(t, schema.Required, "origin")
+	})
+
+	t.Run("field with omitempty and omitzero is not required", func(t *testing.T) {
+		type S struct {
+			Name string `json:"name,omitempty,omitzero"`
+		}
+		schema := &openapi3.Schema{
+			Properties: openapi3.Schemas{
+				"name": &openapi3.SchemaRef{Value: &openapi3.Schema{}},
+			},
+		}
+		determineFieldConstraints(reflect.TypeFor[S](), schema)
+		assert.NotContains(t, schema.Required, "name")
+	})
+
+	t.Run("field with omitempty and string option is not required", func(t *testing.T) {
+		type S struct {
+			Name string `json:"name,omitempty,string"`
+		}
+		schema := &openapi3.Schema{
+			Properties: openapi3.Schemas{
+				"name": &openapi3.SchemaRef{Value: &openapi3.Schema{}},
+			},
+		}
+		determineFieldConstraints(reflect.TypeFor[S](), schema)
+		assert.NotContains(t, schema.Required, "name")
+	})
+
+	t.Run("field named omitempty is required", func(t *testing.T) {
+		type S struct {
+			OmitEmpty string `json:"omitempty"`
+		}
+		schema := &openapi3.Schema{
+			Properties: openapi3.Schemas{
+				"omitempty": &openapi3.SchemaRef{Value: &openapi3.Schema{}},
+			},
+		}
+		determineFieldConstraints(reflect.TypeFor[S](), schema)
+		assert.Contains(t, schema.Required, "omitempty")
+	})
+
+	t.Run("json option starting with omitempty is not optional", func(t *testing.T) {
+		type S struct {
+			Name string `json:"name,omitemptyish"`
+		}
+		schema := &openapi3.Schema{
+			Properties: openapi3.Schemas{
+				"name": &openapi3.SchemaRef{Value: &openapi3.Schema{}},
+			},
+		}
+		determineFieldConstraints(reflect.TypeFor[S](), schema)
+		assert.Contains(t, schema.Required, "name")
+	})
+
 	t.Run("slice field is nullable", func(t *testing.T) {
 		type S struct {
 			Items []string `json:"items"`

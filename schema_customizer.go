@@ -90,7 +90,7 @@ func parseValidate(tag reflect.StructTag, schema *openapi3.Schema) {
 // determineFieldConstraints takes a reflect.Type and a schema,
 // and determines which fields should be marked as required and nullable.
 // It checks for fields that:
-// - Don't have the `omitempty` JSON tag marking it as required
+// - Don't have the `omitempty` or `omitzero` JSON tag option marking it as optional
 // - Are slices, maps, or pointers setting nullable to true
 // - Have the `required` validation tag setting nullable to true and required
 func determineFieldConstraints(t reflect.Type, schema *openapi3.Schema) {
@@ -127,7 +127,9 @@ func determineFieldConstraints(t reflect.Type, schema *openapi3.Schema) {
 		}
 
 		hasRequired := slices.Contains(strings.Split(f.Tag.Get("validate"), ","), "required")
-		if !strings.Contains(jsonTag, ",omitempty") || hasRequired {
+		jsonOptions := parts[1:]
+		isOptional := slices.Contains(jsonOptions, "omitempty") || slices.Contains(jsonOptions, "omitzero")
+		if !isOptional || hasRequired {
 			schema.Required = append(schema.Required, name)
 		}
 
@@ -196,7 +198,7 @@ func parseDescription(tag reflect.StructTag, schema *openapi3.Schema) {
 // It adds the following struct tags (tag => OpenAPI schema field):
 // - description => description
 // - example => example
-// - json => nullable (if contains omitempty)
+// - json => property name; `omitempty` and `omitzero` make the field optional
 // - validate:
 //   - required => required
 //   - min=1 => min=1 (for integers)

@@ -41,6 +41,13 @@ type MyStructWithEmbedded struct {
 	MyStruct
 }
 
+type MyStructWithOmitZero struct {
+	Origin                    MyStruct `json:"origin,omitzero" description:"omitzero omits structs, omitempty does not"`
+	OriginButValidateRequired MyStruct `json:"originButValidateRequired,omitzero" validate:"required"`
+	OmitEmpty                 string   `json:"omitEmpty,omitempty"`
+	NoOption                  string   `json:"noOption"`
+}
+
 type MyOutputStruct struct {
 	Name     string `json:"name"`
 	Quantity int    `json:"quantity"`
@@ -313,6 +320,16 @@ func Test_tagFromType(t *testing.T) {
 		assert.Contains(t, tag.Value.Required, "e")
 		assert.Contains(t, tag.Value.Required, "nested")
 		assert.Contains(t, tag.Value.Required, "omitEmptyButValidateRequired")
+	})
+
+	t.Run("omitzero values are not required", func(t *testing.T) {
+		s := NewServer()
+
+		tag := SchemaTagFromType(s.OpenAPI, MyStructWithOmitZero{})
+		assert.NotContains(t, tag.Value.Required, "origin")
+		assert.Contains(t, tag.Value.Required, "originButValidateRequired")
+		assert.NotContains(t, tag.Value.Required, "omitEmpty")
+		assert.Contains(t, tag.Value.Required, "noOption")
 	})
 
 	t.Run("ensure warnings", func(t *testing.T) {
