@@ -456,6 +456,22 @@ age: 30
 		_, err := c.Body()
 		require.NoError(t, err)
 	})
+
+	t.Run("returns a 415 instead of panicking when a text/plain body cannot hold the body type", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "http://example.com/foo", strings.NewReader("Hello World"))
+		r.Header.Set("Content-Type", "text/plain")
+
+		c := NewNetHTTPContext[testStruct, any](BaseRoute{}, httptest.NewRecorder(), r, readOptions{})
+
+		_, err := c.Body()
+		require.Error(t, err)
+
+		var errWithStatus ErrorWithStatus
+		require.ErrorAs(t, err, &errWithStatus)
+		require.Equal(t, http.StatusUnsupportedMediaType, errWithStatus.StatusCode())
+		require.Contains(t, err.Error(), "testStruct")
+		require.Contains(t, err.Error(), "application/json")
+	})
 }
 
 func FuzzContext_Body(f *testing.F) {

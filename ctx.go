@@ -571,8 +571,17 @@ func body[B, P any](c netHttpContext[B, P]) (B, error) {
 	switch contentType {
 	case "text/plain":
 		s, errReadingString := readString[string](c.Req.Context(), c.Req.Body, c.readOptions)
-		body = any(s).(B)
-		err = errReadingString
+		if errReadingString != nil {
+			return body, errReadingString
+		}
+		bodyString, ok := any(s).(B)
+		if !ok {
+			return body, UnsupportedMediaTypeError{
+				Err:    fmt.Errorf("cannot deserialize a text/plain body into %T", body),
+				Detail: fmt.Sprintf("Cannot deserialize a text/plain body into %T. Send the body as application/json instead.", body),
+			}
+		}
+		body = bodyString
 	case "application/x-www-form-urlencoded", "multipart/form-data":
 		body, err = readURLEncoded[B](c.Req, c.readOptions)
 	case "application/xml":
