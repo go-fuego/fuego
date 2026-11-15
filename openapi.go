@@ -35,6 +35,7 @@ type OpenAPI struct {
 	generator              *openapi3gen.Generator
 	globalOpenAPIResponses []openAPIResponse
 	Config                 OpenAPIConfig
+	walkSchemasFns         []openapi3.WalkSchemasFunc
 }
 
 func (openAPI *OpenAPI) Description() *openapi3.T {
