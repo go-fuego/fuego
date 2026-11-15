@@ -33,6 +33,7 @@ func MyController(c fuego.ContextNoBody) (string, error) {
 - `fuego.NotFoundError`: 404 Not Found
 - `fuego.NotAcceptableError`: 406 Not Acceptable
 - `fuego.ConflictError`: 409 Conflict
+- `fuego.UnsupportedMediaTypeError`: 415 Unsupported Media Type
 - `fuego.InternalServerError`: 500 Internal Server Error
 
 ## Custom error types

@@ -385,7 +385,12 @@ func TestContext_Body(t *testing.T) {
 		c := NewNetHTTPContext[*struct{}, any](BaseRoute{}, w, r, readOptions{})
 		body, err := c.Body()
 		require.Error(t, err)
-		require.ErrorContains(t, err, "use []byte as the body type")
+		require.ErrorContains(t, err, "Use []byte as the body type")
+
+		var errWithStatus ErrorWithStatus
+		require.ErrorAs(t, err, &errWithStatus)
+		require.Equal(t, http.StatusUnsupportedMediaType, errWithStatus.StatusCode())
+
 		require.Equal(t, (*struct{})(nil), body)
 	})
 

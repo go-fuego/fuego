@@ -43,9 +43,6 @@ type Server struct {
 	// Used to serialize the error response. Defaults to [SendError].
 	SerializeError ErrorSender
 
-	// Set by [WithSerializer] and [WithXML], which own the response Content-Type.
-	customSerializer bool
-
 	startTime time.Time
 
 	Security Security
@@ -342,7 +339,6 @@ func WithXML() ServerOption {
 	return func(c *Server) {
 		c.Serialize = SendXML
 		c.SerializeError = SendXMLError
-		c.customSerializer = true
 	}
 }
 
@@ -358,10 +354,7 @@ func WithLogHandler(handler slog.Handler) ServerOption {
 // WithSerializer sets a custom serializer of type Sender that overrides the default one.
 // Please send a PR if you think the default serializer should be improved, instead of jumping to this option.
 func WithSerializer(serializer Sender) ServerOption {
-	return func(c *Server) {
-		c.Serialize = serializer
-		c.customSerializer = true
-	}
+	return func(c *Server) { c.Serialize = serializer }
 }
 
 // WithErrorSerializer sets a custom serializer of type ErrorSender that overrides the default one.

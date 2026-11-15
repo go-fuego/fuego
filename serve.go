@@ -132,7 +132,6 @@ func HTTPHandler[ReturnType, Body, Params any](s *Server, controller func(c Cont
 			MaxBodySize:           s.maxBodySize,
 		})
 		ctx.serializer = s.Serialize
-		ctx.customSerializer = s.customSerializer
 		ctx.errorSerializer = s.SerializeError
 		ctx.fs = s.fs
 		ctx.templates = templates

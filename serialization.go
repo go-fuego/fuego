@@ -121,12 +121,13 @@ func negotiateContentType(r *http.Request, ans any) string {
 // HTML, and then JSON.
 func Send(w http.ResponseWriter, r *http.Request, ans any) (err error) {
 	for _, header := range parseAcceptHeader(r.Header) {
-		_, send := senderFor(inferAcceptHeader(header, ans))
+		contentType, send := senderFor(inferAcceptHeader(header, ans))
 		if send == nil {
 			// if we don't support the header, try the next one
 			continue
 		}
 
+		w.Header().Set("Content-Type", contentType)
 		err = send(w, r, ans)
 		if err == nil {
 			return nil

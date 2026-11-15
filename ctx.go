@@ -165,8 +165,6 @@ type netHttpContext[Body, Params any] struct {
 	serializer      Sender
 	errorSerializer ErrorSender
 
-	customSerializer bool
-
 	internal.CommonContext[Body]
 
 	readOptions readOptions
@@ -530,19 +528,43 @@ func (c netHttpContext[B, P]) Serialize(data any) error {
 }
 
 // ResponseContentType returns the Content-Type header that [netHttpContext.Serialize]
-// sets for data, or "" when a custom serializer owns it.
+// sets for data, or "" when Fuego must leave the header alone: the handler or a
+// middleware already set one, a custom serializer owns it, or the status code forbids
+// a body.
 func (c netHttpContext[B, P]) ResponseContentType(data any) string {
+	if c.Res.Header().Get("Content-Type") != "" || !bodyAllowedForStatus(c.DefaultStatusCode) {
+		return ""
+	}
+
 	for _, contentType := range parseAcceptHeader(c.Req.Header) {
 		if _, ok := c.route.contentTypeSerDes[contentType]; ok {
 			return contentType
 		}
 	}
 
-	if c.customSerializer {
+	if c.customSerializer() {
 		return ""
 	}
 
 	return negotiateContentType(c.Req, data)
+}
+
+// customSerializer reports whether the server installed a serializer other than [Send],
+// which then owns the response Content-Type. Derived, so direct assignment is honored too.
+func (c netHttpContext[B, P]) customSerializer() bool {
+	return c.serializer != nil && reflect.ValueOf(c.serializer).Pointer() != reflect.ValueOf(Send).Pointer()
+}
+
+// bodyAllowedForStatus reports whether a response with the given status code can carry
+// a body, and therefore a Content-Type. A zero status means no status was forced.
+func bodyAllowedForStatus(status int) bool {
+	switch {
+	case status >= 100 && status <= 199:
+		return false
+	case status == http.StatusNoContent, status == http.StatusNotModified:
+		return false
+	}
+	return true
 }
 
 // SerializeError serializes the given error to the response. It uses the Content-Type header to determine the serialization format.
@@ -614,7 +636,10 @@ func body[B, P any](c netHttpContext[B, P]) (B, error) {
 		}
 		respBytes, ok := any(bytes).(B)
 		if !ok {
-			return body, fmt.Errorf("could not convert bytes to %T. To read binary data from the request, use []byte as the body type", body)
+			return body, UnsupportedMediaTypeError{
+				Err:    fmt.Errorf("cannot deserialize an application/octet-stream body into %T", body),
+				Detail: fmt.Sprintf("Cannot deserialize an application/octet-stream body into %T. Use []byte as the body type to read binary data.", body),
+			}
 		}
 		body = respBytes
 	default:
