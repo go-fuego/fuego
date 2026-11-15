@@ -165,7 +165,6 @@ type netHttpContext[Body, Params any] struct {
 	serializer      Sender
 	errorSerializer ErrorSender
 
-	// True when serializer is user-provided, so it owns the response Content-Type.
 	customSerializer bool
 
 	internal.CommonContext[Body]
@@ -531,8 +530,7 @@ func (c netHttpContext[B, P]) Serialize(data any) error {
 }
 
 // ResponseContentType returns the Content-Type header that [netHttpContext.Serialize]
-// sets for data. It returns an empty string when a custom serializer is configured,
-// as only that serializer knows what it writes.
+// sets for data, or "" when a custom serializer owns it.
 func (c netHttpContext[B, P]) ResponseContentType(data any) string {
 	for _, contentType := range parseAcceptHeader(c.Req.Header) {
 		if _, ok := c.route.contentTypeSerDes[contentType]; ok {

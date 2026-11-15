@@ -88,9 +88,7 @@ func requestContext(r *http.Request) context.Context {
 
 type Sender func(http.ResponseWriter, *http.Request, any) error
 
-// senderFor returns the Content-Type header and the sender [Send] uses for a
-// negotiated content type. The sender is nil when the content type is not supported.
-// It reads the Send* variables at call time so that overrides are honored.
+// senderFor reads the Send* variables at call time so that overrides are honored.
 func senderFor(contentType string) (header string, send Sender) {
 	switch contentType {
 	case "application/xml":
@@ -107,8 +105,7 @@ func senderFor(contentType string) (header string, send Sender) {
 	return "", nil
 }
 
-// negotiateContentType returns the Content-Type header that [Send] sets when
-// serializing ans for the given request, or "" if no supported type matches.
+// negotiateContentType reports the Content-Type header [Send] would set for ans.
 func negotiateContentType(r *http.Request, ans any) string {
 	for _, header := range parseAcceptHeader(r.Header) {
 		if contentType, _ := senderFor(inferAcceptHeader(header, ans)); contentType != "" {

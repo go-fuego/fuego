@@ -161,9 +161,8 @@ func setFlowHeader[B, P any](e *Engine, ctx ContextFlowable[B, P], k, v string) 
 	ctx.SetHeader(k, v)
 }
 
-// contentNegotiator is implemented by contexts that can tell which Content-Type
-// [ContextFlowable.Serialize] will use. [Flow] needs it to set the header before
-// the status code is written, because writing the status code freezes the headers.
+// contentNegotiator is implemented by contexts that know which Content-Type
+// [ContextFlowable.Serialize] will use. It is optional so that external adaptors keep compiling.
 type contentNegotiator interface {
 	ResponseContentType(data any) string
 }

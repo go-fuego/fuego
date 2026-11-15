@@ -43,8 +43,7 @@ type Server struct {
 	// Used to serialize the error response. Defaults to [SendError].
 	SerializeError ErrorSender
 
-	// True when Serialize was replaced by [WithSerializer] or [WithXML], so Fuego
-	// cannot know the response Content-Type and leaves it to the serializer.
+	// Set by [WithSerializer] and [WithXML], which own the response Content-Type.
 	customSerializer bool
 
 	startTime time.Time
