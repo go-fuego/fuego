@@ -43,6 +43,10 @@ type Server struct {
 	// Used to serialize the error response. Defaults to [SendError].
 	SerializeError ErrorSender
 
+	// True when Serialize was replaced by [WithSerializer] or [WithXML], so Fuego
+	// cannot know the response Content-Type and leaves it to the serializer.
+	customSerializer bool
+
 	startTime time.Time
 
 	Security Security
@@ -106,7 +110,6 @@ func NewServer(options ...ServerOption) *Server {
 		WithAddr("localhost:9999"),
 		WithDisallowUnknownFields(true),
 		WithMaxBodySize(maxBodySize),
-		WithSerializer(Send),
 		WithErrorSerializer(SendError),
 		WithRouteOptions(
 			OptionAddResponse(http.StatusBadRequest, "Bad Request _(validation or deserialization error)_", Response{Type: HTTPError{}}),
@@ -116,6 +119,9 @@ func NewServer(options ...ServerOption) *Server {
 	options = append(defaultOptions[:], options...)
 	for _, option := range options {
 		option(s)
+	}
+	if s.Serialize == nil {
+		s.Serialize = Send
 	}
 
 	s.startTime = time.Now()
@@ -337,6 +343,7 @@ func WithXML() ServerOption {
 	return func(c *Server) {
 		c.Serialize = SendXML
 		c.SerializeError = SendXMLError
+		c.customSerializer = true
 	}
 }
 
@@ -352,7 +359,10 @@ func WithLogHandler(handler slog.Handler) ServerOption {
 // WithSerializer sets a custom serializer of type Sender that overrides the default one.
 // Please send a PR if you think the default serializer should be improved, instead of jumping to this option.
 func WithSerializer(serializer Sender) ServerOption {
-	return func(c *Server) { c.Serialize = serializer }
+	return func(c *Server) {
+		c.Serialize = serializer
+		c.customSerializer = true
+	}
 }
 
 // WithErrorSerializer sets a custom serializer of type ErrorSender that overrides the default one.

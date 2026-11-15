@@ -306,6 +306,25 @@ func TestSetStatusBeforeSend(t *testing.T) {
 	})
 }
 
+func TestDefaultStatusCodeKeepsContentType(t *testing.T) {
+	// httptest.ResponseRecorder does not freeze the headers on WriteHeader, so it
+	// cannot catch a Content-Type set after the status code. A real server can.
+	s := NewServer(WithoutStartupMessages())
+	Post(s, "/created", func(c ContextNoBody) (ans, error) {
+		return ans{Ans: "Hello World"}, nil
+	}, OptionDefaultStatusCode(http.StatusCreated))
+
+	server := httptest.NewServer(s.Mux)
+	t.Cleanup(server.Close)
+
+	res, err := http.Post(server.URL+"/created", "application/json", nil)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = res.Body.Close() })
+
+	require.Equal(t, http.StatusCreated, res.StatusCode)
+	require.Equal(t, "application/json", res.Header.Get("Content-Type"))
+}
+
 type spanID string
 
 const mySpanID spanID = "span_id"

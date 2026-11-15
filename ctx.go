@@ -165,6 +165,9 @@ type netHttpContext[Body, Params any] struct {
 	serializer      Sender
 	errorSerializer ErrorSender
 
+	// True when serializer is user-provided, so it owns the response Content-Type.
+	customSerializer bool
+
 	internal.CommonContext[Body]
 
 	readOptions readOptions
@@ -525,6 +528,23 @@ func (c netHttpContext[B, P]) Serialize(data any) error {
 		return Send(c.Res, c.Req, data)
 	}
 	return c.serializer(c.Res, c.Req, data)
+}
+
+// ResponseContentType returns the Content-Type header that [netHttpContext.Serialize]
+// sets for data. It returns an empty string when a custom serializer is configured,
+// as only that serializer knows what it writes.
+func (c netHttpContext[B, P]) ResponseContentType(data any) string {
+	for _, contentType := range parseAcceptHeader(c.Req.Header) {
+		if _, ok := c.route.contentTypeSerDes[contentType]; ok {
+			return contentType
+		}
+	}
+
+	if c.customSerializer {
+		return ""
+	}
+
+	return negotiateContentType(c.Req, data)
 }
 
 // SerializeError serializes the given error to the response. It uses the Content-Type header to determine the serialization format.

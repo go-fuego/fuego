@@ -132,6 +132,7 @@ func HTTPHandler[ReturnType, Body, Params any](s *Server, controller func(c Cont
 			MaxBodySize:           s.maxBodySize,
 		})
 		ctx.serializer = s.Serialize
+		ctx.customSerializer = s.customSerializer
 		ctx.errorSerializer = s.SerializeError
 		ctx.fs = s.fs
 		ctx.templates = templates
@@ -158,6 +159,13 @@ func setFlowHeader[B, P any](e *Engine, ctx ContextFlowable[B, P], k, v string) 
 		return
 	}
 	ctx.SetHeader(k, v)
+}
+
+// contentNegotiator is implemented by contexts that can tell which Content-Type
+// [ContextFlowable.Serialize] will use. [Flow] needs it to set the header before
+// the status code is written, because writing the status code freezes the headers.
+type contentNegotiator interface {
+	ResponseContentType(data any) string
 }
 
 // Flow is generic handler for Fuego controllers.
@@ -189,11 +197,20 @@ func Flow[B, T, P any](e *Engine, ctx ContextFlowable[B, P], controller func(c C
 	}
 	setFlowHeader(e, ctx, "Server-Timing", Timing{"controller", "", time.Since(timeController)}.String())
 
-	ctx.SetDefaultStatusCode()
-
 	if reflect.TypeOf(ans) == nil {
+		ctx.SetDefaultStatusCode()
 		return
 	}
+
+	// The Content-Type header must be set before the status code is written,
+	// as writing the status code freezes the headers.
+	if negotiator, ok := ctx.(contentNegotiator); ok {
+		if contentType := negotiator.ResponseContentType(ans); contentType != "" {
+			ctx.SetHeader("Content-Type", contentType)
+		}
+	}
+
+	ctx.SetDefaultStatusCode()
 
 	setFlowHeader(e, ctx, "Trailer", "Server-Timing")
 
