@@ -93,8 +93,9 @@ func NewServer(options ...ServerOption) *Server {
 			WriteTimeout:      30 * time.Second,
 			IdleTimeout:       30 * time.Second,
 		},
-		Mux:    http.NewServeMux(),
-		Engine: NewEngine(),
+		Mux:       http.NewServeMux(),
+		Engine:    NewEngine(),
+		Serialize: Send,
 
 		Security: NewSecurity(),
 
@@ -115,9 +116,6 @@ func NewServer(options ...ServerOption) *Server {
 	options = append(defaultOptions[:], options...)
 	for _, option := range options {
 		option(s)
-	}
-	if s.Serialize == nil {
-		s.Serialize = Send
 	}
 
 	s.startTime = time.Now()

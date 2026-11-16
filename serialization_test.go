@@ -633,7 +633,7 @@ func TestNegotiateContentType(t *testing.T) {
 			w := httptest.NewRecorder()
 			_ = Send(w, r, response{})
 
-			require.Equal(t, w.Header().Get("Content-Type"), negotiateContentType(r, response{}))
+			assert.Equal(t, w.Header().Get("Content-Type"), negotiateContentType(r, response{}))
 		})
 	}
 }
