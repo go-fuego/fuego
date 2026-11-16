@@ -385,7 +385,12 @@ func TestContext_Body(t *testing.T) {
 		c := NewNetHTTPContext[*struct{}, any](BaseRoute{}, w, r, readOptions{})
 		body, err := c.Body()
 		require.Error(t, err)
-		require.ErrorContains(t, err, "use []byte as the body type")
+		require.ErrorContains(t, err, "Use []byte as the body type")
+
+		var errWithStatus ErrorWithStatus
+		require.ErrorAs(t, err, &errWithStatus)
+		require.Equal(t, http.StatusUnsupportedMediaType, errWithStatus.StatusCode())
+
 		require.Equal(t, (*struct{})(nil), body)
 	})
 
@@ -455,6 +460,22 @@ age: 30
 
 		_, err := c.Body()
 		require.NoError(t, err)
+	})
+
+	t.Run("returns a 415 instead of panicking when a text/plain body cannot hold the body type", func(t *testing.T) {
+		r := httptest.NewRequest("GET", "http://example.com/foo", strings.NewReader("Hello World"))
+		r.Header.Set("Content-Type", "text/plain")
+
+		c := NewNetHTTPContext[testStruct, any](BaseRoute{}, httptest.NewRecorder(), r, readOptions{})
+
+		_, err := c.Body()
+		require.Error(t, err)
+
+		var errWithStatus ErrorWithStatus
+		require.ErrorAs(t, err, &errWithStatus)
+		require.Equal(t, http.StatusUnsupportedMediaType, errWithStatus.StatusCode())
+		require.Contains(t, err.Error(), "testStruct")
+		require.Contains(t, err.Error(), "application/json")
 	})
 }
 

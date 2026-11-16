@@ -39,7 +39,15 @@ func (c muxContext[B, P]) Body() (B, error) {
 			var body B
 			return body, err
 		}
-		return any(s).(B), nil
+		bodyString, ok := any(s).(B)
+		if !ok {
+			var body B
+			return body, fuego.UnsupportedMediaTypeError{
+				Err:    fmt.Errorf("cannot deserialize a text/plain body into %T", body),
+				Detail: fmt.Sprintf("Cannot deserialize a text/plain body into %T. Send the body as application/json instead.", body),
+			}
+		}
+		return bodyString, nil
 	case "application/x-www-form-urlencoded", "multipart/form-data":
 		return fuego.ReadURLEncoded[B](c.req)
 	case "application/xml":
@@ -55,7 +63,10 @@ func (c muxContext[B, P]) Body() (B, error) {
 		respBytes, ok := any(bytes).(B)
 		if !ok {
 			var body B
-			return body, fmt.Errorf("could not convert bytes to %T. To read binary data from the request, use []byte as the body type", body)
+			return body, fuego.UnsupportedMediaTypeError{
+				Err:    fmt.Errorf("cannot deserialize an application/octet-stream body into %T", body),
+				Detail: fmt.Sprintf("Cannot deserialize an application/octet-stream body into %T. Use []byte as the body type to read binary data.", body),
+			}
 		}
 		return respBytes, nil
 	default:

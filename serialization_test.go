@@ -607,6 +607,37 @@ func TestParseAcceptHeader(t *testing.T) {
 	})
 }
 
+func TestNegotiateContentType(t *testing.T) {
+	tests := []struct {
+		name   string
+		accept string
+	}{
+		{name: "no Accept header", accept: ""},
+		{name: "any", accept: "*/*"},
+		{name: "json", accept: "application/json"},
+		{name: "text", accept: "text/plain"},
+		{name: "xml", accept: "application/xml"},
+		{name: "yaml", accept: "application/yaml"},
+		{name: "unsupported", accept: "image/png"},
+		{name: "unsupported then json", accept: "image/png, application/json"},
+		{name: "q-weighted", accept: "application/json;q=0.9, text/html;q=0.8"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodGet, "/", nil)
+			if tt.accept != "" {
+				r.Header.Set("Accept", tt.accept)
+			}
+
+			w := httptest.NewRecorder()
+			_ = Send(w, r, response{})
+
+			assert.Equal(t, w.Header().Get("Content-Type"), negotiateContentType(r, response{}))
+		})
+	}
+}
+
 func TestSendError(t *testing.T) {
 	tcs := []struct {
 		name         string

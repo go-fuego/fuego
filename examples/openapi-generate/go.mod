@@ -1,6 +1,6 @@
 module github.com/go-fuego/fuego/examples/openapi-generate
 
-go 1.26.10
+go 1.26.11
 
 require github.com/go-fuego/fuego v0.21.0
 

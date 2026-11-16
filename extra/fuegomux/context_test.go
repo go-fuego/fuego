@@ -3,11 +3,14 @@ package fuegomux
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
+	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/internal"
 )
 
@@ -58,4 +61,38 @@ func TestMuxContext_RequestResponse(t *testing.T) {
 	req.Header.Set("X-Foo", "bar")
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, req)
+}
+
+func TestMuxContext_BodyUnsupportedMediaType(t *testing.T) {
+	tests := []struct {
+		name        string
+		contentType string
+		body        string
+	}{
+		{name: "text/plain", contentType: "text/plain", body: "Hello World"},
+		{name: "application/octet-stream", contentType: "application/octet-stream", body: "image"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(tt.body))
+			req.Header.Set("Content-Type", tt.contentType)
+
+			ctx := &muxContext[struct{ Name string }, any]{
+				CommonContext: internal.CommonContext[struct{ Name string }]{
+					CommonCtx: req.Context(),
+					UrlValues: req.URL.Query(),
+				},
+				req: req,
+				res: httptest.NewRecorder(),
+			}
+
+			_, err := ctx.Body()
+			require.Error(t, err)
+
+			var errWithStatus fuego.ErrorWithStatus
+			require.ErrorAs(t, err, &errWithStatus)
+			require.Equal(t, http.StatusUnsupportedMediaType, errWithStatus.StatusCode())
+		})
+	}
 }

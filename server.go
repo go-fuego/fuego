@@ -93,8 +93,9 @@ func NewServer(options ...ServerOption) *Server {
 			WriteTimeout:      30 * time.Second,
 			IdleTimeout:       30 * time.Second,
 		},
-		Mux:    http.NewServeMux(),
-		Engine: NewEngine(),
+		Mux:       http.NewServeMux(),
+		Engine:    NewEngine(),
+		Serialize: Send,
 
 		Security: NewSecurity(),
 
@@ -106,7 +107,6 @@ func NewServer(options ...ServerOption) *Server {
 		WithAddr("localhost:9999"),
 		WithDisallowUnknownFields(true),
 		WithMaxBodySize(maxBodySize),
-		WithSerializer(Send),
 		WithErrorSerializer(SendError),
 		WithRouteOptions(
 			OptionAddResponse(http.StatusBadRequest, "Bad Request _(validation or deserialization error)_", Response{Type: HTTPError{}}),

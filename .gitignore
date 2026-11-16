@@ -1,4 +1,3 @@
-
 .vscode
 .idea
 coverage.out
@@ -10,4 +9,19 @@ bin
 go.work.sum
 /cmd/fuego/fuego
 *.db
+
+# Binaries `go build` writes when run inside an example directory.
+examples/acme-tls/acme-tls
+examples/basic/basic
+examples/crud-gorm/crud-gorm
+examples/custom-errors/custom-errors
+examples/custom-serializer/custom-serializer
+examples/echo-compat/echo-compat
+examples/full-app-gourmet/full-app-gourmet
+examples/generate-opengraph-image/generate-opengraph-image
+examples/gin-compat/gin-compat
+examples/hello-world/hello-world
 examples/mux-compat/mux-compat
+examples/openapi/openapi
+examples/petstore/petstore
+examples/with-listener/with-listener

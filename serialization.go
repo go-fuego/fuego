@@ -88,28 +88,47 @@ func requestContext(r *http.Request) context.Context {
 
 type Sender func(http.ResponseWriter, *http.Request, any) error
 
+// senderFor reads the Send* variables at call time so that overrides are honored.
+func senderFor(contentType string) (header string, send Sender) {
+	switch contentType {
+	case "application/xml":
+		return "application/xml", SendXML
+	case "text/html":
+		return "text/html; charset=utf-8", SendHTML
+	case "text/plain":
+		return "text/plain; charset=utf-8", SendText
+	case "application/json":
+		return "application/json", SendJSON
+	case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
+		return "application/x-yaml", SendYAML
+	}
+	return "", nil
+}
+
+// negotiateContentType reports the Content-Type header [Send] would set for ans.
+func negotiateContentType(r *http.Request, ans any) string {
+	for _, header := range parseAcceptHeader(r.Header) {
+		if contentType, _ := senderFor(inferAcceptHeader(header, ans)); contentType != "" {
+			return contentType
+		}
+	}
+	return ""
+}
+
 // Send sends a response.
 // The format is determined by the Accept header.
 // If Accept header `*/*` is found Send will Attempt to send
 // HTML, and then JSON.
 func Send(w http.ResponseWriter, r *http.Request, ans any) (err error) {
 	for _, header := range parseAcceptHeader(r.Header) {
-		switch inferAcceptHeader(header, ans) {
-		case "application/xml":
-			err = SendXML(w, r, ans)
-		case "text/html":
-			err = SendHTML(w, r, ans)
-		case "text/plain":
-			err = SendText(w, r, ans)
-		case "application/json":
-			err = SendJSON(w, r, ans)
-		case "application/x-yaml", "text/yaml; charset=utf-8", "application/yaml": // https://www.rfc-editor.org/rfc/rfc9512.html
-			err = SendYAML(w, r, ans)
-		default:
+		contentType, send := senderFor(inferAcceptHeader(header, ans))
+		if send == nil {
 			// if we don't support the header, try the next one
 			continue
 		}
 
+		w.Header().Set("Content-Type", contentType)
+		err = send(w, r, ans)
 		if err == nil {
 			return nil
 		}

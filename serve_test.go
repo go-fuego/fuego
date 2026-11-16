@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -304,6 +305,118 @@ func TestSetStatusBeforeSend(t *testing.T) {
 		body := w.Body.String()
 		require.Equal(t, crlf(`{"ans":"Hello World"}`), body)
 	})
+}
+
+func TestDefaultStatusCodeKeepsContentType(t *testing.T) {
+	// httptest.ResponseRecorder does not freeze the headers on WriteHeader, so it
+	// cannot catch a Content-Type set after the status code. A real server can.
+	s := NewServer(WithoutStartupMessages())
+	Post(s, "/created", func(c ContextNoBody) (ans, error) {
+		return ans{Ans: "Hello World"}, nil
+	}, OptionDefaultStatusCode(http.StatusCreated))
+
+	server := httptest.NewServer(s.Mux)
+	t.Cleanup(server.Close)
+
+	res, err := http.Post(server.URL+"/created", "application/json", nil)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = res.Body.Close() })
+
+	require.Equal(t, http.StatusCreated, res.StatusCode)
+	require.Equal(t, "application/json", res.Header.Get("Content-Type"))
+}
+
+func TestDefaultStatusCodeKeepsHandlerContentType(t *testing.T) {
+	s := NewServer(WithoutStartupMessages())
+	Post(s, "/created", func(c ContextNoBody) (ans, error) {
+		c.SetHeader("Content-Type", "application/vnd.custom")
+		return ans{Ans: "Hello World"}, nil
+	}, OptionDefaultStatusCode(http.StatusCreated))
+
+	server := httptest.NewServer(s.Mux)
+	t.Cleanup(server.Close)
+
+	res, err := http.Post(server.URL+"/created", "application/json", nil)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = res.Body.Close() })
+
+	require.Equal(t, http.StatusCreated, res.StatusCode)
+	require.Equal(t, "application/vnd.custom", res.Header.Get("Content-Type"))
+}
+
+func TestDefaultStatusCodeNoContentHasNoContentType(t *testing.T) {
+	s := NewServer(WithoutStartupMessages())
+	Post(s, "/no-content", func(c ContextNoBody) (ans, error) {
+		return ans{Ans: "Hello World"}, nil
+	}, OptionDefaultStatusCode(http.StatusNoContent))
+
+	server := httptest.NewServer(s.Mux)
+	t.Cleanup(server.Close)
+
+	res, err := http.Post(server.URL+"/no-content", "application/json", nil)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = res.Body.Close() })
+
+	require.Equal(t, http.StatusNoContent, res.StatusCode)
+	require.Empty(t, res.Header.Get("Content-Type"))
+}
+
+func TestDefaultStatusCodeDoesNotClobberDirectlyAssignedSerializer(t *testing.T) {
+	s := NewServer(WithoutStartupMessages())
+	s.Serialize = func(w http.ResponseWriter, _ *http.Request, _ any) error {
+		w.Header().Set("Content-Type", "application/vnd.custom")
+		_, err := w.Write([]byte("custom"))
+		return err
+	}
+	Post(s, "/created", func(c ContextNoBody) (ans, error) {
+		return ans{Ans: "Hello World"}, nil
+	}, OptionDefaultStatusCode(http.StatusCreated))
+
+	server := httptest.NewServer(s.Mux)
+	t.Cleanup(server.Close)
+
+	res, err := http.Post(server.URL+"/created", "application/json", nil)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = res.Body.Close() })
+
+	require.Equal(t, http.StatusCreated, res.StatusCode)
+	// The serializer's own header is still lost to the frozen status code, but Fuego
+	// must not replace it with a guess.
+	require.NotEqual(t, "application/json", res.Header.Get("Content-Type"))
+}
+
+func TestWithSerializerSendKeepsDefaultContentType(t *testing.T) {
+	s := NewServer(WithoutStartupMessages(), WithSerializer(Send))
+	Post(s, "/created", func(c ContextNoBody) (ans, error) {
+		return ans{Ans: "Hello World"}, nil
+	}, OptionDefaultStatusCode(http.StatusCreated))
+
+	server := httptest.NewServer(s.Mux)
+	t.Cleanup(server.Close)
+
+	res, err := http.Post(server.URL+"/created", "application/json", nil)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = res.Body.Close() })
+
+	require.Equal(t, http.StatusCreated, res.StatusCode)
+	require.Equal(t, "application/json", res.Header.Get("Content-Type"))
+}
+
+func TestTextPlainBodyReturns415(t *testing.T) {
+	s := NewServer(WithoutStartupMessages())
+	Post(s, "/echo", func(c ContextWithBody[ans]) (ans, error) {
+		return c.Body()
+	})
+
+	server := httptest.NewServer(s.Mux)
+	t.Cleanup(server.Close)
+
+	res, err := http.Post(server.URL+"/echo", "text/plain", strings.NewReader("Hello World"))
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = res.Body.Close() })
+
+	require.Equal(t, http.StatusUnsupportedMediaType, res.StatusCode)
+	require.Equal(t, "application/problem+json", res.Header.Get("Content-Type"))
 }
 
 type spanID string

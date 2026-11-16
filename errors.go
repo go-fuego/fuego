@@ -189,6 +189,20 @@ func (e NotAcceptableError) StatusCode() int { return http.StatusNotAcceptable }
 
 func (e NotAcceptableError) Unwrap() error { return HTTPError(e) }
 
+// UnsupportedMediaTypeError is an error used to return a 415 status code.
+type UnsupportedMediaTypeError HTTPError
+
+var _ ErrorWithStatus = UnsupportedMediaTypeError{}
+
+func (e UnsupportedMediaTypeError) Error() string {
+	e.Status = http.StatusUnsupportedMediaType
+	return HTTPError(e).Error()
+}
+
+func (e UnsupportedMediaTypeError) StatusCode() int { return http.StatusUnsupportedMediaType }
+
+func (e UnsupportedMediaTypeError) Unwrap() error { return HTTPError(e) }
+
 // ErrorHandler is the default error handler used by the framework.
 // If the error is an [HTTPError] that error is returned.
 // If the error adheres to the [ErrorWithStatus] interface
