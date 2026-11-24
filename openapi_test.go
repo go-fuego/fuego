@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3gen"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/thejerf/slogassert"
@@ -728,6 +729,41 @@ func TestPrivateFieldInStruct(t *testing.T) {
 	Post(s, "/user", func(c ContextWithBody[User]) (User, error) { return c.Body() })
 
 	handler.AssertEmpty() // No warning "Property not found in schema" for the 'password' field
+}
+
+type ComponentEnvelope[T any] struct {
+	Value T `json:"value"`
+}
+
+type ComponentEnvelopeResponse struct {
+	Envelope ComponentEnvelope[string] `json:"envelope"`
+}
+
+func TestOpenAPIGeneratorOptionsCanCustomizeComponentSchemas(t *testing.T) {
+	typeNameGenerator := func(t reflect.Type) string {
+		return transformTypeName(t.Name())
+	}
+
+	s := NewServer(WithEngineOptions(WithOpenAPIGeneratorSchemaCustomizer(nil,
+		openapi3gen.CreateTypeNameGenerator(typeNameGenerator),
+		openapi3gen.CreateComponentSchemas(openapi3gen.ExportComponentSchemasOptions{
+			ExportComponentSchemas: true,
+			ExportGenerics:         true,
+		}),
+	)))
+	Get(s, "/envelope", func(ContextNoBody) (ComponentEnvelopeResponse, error) {
+		return ComponentEnvelopeResponse{}, nil
+	})
+
+	document := s.OutputOpenAPISpec()
+	require.NotNil(t, document)
+
+	responseSchema := document.Components.Schemas["ComponentEnvelopeResponse"].Value
+	require.NotNil(t, responseSchema)
+	envelopeSchema := responseSchema.Properties["envelope"]
+	require.NotNil(t, envelopeSchema)
+	assert.Equal(t, "#/components/schemas/ComponentEnvelope_string", envelopeSchema.Ref)
+	assert.Contains(t, document.Components.Schemas, "ComponentEnvelope_string")
 }
 
 func TestSetGeneratorSchemaCustomizer(t *testing.T) {

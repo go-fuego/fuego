@@ -57,12 +57,14 @@ func (openAPI *OpenAPI) SetGeneratorSchemaCustomizer(sc openapi3gen.SchemaCustom
 		}
 		return sc(name, t, tag, schema)
 	}
-	openAPI.generator = openapi3gen.NewGenerator(append(options,
-		openapi3gen.SchemaCustomizer(customizerFn),
+	generatorOptions := []openapi3gen.Option{
 		openapi3gen.CreateComponentSchemas(openapi3gen.ExportComponentSchemasOptions{
 			ExportComponentSchemas: true,
 		}),
-	)...)
+	}
+	generatorOptions = append(generatorOptions, options...)
+	generatorOptions = append(generatorOptions, openapi3gen.SchemaCustomizer(customizerFn))
+	openAPI.generator = openapi3gen.NewGenerator(generatorOptions...)
 }
 
 func (openAPI *OpenAPI) mergeInfo(info *openapi3.Info) {
