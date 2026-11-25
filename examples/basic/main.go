@@ -1,84 +1,50 @@
 package main
 
 import (
-	"context"
-	"errors"
-	"net/http"
-	"strings"
+	"encoding/json"
+	"fmt"
 
-	chiMiddleware "github.com/go-chi/chi/v5/middleware"
-	"github.com/rs/cors"
-
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-fuego/fuego"
-	"github.com/go-fuego/fuego/option"
 )
 
-type Received struct {
-	Name string `json:"name" validate:"required"`
+type Owner struct {
+	Name string `json:"name"`
 }
 
-type MyResponse struct {
-	Message       string `json:"message"`
-	BestFramework string `json:"best"`
+type Widget struct {
+	Name  *string  `json:"name"`  // pointer -> nullable scalar
+	Tags  []string `json:"tags"`  // slice
+	Owner *Owner   `json:"owner"` // pointer to a named struct -> $ref
 }
 
 func main() {
 	s := fuego.NewServer(
-		fuego.WithAddr("localhost:8088"),
+		fuego.WithEngineOptions(
+			fuego.WithWalkSchemas(func(_ string, ref *openapi3.SchemaRef) error {
+				schema := ref.Value
+				if schema.Nullable && schema.Type != nil && !schema.Type.Includes("null") {
+					*schema.Type = append(*schema.Type, "null")
+					schema.Nullable = false
+				}
+				return nil
+			}),
+		),
 	)
 
-	fuego.Use(s, cors.Default().Handler)
-	fuego.Use(s, chiMiddleware.Compress(5, "text/html", "text/css"))
-
-	// Fuego 🔥 handler with automatic OpenAPI generation, validation, (de)serialization and error handling
-	fuego.Post(s, "/", func(c fuego.ContextWithBody[Received]) (MyResponse, error) {
-		data, err := c.Body()
-		if err != nil {
-			return MyResponse{}, err
-		}
-
-		// read the request header test
-		if c.Request().Header.Get("test") != "test" {
-			return MyResponse{}, errors.New("test header not equal to 'test'")
-		}
-
-		c.Response().Header().Set("X-Hello", "World")
-
-		return MyResponse{
-			Message:       "Hello, " + data.Name,
-			BestFramework: "Fuego!",
-		}, nil
-	},
-		option.Description("Say hello to the world"),
-		option.Header("test", "Just a test header"),
-		option.Cookie("test", "A Cookie!"),
-	)
-
-	// Standard net/http handler with automatic OpenAPI route declaration
-	fuego.GetStd(s, "/std", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, World!"))
+	fuego.Get(s, "/widget", func(c fuego.ContextNoBody) (Widget, error) {
+		return Widget{}, nil
 	})
 
-	s.Run()
-}
+	// Owner is also returned on its own, where it is never null.
+	fuego.Get(s, "/owner", func(c fuego.ContextNoBody) (Owner, error) {
+		return Owner{}, nil
+	})
 
-// InTransform will be called when using c.Body().
-// It can be used to transform the entity and raise custom errors
-func (r *Received) InTransform(context.Context) error {
-	r.Name = strings.ToLower(r.Name)
-	if r.Name == "fuego" {
-		return errors.New("fuego is not a name")
+	doc := s.OutputOpenAPISpec()
+	fmt.Println("openapi:", doc.OpenAPI)
+	for _, name := range []string{"Widget", "Owner"} {
+		out, _ := json.MarshalIndent(doc.Components.Schemas[name].Value, "", "  ")
+		fmt.Printf("%s: %s\n", name, out)
 	}
-	return nil
 }
-
-// OutTransform will be called before sending data
-func (r *MyResponse) OutTransform(context.Context) error {
-	r.Message = strings.ToUpper(r.Message)
-	return nil
-}
-
-var (
-	_ fuego.InTransformer  = &Received{}   // Ensure that *Received implements fuego.InTransformer
-	_ fuego.OutTransformer = &MyResponse{} // Ensure that *MyResponse implements fuego.OutTransformer
-)
