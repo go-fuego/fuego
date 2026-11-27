@@ -4,7 +4,7 @@ go 1.26.11
 
 require (
 	github.com/go-fuego/fuego v0.21.0
-	github.com/labstack/echo/v4 v4.16.4
+	github.com/labstack/echo/v4 v4.16.6
 	github.com/stretchr/testify v1.12.1
 )
 
